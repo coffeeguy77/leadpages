@@ -106,6 +106,11 @@ body{display:flex;flex-direction:column;min-height:100%;-webkit-font-smoothing:a
 .nav button.on .nav-count{background:color-mix(in srgb,var(--accent) 22%,transparent);color:var(--ink)}
 .nav button:hover{background:color-mix(in srgb,var(--accent) 10%,transparent);color:var(--ink);border-color:color-mix(in srgb,var(--accent) 18%,transparent)}
 .nav button.on{background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--ink);border-color:color-mix(in srgb,var(--accent) 28%,transparent)}
+.nav-group-label{
+  font:700 10px/1.2 var(--font-ui);letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-faint);padding:14px 12px 6px;margin:0;
+}
+.nav button.nav-sub{padding-left:22px;font-size:var(--fs-sm)}
 .side-foot{border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:8px}
 .who{font-size:var(--fs-xs);color:var(--ink-faint);padding:0 8px;word-break:break-all}
 .side-actions{display:flex;flex-wrap:wrap;gap:6px;padding:0 4px}
@@ -272,6 +277,33 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
 .no-prod-card:hover{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,transparent)}
 .no-prod-card strong{display:block;font-size:var(--fs-sm);line-height:1.3;margin:0 0 4px}
 .no-prod-card .meta{font-size:var(--fs-xs);color:var(--ink-soft)}
+.no-split{
+  display:grid;grid-template-columns:minmax(220px,25%) minmax(0,75%);gap:16px 20px;align-items:start;
+}
+.no-menu-col{
+  min-width:0;max-height:calc(100vh - 180px);overflow:auto;padding-right:4px;
+  border-right:1px solid var(--line);
+}
+.no-editor-col{min-width:0}
+.no-staff-cart{
+  margin-top:16px;padding-top:14px;border-top:1px solid var(--line);
+  position:sticky;bottom:0;background:var(--surface);z-index:2;
+}
+.no-staff-cart h4{margin:0 0 8px;font-size:var(--fs-sm);font-weight:700}
+.no-staff-cart-empty{font-size:var(--fs-xs);color:var(--ink-faint);margin:0}
+.no-staff-cart-list{display:flex;flex-direction:column;gap:8px;margin:0 0 8px}
+.no-staff-cart-item{
+  display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;align-items:start;
+  padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:color-mix(in srgb,var(--accent) 3%,var(--surface));
+}
+.no-staff-cart-item strong{font-size:var(--fs-sm);line-height:1.25;display:block}
+.no-staff-cart-item .meta{font-size:var(--fs-xs);color:var(--ink-soft);line-height:1.35}
+.no-staff-cart-item .rm{align-self:center}
+@media(max-width:1100px){
+  .no-split{grid-template-columns:1fr}
+  .no-menu-col{max-height:none;border-right:0;border-bottom:1px solid var(--line);padding-bottom:14px}
+  .no-staff-cart{position:static}
+}
 .no-layout-toggle{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px}
 .no-layout-toggle .lbl{font-size:var(--fs-xs);font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-faint);margin-right:4px}
 .no-layout-btn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
@@ -290,7 +322,7 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
 .no-fast-packchip{display:inline-flex;align-items:center;min-height:44px;padding:0 12px;border-radius:10px;border:1px dashed var(--line);color:var(--accent);font:700 11px/1 var(--font-ui)}
 .no-fast-row.is-added{border-color:color-mix(in srgb,#16a34a 40%,var(--line));background:color-mix(in srgb,#16a34a 4%,var(--surface))}
 .no-fast-add-btn{min-height:44px;padding:0 16px;font-weight:700}
-.no-fast-add-btn.on{background:color-mix(in srgb,#16a34a 85%,var(--accent));border-color:#16a34a}
+.no-fast-add-btn.needs-options{background:transparent;color:var(--accent);border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
 .no-cust-mode{display:flex;flex-wrap:wrap;gap:14px 20px;margin:0 0 12px}
 .no-cust-mode label{display:inline-flex;align-items:center;gap:8px;font-weight:600;cursor:pointer;margin:0}
 .no-cust-search-wrap{position:relative;margin-bottom:12px}
@@ -505,77 +537,88 @@ body.embed .hub{min-height:70vh}
       <section class="view" id="view-new" data-view="new">
         <div class="card">
           <h3>New order</h3>
-          <p class="sub">Create a staff order for the selected site. Use <strong>Fast order</strong> to enter qty and weight on one page, or <strong>Traditional</strong> to tap products into order lines.</p>
+          <p class="sub">Build the order in the cart (left), then complete customer details and payment on the right.</p>
           <form id="new-order-form">
-            <h4 class="section-title" style="margin-top:0">Customer</h4>
-            <div class="no-cust-mode" role="radiogroup" aria-label="Customer type">
-              <label><input type="radio" name="no-cust-mode" value="new" checked> New customer</label>
-              <label><input type="radio" name="no-cust-mode" value="existing"> Existing customer</label>
-            </div>
-            <div id="no-cust-existing" class="no-cust-search-wrap hide">
-              <div class="field full" style="margin-bottom:0">
-                <label for="no-cust-search">Search by name or phone</label>
-                <input id="no-cust-search" type="search" autocomplete="off" placeholder="Start typing a name or mobile number…">
-                <ul id="no-cust-results" class="prod-combo-list hide" role="listbox"></ul>
-              </div>
-            </div>
-            <div class="grid2" id="no-cust-fields">
-              <div class="field"><label for="no-name">Customer name *</label><input id="no-name" required></div>
-              <div class="field"><label for="no-phone">Phone *</label><input id="no-phone" type="tel" required inputmode="tel" autocomplete="tel" placeholder="04xx xxx xxx"></div>
-              <div class="field"><label for="no-email">Email</label><input id="no-email" type="email"></div>
-              <div class="field" id="no-pickup-wrap">
-                <label for="no-pickup">Pickup date</label>
-                <select id="no-pickup-select" class="hide"></select>
-                <input id="no-pickup" type="date">
-                <p class="no-pickup-display hide" id="no-pickup-display" aria-live="polite"></p>
-                <span class="field-hint" id="no-pickup-hint">Uses a free date picker when no pickup windows are set.</span>
-              </div>
-            </div>
-            <div class="field full"><label for="no-notes">Notes</label>
-              <textarea id="no-notes" class="notes-grow" rows="1" placeholder="Optional order notes"></textarea>
-            </div>
-            <h4 class="section-title">Products</h4>
-            <div class="no-layout-toggle" id="no-layout-toggle">
-              <span class="lbl">Ordering layout</span>
-              <button type="button" class="btn ghost no-layout-btn" data-no-mode="fast">Fast order</button>
-              <button type="button" class="btn ghost no-layout-btn" data-no-mode="traditional">Traditional</button>
-            </div>
-            <div id="no-cat-pills" class="no-cat-pills"></div>
-            <div id="no-traditional-wrap">
-              <div id="no-product-grid" class="no-product-grid"></div>
-              <h4 class="section-title">Order lines</h4>
-              <div id="no-lines"></div>
-              <div class="actions-row">
-                <button class="btn ghost" type="button" id="no-add-line">Add product</button>
-              </div>
-            </div>
-            <div id="no-fast-wrap" class="hide">
-              <p class="sub" style="margin-top:0">Enter qty or weight, then tap <strong>Add</strong> for each product you want on the order. Use <strong>Options</strong> / <strong>Notes</strong> when needed.</p>
-              <div id="no-fast-list" class="no-fast-list"></div>
-            </div>
-            <div class="pay-on-create">
-              <p class="notice" style="margin-top:0"><strong>Payment on create</strong> — choose one option before creating the order.</p>
-              <label><input type="radio" name="no-pay-action" value="send_invoice_link"> Send invoice link (SMS payment link to customer)</label>
-              <label><input type="radio" name="no-pay-action" value="inhouse_payment"> In-house payment (deposit received now)</label>
-              <div id="no-inhouse-panel" class="hide" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line)">
-                <div class="field"><label for="no-inhouse-method">Payment method</label>
-                  <select id="no-inhouse-method">
-                    <option value="">Select method…</option>
-                    <option value="cash_deposit">Cash deposit</option>
-                    <option value="eftpos">EFTPOS</option>
-                    <option value="direct_deposit">Direct deposit</option>
-                    <option value="contra">Contra</option>
-                  </select>
+            <div class="no-split">
+              <div class="no-menu-col">
+                <h4 class="section-title" style="margin-top:0">Menu</h4>
+                <div class="no-layout-toggle" id="no-layout-toggle">
+                  <span class="lbl">Layout</span>
+                  <button type="button" class="btn ghost no-layout-btn" data-no-mode="fast">Fast order</button>
+                  <button type="button" class="btn ghost no-layout-btn" data-no-mode="traditional">Traditional</button>
                 </div>
-                <div class="field full"><label for="no-inhouse-notes">Staff notes (optional)</label>
-                  <textarea id="no-inhouse-notes" class="notes-grow" rows="1" placeholder="e.g. Paid cash at counter"></textarea>
+                <div id="no-cat-pills" class="no-cat-pills"></div>
+                <div id="no-traditional-wrap">
+                  <div id="no-product-grid" class="no-product-grid"></div>
+                  <div id="no-lines" class="hide" aria-hidden="true"></div>
+                  <div class="actions-row hide" id="no-add-line-wrap">
+                    <button class="btn ghost" type="button" id="no-add-line">Add product</button>
+                  </div>
+                </div>
+                <div id="no-fast-wrap" class="hide">
+                  <p class="sub" style="margin-top:0">Enter qty or weight, then tap <strong>Add</strong>. Use <strong>Options</strong> / <strong>Notes</strong> when needed.</p>
+                  <div id="no-fast-list" class="no-fast-list"></div>
+                </div>
+                <div class="no-staff-cart" id="no-staff-cart">
+                  <h4>Cart</h4>
+                  <p class="no-staff-cart-empty" id="no-staff-cart-empty">No items yet — add products from the menu above.</p>
+                  <div class="no-staff-cart-list" id="no-staff-cart-list"></div>
                 </div>
               </div>
+              <div class="no-editor-col">
+                <h4 class="section-title" style="margin-top:0">Customer</h4>
+                <div class="no-cust-mode" role="radiogroup" aria-label="Customer type">
+                  <label><input type="radio" name="no-cust-mode" value="new" checked> New customer</label>
+                  <label><input type="radio" name="no-cust-mode" value="existing"> Existing customer</label>
+                </div>
+                <div id="no-cust-existing" class="no-cust-search-wrap hide">
+                  <div class="field full" style="margin-bottom:0">
+                    <label for="no-cust-search">Search by name or phone</label>
+                    <input id="no-cust-search" type="search" autocomplete="off" placeholder="Start typing a name or mobile number…">
+                    <ul id="no-cust-results" class="prod-combo-list hide" role="listbox"></ul>
+                  </div>
+                </div>
+                <div class="grid2" id="no-cust-fields">
+                  <div class="field"><label for="no-name">Customer name *</label><input id="no-name" required></div>
+                  <div class="field"><label for="no-phone">Phone *</label><input id="no-phone" type="tel" required inputmode="tel" autocomplete="tel" placeholder="04xx xxx xxx"></div>
+                  <div class="field"><label for="no-email">Email</label><input id="no-email" type="email"></div>
+                  <div class="field" id="no-pickup-wrap">
+                    <label for="no-pickup">Pickup date</label>
+                    <select id="no-pickup-select" class="hide"></select>
+                    <input id="no-pickup" type="date">
+                    <p class="no-pickup-display hide" id="no-pickup-display" aria-live="polite"></p>
+                    <span class="field-hint" id="no-pickup-hint">Uses a free date picker when no pickup windows are set.</span>
+                  </div>
+                </div>
+                <div class="field full"><label for="no-notes">Notes</label>
+                  <textarea id="no-notes" class="notes-grow" rows="1" placeholder="Optional order notes"></textarea>
+                </div>
+                <div class="pay-on-create">
+                  <h4 class="section-title">Payment on create</h4>
+                  <p class="notice" style="margin-top:0">Choose one option before creating the order.</p>
+                  <label><input type="radio" name="no-pay-action" value="send_invoice_link"> Send invoice link (SMS payment link to customer)</label>
+                  <label><input type="radio" name="no-pay-action" value="inhouse_payment"> In-house payment (deposit received now)</label>
+                  <div id="no-inhouse-panel" class="hide" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line)">
+                    <div class="field"><label for="no-inhouse-method">Payment method</label>
+                      <select id="no-inhouse-method">
+                        <option value="">Select method…</option>
+                        <option value="cash_deposit">Cash deposit</option>
+                        <option value="eftpos">EFTPOS</option>
+                        <option value="direct_deposit">Direct deposit</option>
+                        <option value="contra">Contra</option>
+                      </select>
+                    </div>
+                    <div class="field full"><label for="no-inhouse-notes">Staff notes (optional)</label>
+                      <textarea id="no-inhouse-notes" class="notes-grow" rows="1" placeholder="e.g. Paid cash at counter"></textarea>
+                    </div>
+                  </div>
+                </div>
+                <div class="actions-row">
+                  <button class="btn solid" type="submit" id="no-submit" disabled>Create order</button>
+                </div>
+                <p class="notice" id="no-msg"></p>
+              </div>
             </div>
-            <div class="actions-row">
-              <button class="btn solid" type="submit" id="no-submit" disabled>Create order</button>
-            </div>
-            <p class="notice" id="no-msg"></p>
           </form>
         </div>
       </section>
@@ -932,7 +975,7 @@ body.embed .hub{min-height:70vh}
             <h3 style="margin:0;flex:1">Abandoned carts</h3>
             <button class="btn solid" type="button" id="abd-load">Refresh</button>
           </div>
-          <p class="notice">At most <strong>one reminder per cart</strong> (or two if enabled in Settings). Turn automatic messaging off under Settings → Abandoned cart reminders. Use Messaging → Open carts for a one-off manual nudge.</p>
+          <p class="notice">At most <strong>one reminder per cart</strong> (or two if enabled in Settings → Cart). Turn automatic messaging off under Settings → Cart → Abandoned cart reminders. Use Messaging → Open carts for a one-off manual nudge.</p>
           <div class="kpis" id="abd-kpis"></div>
           <div class="table-wrap"><table class="oe"><thead><tr>
             <th>Updated</th><th>Status</th><th>Items</th><th>Known</th><th>Contact</th>
@@ -940,56 +983,14 @@ body.embed .hub{min-height:70vh}
         </div>
       </section>
 
-      <section class="view" id="view-settings" data-view="settings">
+      <section class="view" id="view-settings-cart" data-view="settings-cart">
         <div class="card">
-          <h3>Settings</h3>
-          <p class="sub">Order system configuration for the selected site.</p>
-          <div class="actions-row" style="margin-bottom:14px">
-            <button class="btn solid" type="button" id="settings-preset">Apply butcher preset</button>
-          </div>
-          <p class="notice">Applying the butcher preset updates defaults and seeds sample products/templates when the catalogue is empty.</p>
+          <h3>Cart</h3>
+          <p class="sub">Customer shop layout, staff new-order defaults, abandoned-cart recovery, and shop appearance.</p>
           <p class="notice" id="settings-shop-link">Customer shop: enable <strong>Order Storefront</strong> on the site (Page editor → Lead Capture) or open <code>/order-shop?slug=…</code>.</p>
-          <form id="settings-form">
-            <div class="settings-tabs" role="tablist">
-              <button type="button" class="btn ghost settings-tab on" data-set-tab="general">General</button>
-              <button type="button" class="btn ghost settings-tab" data-set-tab="gst">GST</button>
-            </div>
-            <div id="settings-panel-general">
-            <div class="grid2">
-              <div class="field"><label for="set-payment">Payment rule</label>
-                <select id="set-payment">
-                  <option value="none">None / pay later</option>
-                  <option value="fixed_deposit">Fixed deposit</option>
-                  <option value="percentage_deposit">Percentage deposit</option>
-                  <option value="full_payment">Full payment</option>
-                  <option value="pay_later">Pay later</option>
-                  <option value="quote_first">Quote first</option>
-                </select>
-              </div>
-              <div class="field"><label for="set-deposit">Deposit amount (dollars)</label>
-                <input id="set-deposit" type="number" min="0" step="0.01" placeholder="50.00">
-              </div>
-              <div class="field"><label for="set-cutoff-mode">Default cutoff mode</label>
-                <select id="set-cutoff-mode">
-                  <option value="days_before">Days before</option>
-                  <option value="hours_before">Hours before</option>
-                  <option value="weekday_rule">Weekday + time</option>
-                  <option value="none">None</option>
-                </select>
-              </div>
-              <div class="field"><label for="set-cutoff-value">Default cutoff value</label>
-                <input id="set-cutoff-value" type="number" min="0" step="1">
-              </div>
-              <div class="field"><label for="set-editing">Customer editing</label>
-                <select id="set-editing"><option value="1">Enabled</option><option value="0">Disabled</option></select>
-              </div>
-              <div class="field"><label for="set-enabled">System enabled</label>
-                <select id="set-enabled"><option value="1">Yes</option><option value="0">No</option></select>
-              </div>
-            </div>
-
+          <form id="settings-cart-form">
             <h4 class="section-title">Abandoned cart reminders</h4>
-            <p class="notice">Turn <strong>Off</strong> to stop all automatic recovery SMS/email. Set a <strong>max per customer</strong> so repeat visits do not trigger duplicate texts (e.g. steaks hanging). Customise message text under <strong>Messaging → Saved templates</strong> (<code>abandoned_cart</code> and <code>abandoned_cart_2</code>).</p>
+            <p class="notice">Turn <strong>Off</strong> to stop all automatic recovery SMS/email. Customise message text under <strong>Messaging → Saved templates</strong> (<code>abandoned_cart</code> and <code>abandoned_cart_2</code>).</p>
             <div class="grid2">
               <div class="field"><label for="set-abd-enabled">Automatic reminders</label>
                 <select id="set-abd-enabled">
@@ -1033,34 +1034,6 @@ body.embed .hub{min-height:70vh}
               </div>
             </div>
 
-            <h4 class="section-title">Deposit reminders</h4>
-            <p class="notice">Automatic reminders for <strong>awaiting deposit</strong> orders. Never sent after the order lock date. Customise message text under <strong>Messaging → Saved templates</strong> (<code>deposit_reminder</code> and <code>deposit_reminder_day_before</code>).</p>
-            <div class="grid2">
-              <div class="field"><label for="set-dep-rem-enabled">Automatic reminders</label>
-                <select id="set-dep-rem-enabled">
-                  <option value="1">On</option>
-                  <option value="0">Off</option>
-                </select>
-              </div>
-              <div class="field"><label for="set-dep-rem-days">First reminder after (days)</label>
-                <input id="set-dep-rem-days" type="number" min="1" max="14" step="1" placeholder="3">
-                <span class="field-hint">Or sooner if the lock date is closer. Cron runs hourly.</span>
-              </div>
-              <div class="field"><label for="set-dep-rem-day-before">Day-before lock reminder</label>
-                <select id="set-dep-rem-day-before">
-                  <option value="1">On</option>
-                  <option value="0">Off</option>
-                </select>
-              </div>
-              <div class="field"><label for="set-dep-rem-channels">Channels</label>
-                <select id="set-dep-rem-channels">
-                  <option value="email">Email only</option>
-                  <option value="sms">SMS only</option>
-                  <option value="email,sms">Email + SMS</option>
-                </select>
-              </div>
-            </div>
-
             <h4 class="section-title">Customer shop (menu)</h4>
             <p class="notice">Controls how the homepage / order shop catalogue behaves. Empty categories and categories with no enabled products are always hidden.</p>
             <div class="grid2">
@@ -1069,14 +1042,12 @@ body.embed .hub{min-height:70vh}
                   <option value="traditional">Traditional shop — tap a product to set qty / weight</option>
                   <option value="fast">Fast order — qty &amp; weight on one page</option>
                 </select>
-                <span class="field-hint">Fast mode lets customers add items without opening each product. Notes expand on demand.</span>
               </div>
               <div class="field"><label for="set-staff-order-mode">Staff new order layout</label>
                 <select id="set-staff-order-mode">
                   <option value="fast">Fast order — qty &amp; weight on one page</option>
                   <option value="traditional">Traditional — tap a product to add lines</option>
                 </select>
-                <span class="field-hint">Default layout for New Order in this admin. Staff can switch per session on that page.</span>
               </div>
               <div class="field"><label for="set-sf-show-all">Category chips</label>
                 <select id="set-sf-show-all">
@@ -1088,12 +1059,10 @@ body.embed .hub{min-height:70vh}
                 <select id="set-sf-default-cat">
                   <option value="">First category with products</option>
                 </select>
-                <span class="field-hint">e.g. Turkey or Ham at Christmas — customers land here first.</span>
               </div>
             </div>
 
             <h4 class="section-title">Shop look &amp; feel</h4>
-            <p class="notice">Live on the customer shop after save (also use Page editor → Order Storefront for section colours on the homepage band).</p>
             <div class="actions-row" style="margin-bottom:10px">
               <button class="btn solid" type="button" id="settings-save-theme">Save shop theme only</button>
               <span class="notice" id="settings-theme-msg" style="margin:0"></span>
@@ -1139,9 +1108,62 @@ body.embed .hub{min-height:70vh}
                 <input id="set-sf-page" type="color" value="#ffffff">
               </div>
             </div>
+            <button class="btn solid" type="submit" id="settings-cart-save">Save cart settings</button>
+            <p class="notice" id="settings-cart-msg"></p>
+          </form>
+        </div>
+      </section>
+
+      <section class="view" id="view-settings-payments" data-view="settings-payments">
+        <div class="card">
+          <h3>Payment options</h3>
+          <p class="sub">Deposit rules, automatic deposit reminders, and customer payment providers.</p>
+          <form id="settings-payments-form">
+            <div class="grid2">
+              <div class="field"><label for="set-payment">Payment rule</label>
+                <select id="set-payment">
+                  <option value="none">None / pay later</option>
+                  <option value="fixed_deposit">Fixed deposit</option>
+                  <option value="percentage_deposit">Percentage deposit</option>
+                  <option value="full_payment">Full payment</option>
+                  <option value="pay_later">Pay later</option>
+                  <option value="quote_first">Quote first</option>
+                </select>
+              </div>
+              <div class="field"><label for="set-deposit">Deposit amount (dollars)</label>
+                <input id="set-deposit" type="number" min="0" step="0.01" placeholder="50.00">
+              </div>
+            </div>
+
+            <h4 class="section-title">Deposit reminders</h4>
+            <p class="notice">Automatic reminders for <strong>awaiting deposit</strong> orders. Customise templates under <strong>Messaging → Saved templates</strong>.</p>
+            <div class="grid2">
+              <div class="field"><label for="set-dep-rem-enabled">Automatic reminders</label>
+                <select id="set-dep-rem-enabled">
+                  <option value="1">On</option>
+                  <option value="0">Off</option>
+                </select>
+              </div>
+              <div class="field"><label for="set-dep-rem-days">First reminder after (days)</label>
+                <input id="set-dep-rem-days" type="number" min="1" max="14" step="1" placeholder="3">
+              </div>
+              <div class="field"><label for="set-dep-rem-day-before">Day-before lock reminder</label>
+                <select id="set-dep-rem-day-before">
+                  <option value="1">On</option>
+                  <option value="0">Off</option>
+                </select>
+              </div>
+              <div class="field"><label for="set-dep-rem-channels">Channels</label>
+                <select id="set-dep-rem-channels">
+                  <option value="email">Email only</option>
+                  <option value="sms">SMS only</option>
+                  <option value="email,sms">Email + SMS</option>
+                </select>
+              </div>
+            </div>
 
             <h4 class="section-title">Customer payments (your account)</h4>
-            <p class="notice">Connect the business Stripe account so deposit money goes to them — not the LeadPages platform account. PayPal checkout is prepared here but not live yet.</p>
+            <p class="notice">Connect the business Stripe account so deposit money goes to them — not the LeadPages platform account.</p>
             <div class="grid2">
               <div class="field"><label for="set-pay-provider">Payment provider</label>
                 <select id="set-pay-provider">
@@ -1168,17 +1190,54 @@ body.embed .hub{min-height:70vh}
                 <input id="set-paypal-email" type="email" placeholder="orders@business.com.au">
               </div>
             </div>
+            <button class="btn solid" type="submit" id="settings-payments-save">Save payment options</button>
+            <p class="notice" id="settings-payments-msg"></p>
+          </form>
+        </div>
+      </section>
 
-            <button class="btn solid" type="submit" id="settings-save">Save settings</button>
+      <section class="view" id="view-settings-general" data-view="settings-general">
+        <div class="card">
+          <h3>General</h3>
+          <p class="sub">System defaults, GST, and pickup windows.</p>
+          <div class="actions-row" style="margin-bottom:14px">
+            <button class="btn solid" type="button" id="settings-preset">Apply butcher preset</button>
+          </div>
+          <p class="notice">Applying the butcher preset updates defaults and seeds sample products/templates when the catalogue is empty.</p>
+          <form id="settings-form">
+            <div class="settings-tabs" role="tablist">
+              <button type="button" class="btn ghost settings-tab on" data-set-tab="general">General</button>
+              <button type="button" class="btn ghost settings-tab" data-set-tab="gst">GST</button>
+            </div>
+            <div id="settings-panel-general">
+            <div class="grid2">
+              <div class="field"><label for="set-cutoff-mode">Default cutoff mode</label>
+                <select id="set-cutoff-mode">
+                  <option value="days_before">Days before</option>
+                  <option value="hours_before">Hours before</option>
+                  <option value="weekday_rule">Weekday + time</option>
+                  <option value="none">None</option>
+                </select>
+              </div>
+              <div class="field"><label for="set-cutoff-value">Default cutoff value</label>
+                <input id="set-cutoff-value" type="number" min="0" step="1">
+              </div>
+              <div class="field"><label for="set-editing">Customer editing</label>
+                <select id="set-editing"><option value="1">Enabled</option><option value="0">Disabled</option></select>
+              </div>
+              <div class="field"><label for="set-enabled">System enabled</label>
+                <select id="set-enabled"><option value="1">Yes</option><option value="0">No</option></select>
+              </div>
+            </div>
+            <button class="btn solid" type="submit" id="settings-save">Save general settings</button>
             <p class="notice" id="settings-msg"></p>
             </div>
 
             <div id="settings-panel-gst" class="hide">
               <h4 class="section-title">GST (Australia)</h4>
-              <p class="notice">Fresh meat is usually GST-free. Processed items (pies, ready meals, etc.) are typically sold with <strong>GST included</strong> in the shelf price. Tick categories below — every product in those categories (primary or “Also show in”) will show <em>inc. GST</em> on receipts and the shop.</p>
+              <p class="notice">Fresh meat is usually GST-free. Processed items are typically sold with <strong>GST included</strong> in the shelf price.</p>
               <div class="field"><label>GST applies to products in these categories</label>
                 <div id="set-gst-cats" class="prod-extra-cats"></div>
-                <span class="field-hint">Prices you enter are treated as GST-inclusive for ticked categories. Receipts show how much GST is included.</span>
               </div>
               <button class="btn solid" type="submit">Save GST settings</button>
             </div>
@@ -1349,7 +1408,10 @@ body.embed .hub{min-height:70vh}
     { id: 'payments', label: 'Payments' },
     { id: 'abandoned', label: 'Abandoned Carts' },
     { id: 'messaging', label: 'Messaging' },
-    { id: 'settings', label: 'Settings' }
+    { type: 'group', label: 'Settings' },
+    { id: 'settings-cart', label: 'Cart', sub: true },
+    { id: 'settings-payments', label: 'Payment options', sub: true },
+    { id: 'settings-general', label: 'General', sub: true }
   ];
 
   var state = {
@@ -1723,6 +1785,9 @@ body.embed .hub{min-height:70vh}
     var nav = $('nav');
     var counts = state.navCounts || {};
     nav.innerHTML = VIEWS.map(function(v){
+      if (v.type === 'group') {
+        return '<p class="nav-group-label">' + esc(v.label) + '</p>';
+      }
       var countHtml = '';
       if (v.id === 'customers' && counts.customers != null) {
         countHtml = '<span class="nav-count" title="Total customers">' + esc(String(counts.customers)) + '</span>';
@@ -1731,8 +1796,9 @@ body.embed .hub{min-height:70vh}
       } else if (v.id === 'new' && counts.new_orders != null) {
         countHtml = '<span class="nav-count" title="New / awaiting attention">' + esc(String(counts.new_orders)) + '</span>';
       }
-      return '<button type="button" data-view="' + v.id + '"' +
-        (state.currentView === v.id ? ' class="on"' : '') + '>' +
+      var cls = v.sub ? 'nav-sub' : '';
+      if (state.currentView === v.id) cls = (cls ? cls + ' ' : '') + 'on';
+      return '<button type="button" class="' + esc(cls) + '" data-view="' + v.id + '">' +
         '<span class="nav-label">' + esc(v.label) + '</span>' + countHtml + '</button>';
     }).join('');
     nav.querySelectorAll('button').forEach(function(b){
@@ -1758,7 +1824,9 @@ body.embed .hub{min-height:70vh}
   }
 
   function openView(id){
-    var v = VIEWS.find(function(x){ return x.id === id; }) || VIEWS[0];
+    if (id === 'settings') id = 'settings-cart';
+    var v = VIEWS.find(function(x){ return x.id === id; }) || VIEWS.find(function(x){ return x.id; }) || VIEWS[0];
+    if (!v || !v.id) v = VIEWS[0];
     state.currentView = v.id;
     try { history.replaceState(null, '', '#' + v.id); } catch (_e) {}
     paintNav();
@@ -1855,6 +1923,7 @@ body.embed .hub{min-height:70vh}
     showHub();
     paintNav();
     var hash = (location.hash || '#dashboard').replace(/^#/, '');
+    if (hash === 'settings') hash = 'settings-cart';
     openView(hash);
     refreshNavCounts();
     return session;
@@ -2608,6 +2677,49 @@ body.embed .hub{min-height:70vh}
     }).sort(function(a,b){ return (a.sort_order||0)-(b.sort_order||0); });
   }
 
+  function answerValuesStaff(raw){
+    if (raw == null) return [];
+    var v = raw;
+    if (typeof raw === 'object' && !Array.isArray(raw) && raw.value !== undefined) v = raw.value;
+    if (Array.isArray(v)) {
+      return v.map(function(x){ return String(x == null ? '' : x).trim(); }).filter(Boolean);
+    }
+    var s = String(v).trim();
+    if (!s) return [];
+    if (s.indexOf(',') >= 0) return s.split(',').map(function(x){ return x.trim(); }).filter(Boolean);
+    return [s];
+  }
+
+  function missingRequiredForProduct(productId, row, answersOverride){
+    var qs = questionsForProduct(productId);
+    var answers = answersOverride || (row ? collectLineAnswers(row) : {});
+    var missing = [];
+    qs.forEach(function(q){
+      if (!q.required) return;
+      if (!answerValuesStaff(answers[q.key]).length) missing.push(q);
+    });
+    return missing;
+  }
+
+  function fastAddLabelForProduct(product, row, isAdded, answersOverride){
+    if (isAdded) return 'Added';
+    if (product && missingRequiredForProduct(product.id, row, answersOverride).length) return 'Choose Options';
+    return 'Add';
+  }
+
+  function updateFastAddButtons(root){
+    (root || $('no-fast-list') || document).querySelectorAll('[data-fast-row]').forEach(function(row){
+      var pid = row.getAttribute('data-fast-row');
+      var product = (state.products || []).find(function(x){ return x.id === pid; });
+      var btn = row.querySelector('[data-fast-add]');
+      if (!btn || !product) return;
+      var isAdded = !!(state.noFastAdded && state.noFastAdded[pid]);
+      var label = fastAddLabelForProduct(product, row, isAdded);
+      btn.textContent = label;
+      btn.classList.toggle('needs-options', !isAdded && label === 'Choose Options');
+    });
+  }
+
   function minimumKgForProduct(p){
     if (!p) return null;
     if (p.minimum_kg != null) {
@@ -2731,6 +2843,8 @@ body.embed .hub{min-height:70vh}
         }
         var row = inp.closest('[data-fast-row]') || inp.closest('.line-row');
         if (row) row.setAttribute('data-touched', '1');
+        updateFastAddButtons(root);
+        renderNoStaffCart();
         updateNoSubmitEnabled();
       });
     });
@@ -2739,6 +2853,7 @@ body.embed .hub{min-height:70vh}
   function markFastRowTouched(row){
     if (row) row.setAttribute('data-touched', '1');
     updateNoSubmitEnabled();
+    if (row && fastRowIsAdded(row.getAttribute('data-fast-row'))) renderNoStaffCart();
   }
 
   function isNoFastMode(){
@@ -2778,6 +2893,103 @@ body.embed .hub{min-height:70vh}
     });
   }
 
+  function staffCartLineSummary(product, line){
+    var parts = [];
+    if (line.quantity != null && line.quantity !== 1) parts.push('Qty ' + line.quantity);
+    if (line.requested_weight_kg != null) parts.push(line.requested_weight_kg + ' kg');
+    var ans = line.answers || {};
+    Object.keys(ans).forEach(function(k){
+      var a = ans[k];
+      if (a && a.label && a.value) parts.push(a.label + ': ' + a.value);
+    });
+    if (line.notes) parts.push('“' + line.notes + '”');
+    return parts.join(' · ') || (product && product.pack_label ? product.pack_label : '');
+  }
+
+  function collectStaffCartEntries(){
+    var entries = [];
+    if (isNoFastMode()) {
+      var host = $('no-fast-list');
+      if (!host) return entries;
+      host.querySelectorAll('[data-fast-row]').forEach(function(row){
+        var product_id = row.getAttribute('data-fast-row');
+        if (!fastRowIsAdded(product_id)) return;
+        var product = (state.products || []).find(function(x){ return x.id === product_id; });
+        if (!product) return;
+        var needsW = productNeedsWeight(product);
+        var showQty = productShowsQuantity(product);
+        var qtyEl = row.querySelector('[data-fast-qty]');
+        var kgEl = row.querySelector('[data-fast-kg]');
+        var notesEl = row.querySelector('[data-fast-notes]');
+        var qty = showQty ? (Number(qtyEl && qtyEl.value) || 0) : 1;
+        var wRaw = kgEl && kgEl.value;
+        var line = { product_id: product_id, quantity: needsW ? 1 : qty, answers: collectLineAnswers(row) };
+        if (wRaw !== '' && isFinite(Number(wRaw))) line.requested_weight_kg = Number(wRaw);
+        var notes = notesEl && notesEl.value.trim();
+        if (notes) line.notes = notes;
+        entries.push({ key: 'fast:' + product_id, product: product, line: line, mode: 'fast' });
+      });
+      return entries;
+    }
+    var linesHost = $('no-lines');
+    if (!linesHost) return entries;
+    linesHost.querySelectorAll('.line-row').forEach(function(row, idx){
+      var product_id = row.querySelector('[data-f="product_id"]');
+      product_id = product_id && product_id.value;
+      if (!product_id) return;
+      var product = (state.products || []).find(function(x){ return x.id === product_id; });
+      if (!product) return;
+      var qty = Number(row.querySelector('[data-f="quantity"]').value) || 1;
+      var wRaw = row.querySelector('[data-f="requested_weight_kg"]').value;
+      var notes = row.querySelector('[data-f="notes"]').value.trim();
+      var line = { product_id: product_id, quantity: qty, answers: collectLineAnswers(row) };
+      if (wRaw !== '') line.requested_weight_kg = Number(wRaw);
+      if (notes) line.notes = notes;
+      entries.push({ key: 'trad:' + idx, product: product, line: line, mode: 'trad', row: row });
+    });
+    return entries;
+  }
+
+  function renderNoStaffCart(){
+    var list = $('no-staff-cart-list');
+    var empty = $('no-staff-cart-empty');
+    if (!list) return;
+    var entries = collectStaffCartEntries();
+    if (!entries.length) {
+      list.innerHTML = '';
+      if (empty) empty.classList.remove('hide');
+      return;
+    }
+    if (empty) empty.classList.add('hide');
+    list.innerHTML = entries.map(function(ent){
+      var p = ent.product;
+      var meta = staffCartLineSummary(p, ent.line);
+      return '<div class="no-staff-cart-item" data-cart-key="' + esc(ent.key) + '">' +
+        '<div><strong>' + esc(p.name || 'Item') + '</strong>' +
+        (meta ? '<div class="meta">' + esc(meta) + '</div>' : '') +
+        '</div>' +
+        '<button type="button" class="btn ghost rm" data-cart-rm="' + esc(ent.key) + '" aria-label="Remove">✕</button>' +
+        '</div>';
+    }).join('');
+    list.querySelectorAll('[data-cart-rm]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var key = btn.getAttribute('data-cart-rm');
+        if (!key) return;
+        if (key.indexOf('fast:') === 0) {
+          var pid = key.slice(5);
+          if (state.noFastAdded) delete state.noFastAdded[pid];
+          renderNoFastList();
+        } else if (key.indexOf('trad:') === 0) {
+          var idx = Number(key.slice(5));
+          var rows = $('no-lines').querySelectorAll('.line-row');
+          if (rows[idx]) rows[idx].remove();
+        }
+        renderNoStaffCart();
+        updateNoSubmitEnabled();
+      });
+    });
+  }
+
   function applyNoOrderLayout(){
     var fast = isNoFastMode();
     var trad = $('no-traditional-wrap');
@@ -2791,6 +3003,7 @@ body.embed .hub{min-height:70vh}
     });
     if (fast) renderNoFastList();
     else renderNoProductGrid();
+    renderNoStaffCart();
   }
 
   function wireNoLayoutToggle(){
@@ -2961,6 +3174,9 @@ body.embed .hub{min-height:70vh}
       var optionsOpen = !!panel.options;
       var notesOpen = !!panel.notes;
       var isAdded = !!(state.noFastAdded && state.noFastAdded[p.id]);
+      var draftAnswers = {};
+      Object.keys(draft.answers || {}).forEach(function(k){ draftAnswers[k] = { value: draft.answers[k] }; });
+      var addLabel = fastAddLabelForProduct(p, null, isAdded, draftAnswers);
       var rowCls = 'no-fast-row';
       if (optionsOpen) rowCls += ' is-options-open';
       if (notesOpen) rowCls += ' is-notes-open';
@@ -2985,7 +3201,10 @@ body.embed .hub{min-height:70vh}
         html += '<button type="button" class="btn ghost no-fast-toggle-btn' + (optionsOpen ? ' on' : '') + '" data-fast-options-toggle>Options</button>';
       }
       html += '<button type="button" class="btn ghost no-fast-toggle-btn' + (notesOpen ? ' on' : '') + '" data-fast-notes-toggle>Notes</button>';
-      html += '<button type="button" class="btn solid no-fast-add-btn' + (isAdded ? ' on' : '') + '" data-fast-add>' + (isAdded ? 'Added' : 'Add') + '</button>';
+      html += '<button type="button" class="btn solid no-fast-add-btn' +
+        (isAdded ? ' on' : '') +
+        (addLabel === 'Choose Options' ? ' needs-options' : '') +
+        '" data-fast-add>' + esc(addLabel) + '</button>';
       html += '</div></div>';
       if (optionsOpen && hasQs) {
         html += '<div class="no-fast-panel no-fast-options-panel"><div class="line-opt" data-fast-opt></div></div>';
@@ -3035,7 +3254,16 @@ body.embed .hub{min-height:70vh}
           if (state.noFastAdded[pid]) {
             delete state.noFastAdded[pid];
             renderNoFastList();
+            renderNoStaffCart();
             updateNoSubmitEnabled();
+            return;
+          }
+          if (missingRequiredForProduct(pid, row).length) {
+            if (!state.noFastPanelOpen) state.noFastPanelOpen = {};
+            var cur = state.noFastPanelOpen[pid] || {};
+            state.noFastPanelOpen[pid] = { notes: !!cur.notes, options: true };
+            toast('Choose required options for ' + (product.name || 'this product'), 'err');
+            renderNoFastList();
             return;
           }
           var err = validateFastRowForAdd(row, product);
@@ -3045,12 +3273,15 @@ body.embed .hub{min-height:70vh}
           }
           state.noFastAdded[pid] = true;
           renderNoFastList();
+          renderNoStaffCart();
           updateNoSubmitEnabled();
         });
       }
     });
     wireNoSteppers(host);
     wireOptionChips(host);
+    updateFastAddButtons(host);
+    renderNoStaffCart();
   }
 
   function fastRowHasIntent(row, product){
@@ -3081,6 +3312,10 @@ body.embed .hub{min-height:70vh}
       if (!fastRowIsAdded(product_id)) return;
       var product = (state.products || []).find(function(x){ return x.id === product_id; });
       if (!product) return;
+      if (missingRequiredForProduct(product_id, row).length) {
+        if (!err) err = 'Choose required options for ' + (product.name || 'a product') + '.';
+        return;
+      }
       var needsW = productNeedsWeight(product);
       var showQty = productShowsQuantity(product);
       var qtyEl = row.querySelector('[data-fast-qty]');
@@ -3111,6 +3346,10 @@ body.embed .hub{min-height:70vh}
       var product_id = row.getAttribute('data-fast-row');
       var product = (state.products || []).find(function(x){ return x.id === product_id; });
       if (!product || !fastRowIsAdded(product_id)) return;
+      if (missingRequiredForProduct(product_id, row).length) {
+        err = 'Choose required options for ' + (product.name || 'a product') + '.';
+        return;
+      }
       var needsW = productNeedsWeight(product);
       var showQty = productShowsQuantity(product);
       var qtyEl = row.querySelector('[data-fast-qty]');
@@ -3229,12 +3468,14 @@ body.embed .hub{min-height:70vh}
     wireOptionChips(row);
     row.querySelector('[data-remove]').addEventListener('click', function(){
       host.removeChild(row);
+      renderNoStaffCart();
       updateNoSubmitEnabled();
     });
     row.querySelectorAll('input,select').forEach(function(el){
-      el.addEventListener('input', updateNoSubmitEnabled);
-      el.addEventListener('change', updateNoSubmitEnabled);
+      el.addEventListener('input', function(){ updateNoSubmitEnabled(); renderNoStaffCart(); });
+      el.addEventListener('change', function(){ updateNoSubmitEnabled(); renderNoStaffCart(); });
     });
+    renderNoStaffCart();
     updateNoSubmitEnabled();
   }
 
@@ -3706,6 +3947,7 @@ body.embed .hub{min-height:70vh}
       updateNoSubmitEnabled();
       renderNoCatPills();
       applyNoOrderLayout();
+      renderNoStaffCart();
       if (r.order && r.order.id) openOrderDetail(r.order.id);
     } catch (e) {
       msg.textContent = (e && e.message) || String(e);
@@ -4614,8 +4856,9 @@ body.embed .hub{min-height:70vh}
 
   async function loadSettings(){
     if (!requireSite()) return;
-    var msg = $('settings-msg');
-    msg.textContent = 'Loading…';
+    [$('settings-msg'), $('settings-cart-msg'), $('settings-payments-msg')].forEach(function(m){
+      if (m) m.textContent = 'Loading…';
+    });
     try {
       var data = await api('/api/order/system?' + siteQuery());
       var s = data.system || {};
@@ -4683,11 +4926,17 @@ body.embed .hub{min-height:70vh}
       setClr('set-sf-page', ap.page_bg, '#ffffff');
       var gst = (s.settings && s.settings.gst) || {};
       renderGstCategorySettings(gst.category_ids || []);
-      msg.textContent = 'Preset: ' + (s.industry_preset || 'custom') + ' · Role: ' + (data.role || '—');
+      var loaded = 'Preset: ' + (s.industry_preset || 'custom') + ' · Role: ' + (data.role || '—');
+      [$('settings-msg'), $('settings-cart-msg'), $('settings-payments-msg')].forEach(function(m){
+        if (m) m.textContent = loaded;
+      });
       await loadPickupWindows();
     } catch (e) {
-      msg.textContent = (e && e.message) || String(e);
-      toast(msg.textContent, 'err');
+      var err = (e && e.message) || String(e);
+      [$('settings-msg'), $('settings-cart-msg'), $('settings-payments-msg')].forEach(function(m){
+        if (m) m.textContent = err;
+      });
+      toast(err, 'err');
     }
   }
 
@@ -4752,11 +5001,19 @@ body.embed .hub{min-height:70vh}
     if (btn) btn.disabled = false;
   }
 
+  function settingsMsgEl(){
+    if (state.currentView === 'settings-cart') return $('settings-cart-msg');
+    if (state.currentView === 'settings-payments') return $('settings-payments-msg');
+    return $('settings-msg');
+  }
+
   async function saveSettings(ev){
     ev.preventDefault();
     if (!requireSite()) return;
-    var btn = $('settings-save');
-    var msg = $('settings-msg');
+    var btn = ev && ev.target && ev.target.querySelector
+      ? ev.target.querySelector('button[type="submit"]')
+      : $('settings-save');
+    var msg = settingsMsgEl();
     if (btn) btn.disabled = true;
     try {
       var existing = {};
@@ -4850,11 +5107,11 @@ body.embed .hub{min-height:70vh}
           })
         }
       });
-      msg.textContent = 'Settings saved.';
+      if (msg) msg.textContent = 'Settings saved.';
       toast('Settings saved', 'ok');
     } catch (e) {
-      msg.textContent = (e && e.message) || String(e);
-      toast(msg.textContent, 'err');
+      if (msg) msg.textContent = (e && e.message) || String(e);
+      toast((e && e.message) || String(e), 'err');
     }
     if (btn) btn.disabled = false;
   }
@@ -5360,12 +5617,6 @@ body.embed .hub{min-height:70vh}
       if (v === 'dashboard') await loadDashboard();
       else if (v === 'orders') await loadOrders();
       else if (v === 'new') {
-        try {
-          var sysData = await api('/api/order/system?' + siteQuery());
-          resolveNoOrderModeFromSettings((sysData.system && sysData.system.settings) || {});
-        } catch (_e0) { state.noOrderMode = 'fast'; }
-        try { await loadProductsCache({ includeQuestions: true }); } catch (_e) {}
-        try { await loadPickupWindows(); } catch (_e2) {}
         state.noSelectedCat = '';
         state.noFastDrafts = {};
         state.noFastPanelOpen = {};
@@ -5374,12 +5625,22 @@ body.embed .hub{min-height:70vh}
         state.noCustomerMode = 'new';
         renderNoCatPills();
         wireNoLayoutToggle();
-        applyNoOrderLayout();
         wireNoPayCreate();
         wireNoCustomerControls();
         applyNoCustomerMode();
         updateNoSubmitEnabled();
         wireNotesGrow($('view-new'));
+        try {
+          await Promise.all([
+            api('/api/order/system?' + siteQuery()).then(function(sysData){
+              resolveNoOrderModeFromSettings((sysData.system && sysData.system.settings) || {});
+            }).catch(function(){ state.noOrderMode = 'fast'; }),
+            loadProductsCache({ includeQuestions: true }),
+            loadPickupWindows()
+          ]);
+        } catch (_e) {}
+        applyNoOrderLayout();
+        renderNoStaffCart();
         await refreshPickupDateControl();
       }
       else if (v === 'products') await loadProductsView();
@@ -5396,7 +5657,7 @@ body.embed .hub{min-height:70vh}
       else if (v === 'abandoned') await loadAbandoned();
       else if (v === 'messaging') { await loadTemplates(); await loadSmsUsage(); }
       else if (v === 'import') { resetImportUi(); }
-      else if (v === 'settings') await loadSettings();
+      else if (v === 'settings-cart' || v === 'settings-payments' || v === 'settings-general' || v === 'settings') await loadSettings();
     } catch (e) {
       toast((e && e.message) || String(e), 'err');
     }
@@ -5664,6 +5925,8 @@ body.embed .hub{min-height:70vh}
   if ($('imp-preview')) $('imp-preview').addEventListener('click', runImportPreview);
   if ($('imp-commit')) $('imp-commit').addEventListener('click', runImportCommit);
   $('settings-form').addEventListener('submit', saveSettings);
+  if ($('settings-cart-form')) $('settings-cart-form').addEventListener('submit', saveSettings);
+  if ($('settings-payments-form')) $('settings-payments-form').addEventListener('submit', saveSettings);
   if ($('settings-save-theme')) $('settings-save-theme').addEventListener('click', saveStorefrontTheme);
   if ($('pw-add')) $('pw-add').addEventListener('click', addPickupWindow);
   if ($('pw-save-schedule')) $('pw-save-schedule').addEventListener('click', savePickupSchedule);
@@ -5674,6 +5937,7 @@ body.embed .hub{min-height:70vh}
   });
   window.addEventListener('hashchange', function(){
     var id = (location.hash || '#dashboard').replace(/^#/, '');
+    if (id === 'settings') id = 'settings-cart';
     if (state.currentView !== id) openView(id);
   });
 

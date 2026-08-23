@@ -26,6 +26,47 @@
     return n;
   }
 
+  function answerValues(raw) {
+    if (raw == null) return [];
+    var v = raw;
+    if (typeof raw === 'object' && !Array.isArray(raw) && raw.value !== undefined) v = raw.value;
+    if (Array.isArray(v)) {
+      return v
+        .map(function (x) {
+          return String(x == null ? '' : x).trim();
+        })
+        .filter(Boolean);
+    }
+    var s = String(v).trim();
+    if (!s) return [];
+    if (s.indexOf(',') >= 0) {
+      return s
+        .split(',')
+        .map(function (x) {
+          return x.trim();
+        })
+        .filter(Boolean);
+    }
+    return [s];
+  }
+
+  function missingRequiredQuestions(questions, answers) {
+    var missing = [];
+    (questions || []).forEach(function (q) {
+      if (!q || !q.required || q.staff_only) return;
+      var key = q.key || q.id;
+      var raw = answers && (answers[key] != null ? answers[key] : answers[q.id]);
+      if (!answerValues(raw).length) missing.push(q);
+    });
+    return missing;
+  }
+
+  function fastAddButtonLabel(questions, answers, added) {
+    if (added) return 'Added';
+    if (missingRequiredQuestions(questions, answers).length) return 'Choose Options';
+    return 'Add';
+  }
+
   async function api(path, opts) {
     opts = opts || {};
     var r = await fetch(path, {
@@ -405,6 +446,89 @@
     if (packed.pickup_slots) this.state.pickupSlots = packed.pickup_slots;
   };
 
+  OrderStorefront.prototype.renderLoadingShell = function () {
+    if (!this.root) return;
+    this.root.innerHTML =
+      '<div class="lp-oe lp-oe-loading"><p class="lp-oe-sub" style="margin:0;padding:24px 0">Loading menu…</p></div>';
+  };
+
+  OrderStorefront.prototype.refreshCartChrome = function () {
+    var aside = document.getElementById('oe-aside');
+    if (aside) {
+      aside.innerHTML = this.renderLiveCart();
+    }
+    var n = qtyTotal(this.state.items);
+    this.root.querySelectorAll('.lp-oe-mobile-cart').forEach(function (btn) {
+      btn.textContent = 'Cart (' + n + ')';
+    });
+    this.bindCartActions();
+  };
+
+  OrderStorefront.prototype.bindCartActions = function () {
+    var self = this;
+    var aside = document.getElementById('oe-aside');
+    if (!aside) return;
+    aside.querySelectorAll('[data-act]').forEach(function (el) {
+      el.addEventListener('click', function (ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        self.onAct(el.getAttribute('data-act'), el);
+      });
+    });
+  };
+
+  OrderStorefront.prototype.updateProductAddButton = function () {
+    if (this.state.view !== 'product' || !this.state.selected) return;
+    var product = this.state.selected;
+    var btn = this.root.querySelector('[data-act="add-product"]');
+    if (!btn) return;
+    var answers = this.collectAnswers(this.root);
+    var missing = missingRequiredQuestions(product.questions || [], answers);
+    var label = fastAddButtonLabel(product.questions || [], answers, false);
+    btn.textContent = label === 'Add' ? 'Add to cart' : label;
+    btn.classList.toggle('needs-options', missing.length > 0);
+    btn.disabled = !!this.state.busy;
+  };
+
+  OrderStorefront.prototype.updateFastAddButtons = function () {
+    var self = this;
+    this.captureFastDrafts();
+    this.root.querySelectorAll('[data-fast-row]').forEach(function (row) {
+      var id = row.getAttribute('data-fast-row');
+      var product = (self.state.catalogue.products || []).find(function (p) {
+        return p.id === id;
+      });
+      if (!product) return;
+      var btn = row.querySelector('[data-act="add-inline"]');
+      if (!btn) return;
+      var draft = self.state.fastDrafts[id] || {};
+      var answers = draft.answers || {};
+      var missing = missingRequiredQuestions(product.questions || [], answers);
+      var label = fastAddButtonLabel(product.questions || [], answers, false);
+      btn.textContent = label;
+      btn.classList.toggle('needs-options', missing.length > 0);
+      btn.disabled = !!self.state.busy;
+    });
+  };
+
+  OrderStorefront.prototype.fastRowAnswers = function (row, productId) {
+    var draft = this.state.fastDrafts[productId] || {};
+    if (row) {
+      var collected = this.collectAnswers(row);
+      var out = {};
+      Object.keys(collected).forEach(function (k) {
+        out[k] = collected[k];
+      });
+      return out;
+    }
+    var ans = draft.answers || {};
+    var mapped = {};
+    Object.keys(ans).forEach(function (k) {
+      mapped[k] = { value: ans[k], label: k };
+    });
+    return mapped;
+  };
+
   OrderStorefront.prototype.storefrontCfg = function () {
     var sys = this.state.catalogue && this.state.catalogue.system;
     return (sys && sys.storefront) || {};
@@ -459,19 +583,8 @@
   OrderStorefront.prototype.init = async function () {
     try {
       this.rememberSlug();
-      this.state.catalogue = await api('/api/order/storefront?slug=' + encodeURIComponent(this.slug));
-      this.state.pickupSlots = this.state.catalogue.pickup_slots || [];
-      this.state.earliest = this.state.catalogue.earliest_pickup_date;
-      this.state.cutoffRule =
-        (this.state.catalogue.cutoff && this.state.catalogue.cutoff.rule_label) || '';
-      var cfg = this.storefrontCfg();
-      // Default: category view only (no "All") — start on default / first category.
-      if (cfg.show_all_categories) {
-        this.state.activeCategoryId = '';
-      } else {
-        this.state.activeCategoryId = this.resolveDefaultCategory();
-      }
-      // Recover cart from reorder deep-link
+      this.renderLoadingShell();
+      var slug = this.slug;
       try {
         var params = new URLSearchParams(location.search);
         var qCart = params.get('cart_id') || params.get('cart');
@@ -479,29 +592,50 @@
           this.state.cartId = qCart;
           localStorage.setItem(cartKey(this.slug), qCart);
         }
-      } catch (_e) {}
-      if (this.state.cartId) {
-        try {
-          var packed = await api(
+      } catch (_eUrl) {}
+      var cartId = this.state.cartId;
+      var catalogPromise = api('/api/order/storefront?slug=' + encodeURIComponent(slug));
+      var sessionPromise = this.restoreCustomerSession();
+      var cartPromise = cartId
+        ? api(
             '/api/order/cart?slug=' +
-              encodeURIComponent(this.slug) +
+              encodeURIComponent(slug) +
               '&cart_id=' +
-              encodeURIComponent(this.state.cartId)
-          );
-          this.applyPacked(packed);
-        } catch (e) {
-          this.state.cartId = '';
-          localStorage.removeItem(cartKey(this.slug));
-        }
+              encodeURIComponent(cartId)
+          ).catch(function () {
+            return null;
+          })
+        : Promise.resolve(null);
+
+      this.state.catalogue = await catalogPromise;
+      this.state.pickupSlots = this.state.catalogue.pickup_slots || [];
+      this.state.earliest = this.state.catalogue.earliest_pickup_date;
+      this.state.cutoffRule =
+        (this.state.catalogue.cutoff && this.state.catalogue.cutoff.rule_label) || '';
+      var cfg = this.storefrontCfg();
+      if (cfg.show_all_categories) {
+        this.state.activeCategoryId = '';
+      } else {
+        this.state.activeCategoryId = this.resolveDefaultCategory();
       }
-      await this.restoreCustomerSession();
+      this.render();
+      if (!this.state.cartId) {
+        var warmSelf = this;
+        this.ensureCart().catch(function () {});
+      }
+      await sessionPromise;
+      var packed = await cartPromise;
+      if (packed) {
+        this.applyPacked(packed);
+        this.refreshCartChrome();
+      }
       try {
         var params2 = new URLSearchParams(location.search);
         if (params2.get('account') === '1' && this.isLoggedIn()) {
           this.state.view = 'account';
+          this.render();
         }
       } catch (_e2) {}
-      this.render();
     } catch (e) {
       this.root.innerHTML =
         '<div class="lp-oe-empty"><p>Online ordering is not available right now.</p><p class="muted">' +
@@ -920,6 +1054,11 @@
     var defaultKg = this.defaultWeightKg(p);
     var kgVal = draft.kg != null && draft.kg !== '' ? draft.kg : '';
     var notesVal = draft.notes || '';
+    var answerMap = {};
+    Object.keys(draft.answers || {}).forEach(function (k) {
+      answerMap[k] = { value: draft.answers[k] };
+    });
+    var addLabel = fastAddButtonLabel(p.questions || [], answerMap, false);
     var hasImg = !!p.image_url;
     var html = '';
     html +=
@@ -985,11 +1124,15 @@
       (notesOpen ? 'true' : 'false') +
       '">Notes</button>';
     html +=
-      '<button type="button" class="lp-oe-fast-add" data-act="add-inline" data-id="' +
+      '<button type="button" class="lp-oe-fast-add' +
+      (addLabel === 'Choose Options' ? ' needs-options' : '') +
+      '" data-act="add-inline" data-id="' +
       esc(id) +
       '"' +
       (this.state.busy ? ' disabled' : '') +
-      '>Add</button>';
+      '>' +
+      esc(addLabel) +
+      '</button>';
     html += '</div></div>';
     if (optionsOpen && hasQs) {
       html += '<div class="lp-oe-fast-extra lp-oe-fast-options">';
@@ -1101,12 +1244,17 @@
     html += '</div>';
     html += this.renderQuestionFields(p.questions || {}, {});
     html += '</div>';
+    var detailAddLabel = fastAddButtonLabel(p.questions || [], {}, false);
     html +=
-      '<button type="button" class="lp-oe-primary" data-act="add-product" data-id="' +
+      '<button type="button" class="lp-oe-primary' +
+      (detailAddLabel === 'Choose Options' ? ' needs-options' : '') +
+      '" data-act="add-product" data-id="' +
       esc(p.id) +
       '"' +
       (this.state.busy ? ' disabled' : '') +
-      '>Add to cart</button>';
+      '>' +
+      (detailAddLabel === 'Add' ? 'Add to cart' : detailAddLabel) +
+      '</button>';
     if ((p.related || []).length && this.state.catalogue) {
       var heading =
         (this.state.catalogue.system && this.state.catalogue.system.cross_sell_heading) ||
@@ -1515,16 +1663,30 @@
           chip.classList.toggle('on', inp.checked);
         }
         self.captureFastDrafts();
+        self.updateFastAddButtons();
+        self.updateProductAddButton();
       });
     });
     this.root.querySelectorAll('[data-fast-row] input, [data-fast-row] textarea, [data-fast-row] select').forEach(function (inp) {
       inp.addEventListener('input', function () {
         self.captureFastDrafts();
+        self.updateFastAddButtons();
       });
       inp.addEventListener('change', function () {
         self.captureFastDrafts();
+        self.updateFastAddButtons();
       });
     });
+    this.root.querySelectorAll('.lp-oe-detail input, .lp-oe-detail textarea, .lp-oe-detail select').forEach(function (inp) {
+      inp.addEventListener('input', function () {
+        self.updateProductAddButton();
+      });
+      inp.addEventListener('change', function () {
+        self.updateProductAddButton();
+      });
+    });
+    this.updateFastAddButtons();
+    this.updateProductAddButton();
     // Preserve checkout fields while typing
     ['oe-name', 'oe-phone', 'oe-email', 'oe-date', 'oe-slot', 'oe-cnotes'].forEach(function (id) {
       var el = document.getElementById(id);
@@ -1900,6 +2062,13 @@
         var product = (self.state.catalogue.products || []).find(function (p) {
           return p.id === productId;
         });
+        var answers = self.fastRowAnswers(row, productId);
+        if (product && missingRequiredQuestions(product.questions || [], answers).length) {
+          self.state.optionsOpen[productId] = true;
+          self.state.msg = 'Choose required options for ' + (product.name || 'this item') + '.';
+          self.render();
+          return;
+        }
         var draft = self.state.fastDrafts[productId] || {};
         var qtyVal = self.needsWeight(product)
           ? 1
@@ -1924,7 +2093,6 @@
         }
         var notesEl = row && row.querySelector('[data-fast-notes]');
         var notesVal = (notesEl && notesEl.value) || draft.notes || null;
-        var answers = self.collectAnswers(row || self.root);
         self.state.busy = true;
         el.disabled = true;
         try {
@@ -1946,10 +2114,23 @@
           self.state.msg = 'Added to cart';
           self.state.fastDrafts[productId] = { qty: '1', kg: '', notes: '', answers: {} };
           self.state.notesOpen[productId] = false;
+          self.state.optionsOpen[productId] = false;
+        } catch (addErr) {
+          var errCode = (addErr && addErr.data && addErr.data.error) || (addErr && addErr.message);
+          if (errCode === 'required_options_missing') {
+            self.state.optionsOpen[productId] = true;
+            self.state.msg = 'Choose required options for ' + (product.name || 'this item') + '.';
+            self.render();
+            return;
+          }
+          self.state.msg = errCode || 'Could not add to cart';
+          self.render();
+          return;
         } finally {
           self.state.busy = false;
         }
-        self.render();
+        self.refreshCartChrome();
+        self.updateFastAddButtons();
         return;
       }
       if (act === 'add-product') {
@@ -1960,6 +2141,11 @@
         var product = (self.state.catalogue.products || []).find(function (p) {
           return p.id === productId;
         });
+        if (product && missingRequiredQuestions(product.questions || [], answers).length) {
+          self.state.msg = 'Choose required options for ' + (product.name || 'this item') + '.';
+          self.render();
+          return;
+        }
         var qtyVal = product && self.needsWeight(product) ? 1 : Number((qtyEl || {}).value || 1);
         var kgVal = kgEl && kgEl.value ? Number(kgEl.value) : null;
         var notesVal = (($('#oe-notes', self.root) || {}).value) || null;
@@ -1994,6 +2180,16 @@
           self.applyPacked(out);
           self.state.msg = 'Added to cart';
           self.state.view = 'shop';
+        } catch (addProdErr) {
+          var prodErrCode = (addProdErr && addProdErr.data && addProdErr.data.error) || (addProdErr && addProdErr.message);
+          if (prodErrCode === 'required_options_missing') {
+            self.state.msg = 'Choose required options for ' + (product.name || 'this item') + '.';
+            self.render();
+            return;
+          }
+          self.state.msg = prodErrCode || 'Could not add to cart';
+          self.render();
+          return;
         } finally {
           self.state.busy = false;
         }
@@ -2254,6 +2450,8 @@
       '.lp-oe-fast-notes-btn{border:1px solid var(--oe-line);background:transparent;color:var(--oe-muted)}',
       '.lp-oe-fast-notes-btn.on{border-color:var(--oe-accent);color:var(--oe-accent);background:color-mix(in srgb,var(--oe-accent) 10%,transparent)}',
       '.lp-oe-fast-add{border:1px solid var(--oe-btn);background:var(--oe-btn);color:var(--oe-btn-text)}',
+      '.lp-oe-fast-add.needs-options{background:transparent;color:var(--oe-accent);border-color:color-mix(in srgb,var(--oe-accent) 45%,var(--oe-line))}',
+      '.lp-oe-primary.needs-options{background:transparent;color:var(--oe-accent);border-color:color-mix(in srgb,var(--oe-accent) 45%,var(--oe-line))}',
       '.lp-oe-fast-add:disabled{opacity:.55;cursor:not-allowed}',
       '.lp-oe-fast-extra{margin-top:12px;padding-top:12px;border-top:1px dashed var(--oe-line);display:grid;gap:10px;animation:lpOeNotesIn .18s ease}',
       '@keyframes lpOeNotesIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}'
