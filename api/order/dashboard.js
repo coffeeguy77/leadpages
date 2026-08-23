@@ -76,10 +76,15 @@ module.exports = async function (req, res) {
       countWhere(base().in('status', ['archived', 'completed']))
     ]);
 
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    const recentSinceIso = sixMonthsAgo.toISOString();
+
     const { data: recent } = await admin
       .from('order_orders')
       .select('id, order_number, customer_name, status, pickup_date, known_subtotal_cents, deposit_paid_cents, has_unknown_prices, editing_state, created_at')
       .eq('order_system_id', system.id)
+      .gte('created_at', recentSinceIso)
       .order('created_at', { ascending: false })
       .limit(12);
 
@@ -135,6 +140,7 @@ module.exports = async function (req, res) {
         orders_archived: ordersArchived
       },
       recent: recent || [],
+      recent_since: recentSinceIso,
       today: todayStr,
       tomorrow: tomorrowStr,
       cutoff: {
