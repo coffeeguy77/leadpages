@@ -108,6 +108,7 @@ module.exports = async function (req, res) {
       }
       if (req.query && req.query.pickup_date) q = q.eq('pickup_date', req.query.pickup_date);
       if (req.query && req.query.price_tbc === '1') q = q.eq('has_unknown_prices', true);
+      if (req.query && req.query.editing_state) q = q.eq('editing_state', req.query.editing_state);
       if (req.query && req.query.q) {
         const s = '%' + String(req.query.q).slice(0, 80) + '%';
         q = q.or(
@@ -294,6 +295,20 @@ module.exports = async function (req, res) {
           site: access.site,
           actor: actor,
           channel: body.channel || 'both'
+        });
+        return json(res, 200, out);
+      }
+
+      if (action === 'send_deposit_reminders') {
+        const { sendBulkDepositReminders } = require('../../lib/order/deposit-reminder');
+        const out = await sendBulkDepositReminders({
+          system: system,
+          site: access.site,
+          actor: actor,
+          order_ids: body.order_ids,
+          manual: body.manual !== false,
+          channel: body.channel || 'both',
+          limit: body.limit || 80
         });
         return json(res, 200, out);
       }
