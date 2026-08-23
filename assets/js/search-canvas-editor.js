@@ -378,7 +378,7 @@
       '<div class="f"><label for="sc-ai-must">Must-include services <span class="hint">one per line — each becomes a tab</span></label><textarea id="sc-ai-must" class="tin" rows="3" placeholder="Water Tanks&#10;Retaining Walls&#10;Garden Maintenance">' +
       esc((S.ai.mustIncludeServices || []).join('\n')) +
       '</textarea></div>' +
-      '<div class="f"><label for="sc-ai-extra">Extra information for AI <span class="hint">optional — AI reads this to create/adjust tabs</span></label><textarea id="sc-ai-extra" class="tin" rows="3" placeholder="e.g. We also do water tanks and rural fencing across the Yass Valley…">' +
+      '<div class="f"><label for="sc-ai-extra">Extra information for AI <span class="hint">paste category copy — AI creates one tab per section (Beef, Lamb, etc.)</span></label><textarea id="sc-ai-extra" class="tin" rows="6" placeholder="Beef&#10;&#10;Free-range grass-fed beef from whole carcass…&#10;&#10;Lamb&#10;&#10;Grass-fed lamb from…">' +
       esc(S.ai.extraInfo || '') +
       '</textarea></div>' +
       '<div class="row"><div class="f"><label>Number of tabs</label><select id="sc-ai-tabs" class="tin">' +

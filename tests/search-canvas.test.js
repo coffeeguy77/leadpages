@@ -219,6 +219,49 @@ test('section-order treats searchCanvas as off-by-default and places after How I
   assert.ok(ord.indexOf('searchCanvas') > ord.indexOf('serviceProcess'));
 });
 
+test('parseExtraInfoSections extracts butcher categories from pasted copy', function () {
+  const { parseExtraInfoSections, extractServicesFromExtraInfo } = require('../lib/brain/search-canvas-compose');
+  const sample =
+    'Beef\n\nGriffith Butchery\'s beef is free range and grass fed, sourced with an emphasis on responsible farming.\n\n' +
+    'Lamb\n\nGriffith Butchery\'s lamb comes from Bellevue at Cootamundra, NSW, where grower Ron Ward has supplied since 1990.\n\n' +
+    'Chicken\n\nThe chicken range centres on quality organic poultry.\n\n' +
+    'give me a quick 2 paragraph review of who griffithbutchery.com.au is\n\n' +
+    'Griffith Butchery is a traditional Canberra butcher focused on quality.';
+  const sections = parseExtraInfoSections(sample);
+  assert.ok(sections.length >= 3, 'expected at least 3 sections, got ' + sections.length);
+  assert.ok(sections.some(function (s) { return /^Beef$/i.test(s.title); }));
+  assert.ok(sections.some(function (s) { return /^Lamb$/i.test(s.title); }));
+  assert.ok(sections[0].body.indexOf('free range') >= 0);
+  const services = extractServicesFromExtraInfo(sample);
+  assert.ok(services.some(function (s) { return /beef/i.test(s); }));
+  const draft = mockSearchCanvasDraft({
+    primaryKeyword: 'Canberra butcher',
+    location: 'Canberra',
+    businessName: 'Griffith Butchery',
+    businessType: 'Butcher',
+    extraInfo: sample,
+    tabCount: 5
+  });
+  assert.ok(draft.tabs.length >= 3);
+  const beefTab = draft.tabs.find(function (t) { return /beef/i.test(t.label); });
+  assert.ok(beefTab, 'beef tab missing');
+  assert.ok(/free range|grass fed/i.test(beefTab.intro), 'beef intro should use source facts');
+  assert.ok(!/planning/i.test(draft.tabs.map(function (t) { return t.label; }).join(' ')));
+});
+
+test('buildSearchCanvasUserPrompt includes structured source blocks', function () {
+  const { buildSearchCanvasUserPrompt } = require('../lib/brain/search-canvas-compose');
+  const prompt = buildSearchCanvasUserPrompt({
+    businessName: 'Griffith Butchery',
+    primaryKeyword: 'Canberra butcher',
+    extraSections: [{ title: 'Beef', body: 'Free range grass fed beef from whole carcass.' }],
+    mustIncludeServices: ['Beef']
+  });
+  assert.ok(prompt.indexOf('STRUCTURED SOURCE MATERIAL') >= 0);
+  assert.ok(prompt.indexOf('### Beef') >= 0);
+  assert.ok(prompt.indexOf('whole carcass') >= 0);
+});
+
 test('extractServicesFromExtraInfo picks water tanks from prose', () => {
   const { extractServicesFromExtraInfo } = require('../lib/brain/search-canvas-compose');
   const found = extractServicesFromExtraInfo('We also do water tanks and rural fencing across the valley.');

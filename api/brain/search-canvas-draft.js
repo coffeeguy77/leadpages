@@ -21,7 +21,9 @@ const {
   buildSearchCanvasSystemPrompt,
   buildSearchCanvasUserPrompt,
   mockSearchCanvasDraft,
-  extractServicesFromExtraInfo
+  extractServicesFromExtraInfo,
+  parseExtraInfoSections,
+  parseExtraInfoOverview
 } = require('../../lib/brain/search-canvas-compose');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -238,6 +240,9 @@ module.exports = async function searchCanvasDraft(req, res) {
       .trim();
   const businessName = site.business_name || cfg.businessName || cfg.business || cfg.name || '';
   const businessType = String(body.businessType || cfg.trade || '').trim();
+  const extraInfo = String(body.extraInfo || body.context || '').trim();
+  const extraSections = parseExtraInfoSections(extraInfo);
+  const extraOverview = parseExtraInfoOverview(extraInfo);
   const brief = {
     businessName: businessName,
     businessType: businessType,
@@ -247,8 +252,21 @@ module.exports = async function searchCanvasDraft(req, res) {
     services: servicesMerged.slice(0, 12),
     mustIncludeServices: mustIncludeServices,
     pages: pagesFromSite(site),
-    extraInfo: String(body.extraInfo || body.context || '').trim(),
-    tabCount: Math.max(3, Math.min(12, Number(body.tabCount) || Math.max(5, mustIncludeServices.length || 0))),
+    extraInfo: extraInfo,
+    extraSections: extraSections,
+    extraOverview: extraOverview,
+    tabCount: Math.max(
+      3,
+      Math.min(
+        12,
+        Math.max(
+          5,
+          extraSections.length || 0,
+          mustIncludeServices.length || 0,
+          Number(body.tabCount) || 0
+        )
+      )
+    ),
     tone: String(body.tone || 'practical and professional').trim(),
     includeCta: body.includeCta !== false,
     includeFaq: !!body.includeFaq
@@ -279,7 +297,7 @@ module.exports = async function searchCanvasDraft(req, res) {
     site: site,
     actor: actor,
     contextSlices: ['site.identity', 'site.brand', 'site.areas'],
-    temperature: 0.65,
+    temperature: 0.4,
     providerOverride: providerOverride,
     messages: [
       { role: 'system', content: buildSearchCanvasSystemPrompt() },
