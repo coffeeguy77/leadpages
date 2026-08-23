@@ -42,4 +42,16 @@ describe('header logo, section stroke, buy-bar gap', () => {
     assert.match(js, /#lpFooter\.lp-foot,#lpFooter/);
     assert.match(js, /padding-bottom:calc\(28px \+ 96px\)/);
   });
+
+  it('footer logo ink colour respects site config (not forced white)', () => {
+    const css = fs.readFileSync(path.join(ROOT, 'assets/lp-logo.css'), 'utf8');
+    const logoJs = fs.readFileSync(path.join(ROOT, 'assets/lp-logo.js'), 'utf8');
+    const manage = fs.readFileSync(path.join(ROOT, 'manage.html'), 'utf8');
+    const demo = fs.readFileSync(path.join(ROOT, 'marketplace/demos/demo-shared.js'), 'utf8');
+    assert.match(css, /data-lp-logo-ink="light"\]:not\(\.lp-foot-logo\)/);
+    assert.match(css, /#lpFooter/);
+    assert.match(logoJs, /explicit === 'custom'/);
+    assert.match(manage, /inkAttr.*custom/);
+    assert.match(demo, /'custom':'light'/);
+  });
 });

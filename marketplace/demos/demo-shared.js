@@ -1809,7 +1809,7 @@ function applyCfg(C){
       if(!el) return;
       el.classList.add('lp-foot-logo');
       el.setAttribute('data-lp-logo-accent',accent);
-      el.setAttribute('data-lp-logo-ink','light');
+      el.setAttribute('data-lp-logo-ink',(/^#[0-9a-fA-F]{6}$/.test(F.ink||''))?'custom':'light');
       el.style.setProperty('--lp-logo-accent',accent);
       el.style.setProperty('--lp-logo-ink',ink);
       _sizeLogo(el);

@@ -45,10 +45,12 @@
 .nav .leadpages-logo,
 .sitenav .lp-logo-wrap,
 .sitenav .leadpages-logo,
-footer .lp-logo-wrap,
-footer .leadpages-logo,
-.mkt-site-footer .lp-logo-wrap,
-.mkt-site-footer .leadpages-logo {
+footer .lp-logo-wrap:not(.lp-foot-logo),
+footer .leadpages-logo:not(.lp-foot-logo),
+#lpFooter .lp-logo-wrap,
+#lpFooter .leadpages-logo,
+.mkt-site-footer .lp-logo-wrap:not(.lp-foot-logo),
+.mkt-site-footer .leadpages-logo:not(.lp-foot-logo) {
   width: auto !important;
   max-width: none !important;
   height: var(--lp-logo-height) !important;
@@ -315,10 +317,10 @@ body[data-pt-template] .pt-lp-disclosure-logo.lp-logo-pulse #outer-circle {
 }
 
 /* Marketing / dark header variants */
-.lp-logo-wrap[data-lp-logo-ink="light"] {
+.lp-logo-wrap[data-lp-logo-ink="light"]:not(.lp-foot-logo) {
   --lp-logo-ink: #ffffff !important;
 }
 
-.lp-logo-wrap[data-lp-logo-ink="dark"] {
+.lp-logo-wrap[data-lp-logo-ink="dark"]:not(.lp-foot-logo) {
   --lp-logo-ink: #13161b !important;
 }
