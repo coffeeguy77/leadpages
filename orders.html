@@ -275,38 +275,54 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
 .no-layout-toggle{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px}
 .no-layout-toggle .lbl{font-size:var(--fs-xs);font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-faint);margin-right:4px}
 .no-layout-btn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
-.no-fast-list{display:flex;flex-direction:column;gap:10px;margin:0 0 18px}
+.no-fast-list{display:flex;flex-direction:column;gap:12px;margin:0 0 18px}
 .no-fast-row{
-  border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--surface);
-  transition:border-color .15s ease,box-shadow .15s ease;
+  border:1px solid var(--line);border-radius:14px;padding:14px 16px;background:var(--surface);
+  box-shadow:0 6px 18px rgba(28,36,30,.03);
 }
-.no-fast-row.is-notes-open{border-color:color-mix(in srgb,var(--accent) 35%,var(--line))}
-.no-fast-main{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px 14px;align-items:center}
+.no-fast-main{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px 16px;align-items:start}
 .no-fast-info{min-width:0}
 .no-fast-info strong{display:block;font-size:var(--fs-md);line-height:1.25;margin:0 0 4px}
 .no-fast-info .meta{font-size:var(--fs-xs);color:var(--ink-soft);line-height:1.35}
 .no-fast-info .prompt{margin:4px 0 0;font-size:var(--fs-xs);color:var(--accent);font-weight:600}
-.no-fast-controls{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;justify-content:flex-end}
-.no-fast-field{display:grid;gap:3px;font-size:10px;font-weight:700;color:var(--ink-faint);letter-spacing:.03em;text-transform:uppercase}
-.no-fast-field input{width:72px;min-height:40px;padding:8px 10px;text-align:center}
-.no-fast-packchip{display:inline-flex;align-items:center;min-height:40px;padding:0 12px;border-radius:10px;border:1px dashed var(--line);color:var(--accent);font:700 11px/1 var(--font-ui)}
-.no-fast-notes-btn,.no-fast-extra{margin-top:10px}
-.no-fast-extra{padding-top:10px;border-top:1px dashed var(--line);display:grid;gap:8px}
-.no-stepper{display:inline-flex;align-items:center;border:1px solid var(--line-strong);border-radius:10px;overflow:hidden;background:var(--input-bg,transparent)}
+.no-fast-controls{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;justify-content:flex-end}
+.no-fast-field{display:grid;gap:4px;font-size:10px;font-weight:700;color:var(--ink-faint);letter-spacing:.03em;text-transform:uppercase}
+.no-fast-packchip{display:inline-flex;align-items:center;min-height:44px;padding:0 12px;border-radius:10px;border:1px dashed var(--line);color:var(--accent);font:700 11px/1 var(--font-ui)}
+.no-fast-notes-row{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:center;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
+.no-fast-notes-row .lbl{font-size:var(--fs-sm);font-weight:700;color:var(--ink-soft);white-space:nowrap}
+.no-fast-notes-row input{width:100%;max-width:none;padding:9px 11px}
+.no-stepper{display:inline-flex;align-items:stretch;border:1px solid var(--line-strong);border-radius:10px;overflow:visible;background:var(--input-bg,transparent);min-height:44px}
 .no-stepper button{
-  appearance:none;border:0;background:transparent;color:var(--ink);width:36px;height:40px;
-  font-size:18px;line-height:1;cursor:pointer;padding:0;
+  appearance:none;border:0;background:transparent;color:var(--ink);width:40px;flex:none;
+  font-size:20px;line-height:1;cursor:pointer;padding:0;
 }
 .no-stepper button:hover{background:color-mix(in srgb,var(--accent) 10%,transparent)}
-.no-stepper input{
-  width:52px;border:0;border-left:1px solid var(--line);border-right:1px solid var(--line);
-  border-radius:0;text-align:center;padding:8px 4px;min-height:40px;background:transparent;
+.no-stepper input[type="number"]{
+  width:4.8rem;min-width:4.8rem;border:0;border-left:1px solid var(--line);border-right:1px solid var(--line);
+  border-radius:0;text-align:center;padding:8px 6px;min-height:44px;background:transparent;
+  font-size:var(--fs-base);font-weight:600;-moz-appearance:textfield;
 }
+.no-stepper input[type="number"]::-webkit-outer-spin-button,
+.no-stepper input[type="number"]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.no-opt-group{margin:12px 0 0;padding-top:12px;border-top:1px dashed var(--line)}
+.no-opt-group:first-child{margin-top:12px}
+.no-opt-title{margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-faint)}
+.no-opt-list{display:flex;flex-wrap:wrap;gap:8px}
+.no-opt-chip{
+  display:inline-flex;align-items:center;position:relative;
+  padding:9px 14px;border-radius:999px;border:1px solid var(--line-strong);
+  background:var(--surface);font-size:var(--fs-sm);font-weight:600;color:var(--ink);cursor:pointer;
+  transition:border-color .12s ease,background .12s ease;
+}
+.no-opt-chip input{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+.no-opt-chip.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--ink)}
+.no-opt-chip:hover{border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
 @media(max-width:720px){
   .no-fast-main{grid-template-columns:1fr}
   .no-fast-controls{justify-content:flex-start}
+  .no-fast-notes-row{grid-template-columns:1fr}
 }
-.line-opt{margin:8px 0 0;padding:8px 0 0;border-top:1px dashed var(--line)}
+.line-opt{margin:0;padding:0;border-top:0}
 .line-opt .field{margin:0 0 8px}
 .om-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px}
 .om-tabs button{font-size:var(--fs-sm);padding:7px 12px}
@@ -1333,7 +1349,7 @@ body.embed .hub{min-height:70vh}
     productQuestions: [],
     noSelectedCat: '',
     noOrderMode: 'fast',
-    noFastNotesOpen: {},
+    noFastDrafts: {},
     voidOrderId: null,
     depositLinkOrderId: null,
     inhousePaymentOrderId: null,
@@ -2009,8 +2025,8 @@ body.embed .hub{min-height:70vh}
       if (kgWrap) kgWrap.classList.toggle('hide', !p || !needsW);
       if (optHost) {
         if (p) {
-          optHost.innerHTML = '<div class="line-opt"></div>';
-          renderLineOptions(optHost, p);
+          renderLineOptions(optHost, p, null, p.id);
+          wireOptionChips(optHost);
         } else {
           optHost.innerHTML = '';
         }
@@ -2018,8 +2034,7 @@ body.embed .hub{min-height:70vh}
       var kgInput = panel.querySelector('[data-om-weight]');
       if (kgInput && p && needsW) {
         var minK = minimumKgForProduct(p);
-        var defW = p.default_weight_kg != null ? Number(p.default_weight_kg) : null;
-        if (!kgInput.value && (defW || minK)) kgInput.value = String(defW != null && isFinite(defW) ? defW : (minK || ''));
+        if (!kgInput.value) kgInput.value = formatKgDefault(p);
         kgInput.min = minK || 0.1;
       }
     }
@@ -2197,7 +2212,7 @@ body.embed .hub{min-height:70vh}
       html += '<div class="field" style="margin:0" data-om-kg-wrap><label>Weight kg</label><input data-om-weight type="number" min="0" step="0.1" inputmode="decimal" placeholder="kg"></div>';
       html += '<button class="btn solid" type="button" id="om-add-item-btn">Add product</button>';
       html += '</div>';
-      html += '<div class="field full" style="margin:10px 0 0"><label>Line notes (optional)</label><input data-om-notes placeholder="Notes for this line"></div>';
+      html += '<div class="field full" style="margin:10px 0 0"><label>Notes:</label><input data-om-notes placeholder="Optional"></div>';
       html += '<div data-om-add-opt></div>';
       html += '</div>';
     }
@@ -2507,6 +2522,72 @@ body.embed .hub{min-height:70vh}
     return 'Weight kg';
   }
 
+  function formatKgDefault(p){
+    var d = defaultWeightForProduct(p);
+    return String(Math.round(d * 100) / 100).replace(/\.0$/, '');
+  }
+
+  function parseQuestionChoices(q){
+    try {
+      return Array.isArray(q.options) ? q.options : (typeof q.options === 'string' ? JSON.parse(q.options) : []);
+    } catch (_e) {
+      return [];
+    }
+  }
+
+  function choiceLabelForOption(o){
+    if (typeof o === 'string') return o;
+    var label = (o && (o.label || o.value)) || '';
+    var price = Number(o && o.price_cents) || 0;
+    if (price > 0) return label + ' (+' + formatAud(price) + ')';
+    return label;
+  }
+
+  function captureNoFastDrafts(){
+    var host = $('no-fast-list');
+    if (!host) return;
+    var drafts = state.noFastDrafts || (state.noFastDrafts = {});
+    host.querySelectorAll('[data-fast-row]').forEach(function(row){
+      var id = row.getAttribute('data-fast-row');
+      if (!id) return;
+      drafts[id] = {
+        qty: (row.querySelector('[data-fast-qty]') || {}).value,
+        kg: (row.querySelector('[data-fast-kg]') || {}).value,
+        notes: (row.querySelector('[data-fast-notes]') || {}).value,
+        touched: row.getAttribute('data-touched') === '1',
+        answers: collectLineAnswers(row)
+      };
+    });
+  }
+
+  function wireOptionChips(root){
+    (root || document).querySelectorAll('.no-opt-chip input').forEach(function(inp){
+      inp.addEventListener('change', function(){
+        if (inp.type === 'radio') {
+          var list = inp.closest('.no-opt-list');
+          if (list) {
+            list.querySelectorAll('.no-opt-chip').forEach(function(ch){ ch.classList.remove('on'); });
+          }
+          if (inp.checked) {
+            var chip = inp.closest('.no-opt-chip');
+            if (chip) chip.classList.add('on');
+          }
+        } else if (inp.type === 'checkbox') {
+          var chip = inp.closest('.no-opt-chip');
+          if (chip) chip.classList.toggle('on', inp.checked);
+        }
+        var row = inp.closest('[data-fast-row]') || inp.closest('.line-row');
+        if (row) row.setAttribute('data-touched', '1');
+        updateNoSubmitEnabled();
+      });
+    });
+  }
+
+  function markFastRowTouched(row){
+    if (row) row.setAttribute('data-touched', '1');
+    updateNoSubmitEnabled();
+  }
+
   function isNoFastMode(){
     return state.noOrderMode === 'fast';
   }
@@ -2670,9 +2751,11 @@ body.embed .hub{min-height:70vh}
   }
 
   function renderNoFastList(){
+    captureNoFastDrafts();
     var host = $('no-fast-list');
     if (!host) return;
     var list = productsForNoGrid();
+    var drafts = state.noFastDrafts || {};
     if (!list.length) {
       host.innerHTML = '<p class="notice">No products in this category.</p>';
       return;
@@ -2683,14 +2766,17 @@ body.embed .hub{min-height:70vh}
       var pack = packLabelForProduct(p);
       var prompt = quantityPromptForProduct(p);
       var minK = minimumKgForProduct(p);
-      var defaultKg = defaultWeightForProduct(p);
+      var defaultKg = formatKgDefault(p);
+      var draft = drafts[p.id] || {};
       var price = p.pricing_method === 'per_weight'
         ? formatAud(p.price_per_kg_cents) + '/kg'
         : p.pricing_method === 'price_tbc' ? 'TBC' : formatAud(p.price_cents);
-      var meta = price + (minK && !needsW ? ' · min ' + minK + ' kg' : '');
-      var notesOpen = !!state.noFastNotesOpen[p.id];
-      var hasQs = questionsForProduct(p.id).length > 0;
-      var html = '<article class="no-fast-row' + (notesOpen ? ' is-notes-open' : '') + '" data-fast-row="' + esc(p.id) + '">';
+      var meta = price + (minK ? ' · min ' + String(minK).replace(/\.0$/, '') + ' kg' : '');
+      var qtyVal = draft.qty != null && draft.qty !== '' ? draft.qty : '';
+      var kgVal = draft.kg != null && draft.kg !== '' ? draft.kg : (needsW ? defaultKg : '');
+      var notesVal = draft.notes || '';
+      var touched = draft.touched ? ' data-touched="1"' : '';
+      var html = '<article class="no-fast-row"' + touched + ' data-fast-row="' + esc(p.id) + '">';
       html += '<div class="no-fast-main">';
       html += '<div class="no-fast-info"><strong>' + esc(p.name) + '</strong>';
       if (pack) html += '<span class="meta"> · ' + esc(pack) + ' pack</span>';
@@ -2699,25 +2785,16 @@ body.embed .hub{min-height:70vh}
       html += '</div>';
       html += '<div class="no-fast-controls">';
       if (showQty) {
-        html += '<label class="no-fast-field">Qty' + noStepperHtml({ min: 0, step: 1, value: '', dataAttr: 'data-fast-qty' }) + '</label>';
+        html += '<label class="no-fast-field">Qty' + noStepperHtml({ min: 0, step: 1, value: qtyVal, dataAttr: 'data-fast-qty' }) + '</label>';
         if (pack) html += '<span class="no-fast-packchip" title="Fixed pack size">' + esc(pack) + '</span>';
       }
       if (needsW) {
         html += '<label class="no-fast-field">' + esc(kgFieldLabelForProduct(p)) +
-          noStepperHtml({ min: minK || 0.1, step: 0.1, value: '', dataAttr: 'data-fast-kg' }) + '</label>';
-      }
-      if (hasQs) {
-        html += '<button type="button" class="btn ghost no-fast-notes-btn' + (notesOpen ? ' on' : '') + '" data-fast-notes-toggle>Options</button>';
-      } else {
-        html += '<button type="button" class="btn ghost no-fast-notes-btn' + (notesOpen ? ' on' : '') + '" data-fast-notes-toggle>Notes</button>';
+          noStepperHtml({ min: minK || 0.1, step: 0.1, value: kgVal, dataAttr: 'data-fast-kg' }) + '</label>';
       }
       html += '</div></div>';
-      if (notesOpen) {
-        html += '<div class="no-fast-extra">';
-        html += '<div class="field" style="margin:0"><label>Line notes</label><input data-fast-notes placeholder="Optional"></div>';
-        html += '<div class="line-opt" data-fast-opt></div>';
-        html += '</div>';
-      }
+      html += '<div class="line-opt" data-fast-opt></div>';
+      html += '<div class="no-fast-notes-row"><span class="lbl">Notes:</span><input data-fast-notes placeholder="Optional" value="' + esc(notesVal) + '"></div>';
       html += '</article>';
       return html;
     }).join('');
@@ -2725,20 +2802,29 @@ body.embed .hub{min-height:70vh}
       var pid = row.getAttribute('data-fast-row');
       var product = (state.products || []).find(function(x){ return x.id === pid; });
       var optHost = row.querySelector('[data-fast-opt]');
-      if (product && optHost) renderLineOptions(row, product);
-      row.querySelectorAll('input,select,textarea').forEach(function(el){
-        el.addEventListener('input', updateNoSubmitEnabled);
-        el.addEventListener('change', updateNoSubmitEnabled);
-      });
-      var notesBtn = row.querySelector('[data-fast-notes-toggle]');
-      if (notesBtn) {
-        notesBtn.addEventListener('click', function(){
-          state.noFastNotesOpen[pid] = !state.noFastNotesOpen[pid];
-          renderNoFastList();
-        });
+      if (product && optHost) {
+        renderLineOptions(optHost, product, (drafts[pid] && drafts[pid].answers) || null, product.id);
       }
+      row.querySelectorAll('input,select,textarea').forEach(function(el){
+        el.addEventListener('input', function(){ markFastRowTouched(row); });
+        el.addEventListener('change', function(){ markFastRowTouched(row); });
+      });
     });
     wireNoSteppers(host);
+    wireOptionChips(host);
+  }
+
+  function fastRowHasIntent(row, product){
+    if (!row || !product) return false;
+    if (row.getAttribute('data-touched') === '1') return true;
+    if (Object.keys(collectLineAnswers(row)).length) return true;
+    var notes = (row.querySelector('[data-fast-notes]') || {}).value;
+    if (notes && String(notes).trim()) return true;
+    if (productShowsQuantity(product)) {
+      var qty = Number((row.querySelector('[data-fast-qty]') || {}).value) || 0;
+      if (qty > 0) return true;
+    }
+    return false;
   }
 
   function collectFastOrderItems(opts){
@@ -2751,6 +2837,7 @@ body.embed .hub{min-height:70vh}
       if (!product_id) return;
       var product = (state.products || []).find(function(x){ return x.id === product_id; });
       if (!product) return;
+      if (!fastRowHasIntent(row, product) && !opts.partialOk) return;
       var needsW = productNeedsWeight(product);
       var showQty = productShowsQuantity(product);
       var qtyEl = row.querySelector('[data-fast-qty]');
@@ -2760,9 +2847,9 @@ body.embed .hub{min-height:70vh}
       var wRaw = kgEl && kgEl.value;
       var hasQty = showQty && qty > 0;
       var hasKg = needsW && wRaw !== '' && isFinite(Number(wRaw)) && Number(wRaw) > 0;
-      if (!hasQty && !hasKg) return;
+      if (!hasQty && !hasKg && !opts.partialOk) return;
       if (needsW && !hasKg && !opts.partialOk) return;
-      if (showQty && !hasQty && !opts.partialOk) return;
+      if (showQty && !hasQty && !needsW && !opts.partialOk) return;
       var line = { product_id: product_id, quantity: needsW ? 1 : qty, answers: collectLineAnswers(row) };
       if (hasKg) line.requested_weight_kg = Number(wRaw);
       var notes = notesEl && notesEl.value.trim();
@@ -2780,7 +2867,7 @@ body.embed .hub{min-height:70vh}
       if (err) return;
       var product_id = row.getAttribute('data-fast-row');
       var product = (state.products || []).find(function(x){ return x.id === product_id; });
-      if (!product) return;
+      if (!product || !fastRowHasIntent(row, product)) return;
       var needsW = productNeedsWeight(product);
       var showQty = productShowsQuantity(product);
       var qtyEl = row.querySelector('[data-fast-qty]');
@@ -2805,34 +2892,71 @@ body.embed .hub{min-height:70vh}
     return err;
   }
 
-  function renderLineOptions(row, product){
-    var host = row.querySelector('.line-opt');
+  function renderLineOptions(host, product, savedAnswers, scopeId){
     if (!host) return;
     var qs = questionsForProduct(product.id);
     if (!qs.length) { host.innerHTML = ''; return; }
+    savedAnswers = savedAnswers || {};
+    scopeId = scopeId || product.id;
     host.innerHTML = qs.map(function(q){
-      var choices = [];
-      try { choices = Array.isArray(q.options) ? q.options : (typeof q.options === 'string' ? JSON.parse(q.options) : []); } catch (_e) {}
+      var choices = parseQuestionChoices(q);
       if (q.field_type === 'radio' || q.field_type === 'dropdown' || q.field_type === 'select') {
-        var opts = '<option value="">Choose…</option>' + choices.map(function(c){
-          var lab = (c && c.label) || c;
-          var val = (c && c.value != null) ? c.value : lab;
-          return '<option value="' + esc(val) + '">' + esc(lab) + '</option>';
-        }).join('');
-        return '<div class="field"><label>' + esc(q.label) + '</label><select data-q="' + esc(q.key) + '" data-qtype="' + esc(q.field_type) + '">' + opts + '</select></div>';
+        var saved = savedAnswers[q.key];
+        var savedVal = saved && saved.value != null ? saved.value : '';
+        var html = '<div class="no-opt-group"><p class="no-opt-title">' + esc(q.label) + (q.required ? ' *' : '') + '</p><div class="no-opt-list">';
+        choices.forEach(function(c){
+          var lab = choiceLabelForOption(c);
+          var val = (c && c.value != null) ? c.value : (typeof c === 'string' ? c : lab);
+          var on = String(savedVal) === String(val);
+          var name = 'q-' + scopeId + '-' + q.key;
+          html += '<label class="no-opt-chip' + (on ? ' on' : '') + '">' +
+            '<input type="radio" name="' + esc(name) + '" data-q="' + esc(q.key) + '" data-qtype="' + esc(q.field_type) + '" value="' + esc(val) + '"' + (on ? ' checked' : '') + '>' +
+            '<span>' + esc(lab) + '</span></label>';
+        });
+        html += '</div></div>';
+        return html;
       }
-      return '<div class="field"><label>' + esc(q.label) + '</label><input data-q="' + esc(q.key) + '" data-qtype="' + esc(q.field_type) + '"></div>';
+      if (q.field_type === 'checkboxes') {
+        var selected = [];
+        var sv = savedAnswers[q.key] && savedAnswers[q.key].value;
+        if (Array.isArray(sv)) selected = sv.map(String);
+        else if (sv != null && sv !== '') selected = String(sv).split(',').map(function(x){ return x.trim(); }).filter(Boolean);
+        var html = '<div class="no-opt-group"><p class="no-opt-title">' + esc(q.label) + (q.required ? ' *' : '') + '</p><div class="no-opt-list">';
+        choices.forEach(function(c){
+          var lab = choiceLabelForOption(c);
+          var val = (c && c.value != null) ? c.value : (typeof c === 'string' ? c : lab);
+          var on = selected.indexOf(String(val)) >= 0;
+          html += '<label class="no-opt-chip' + (on ? ' on' : '') + '">' +
+            '<input type="checkbox" data-q-check="' + esc(q.key) + '" data-qtype="' + esc(q.field_type) + '" value="' + esc(val) + '"' + (on ? ' checked' : '') + '>' +
+            '<span>' + esc(lab) + '</span></label>';
+        });
+        html += '</div></div>';
+        return html;
+      }
+      var qv = savedAnswers[q.key] && savedAnswers[q.key].value != null ? savedAnswers[q.key].value : '';
+      return '<div class="field"><label>' + esc(q.label) + '</label><input data-q="' + esc(q.key) + '" data-qtype="' + esc(q.field_type) + '" value="' + esc(qv) + '"></div>';
     }).join('');
   }
 
   function collectLineAnswers(row){
     var answers = {};
     row.querySelectorAll('[data-q]').forEach(function(el){
+      if (el.type === 'radio' && !el.checked) return;
       var key = el.getAttribute('data-q');
       var val = el.value;
       if (!key || val === '') return;
-      var label = el.closest('.field') && el.closest('.field').querySelector('label');
-      answers[key] = { value: val, label: label ? label.textContent : key, field_type: el.getAttribute('data-qtype') || 'short_text' };
+      var group = el.closest('.no-opt-group');
+      var qLabel = group && group.querySelector('.no-opt-title') ? group.querySelector('.no-opt-title').textContent.replace(/\s*\*$/, '').trim() : key;
+      var chip = el.closest('.no-opt-chip');
+      var choiceLabel = chip && chip.querySelector('span') ? chip.querySelector('span').textContent.trim() : val;
+      answers[key] = { value: val, label: qLabel, choice_label: choiceLabel, field_type: el.getAttribute('data-qtype') || 'short_text' };
+    });
+    row.querySelectorAll('[data-q-check]').forEach(function(el){
+      var key = el.getAttribute('data-q-check');
+      if (!key) return;
+      if (!answers[key]) answers[key] = { value: [], label: key, field_type: 'checkboxes' };
+      if (!Array.isArray(answers[key].value)) answers[key].value = [];
+      if (el.checked) answers[key].value.push(el.value);
     });
     return answers;
   }
@@ -2844,19 +2968,19 @@ body.embed .hub{min-height:70vh}
     row.className = 'line-row';
     row.setAttribute('data-product-id', product.id);
     var minK = minimumKgForProduct(product);
-    var defW = product.default_weight_kg != null ? Number(product.default_weight_kg) : null;
-    var wVal = productNeedsWeight(product) ? String(defW != null && isFinite(defW) ? defW : (minK || '')) : '';
+    var wVal = productNeedsWeight(product) ? formatKgDefault(product) : '';
     row.innerHTML =
       '<div class="field" style="margin:0;grid-column:1/-1"><label>Product</label><strong>' + esc(product.name) + '</strong>' +
         '<input type="hidden" data-f="product_id" value="' + esc(product.id) + '"></div>' +
       '<div class="field" style="margin:0"><label>Qty</label><input data-f="quantity" type="number" min="1" step="1" value="1"></div>' +
       '<div class="field" style="margin:0"><label>Weight kg' + (minK ? ' (min ' + minK + ')' : '') + '</label><input data-f="requested_weight_kg" type="number" min="' +
         (minK || 0) + '" step="0.1" inputmode="decimal" placeholder="' + (minK ? String(minK) : 'optional') + '" value="' + esc(wVal) + '"></div>' +
-      '<div class="field" style="margin:0"><label>Notes</label><input data-f="notes" placeholder="optional"></div>' +
+      '<div class="field" style="margin:0"><label>Notes:</label><input data-f="notes" placeholder="Optional"></div>' +
       '<button class="btn ghost" type="button" data-remove>Remove</button>' +
       '<div class="line-opt" style="grid-column:1/-1"></div>';
     host.appendChild(row);
-    renderLineOptions(row, product);
+    renderLineOptions(row.querySelector('.line-opt'), product, null, product.id);
+    wireOptionChips(row);
     row.querySelector('[data-remove]').addEventListener('click', function(){
       host.removeChild(row);
       updateNoSubmitEnabled();
@@ -3317,7 +3441,7 @@ body.embed .hub{min-height:70vh}
       toast(note, 'ok');
       $('new-order-form').reset();
       $('no-lines').innerHTML = '';
-      state.noFastNotesOpen = {};
+      state.noFastDrafts = {};
       document.querySelectorAll('input[name="no-pay-action"]').forEach(function(r){ r.checked = false; });
       if ($('no-inhouse-panel')) $('no-inhouse-panel').classList.add('hide');
       updateNoSubmitEnabled();
@@ -4970,7 +5094,7 @@ body.embed .hub{min-height:70vh}
         try { await loadProductsCache({ includeQuestions: true }); } catch (_e) {}
         try { await loadPickupWindows(); } catch (_e2) {}
         state.noSelectedCat = '';
-        state.noFastNotesOpen = {};
+        state.noFastDrafts = {};
         renderNoCatPills();
         wireNoLayoutToggle();
         applyNoOrderLayout();
