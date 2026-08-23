@@ -463,6 +463,10 @@
       this.state.earliest = this.state.catalogue.earliest_pickup_date;
       this.state.cutoffRule =
         (this.state.catalogue.cutoff && this.state.catalogue.cutoff.rule_label) || '';
+      this.state.lockCountdown =
+        (this.state.catalogue.lock_countdown && this.state.catalogue.lock_countdown.enabled
+          ? this.state.catalogue.lock_countdown
+          : null);
       var cfg = this.storefrontCfg();
       // Default: category view only (no "All") — start on default / first category.
       if (cfg.show_all_categories) {
@@ -614,6 +618,41 @@
     return html;
   };
 
+  OrderStorefront.prototype.renderLockCountdownBanner = function () {
+    var lc =
+      this.state.lockCountdown ||
+      (this.state.catalogue && this.state.catalogue.lock_countdown) ||
+      null;
+    if (!lc || !lc.enabled || lc.show_on_shop === false) return '';
+    var html = '<div class="lp-oe-lock-countdown" id="oe-lock-countdown" aria-live="polite">';
+    html += '<div class="lp-oe-lock-copy">';
+    html += '<strong class="lp-oe-lock-title">' + esc(lc.title || 'Order countdown') + '</strong>';
+    if (lc.locked) {
+      html +=
+        '<p class="lp-oe-lock-msg">' +
+        esc(lc.locked_message || 'Ordering is closed until the next countdown window opens.') +
+        '</p>';
+    } else if (lc.deadline_at) {
+      var ms = new Date(lc.deadline_at).getTime() - Date.now();
+      html += '<p class="lp-oe-lock-msg">' + esc(lc.message || 'Get your order in by') + '</p>';
+      html +=
+        '<div class="lp-oe-lock-clock' +
+        (ms <= 0 ? ' is-locked' : ms <= 8 * 3600000 ? ' is-soon' : '') +
+        '">';
+      html += '<span class="lbl">Time left</span>';
+      html +=
+        '<span class="val" id="oe-lock-countdown-val">' +
+        esc(ms <= 0 ? 'Locked' : lc.countdown_label || this.formatCountdown(ms)) +
+        '</span>';
+      if (lc.display_at) html += '<span class="meta">Locks ' + esc(lc.display_at) + '</span>';
+      html += '</div>';
+    } else {
+      html += '<p class="lp-oe-lock-msg">' + esc(lc.message || 'Get your order in by') + '</p>';
+    }
+    html += '</div></div>';
+    return html;
+  };
+
   OrderStorefront.prototype.render = function () {
     var c = this.state.catalogue;
     var biz = (c && c.site && c.site.business_name) || 'Order';
@@ -657,6 +696,8 @@
         esc(this.state.msg) +
         '</p>';
     }
+
+    html += this.renderLockCountdownBanner();
 
     html += '<div class="lp-oe-layout">';
     html += '<div class="lp-oe-main">';
@@ -1537,9 +1578,23 @@
       var tickSelf = this;
       this._cutoffTick = setInterval(function () {
         var el = document.getElementById('oe-cutoff-val');
-        if (!el || !tickSelf.state.cutoffPreview || !tickSelf.state.cutoffPreview.effective_cutoff_at) return;
-        var ms = new Date(tickSelf.state.cutoffPreview.effective_cutoff_at).getTime() - Date.now();
-        el.textContent = tickSelf.formatCountdown(ms);
+        if (el && tickSelf.state.cutoffPreview && tickSelf.state.cutoffPreview.effective_cutoff_at) {
+          var ms = new Date(tickSelf.state.cutoffPreview.effective_cutoff_at).getTime() - Date.now();
+          el.textContent = tickSelf.formatCountdown(ms);
+        }
+        var lcEl = document.getElementById('oe-lock-countdown-val');
+        var lc =
+          tickSelf.state.lockCountdown ||
+          (tickSelf.state.catalogue && tickSelf.state.catalogue.lock_countdown);
+        if (lcEl && lc && lc.deadline_at && !lc.locked) {
+          var lcMs = new Date(lc.deadline_at).getTime() - Date.now();
+          lcEl.textContent = lcMs <= 0 ? 'Locked' : tickSelf.formatCountdown(lcMs);
+          var wrap = lcEl.closest('.lp-oe-lock-clock');
+          if (wrap) {
+            wrap.classList.toggle('is-locked', lcMs <= 0);
+            wrap.classList.toggle('is-soon', lcMs > 0 && lcMs <= 8 * 3600000);
+          }
+        }
       }, 30000);
     }
     if (this.state.authModal && this.state.authModal.open) {
@@ -2153,6 +2208,17 @@
       '.lp-oe-cutoff-timer{margin:0;color:var(--oe-muted)}',
       '.lp-oe-cutoff-timer.is-soon{color:#b45309;border-top:1px dashed color-mix(in srgb,#d97706 35%,var(--oe-line));padding-top:8px;margin-top:8px}',
       '.lp-oe-cutoff-timer.is-locked{color:#b91c1c}',
+      '.lp-oe-lock-countdown{margin:0 0 14px;padding:14px 16px;border-radius:12px;border:1px solid color-mix(in srgb,var(--oe-accent) 30%,var(--oe-line));background:color-mix(in srgb,var(--oe-accent) 8%,var(--oe-card));display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between}',
+      '.lp-oe-lock-countdown.is-soon{border-color:color-mix(in srgb,#d97706 45%,var(--oe-line));background:color-mix(in srgb,#d97706 8%,var(--oe-card))}',
+      '.lp-oe-lock-countdown.is-locked{border-color:color-mix(in srgb,#dc2626 40%,var(--oe-line));background:color-mix(in srgb,#dc2626 6%,var(--oe-card))}',
+      '.lp-oe-lock-title{display:block;font-size:1.05rem;font-weight:700;margin:0 0 4px;color:var(--oe-ink)}',
+      '.lp-oe-lock-msg{margin:0;font-size:13px;color:var(--oe-muted);line-height:1.45}',
+      '.lp-oe-lock-clock{text-align:right;min-width:140px}',
+      '.lp-oe-lock-clock .lbl{display:block;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--oe-muted);margin:0 0 2px}',
+      '.lp-oe-lock-clock .val{display:block;font-size:1.35rem;font-weight:700;line-height:1.1;color:var(--oe-ink)}',
+      '.lp-oe-lock-clock .meta{display:block;font-size:11px;color:var(--oe-muted);margin-top:4px}',
+      '.lp-oe-lock-clock.is-soon .val{color:#b45309}',
+      '.lp-oe-lock-clock.is-locked .val{color:#b91c1c}',
       '.lp-oe-detail{background:var(--oe-card);border:1px solid var(--oe-line);border-radius:var(--oe-radius);padding:16px;margin:0 0 14px}',
       '.lp-oe-fields{display:grid;gap:10px;margin:14px 0}',
       '.lp-oe-fields-app{gap:12px}',

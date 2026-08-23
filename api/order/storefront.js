@@ -6,6 +6,7 @@ const { getOrderSystemForSite } = require('../../lib/order/auth');
 const { formatAud } = require('../../lib/order/money');
 const { earliestPickupDate, effectiveOrderCutoff } = require('../../lib/order/cutoff');
 const { storeCutoffRuleLabel, cutoffSummary, formatCutoffDateTime } = require('../../lib/order/cutoff-display');
+const { buildLockCountdownPayload } = require('../../lib/order/lock-countdown-settings');
 const { resolvePaymentRule, computeDepositRequired } = require('../../lib/order/deposit');
 const { isDateAvailable } = require('../../lib/order/capacity');
 const { listWindows, buildPickupSlots, parsePickupSchedule } = require('../../lib/order/fulfilment-windows');
@@ -219,7 +220,11 @@ module.exports = async function (req, res) {
       cutoff: {
         rule_label: storeCutoffRuleLabel(system),
         preview: cutoffPreview
-      }
+      },
+      lock_countdown: buildLockCountdownPayload(
+        (system.settings && system.settings.lock_countdown) || {},
+        system
+      )
     });
   } catch (e) {
     console.error('order/storefront', e);

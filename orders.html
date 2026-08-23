@@ -1024,6 +1024,76 @@ body.embed .hub{min-height:70vh}
               </div>
             </div>
 
+            <h4 class="section-title">Lock countdown (shop banner)</h4>
+            <p class="notice">Show a live countdown on the customer shop with your own title and message — e.g. <strong>Christmas Countdown</strong> · <em>Get your order in by…</em>. Use a fixed annual date (15 Dec) or a repeating weekly / fortnightly / monthly lock.</p>
+            <div class="grid2">
+              <div class="field"><label for="set-lc-enabled">Countdown banner</label>
+                <select id="set-lc-enabled">
+                  <option value="0">Off</option>
+                  <option value="1">On</option>
+                </select>
+              </div>
+              <div class="field"><label for="set-lc-show-shop">Show on customer shop</label>
+                <select id="set-lc-show-shop">
+                  <option value="1">Yes</option>
+                  <option value="0">No (settings only)</option>
+                </select>
+              </div>
+              <div class="field full"><label for="set-lc-title">Banner title</label>
+                <input id="set-lc-title" type="text" maxlength="120" placeholder="Christmas Countdown">
+              </div>
+              <div class="field full"><label for="set-lc-message">Countdown message</label>
+                <input id="set-lc-message" type="text" maxlength="200" placeholder="Get your order in by">
+                <span class="field-hint">Shown before the live timer. The lock date/time appears after the countdown.</span>
+              </div>
+              <div class="field full"><label for="set-lc-locked-msg">When locked (after deadline)</label>
+                <input id="set-lc-locked-msg" type="text" maxlength="240" placeholder="Ordering is closed until the next countdown window opens.">
+              </div>
+              <div class="field"><label for="set-lc-mode">Schedule type</label>
+                <select id="set-lc-mode">
+                  <option value="master_date">Master date (annual)</option>
+                  <option value="recurring">Repeating countdown</option>
+                </select>
+              </div>
+              <div class="field"><label for="set-lc-lock-time">Lock time (24h)</label>
+                <input id="set-lc-lock-time" type="time" value="17:00">
+              </div>
+              <div class="field lc-master-only"><label for="set-lc-master-month">Master month</label>
+                <select id="set-lc-master-month">
+                  <option value="1">January</option><option value="2">February</option><option value="3">March</option>
+                  <option value="4">April</option><option value="5">May</option><option value="6">June</option>
+                  <option value="7">July</option><option value="8">August</option><option value="9">September</option>
+                  <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+                </select>
+              </div>
+              <div class="field lc-master-only"><label for="set-lc-master-day">Master day</label>
+                <input id="set-lc-master-day" type="number" min="1" max="31" step="1" placeholder="15">
+                <span class="field-hint">Repeats every year (e.g. 15/12).</span>
+              </div>
+              <div class="field lc-recurring-only"><label for="set-lc-recurring-interval">Repeat every</label>
+                <select id="set-lc-recurring-interval">
+                  <option value="weekly">Week</option>
+                  <option value="fortnightly">Fortnight</option>
+                  <option value="monthly">Month</option>
+                </select>
+              </div>
+              <div class="field lc-recurring-only lc-weekly-fortnightly-only"><label for="set-lc-recurring-weekday">Lock weekday</label>
+                <select id="set-lc-recurring-weekday">
+                  <option value="0">Sunday</option><option value="1">Monday</option><option value="2">Tuesday</option>
+                  <option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option>
+                  <option value="6">Saturday</option>
+                </select>
+              </div>
+              <div class="field lc-recurring-only lc-fortnightly-only"><label for="set-lc-recurring-anchor">Fortnight anchor date</label>
+                <input id="set-lc-recurring-anchor" type="date">
+                <span class="field-hint">First lock date in the cycle (then every 14 days).</span>
+              </div>
+              <div class="field lc-recurring-only lc-monthly-only"><label for="set-lc-recurring-dom">Day of month</label>
+                <input id="set-lc-recurring-dom" type="number" min="1" max="28" step="1" placeholder="15">
+                <span class="field-hint">Locks on this day each month (max 28 for safety).</span>
+              </div>
+            </div>
+
             <h4 class="section-title">Customer shop (menu)</h4>
             <p class="notice">Controls how the homepage / order shop catalogue behaves. Empty categories and categories with no enabled products are always hidden.</p>
             <div class="grid2">
@@ -4215,6 +4285,26 @@ body.embed .hub{min-height:70vh}
     sel.innerHTML = html;
   }
 
+  function syncLockCountdownFields(){
+    var mode = $('set-lc-mode') ? $('set-lc-mode').value : 'master_date';
+    var interval = $('set-lc-recurring-interval') ? $('set-lc-recurring-interval').value : 'weekly';
+    document.querySelectorAll('.lc-master-only').forEach(function(el){
+      el.style.display = mode === 'master_date' ? '' : 'none';
+    });
+    document.querySelectorAll('.lc-recurring-only').forEach(function(el){
+      el.style.display = mode === 'recurring' ? '' : 'none';
+    });
+    document.querySelectorAll('.lc-weekly-fortnightly-only').forEach(function(el){
+      el.style.display = mode === 'recurring' && interval !== 'monthly' ? '' : 'none';
+    });
+    document.querySelectorAll('.lc-fortnightly-only').forEach(function(el){
+      el.style.display = mode === 'recurring' && interval === 'fortnightly' ? '' : 'none';
+    });
+    document.querySelectorAll('.lc-monthly-only').forEach(function(el){
+      el.style.display = mode === 'recurring' && interval === 'monthly' ? '' : 'none';
+    });
+  }
+
   async function loadSettings(){
     if (!requireSite()) return;
     var msg = $('settings-msg');
@@ -4250,6 +4340,24 @@ body.embed .hub{min-height:70vh}
         if (dch === 'sms,email') dch = 'email,sms';
         $('set-dep-rem-channels').value = dch === 'sms' || dch === 'email,sms' ? dch : 'email';
       }
+      var lc = (s.settings && s.settings.lock_countdown) || {};
+      if ($('set-lc-enabled')) $('set-lc-enabled').value = lc.enabled === true ? '1' : '0';
+      if ($('set-lc-show-shop')) $('set-lc-show-shop').value = lc.show_on_shop === false ? '0' : '1';
+      if ($('set-lc-title')) $('set-lc-title').value = lc.title || '';
+      if ($('set-lc-message')) $('set-lc-message').value = lc.message || '';
+      if ($('set-lc-locked-msg')) $('set-lc-locked-msg').value = lc.locked_message || '';
+      if ($('set-lc-mode')) $('set-lc-mode').value = lc.mode === 'recurring' ? 'recurring' : 'master_date';
+      if ($('set-lc-lock-time')) $('set-lc-lock-time').value = lc.lock_time || '17:00';
+      if ($('set-lc-master-month')) $('set-lc-master-month').value = String(lc.master_month != null ? lc.master_month : 12);
+      if ($('set-lc-master-day')) $('set-lc-master-day').value = lc.master_day != null ? lc.master_day : 15;
+      if ($('set-lc-recurring-interval')) {
+        var ri = lc.recurring_interval || 'weekly';
+        $('set-lc-recurring-interval').value = ['weekly', 'fortnightly', 'monthly'].indexOf(ri) >= 0 ? ri : 'weekly';
+      }
+      if ($('set-lc-recurring-weekday')) $('set-lc-recurring-weekday').value = String(lc.recurring_weekday != null ? lc.recurring_weekday : 3);
+      if ($('set-lc-recurring-anchor')) $('set-lc-recurring-anchor').value = lc.recurring_anchor || '';
+      if ($('set-lc-recurring-dom')) $('set-lc-recurring-dom').value = lc.recurring_day_of_month != null ? lc.recurring_day_of_month : 15;
+      syncLockCountdownFields();
       var pay = (s.settings && s.settings.payments) || {};
       if ($('set-pay-provider')) $('set-pay-provider').value = pay.provider || 'stripe';
       if ($('set-stripe-mode')) $('set-stripe-mode').value = pay.stripe_charge_mode === 'direct' ? 'direct' : 'destination';
@@ -4449,6 +4557,28 @@ body.embed .hub{min-height:70vh}
                 if (v === 'email,sms') return ['email', 'sms'];
                 return ['email'];
               })()
+            },
+            lock_countdown: {
+              enabled: $('set-lc-enabled') ? $('set-lc-enabled').value === '1' : false,
+              show_on_shop: $('set-lc-show-shop') ? $('set-lc-show-shop').value === '1' : true,
+              title: $('set-lc-title') ? String($('set-lc-title').value || '').trim() : '',
+              message: $('set-lc-message') ? String($('set-lc-message').value || '').trim() : '',
+              locked_message: $('set-lc-locked-msg') ? String($('set-lc-locked-msg').value || '').trim() : '',
+              mode: $('set-lc-mode') && $('set-lc-mode').value === 'recurring' ? 'recurring' : 'master_date',
+              lock_time: $('set-lc-lock-time') ? String($('set-lc-lock-time').value || '17:00').trim() : '17:00',
+              master_month: $('set-lc-master-month') ? Number($('set-lc-master-month').value) || 12 : 12,
+              master_day: $('set-lc-master-day') && $('set-lc-master-day').value !== ''
+                ? Math.min(31, Math.max(1, Number($('set-lc-master-day').value) || 15))
+                : 15,
+              recurring_interval: (function(){
+                var v = $('set-lc-recurring-interval') ? $('set-lc-recurring-interval').value : 'weekly';
+                return ['weekly', 'fortnightly', 'monthly'].indexOf(v) >= 0 ? v : 'weekly';
+              })(),
+              recurring_weekday: $('set-lc-recurring-weekday') ? Number($('set-lc-recurring-weekday').value) || 3 : 3,
+              recurring_day_of_month: $('set-lc-recurring-dom') && $('set-lc-recurring-dom').value !== ''
+                ? Math.min(28, Math.max(1, Number($('set-lc-recurring-dom').value) || 15))
+                : 15,
+              recurring_anchor: $('set-lc-recurring-anchor') ? String($('set-lc-recurring-anchor').value || '').trim() || null : null
             }
           })
         }
@@ -5261,6 +5391,8 @@ body.embed .hub{min-height:70vh}
   if ($('imp-preview')) $('imp-preview').addEventListener('click', runImportPreview);
   if ($('imp-commit')) $('imp-commit').addEventListener('click', runImportCommit);
   $('settings-form').addEventListener('submit', saveSettings);
+  if ($('set-lc-mode')) $('set-lc-mode').addEventListener('change', syncLockCountdownFields);
+  if ($('set-lc-recurring-interval')) $('set-lc-recurring-interval').addEventListener('change', syncLockCountdownFields);
   if ($('settings-save-theme')) $('settings-save-theme').addEventListener('click', saveStorefrontTheme);
   if ($('pw-add')) $('pw-add').addEventListener('click', addPickupWindow);
   if ($('pw-save-schedule')) $('pw-save-schedule').addEventListener('click', savePickupSchedule);
