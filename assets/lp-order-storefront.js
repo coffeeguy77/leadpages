@@ -124,6 +124,7 @@
       msgKind: '',
       mobileShowCart: false,
       notesOpen: {},
+      optionsOpen: {},
       fastDrafts: {},
       customerToken: '',
       customer: null,
@@ -843,7 +844,10 @@
             '</span></label>';
         });
         html += '</div>';
-      } else if (q.field_type === 'dropdown' || q.field_type === 'radio') {
+      } else if (q.field_type === 'dropdown' || q.field_type === 'radio' || q.field_type === 'yes_no') {
+        if (q.field_type === 'yes_no' && !(q.options || []).length) {
+          q = Object.assign({}, q, { options: [{ label: 'Yes', value: 'Yes' }, { label: 'No', value: 'No' }] });
+        }
         html += '<div class="lp-oe-option-list">';
         (q.options || []).forEach(function (o) {
           var v = typeof o === 'string' ? o : o.value || o.label;
@@ -905,6 +909,7 @@
     var id = p.id;
     var draft = this.state.fastDrafts[id] || {};
     var notesOpen = !!this.state.notesOpen[id];
+    var optionsOpen = !!this.state.optionsOpen[id];
     var needsW = this.needsWeight(p);
     var showQty = this.showsQuantity(p);
     var pack = this.packLabel(p);
@@ -920,6 +925,7 @@
     html +=
       '<article class="lp-oe-fast-row' +
       (notesOpen ? ' is-notes-open' : '') +
+      (optionsOpen ? ' is-options-open' : '') +
       (hasImg ? '' : ' no-img') +
       '" data-fast-row="' +
       esc(id) +
@@ -960,6 +966,16 @@
         }) +
         '</label>';
     }
+    if (hasQs) {
+      html +=
+        '<button type="button" class="lp-oe-fast-notes-btn' +
+        (optionsOpen ? ' on' : '') +
+        '" data-act="toggle-options" data-id="' +
+        esc(id) +
+        '" aria-expanded="' +
+        (optionsOpen ? 'true' : 'false') +
+        '">Options</button>';
+    }
     html +=
       '<button type="button" class="lp-oe-fast-notes-btn' +
       (notesOpen ? ' on' : '') +
@@ -967,9 +983,7 @@
       esc(id) +
       '" aria-expanded="' +
       (notesOpen ? 'true' : 'false') +
-      '">' +
-      (notesOpen ? 'Hide extras' : hasQs ? 'Options' : 'Notes') +
-      '</button>';
+      '">Notes</button>';
     html +=
       '<button type="button" class="lp-oe-fast-add" data-act="add-inline" data-id="' +
       esc(id) +
@@ -977,14 +991,16 @@
       (this.state.busy ? ' disabled' : '') +
       '>Add</button>';
     html += '</div></div>';
-    if (notesOpen) {
-      html += '<div class="lp-oe-fast-extra">';
-      if (hasQs) html += this.renderQuestionFields(p.questions, draft.answers || {});
-      html +=
-        '<label class="lp-oe-field">Notes<textarea class="lp-oe-notes-grow" rows="1" data-fast-notes placeholder="Optional notes">' +
-        esc(notesVal) +
-        '</textarea></label>';
+    if (optionsOpen && hasQs) {
+      html += '<div class="lp-oe-fast-extra lp-oe-fast-options">';
+      html += this.renderQuestionFields(p.questions, draft.answers || {});
       html += '</div>';
+    }
+    if (notesOpen) {
+      html +=
+        '<div class="lp-oe-fast-extra lp-oe-fast-notes"><label class="lp-oe-field">Notes<textarea class="lp-oe-notes-grow" rows="1" data-fast-notes placeholder="Optional notes">' +
+        esc(notesVal) +
+        '</textarea></label></div>';
     }
     html += '</article>';
     return html;
@@ -1609,6 +1625,7 @@
       'view-grid': 1,
       'view-list': 1,
       'toggle-notes': 1,
+      'toggle-options': 1,
       cat: 1,
       'open-auth': 1,
       'close-auth': 1,
@@ -1783,6 +1800,13 @@
         self.captureFastDrafts();
         var nid = el.getAttribute('data-id');
         self.state.notesOpen[nid] = !self.state.notesOpen[nid];
+        self.render();
+        return;
+      }
+      if (act === 'toggle-options') {
+        self.captureFastDrafts();
+        var oid = el.getAttribute('data-id');
+        self.state.optionsOpen[oid] = !self.state.optionsOpen[oid];
         self.render();
         return;
       }

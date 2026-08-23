@@ -288,9 +288,10 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
 .no-fast-controls{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;justify-content:flex-end}
 .no-fast-field{display:grid;gap:4px;font-size:10px;font-weight:700;color:var(--ink-faint);letter-spacing:.03em;text-transform:uppercase}
 .no-fast-packchip{display:inline-flex;align-items:center;min-height:44px;padding:0 12px;border-radius:10px;border:1px dashed var(--line);color:var(--accent);font:700 11px/1 var(--font-ui)}
-.no-fast-notes-row{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:center;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
-.no-fast-notes-row .lbl{font-size:var(--fs-sm);font-weight:700;color:var(--ink-soft);white-space:nowrap}
-.no-fast-notes-row input{width:100%;max-width:none;padding:9px 11px}
+.no-fast-toggle-btn.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent)}
+.no-fast-panel{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);display:grid;gap:8px}
+.no-fast-row.is-options-open,.no-fast-row.is-notes-open{border-color:color-mix(in srgb,var(--accent) 35%,var(--line))}
+.no-fast-notes-row{display:none}
 .no-stepper{display:inline-flex;align-items:stretch;border:1px solid var(--line-strong);border-radius:10px;overflow:visible;background:var(--input-bg,transparent);min-height:44px}
 .no-stepper button{
   appearance:none;border:0;background:transparent;color:var(--ink);width:40px;flex:none;
@@ -701,11 +702,11 @@ body.embed .hub{min-height:70vh}
               </div>
             </div>
 
-            <h4 class="section-title">Extras / options</h4>
-            <p class="notice">Optional add-ons for this product (e.g. stuffing on a turkey). Choose one-only or multi-select; each choice can be free or paid.</p>
+            <h4 class="section-title">Product attribute sections</h4>
+            <p class="notice">Add sections customers choose when ordering — e.g. <strong>Stuffings</strong> (Apricot, Traditional) and <strong>Cooked?</strong> (Yes / No). Each section has its own title, single or multi-select, and optional extra price per choice.</p>
             <div id="prod-options-list" class="prod-options-list"></div>
             <div class="actions-row" style="margin-bottom:14px">
-              <button class="btn ghost" type="button" id="prod-option-add">+ Add option group</button>
+              <button class="btn ghost" type="button" id="prod-option-add">+ Add section</button>
             </div>
 
             <div class="actions-row">
@@ -1350,6 +1351,7 @@ body.embed .hub{min-height:70vh}
     noSelectedCat: '',
     noOrderMode: 'fast',
     noFastDrafts: {},
+    noFastPanelOpen: {},
     voidOrderId: null,
     depositLinkOrderId: null,
     inhousePaymentOrderId: null,
@@ -2776,7 +2778,14 @@ body.embed .hub{min-height:70vh}
       var kgVal = draft.kg != null && draft.kg !== '' ? draft.kg : (needsW ? defaultKg : '');
       var notesVal = draft.notes || '';
       var touched = draft.touched ? ' data-touched="1"' : '';
-      var html = '<article class="no-fast-row"' + touched + ' data-fast-row="' + esc(p.id) + '">';
+      var hasQs = questionsForProduct(p.id).length > 0;
+      var panel = (state.noFastPanelOpen && state.noFastPanelOpen[p.id]) || {};
+      var optionsOpen = !!panel.options;
+      var notesOpen = !!panel.notes;
+      var rowCls = 'no-fast-row';
+      if (optionsOpen) rowCls += ' is-options-open';
+      if (notesOpen) rowCls += ' is-notes-open';
+      var html = '<article class="' + rowCls + '"' + touched + ' data-fast-row="' + esc(p.id) + '">';
       html += '<div class="no-fast-main">';
       html += '<div class="no-fast-info"><strong>' + esc(p.name) + '</strong>';
       if (pack) html += '<span class="meta"> · ' + esc(pack) + ' pack</span>';
@@ -2792,9 +2801,17 @@ body.embed .hub{min-height:70vh}
         html += '<label class="no-fast-field">' + esc(kgFieldLabelForProduct(p)) +
           noStepperHtml({ min: minK || 0.1, step: 0.1, value: kgVal, dataAttr: 'data-fast-kg' }) + '</label>';
       }
+      if (hasQs) {
+        html += '<button type="button" class="btn ghost no-fast-toggle-btn' + (optionsOpen ? ' on' : '') + '" data-fast-options-toggle>Options</button>';
+      }
+      html += '<button type="button" class="btn ghost no-fast-toggle-btn' + (notesOpen ? ' on' : '') + '" data-fast-notes-toggle>Notes</button>';
       html += '</div></div>';
-      html += '<div class="line-opt" data-fast-opt></div>';
-      html += '<div class="no-fast-notes-row"><span class="lbl">Notes:</span><input data-fast-notes placeholder="Optional" value="' + esc(notesVal) + '"></div>';
+      if (optionsOpen && hasQs) {
+        html += '<div class="no-fast-panel no-fast-options-panel"><div class="line-opt" data-fast-opt></div></div>';
+      }
+      if (notesOpen) {
+        html += '<div class="no-fast-panel no-fast-notes-panel"><div class="field" style="margin:0"><label>Line notes</label><input data-fast-notes placeholder="Optional" value="' + esc(notesVal) + '"></div></div>';
+      }
       html += '</article>';
       return html;
     }).join('');
@@ -2809,6 +2826,26 @@ body.embed .hub{min-height:70vh}
         el.addEventListener('input', function(){ markFastRowTouched(row); });
         el.addEventListener('change', function(){ markFastRowTouched(row); });
       });
+      var optBtn = row.querySelector('[data-fast-options-toggle]');
+      if (optBtn) {
+        optBtn.addEventListener('click', function(){
+          captureNoFastDrafts();
+          if (!state.noFastPanelOpen) state.noFastPanelOpen = {};
+          var cur = state.noFastPanelOpen[pid] || {};
+          state.noFastPanelOpen[pid] = { notes: !!cur.notes, options: !cur.options };
+          renderNoFastList();
+        });
+      }
+      var notesBtn = row.querySelector('[data-fast-notes-toggle]');
+      if (notesBtn) {
+        notesBtn.addEventListener('click', function(){
+          captureNoFastDrafts();
+          if (!state.noFastPanelOpen) state.noFastPanelOpen = {};
+          var cur = state.noFastPanelOpen[pid] || {};
+          state.noFastPanelOpen[pid] = { notes: !cur.notes, options: !!cur.options };
+          renderNoFastList();
+        });
+      }
     });
     wireNoSteppers(host);
     wireOptionChips(host);
@@ -2900,7 +2937,10 @@ body.embed .hub{min-height:70vh}
     scopeId = scopeId || product.id;
     host.innerHTML = qs.map(function(q){
       var choices = parseQuestionChoices(q);
-      if (q.field_type === 'radio' || q.field_type === 'dropdown' || q.field_type === 'select') {
+      if (q.field_type === 'radio' || q.field_type === 'dropdown' || q.field_type === 'select' || q.field_type === 'yes_no') {
+        if (q.field_type === 'yes_no' && !choices.length) {
+          choices = [{ label: 'Yes', value: 'Yes' }, { label: 'No', value: 'No' }];
+        }
         var saved = savedAnswers[q.key];
         var savedVal = saved && saved.value != null ? saved.value : '';
         var html = '<div class="no-opt-group"><p class="no-opt-title">' + esc(q.label) + (q.required ? ' *' : '') + '</p><div class="no-opt-list">';
@@ -3442,6 +3482,7 @@ body.embed .hub{min-height:70vh}
       $('new-order-form').reset();
       $('no-lines').innerHTML = '';
       state.noFastDrafts = {};
+      state.noFastPanelOpen = {};
       document.querySelectorAll('input[name="no-pay-action"]').forEach(function(r){ r.checked = false; });
       if ($('no-inhouse-panel')) $('no-inhouse-panel').classList.add('hide');
       updateNoSubmitEnabled();
@@ -3583,27 +3624,41 @@ body.embed .hub{min-height:70vh}
     var host = $('prod-options-list');
     if (!host) return;
     q = q || { label: '', field_type: 'radio', required: false, options: [{ label: '', price_cents: 0 }] };
+    var ft = q.field_type || 'radio';
     var card = document.createElement('div');
     card.className = 'prod-opt-card';
     card.innerHTML =
       '<div class="prod-opt-head">' +
-        '<div class="field" style="margin:0;flex:1;min-width:160px"><label>Title</label><input data-oq="label" value="' + esc(q.label || '') + '" placeholder="e.g. Stuffing"></div>' +
+        '<div class="field" style="margin:0;flex:1;min-width:160px"><label>Section title</label><input data-oq="label" value="' + esc(q.label || '') + '" placeholder="e.g. Stuffings"></div>' +
         '<div class="field" style="margin:0;min-width:150px"><label>Selection</label>' +
           '<select data-oq="field_type">' +
-            '<option value="radio"' + (q.field_type !== 'checkboxes' && q.field_type !== 'dropdown' ? ' selected' : '') + '>Select 1 only</option>' +
-            '<option value="checkboxes"' + (q.field_type === 'checkboxes' ? ' selected' : '') + '>Select multiple</option>' +
-            '<option value="dropdown"' + (q.field_type === 'dropdown' ? ' selected' : '') + '>Dropdown</option>' +
+            '<option value="radio"' + (ft !== 'checkboxes' && ft !== 'dropdown' && ft !== 'yes_no' ? ' selected' : '') + '>Select 1 only</option>' +
+            '<option value="checkboxes"' + (ft === 'checkboxes' ? ' selected' : '') + '>Select multiple</option>' +
+            '<option value="yes_no"' + (ft === 'yes_no' ? ' selected' : '') + '>Yes / No</option>' +
+            '<option value="dropdown"' + (ft === 'dropdown' ? ' selected' : '') + '>Dropdown</option>' +
           '</select></div>' +
         '<div class="field" style="margin:0;min-width:110px"><label>Required</label>' +
           '<select data-oq="required"><option value="0"' + (!q.required ? ' selected' : '') + '>No</option><option value="1"' + (q.required ? ' selected' : '') + '>Yes</option></select></div>' +
-        '<button type="button" class="btn ghost" data-oq-remove>Remove</button>' +
+        '<button type="button" class="btn ghost" data-oq-remove>Remove section</button>' +
       '</div>' +
       '<div class="prod-opt-choices" data-oq-choices></div>' +
       '<button type="button" class="btn ghost" data-oq-add-choice style="margin-top:8px">+ Choice</button>';
     host.appendChild(card);
     var choicesHost = card.querySelector('[data-oq-choices]');
-    var opts = Array.isArray(q.options) && q.options.length ? q.options : [{ label: '', price_cents: 0 }];
+    var opts = Array.isArray(q.options) && q.options.length ? q.options : (ft === 'yes_no' ? [{ label: 'Yes', price_cents: 0 }, { label: 'No', price_cents: 0 }] : [{ label: '', price_cents: 0 }]);
     opts.forEach(function(o){ appendProductOptionChoice(choicesHost, o); });
+    var typeSel = card.querySelector('[data-oq="field_type"]');
+    function syncYesNoChoices(){
+      if (!typeSel || typeSel.value !== 'yes_no') return;
+      if (choicesHost.querySelectorAll('.prod-opt-choice').length) return;
+      appendProductOptionChoice(choicesHost, { label: 'Yes', price_cents: 0 });
+      appendProductOptionChoice(choicesHost, { label: 'No', price_cents: 0 });
+    }
+    if (typeSel) {
+      typeSel.addEventListener('change', function(){
+        if (typeSel.value === 'yes_no') syncYesNoChoices();
+      });
+    }
     card.querySelector('[data-oq-remove]').addEventListener('click', function(){ card.remove(); });
     card.querySelector('[data-oq-add-choice]').addEventListener('click', function(){
       appendProductOptionChoice(choicesHost, { label: '', price_cents: 0 });
@@ -5095,6 +5150,7 @@ body.embed .hub{min-height:70vh}
         try { await loadPickupWindows(); } catch (_e2) {}
         state.noSelectedCat = '';
         state.noFastDrafts = {};
+      state.noFastPanelOpen = {};
         renderNoCatPills();
         wireNoLayoutToggle();
         applyNoOrderLayout();
