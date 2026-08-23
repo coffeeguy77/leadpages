@@ -61,6 +61,22 @@
     return missing;
   }
 
+  function productHasRequiredQuestions(questions) {
+    return (questions || []).some(function (q) {
+      return q && q.required && !q.staff_only;
+    });
+  }
+
+  function productHasOptionalQuestions(questions) {
+    return (questions || []).some(function (q) {
+      return q && !q.required && !q.staff_only;
+    });
+  }
+
+  function showOptionsToggleForQuestions(questions) {
+    return productHasOptionalQuestions(questions) && !productHasRequiredQuestions(questions);
+  }
+
   function fastAddButtonLabel(questions, answers, added) {
     if (added) return 'Added';
     if (missingRequiredQuestions(questions, answers).length) return 'Choose Options';
@@ -1105,7 +1121,7 @@
         }) +
         '</label>';
     }
-    if (hasQs) {
+    if (showOptionsToggleForQuestions(p.questions)) {
       html +=
         '<button type="button" class="lp-oe-fast-notes-btn' +
         (optionsOpen ? ' on' : '') +
@@ -2063,7 +2079,8 @@
           return p.id === productId;
         });
         var answers = self.fastRowAnswers(row, productId);
-        if (product && missingRequiredQuestions(product.questions || [], answers).length) {
+        var addLabel = fastAddButtonLabel(product.questions || [], answers, false);
+        if (product && (addLabel === 'Choose Options' || missingRequiredQuestions(product.questions || [], answers).length)) {
           self.state.optionsOpen[productId] = true;
           self.state.msg = 'Choose required options for ' + (product.name || 'this item') + '.';
           self.render();
