@@ -288,7 +288,14 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
 .no-fast-controls{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;justify-content:flex-end}
 .no-fast-field{display:grid;gap:4px;font-size:10px;font-weight:700;color:var(--ink-faint);letter-spacing:.03em;text-transform:uppercase}
 .no-fast-packchip{display:inline-flex;align-items:center;min-height:44px;padding:0 12px;border-radius:10px;border:1px dashed var(--line);color:var(--accent);font:700 11px/1 var(--font-ui)}
-.no-fast-toggle-btn.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent)}
+.no-fast-row.is-added{border-color:color-mix(in srgb,#16a34a 40%,var(--line));background:color-mix(in srgb,#16a34a 4%,var(--surface))}
+.no-fast-add-btn{min-height:44px;padding:0 16px;font-weight:700}
+.no-fast-add-btn.on{background:color-mix(in srgb,#16a34a 85%,var(--accent));border-color:#16a34a}
+.no-cust-mode{display:flex;flex-wrap:wrap;gap:14px 20px;margin:0 0 12px}
+.no-cust-mode label{display:inline-flex;align-items:center;gap:8px;font-weight:600;cursor:pointer;margin:0}
+.no-cust-search-wrap{position:relative;margin-bottom:12px}
+.no-cust-results.prod-combo-list{position:relative;max-height:220px;margin-top:6px}
+.no-pickup-display{margin:6px 0 0;font-size:var(--fs-sm);font-weight:600;color:var(--ink)}
 .no-fast-panel{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);display:grid;gap:8px}
 .no-fast-row.is-options-open,.no-fast-row.is-notes-open{border-color:color-mix(in srgb,var(--accent) 35%,var(--line))}
 .no-fast-notes-row{display:none}
@@ -500,14 +507,27 @@ body.embed .hub{min-height:70vh}
           <h3>New order</h3>
           <p class="sub">Create a staff order for the selected site. Use <strong>Fast order</strong> to enter qty and weight on one page, or <strong>Traditional</strong> to tap products into order lines.</p>
           <form id="new-order-form">
-            <div class="grid2">
+            <h4 class="section-title" style="margin-top:0">Customer</h4>
+            <div class="no-cust-mode" role="radiogroup" aria-label="Customer type">
+              <label><input type="radio" name="no-cust-mode" value="new" checked> New customer</label>
+              <label><input type="radio" name="no-cust-mode" value="existing"> Existing customer</label>
+            </div>
+            <div id="no-cust-existing" class="no-cust-search-wrap hide">
+              <div class="field full" style="margin-bottom:0">
+                <label for="no-cust-search">Search by name or phone</label>
+                <input id="no-cust-search" type="search" autocomplete="off" placeholder="Start typing a name or mobile number…">
+                <ul id="no-cust-results" class="prod-combo-list hide" role="listbox"></ul>
+              </div>
+            </div>
+            <div class="grid2" id="no-cust-fields">
               <div class="field"><label for="no-name">Customer name *</label><input id="no-name" required></div>
-              <div class="field"><label for="no-phone">Phone</label><input id="no-phone" type="tel"></div>
+              <div class="field"><label for="no-phone">Phone *</label><input id="no-phone" type="tel" required inputmode="tel" autocomplete="tel" placeholder="04xx xxx xxx"></div>
               <div class="field"><label for="no-email">Email</label><input id="no-email" type="email"></div>
               <div class="field" id="no-pickup-wrap">
                 <label for="no-pickup">Pickup date</label>
                 <select id="no-pickup-select" class="hide"></select>
                 <input id="no-pickup" type="date">
+                <p class="no-pickup-display hide" id="no-pickup-display" aria-live="polite"></p>
                 <span class="field-hint" id="no-pickup-hint">Uses a free date picker when no pickup windows are set.</span>
               </div>
             </div>
@@ -530,7 +550,7 @@ body.embed .hub{min-height:70vh}
               </div>
             </div>
             <div id="no-fast-wrap" class="hide">
-              <p class="sub" style="margin-top:0">Enter qty or weight for each product — only rows with values are added to the order.</p>
+              <p class="sub" style="margin-top:0">Enter qty or weight, then tap <strong>Add</strong> for each product you want on the order. Use <strong>Options</strong> / <strong>Notes</strong> when needed.</p>
               <div id="no-fast-list" class="no-fast-list"></div>
             </div>
             <div class="pay-on-create">
@@ -1352,6 +1372,10 @@ body.embed .hub{min-height:70vh}
     noOrderMode: 'fast',
     noFastDrafts: {},
     noFastPanelOpen: {},
+    noFastAdded: {},
+    noCustomerMode: 'new',
+    noSelectedCustomerId: null,
+    noCustSearchTimer: null,
     voidOrderId: null,
     depositLinkOrderId: null,
     inhousePaymentOrderId: null,
@@ -1399,6 +1423,41 @@ body.embed .hub{min-height:70vh}
     return isNaN(d.getTime()) ? null : d;
   }
 
+  function ordinalDaySuffix(day){
+    var n = Number(day);
+    if (!isFinite(n)) return '';
+    var j = n % 10;
+    var k = n % 100;
+    if (j === 1 && k !== 11) return 'st';
+    if (j === 2 && k !== 12) return 'nd';
+    if (j === 3 && k !== 13) return 'rd';
+    return 'th';
+  }
+
+  function formatPickupDateLong(iso, suffix){
+    var d = parseIsoDate(iso);
+    if (!d) return String(iso || '') + (suffix || '');
+    var weekday = d.toLocaleDateString('en-AU', { weekday: 'long' });
+    var month = d.toLocaleDateString('en-AU', { month: 'long' });
+    var day = d.getDate();
+    return weekday + ', ' + day + ordinalDaySuffix(day) + ' ' + month + ' ' + d.getFullYear() + (suffix || '');
+  }
+
+  function paintPickupDateDisplay(){
+    var disp = $('no-pickup-display');
+    var input = $('no-pickup');
+    var sel = $('no-pickup-select');
+    if (!disp) return;
+    var iso = (sel && !sel.classList.contains('hide') ? sel.value : '') || (input && input.value) || '';
+    if (!iso) {
+      disp.textContent = '';
+      disp.classList.add('hide');
+      return;
+    }
+    disp.textContent = formatPickupDateLong(iso);
+    disp.classList.remove('hide');
+  }
+
   /** Build upcoming pickup date options from server slot preview or windows fallback. */
   function upcomingPickupOptions(windows, daysAhead, slotPreview){
     if (slotPreview && slotPreview.length) {
@@ -1408,10 +1467,12 @@ body.embed .hub{min-height:70vh}
         var start = String(s.window_start || '').slice(0, 5);
         var end = String(s.window_end || '').slice(0, 5);
         var bit = (start && end) ? (' · ' + start + '–' + end) : '';
-        if (!byDate[s.date]) byDate[s.date] = s.date + bit;
+        if (!byDate[s.date]) byDate[s.date] = bit;
         else if (bit && byDate[s.date].indexOf(bit) < 0) byDate[s.date] += bit;
       });
-      return Object.keys(byDate).sort().map(function(k){ return { value: k, label: byDate[k] }; });
+      return Object.keys(byDate).sort().map(function(k){
+        return { value: k, label: formatPickupDateLong(k, byDate[k]) };
+      });
     }
     var active = (windows || []).filter(function(w){ return w && w.active !== false; });
     if (!active.length) return [];
@@ -1426,7 +1487,7 @@ body.embed .hub{min-height:70vh}
         var sd = String(w.specific_date).slice(0, 10);
         var d0 = parseIsoDate(sd);
         if (!d0 || d0 < today) return;
-        if (!map[sd]) map[sd] = sd + timeBit;
+        if (!map[sd]) map[sd] = timeBit;
         return;
       }
       if (w.weekday == null || w.weekday === '') return;
@@ -1435,10 +1496,12 @@ body.embed .hub{min-height:70vh}
         var d = new Date(today); d.setDate(today.getDate() + i);
         if (d.getDay() !== want) continue;
         var key = isoDate(d);
-        if (!map[key]) map[key] = key + timeBit;
+        if (!map[key]) map[key] = timeBit;
       }
     });
-    return Object.keys(map).sort().map(function(k){ return { value: k, label: map[k] }; });
+    return Object.keys(map).sort().map(function(k){
+      return { value: k, label: formatPickupDateLong(k, map[k]) };
+    });
   }
 
   async function refreshPickupDateControl(){
@@ -1455,18 +1518,106 @@ body.embed .hub{min-height:70vh}
       sel.classList.remove('hide');
       input.classList.add('hide');
       if (hint) hint.textContent = 'Pickup windows are set — choose an allowed date.';
-      sel.onchange = function(){ input.value = sel.value || ''; };
+      sel.onchange = function(){ input.value = sel.value || ''; paintPickupDateDisplay(); };
       if (cur && opts.some(function(o){ return o.value === cur; })) {
         sel.value = cur; input.value = cur;
       } else {
         input.value = '';
       }
+      paintPickupDateDisplay();
     } else {
       sel.classList.add('hide');
       input.classList.remove('hide');
       if (hint) hint.textContent = 'No pickup windows set — use the calendar date picker.';
       sel.onchange = null;
+      paintPickupDateDisplay();
     }
+  }
+
+  function applyNoCustomerMode(){
+    var mode = state.noCustomerMode === 'existing' ? 'existing' : 'new';
+    var existing = $('no-cust-existing');
+    if (existing) existing.classList.toggle('hide', mode !== 'existing');
+    document.querySelectorAll('input[name="no-cust-mode"]').forEach(function(r){
+      r.checked = r.value === mode;
+    });
+    if (mode === 'new') {
+      state.noSelectedCustomerId = null;
+      var search = $('no-cust-search');
+      if (search) search.value = '';
+      paintNoCustomerResults([]);
+    }
+  }
+
+  function paintNoCustomerResults(rows){
+    var host = $('no-cust-results');
+    if (!host) return;
+    if (!rows.length) {
+      host.innerHTML = '';
+      host.classList.add('hide');
+      return;
+    }
+    host.innerHTML = rows.map(function(c){
+      return '<li role="option" data-cust-id="' + esc(c.id) + '" data-cust-name="' + esc(c.name || '') + '" data-cust-phone="' + esc(c.phone || '') + '" data-cust-email="' + esc(c.email || '') + '">' +
+        '<strong>' + esc(c.name || '—') + '</strong><br><span class="meta">' + esc(c.phone || 'No phone') +
+        (c.email ? ' · ' + esc(c.email) : '') + '</span></li>';
+    }).join('');
+    host.classList.remove('hide');
+    host.querySelectorAll('li[data-cust-id]').forEach(function(li){
+      li.addEventListener('click', function(){
+        state.noSelectedCustomerId = li.getAttribute('data-cust-id');
+        if ($('no-name')) $('no-name').value = li.getAttribute('data-cust-name') || '';
+        if ($('no-phone')) $('no-phone').value = li.getAttribute('data-cust-phone') || '';
+        if ($('no-email')) $('no-email').value = li.getAttribute('data-cust-email') || '';
+        if ($('no-cust-search')) $('no-cust-search').value = li.getAttribute('data-cust-name') || '';
+        host.classList.add('hide');
+        updateNoSubmitEnabled();
+      });
+    });
+  }
+
+  async function searchNoCustomers(q){
+    if (!requireSite()) return;
+    q = String(q || '').trim();
+    if (q.length < 2) {
+      paintNoCustomerResults([]);
+      return;
+    }
+    try {
+      var data = await api('/api/order/customers?' + siteQuery('q=' + encodeURIComponent(q)));
+      paintNoCustomerResults(data.customers || []);
+    } catch (_e) {
+      paintNoCustomerResults([]);
+    }
+  }
+
+  function wireNoCustomerControls(){
+    if ($('new-order-form') && $('new-order-form').getAttribute('data-cust-wired') === '1') {
+      applyNoCustomerMode();
+      return;
+    }
+    if ($('new-order-form')) $('new-order-form').setAttribute('data-cust-wired', '1');
+    document.querySelectorAll('input[name="no-cust-mode"]').forEach(function(r){
+      r.addEventListener('change', function(){
+        if (!r.checked) return;
+        state.noCustomerMode = r.value === 'existing' ? 'existing' : 'new';
+        applyNoCustomerMode();
+        updateNoSubmitEnabled();
+      });
+    });
+    var search = $('no-cust-search');
+    if (search) {
+      search.addEventListener('input', function(){
+        clearTimeout(state.noCustSearchTimer);
+        state.noCustSearchTimer = setTimeout(function(){ searchNoCustomers(search.value); }, 280);
+      });
+      search.addEventListener('focus', function(){
+        if (search.value.trim().length >= 2) searchNoCustomers(search.value);
+      });
+    }
+    var pickup = $('no-pickup');
+    if (pickup) pickup.addEventListener('change', paintPickupDateDisplay);
+    applyNoCustomerMode();
   }
 
   function formatAud(cents){
@@ -2683,7 +2834,33 @@ body.embed .hub{min-height:70vh}
       hasLines = $('no-lines') && $('no-lines').querySelectorAll('.line-row').length > 0;
     }
     var hasName = $('no-name') && $('no-name').value.trim();
-    btn.disabled = !(okPay && hasLines && hasName);
+    var hasPhone = $('no-phone') && String($('no-phone').value || '').trim();
+    btn.disabled = !(okPay && hasLines && hasName && hasPhone);
+  }
+
+  function validateFastRowForAdd(row, product){
+    if (!row || !product) return 'Product not found.';
+    var needsW = productNeedsWeight(product);
+    var showQty = productShowsQuantity(product);
+    var qtyEl = row.querySelector('[data-fast-qty]');
+    var kgEl = row.querySelector('[data-fast-kg]');
+    var qty = showQty ? (Number(qtyEl && qtyEl.value) || 0) : 1;
+    var wRaw = kgEl && kgEl.value;
+    if (needsW) {
+      var kg = wRaw !== '' ? Number(wRaw) : null;
+      if (kg == null || !isFinite(kg) || kg <= 0) {
+        return 'Enter weight (kg) for ' + (product.name || 'this product') + ' before adding.';
+      }
+      var minK = minimumKgForProduct(product);
+      if (minK != null && kg + 0.0001 < minK) {
+        return 'Minimum weight for ' + (product.name || 'product') + ' is ' + minK + ' kg.';
+      }
+    } else if (showQty) {
+      if (!qty || qty <= 0) {
+        return 'Enter a quantity for ' + (product.name || 'this product') + ' before adding.';
+      }
+    }
+    return null;
   }
 
   function wireNoPayCreate(){
@@ -2697,6 +2874,7 @@ body.embed .hub{min-height:70vh}
     var meth = $('no-inhouse-method');
     if (meth) meth.addEventListener('change', updateNoSubmitEnabled);
     if ($('no-name')) $('no-name').addEventListener('input', updateNoSubmitEnabled);
+    if ($('no-phone')) $('no-phone').addEventListener('input', updateNoSubmitEnabled);
   }
 
   function renderNoCatPills(){
@@ -2782,9 +2960,11 @@ body.embed .hub{min-height:70vh}
       var panel = (state.noFastPanelOpen && state.noFastPanelOpen[p.id]) || {};
       var optionsOpen = !!panel.options;
       var notesOpen = !!panel.notes;
+      var isAdded = !!(state.noFastAdded && state.noFastAdded[p.id]);
       var rowCls = 'no-fast-row';
       if (optionsOpen) rowCls += ' is-options-open';
       if (notesOpen) rowCls += ' is-notes-open';
+      if (isAdded) rowCls += ' is-added';
       var html = '<article class="' + rowCls + '"' + touched + ' data-fast-row="' + esc(p.id) + '">';
       html += '<div class="no-fast-main">';
       html += '<div class="no-fast-info"><strong>' + esc(p.name) + '</strong>';
@@ -2805,6 +2985,7 @@ body.embed .hub{min-height:70vh}
         html += '<button type="button" class="btn ghost no-fast-toggle-btn' + (optionsOpen ? ' on' : '') + '" data-fast-options-toggle>Options</button>';
       }
       html += '<button type="button" class="btn ghost no-fast-toggle-btn' + (notesOpen ? ' on' : '') + '" data-fast-notes-toggle>Notes</button>';
+      html += '<button type="button" class="btn solid no-fast-add-btn' + (isAdded ? ' on' : '') + '" data-fast-add>' + (isAdded ? 'Added' : 'Add') + '</button>';
       html += '</div></div>';
       if (optionsOpen && hasQs) {
         html += '<div class="no-fast-panel no-fast-options-panel"><div class="line-opt" data-fast-opt></div></div>';
@@ -2846,6 +3027,27 @@ body.embed .hub{min-height:70vh}
           renderNoFastList();
         });
       }
+      var addBtn = row.querySelector('[data-fast-add]');
+      if (addBtn) {
+        addBtn.addEventListener('click', function(){
+          captureNoFastDrafts();
+          if (!state.noFastAdded) state.noFastAdded = {};
+          if (state.noFastAdded[pid]) {
+            delete state.noFastAdded[pid];
+            renderNoFastList();
+            updateNoSubmitEnabled();
+            return;
+          }
+          var err = validateFastRowForAdd(row, product);
+          if (err) {
+            toast(err, 'err');
+            return;
+          }
+          state.noFastAdded[pid] = true;
+          renderNoFastList();
+          updateNoSubmitEnabled();
+        });
+      }
     });
     wireNoSteppers(host);
     wireOptionChips(host);
@@ -2864,6 +3066,10 @@ body.embed .hub{min-height:70vh}
     return false;
   }
 
+  function fastRowIsAdded(product_id){
+    return !!(state.noFastAdded && state.noFastAdded[product_id]);
+  }
+
   function collectFastOrderItems(opts){
     opts = opts || {};
     var items = [];
@@ -2872,9 +3078,9 @@ body.embed .hub{min-height:70vh}
     host.querySelectorAll('[data-fast-row]').forEach(function(row){
       var product_id = row.getAttribute('data-fast-row');
       if (!product_id) return;
+      if (!fastRowIsAdded(product_id)) return;
       var product = (state.products || []).find(function(x){ return x.id === product_id; });
       if (!product) return;
-      if (!fastRowHasIntent(row, product) && !opts.partialOk) return;
       var needsW = productNeedsWeight(product);
       var showQty = productShowsQuantity(product);
       var qtyEl = row.querySelector('[data-fast-qty]');
@@ -2904,7 +3110,7 @@ body.embed .hub{min-height:70vh}
       if (err) return;
       var product_id = row.getAttribute('data-fast-row');
       var product = (state.products || []).find(function(x){ return x.id === product_id; });
-      if (!product || !fastRowHasIntent(row, product)) return;
+      if (!product || !fastRowIsAdded(product_id)) return;
       var needsW = productNeedsWeight(product);
       var showQty = productShowsQuantity(product);
       var qtyEl = row.querySelector('[data-fast-qty]');
@@ -3451,7 +3657,13 @@ body.embed .hub{min-height:70vh}
       });
     }
     if (!items.length) {
-      msg.textContent = 'Add at least one product.';
+      msg.textContent = 'Add at least one product (tap Add beside each item).';
+      toast(msg.textContent, 'err');
+      return;
+    }
+    var phone = $('no-phone').value.trim();
+    if (!phone) {
+      msg.textContent = 'Customer phone is required.';
       toast(msg.textContent, 'err');
       return;
     }
@@ -3461,14 +3673,15 @@ body.embed .hub{min-height:70vh}
         site_id: state.siteId,
         action: 'create',
         customer_name: $('no-name').value.trim(),
-        customer_phone: $('no-phone').value.trim() || null,
+        customer_phone: phone,
         customer_email: $('no-email').value.trim() || null,
         pickup_date: $('no-pickup').value || null,
         customer_notes: $('no-notes').value.trim() || null,
         items: items,
         after_create_action: payEl.value,
-        send_phone: $('no-phone').value.trim() || null
+        send_phone: phone
       };
+      if (state.noSelectedCustomerId) body.customer_id = state.noSelectedCustomerId;
       if (payEl.value === 'inhouse_payment') {
         body.inhouse_payment_method = $('no-inhouse-method').value;
         body.inhouse_payment_notes = $('no-inhouse-notes').value.trim() || null;
@@ -3483,8 +3696,13 @@ body.embed .hub{min-height:70vh}
       $('no-lines').innerHTML = '';
       state.noFastDrafts = {};
       state.noFastPanelOpen = {};
+      state.noFastAdded = {};
+      state.noSelectedCustomerId = null;
+      state.noCustomerMode = 'new';
       document.querySelectorAll('input[name="no-pay-action"]').forEach(function(r){ r.checked = false; });
       if ($('no-inhouse-panel')) $('no-inhouse-panel').classList.add('hide');
+      applyNoCustomerMode();
+      paintPickupDateDisplay();
       updateNoSubmitEnabled();
       renderNoCatPills();
       applyNoOrderLayout();
@@ -5150,11 +5368,16 @@ body.embed .hub{min-height:70vh}
         try { await loadPickupWindows(); } catch (_e2) {}
         state.noSelectedCat = '';
         state.noFastDrafts = {};
-      state.noFastPanelOpen = {};
+        state.noFastPanelOpen = {};
+        state.noFastAdded = {};
+        state.noSelectedCustomerId = null;
+        state.noCustomerMode = 'new';
         renderNoCatPills();
         wireNoLayoutToggle();
         applyNoOrderLayout();
         wireNoPayCreate();
+        wireNoCustomerControls();
+        applyNoCustomerMode();
         updateNoSubmitEnabled();
         wireNotesGrow($('view-new'));
         await refreshPickupDateControl();
