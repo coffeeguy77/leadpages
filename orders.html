@@ -282,7 +282,12 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
   display:grid;grid-template-columns:minmax(260px,42%) minmax(0,58%);gap:20px;align-items:start;
 }
 .no-products-col{min-width:0;max-height:calc(100vh - 200px);overflow:auto;padding-right:4px}
-.no-editor-col{min-width:0}
+.no-editor-col{
+  min-width:0;align-self:stretch;
+  padding:16px 18px;border-radius:14px;
+  background:color-mix(in srgb,var(--accent) 5%,var(--bg-soft,var(--surface)));
+  border:1px solid var(--line);
+}
 .side-nav-wrap{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column}
 .side-order-cart{
   flex:none;border-top:1px solid var(--line);margin-top:8px;padding:12px 4px 8px;
@@ -3087,14 +3092,32 @@ body.embed .hub{min-height:70vh}
     return visible.length ? visible : cats;
   }
 
+  function ensureNoSelectedCategory(){
+    var cats = categoriesForNoOrderPills();
+    if (!cats.length) {
+      state.noSelectedCat = '';
+      return;
+    }
+    var current = state.noSelectedCat || '';
+    if (!current || !cats.some(function(c){ return c.id === current; })) {
+      state.noSelectedCat = cats[0].id;
+    }
+  }
+
   function renderNoCatPills(){
     var host = $('no-cat-pills');
     if (!host) return;
     var cats = categoriesForNoOrderPills();
-    var pills = [{ id: '', name: 'All' }].concat(cats);
-    host.innerHTML = pills.map(function(c){
-      var on = (state.noSelectedCat || '') === (c.id || '');
-      return '<button type="button" class="no-cat-pill' + (on ? ' on' : '') + '" data-cat="' + esc(c.id || '') + '">' + esc(c.name) + '</button>';
+    ensureNoSelectedCategory();
+    if (!cats.length) {
+      host.innerHTML = '';
+      host.classList.add('hide');
+      return;
+    }
+    host.classList.remove('hide');
+    host.innerHTML = cats.map(function(c){
+      var on = state.noSelectedCat === c.id;
+      return '<button type="button" class="no-cat-pill' + (on ? ' on' : '') + '" data-cat="' + esc(c.id) + '">' + esc(c.name) + '</button>';
     }).join('');
     host.querySelectorAll('.no-cat-pill').forEach(function(btn){
       btn.addEventListener('click', function(){
