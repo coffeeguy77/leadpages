@@ -79,6 +79,11 @@ module.exports = async function (req, res) {
           .eq('active', true)
           .maybeSingle();
         if (!product) return json(res, 404, { error: 'product_not_found' });
+        const { data: questions } = await admin
+          .from('order_product_questions')
+          .select('*')
+          .eq('product_id', product.id)
+          .order('sort_order');
         await addOrUpdateItem(packed.cart, product, {
           cart_item_id: body.cart_item_id,
           quantity: body.quantity,
@@ -86,7 +91,11 @@ module.exports = async function (req, res) {
           answers: body.answers,
           notes: body.notes,
           system: system,
-          gst_settings: parseGstSettings(system)
+          gst_settings: parseGstSettings(system),
+          questions: (questions || []).filter(function (q) {
+            return !q.staff_only;
+          }),
+          existing_items: packed.items
         });
         if (body.guest_name || body.guest_phone || body.guest_email) {
           await touchCart(packed.cart.id, {
@@ -96,7 +105,7 @@ module.exports = async function (req, res) {
           });
         }
         const out = await getCart(packed.cart.id);
-        return json(res, 200, await packCartResponse(system, out));
+        return json(res, 200, await packCartResponse(system, out, { lite: true }));
       }
 
       if (action === 'remove_item') {

@@ -290,7 +290,7 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
 .no-fast-packchip{display:inline-flex;align-items:center;min-height:44px;padding:0 12px;border-radius:10px;border:1px dashed var(--line);color:var(--accent);font:700 11px/1 var(--font-ui)}
 .no-fast-row.is-added{border-color:color-mix(in srgb,#16a34a 40%,var(--line));background:color-mix(in srgb,#16a34a 4%,var(--surface))}
 .no-fast-add-btn{min-height:44px;padding:0 16px;font-weight:700}
-.no-fast-add-btn.on{background:color-mix(in srgb,#16a34a 85%,var(--accent));border-color:#16a34a}
+.no-fast-add-btn.needs-options{background:transparent;color:var(--accent);border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
 .no-cust-mode{display:flex;flex-wrap:wrap;gap:14px 20px;margin:0 0 12px}
 .no-cust-mode label{display:inline-flex;align-items:center;gap:8px;font-weight:600;cursor:pointer;margin:0}
 .no-cust-search-wrap{position:relative;margin-bottom:12px}
@@ -2608,6 +2608,49 @@ body.embed .hub{min-height:70vh}
     }).sort(function(a,b){ return (a.sort_order||0)-(b.sort_order||0); });
   }
 
+  function answerValuesStaff(raw){
+    if (raw == null) return [];
+    var v = raw;
+    if (typeof raw === 'object' && !Array.isArray(raw) && raw.value !== undefined) v = raw.value;
+    if (Array.isArray(v)) {
+      return v.map(function(x){ return String(x == null ? '' : x).trim(); }).filter(Boolean);
+    }
+    var s = String(v).trim();
+    if (!s) return [];
+    if (s.indexOf(',') >= 0) return s.split(',').map(function(x){ return x.trim(); }).filter(Boolean);
+    return [s];
+  }
+
+  function missingRequiredForProduct(productId, row, answersOverride){
+    var qs = questionsForProduct(productId);
+    var answers = answersOverride || (row ? collectLineAnswers(row) : {});
+    var missing = [];
+    qs.forEach(function(q){
+      if (!q.required) return;
+      if (!answerValuesStaff(answers[q.key]).length) missing.push(q);
+    });
+    return missing;
+  }
+
+  function fastAddLabelForProduct(product, row, isAdded, answersOverride){
+    if (isAdded) return 'Added';
+    if (product && missingRequiredForProduct(product.id, row, answersOverride).length) return 'Choose Options';
+    return 'Add';
+  }
+
+  function updateFastAddButtons(root){
+    (root || $('no-fast-list') || document).querySelectorAll('[data-fast-row]').forEach(function(row){
+      var pid = row.getAttribute('data-fast-row');
+      var product = (state.products || []).find(function(x){ return x.id === pid; });
+      var btn = row.querySelector('[data-fast-add]');
+      if (!btn || !product) return;
+      var isAdded = !!(state.noFastAdded && state.noFastAdded[pid]);
+      var label = fastAddLabelForProduct(product, row, isAdded);
+      btn.textContent = label;
+      btn.classList.toggle('needs-options', !isAdded && label === 'Choose Options');
+    });
+  }
+
   function minimumKgForProduct(p){
     if (!p) return null;
     if (p.minimum_kg != null) {
@@ -2731,6 +2774,7 @@ body.embed .hub{min-height:70vh}
         }
         var row = inp.closest('[data-fast-row]') || inp.closest('.line-row');
         if (row) row.setAttribute('data-touched', '1');
+        updateFastAddButtons(root);
         updateNoSubmitEnabled();
       });
     });
@@ -2961,6 +3005,9 @@ body.embed .hub{min-height:70vh}
       var optionsOpen = !!panel.options;
       var notesOpen = !!panel.notes;
       var isAdded = !!(state.noFastAdded && state.noFastAdded[p.id]);
+      var draftAnswers = {};
+      Object.keys(draft.answers || {}).forEach(function(k){ draftAnswers[k] = { value: draft.answers[k] }; });
+      var addLabel = fastAddLabelForProduct(p, null, isAdded, draftAnswers);
       var rowCls = 'no-fast-row';
       if (optionsOpen) rowCls += ' is-options-open';
       if (notesOpen) rowCls += ' is-notes-open';
@@ -2985,7 +3032,10 @@ body.embed .hub{min-height:70vh}
         html += '<button type="button" class="btn ghost no-fast-toggle-btn' + (optionsOpen ? ' on' : '') + '" data-fast-options-toggle>Options</button>';
       }
       html += '<button type="button" class="btn ghost no-fast-toggle-btn' + (notesOpen ? ' on' : '') + '" data-fast-notes-toggle>Notes</button>';
-      html += '<button type="button" class="btn solid no-fast-add-btn' + (isAdded ? ' on' : '') + '" data-fast-add>' + (isAdded ? 'Added' : 'Add') + '</button>';
+      html += '<button type="button" class="btn solid no-fast-add-btn' +
+        (isAdded ? ' on' : '') +
+        (addLabel === 'Choose Options' ? ' needs-options' : '') +
+        '" data-fast-add>' + esc(addLabel) + '</button>';
       html += '</div></div>';
       if (optionsOpen && hasQs) {
         html += '<div class="no-fast-panel no-fast-options-panel"><div class="line-opt" data-fast-opt></div></div>';
@@ -3038,6 +3088,14 @@ body.embed .hub{min-height:70vh}
             updateNoSubmitEnabled();
             return;
           }
+          if (missingRequiredForProduct(pid, row).length) {
+            if (!state.noFastPanelOpen) state.noFastPanelOpen = {};
+            var cur = state.noFastPanelOpen[pid] || {};
+            state.noFastPanelOpen[pid] = { notes: !!cur.notes, options: true };
+            toast('Choose required options for ' + (product.name || 'this product'), 'err');
+            renderNoFastList();
+            return;
+          }
           var err = validateFastRowForAdd(row, product);
           if (err) {
             toast(err, 'err');
@@ -3051,6 +3109,7 @@ body.embed .hub{min-height:70vh}
     });
     wireNoSteppers(host);
     wireOptionChips(host);
+    updateFastAddButtons(host);
   }
 
   function fastRowHasIntent(row, product){
@@ -3081,6 +3140,10 @@ body.embed .hub{min-height:70vh}
       if (!fastRowIsAdded(product_id)) return;
       var product = (state.products || []).find(function(x){ return x.id === product_id; });
       if (!product) return;
+      if (missingRequiredForProduct(product_id, row).length) {
+        if (!err) err = 'Choose required options for ' + (product.name || 'a product') + '.';
+        return;
+      }
       var needsW = productNeedsWeight(product);
       var showQty = productShowsQuantity(product);
       var qtyEl = row.querySelector('[data-fast-qty]');
@@ -3111,6 +3174,10 @@ body.embed .hub{min-height:70vh}
       var product_id = row.getAttribute('data-fast-row');
       var product = (state.products || []).find(function(x){ return x.id === product_id; });
       if (!product || !fastRowIsAdded(product_id)) return;
+      if (missingRequiredForProduct(product_id, row).length) {
+        err = 'Choose required options for ' + (product.name || 'a product') + '.';
+        return;
+      }
       var needsW = productNeedsWeight(product);
       var showQty = productShowsQuantity(product);
       var qtyEl = row.querySelector('[data-fast-qty]');
@@ -5360,12 +5427,6 @@ body.embed .hub{min-height:70vh}
       if (v === 'dashboard') await loadDashboard();
       else if (v === 'orders') await loadOrders();
       else if (v === 'new') {
-        try {
-          var sysData = await api('/api/order/system?' + siteQuery());
-          resolveNoOrderModeFromSettings((sysData.system && sysData.system.settings) || {});
-        } catch (_e0) { state.noOrderMode = 'fast'; }
-        try { await loadProductsCache({ includeQuestions: true }); } catch (_e) {}
-        try { await loadPickupWindows(); } catch (_e2) {}
         state.noSelectedCat = '';
         state.noFastDrafts = {};
         state.noFastPanelOpen = {};
@@ -5374,12 +5435,21 @@ body.embed .hub{min-height:70vh}
         state.noCustomerMode = 'new';
         renderNoCatPills();
         wireNoLayoutToggle();
-        applyNoOrderLayout();
         wireNoPayCreate();
         wireNoCustomerControls();
         applyNoCustomerMode();
         updateNoSubmitEnabled();
         wireNotesGrow($('view-new'));
+        try {
+          await Promise.all([
+            api('/api/order/system?' + siteQuery()).then(function(sysData){
+              resolveNoOrderModeFromSettings((sysData.system && sysData.system.settings) || {});
+            }).catch(function(){ state.noOrderMode = 'fast'; }),
+            loadProductsCache({ includeQuestions: true }),
+            loadPickupWindows()
+          ]);
+        } catch (_e) {}
+        applyNoOrderLayout();
         await refreshPickupDateControl();
       }
       else if (v === 'products') await loadProductsView();

@@ -7,7 +7,6 @@ const { formatAud } = require('../../lib/order/money');
 const { earliestPickupDate, effectiveOrderCutoff } = require('../../lib/order/cutoff');
 const { storeCutoffRuleLabel, cutoffSummary, formatCutoffDateTime } = require('../../lib/order/cutoff-display');
 const { resolvePaymentRule, computeDepositRequired } = require('../../lib/order/deposit');
-const { isDateAvailable } = require('../../lib/order/capacity');
 const { listWindows, buildPickupSlots, parsePickupSchedule } = require('../../lib/order/fulfilment-windows');
 
 async function resolveSite(slug, siteId) {
@@ -50,6 +49,8 @@ module.exports = async function (req, res) {
       .eq('active', true)
       .order('sort_order');
 
+    const windowsPromise = listWindows(system.id);
+
     const { data: products } = await admin
       .from('order_products')
       .select(
@@ -87,7 +88,7 @@ module.exports = async function (req, res) {
     });
 
     const earliest = earliestPickupDate(system.timezone || 'Australia/Sydney', products || []);
-    const windows = await listWindows(system.id);
+    const windows = await windowsPromise;
     const schedule = parsePickupSchedule(system);
     const pickup_slots = buildPickupSlots(windows, earliest, 28, schedule);
     const paySettings = (system.settings && system.settings.payments) || {};
@@ -213,9 +214,7 @@ module.exports = async function (req, res) {
       },
       earliest_pickup_date: earliest,
       pickup_slots: pickup_slots,
-      capacity: system.capacity_enabled
-        ? await isDateAvailable(system, earliest)
-        : { ok: true },
+      capacity: { ok: true },
       cutoff: {
         rule_label: storeCutoffRuleLabel(system),
         preview: cutoffPreview
