@@ -309,8 +309,30 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
 @media(max-width:1100px){
   .no-main-split{grid-template-columns:1fr}
   .no-products-col{max-height:none;padding-right:0;padding-bottom:14px}
-  .side{width:100%;max-width:none;flex:none}
 }
+.no-editor-col .pay-on-create{
+  border:0;border-radius:0;padding:0;margin:16px 0 0;
+  border-top:1px solid color-mix(in srgb,var(--line) 80%,transparent);
+  padding-top:16px;background:transparent;
+}
+.no-editor-col .pay-on-create .section-title{margin-top:0}
+.no-editor-col .pay-on-create .notice{font-size:var(--fs-xs);margin-bottom:10px}
+.no-editor-col .pay-on-create label{
+  display:flex;gap:10px;align-items:flex-start;font-weight:600;margin:0 0 12px;
+  padding:10px 12px;border-radius:10px;border:1px solid var(--line);
+  background:color-mix(in srgb,var(--surface) 70%,transparent);cursor:pointer;
+}
+.no-editor-col .pay-on-create label:has(input:checked){
+  border-color:color-mix(in srgb,var(--accent) 45%,var(--line));
+  background:color-mix(in srgb,var(--accent) 8%,var(--surface));
+}
+.no-editor-col .pay-on-create input[type="radio"]{margin-top:3px;flex:none}
+.no-editor-col #no-inhouse-panel{
+  margin-top:10px;padding:12px;border-radius:10px;
+  border:1px dashed color-mix(in srgb,var(--line) 90%,transparent);
+  background:color-mix(in srgb,var(--surface) 55%,transparent);
+}
+.no-editor-col .actions-row{margin-top:16px}
 .no-fast-list{display:flex;flex-direction:column;gap:12px;margin:0 0 18px}
 .no-fast-row{
   border:1px solid var(--line);border-radius:14px;padding:14px 16px;background:var(--surface);
@@ -436,7 +458,28 @@ code{font-size:0.92em}
 }
 body.embed .side-actions a[href="/command"]{display:none}
 body.embed .gate{min-height:60vh}
-body.embed .hub{min-height:70vh}
+body.embed .hub{
+  display:flex;flex-direction:row;flex-wrap:nowrap;
+  min-height:70vh;height:100%;overflow:hidden;
+}
+body.embed .side{
+  width:200px;min-width:200px;max-width:220px;flex:0 0 200px;
+  height:100%;overflow:hidden;
+}
+body.embed .side-nav-wrap{flex:1 1 auto;min-height:0}
+body.embed .side-order-cart{max-height:min(22vh,200px);min-height:56px}
+body.embed .main{
+  flex:1 1 auto;min-width:0;width:auto;max-width:none;
+  height:100%;overflow:hidden;display:flex;flex-direction:column;
+}
+body.embed .content{flex:1;min-height:0;overflow:auto}
+@media (max-width:900px){
+  body.embed .hub{flex-direction:row}
+  body.embed .side{width:200px;min-width:200px;max-width:220px;flex:0 0 200px;border-bottom:0}
+  body.embed .menu-toggle{display:none}
+  body.embed .side.collapsed .nav,
+  body.embed .side.collapsed .side-foot{display:flex}
+}
 </style>
 </head>
 <body>
