@@ -1810,8 +1810,8 @@ function applyCfg(C){
       el.classList.add('lp-foot-logo');
       el.setAttribute('data-lp-logo-accent',accent);
       el.setAttribute('data-lp-logo-ink',(/^#[0-9a-fA-F]{6}$/.test(F.ink||''))?'custom':'light');
-      el.style.setProperty('--lp-logo-accent',accent);
-      el.style.setProperty('--lp-logo-ink',ink);
+      el.style.setProperty('--lp-logo-accent',accent,'important');
+      el.style.setProperty('--lp-logo-ink',ink,'important');
       _sizeLogo(el);
     }
     function _ensureMounted(done){

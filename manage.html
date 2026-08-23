@@ -4277,8 +4277,8 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
         var inkAttr=inkAttrFor(inkCol);
         lg.setAttribute('data-lp-logo-accent',col);
         lg.setAttribute('data-lp-logo-ink',inkAttr);
-        lg.style.setProperty('--lp-logo-accent',col);
-        lg.style.setProperty('--lp-logo-ink',inkCol);
+        lg.style.setProperty('--lp-logo-accent',col,'important');
+        lg.style.setProperty('--lp-logo-ink',inkCol,'important');
         if(window.LPLogo&&window.LPLogo.mountLogo){
           window.LPLogo.mountLogo(lg,{pulse:true,ink:inkCol,accent:col}).then(function(wrap){
             var el=wrap||$('lpf-preview-logo');
@@ -4287,8 +4287,8 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
             el.classList.add('lp-foot-logo');
             el.setAttribute('data-lp-logo-accent',col);
             el.setAttribute('data-lp-logo-ink',inkAttr);
-            el.style.setProperty('--lp-logo-accent',col);
-            el.style.setProperty('--lp-logo-ink',inkCol);
+            el.style.setProperty('--lp-logo-accent',col,'important');
+            el.style.setProperty('--lp-logo-ink',inkCol,'important');
             el.style.height='28px';
           });
         }
