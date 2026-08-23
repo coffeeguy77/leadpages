@@ -10917,11 +10917,23 @@ function heroCtaCard(c){
       +'<div class="card" style="padding:0;overflow:hidden;min-height:72vh;">'
       +'<iframe id="ord-embed" title="Orders" src="'+esc(src)+'" style="display:block;width:100%;min-height:72vh;height:calc(100vh - 220px);border:0;background:var(--panel,#fff);"></iframe>'
       +'</div>';
+    var frame=$('ord-embed');
+    if(frame){
+      frame.addEventListener('load', function(){ pushThemeToOrdersEmbed(); setTimeout(pushThemeToOrdersEmbed, 400); });
+    }
     var g=$('ord-goto-storefront');
     if(g) g.addEventListener('click',function(){
       landingSub='orderStorefront';
       if(typeof showView==='function') showView('details');
     });
+  }
+  function pushThemeToOrdersEmbed(){
+    var frame=$('ord-embed');
+    if(!frame || !frame.contentWindow || !window.LPWorkspaceAppearance) return;
+    try{
+      var prefs=LPWorkspaceAppearance.load();
+      frame.contentWindow.postMessage({ type:'lp-workspace-appearance', prefs: prefs }, '*');
+    }catch(e){}
   }
   async function renderOnlineQuoteAdmin(){
     var box=$('av-onlinequotes'); if(!box) return;
@@ -11731,7 +11743,13 @@ function heroCtaCard(c){
       var p=(ev&&ev.detail)||LPWorkspaceAppearance.load();
       LPWorkspaceAppearance.applyLogos(LPWorkspaceAppearance.resolveTheme(p.theme));
     }
+    if(typeof pushThemeToOrdersEmbed==='function') pushThemeToOrdersEmbed();
     if(typeof _dashDrawChart==='function') _dashDrawChart(window._dashChartPeriod||'30d');
+  });
+  window.addEventListener('message', function(ev){
+    if(!ev || !ev.data || ev.data.type !== 'lp-hub-panel-ready') return;
+    var href=String(ev.data.href || '');
+    if(href.indexOf('/orders') >= 0 && typeof pushThemeToOrdersEmbed === 'function') pushThemeToOrdersEmbed();
   });
   previewInit();
   buildLogin(); bootAuth();

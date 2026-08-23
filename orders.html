@@ -3,6 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
+(function(){
+  try{
+    var raw=localStorage.getItem('leadpages_workspace_appearance');
+    var prefs=raw?JSON.parse(raw):null;
+    var theme=(prefs&&prefs.theme)||'classic-light';
+    if(theme==='system'){
+      theme=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'command-dark':'classic-light';
+    }
+    var allowed=['classic-light','command-dark','neon-pink','electric-blue','blush','blueprint'];
+    if(allowed.indexOf(theme)<0) theme='classic-light';
+    document.documentElement.dataset.theme=theme;
+    var dark=(theme==='command-dark'||theme==='neon-pink'||theme==='electric-blue');
+    document.documentElement.style.colorScheme=dark?'dark':'light';
+    var bg=dark?(theme==='neon-pink'?'#140f14':(theme==='electric-blue'?'#0f1419':'#12151a'))
+      :(theme==='blush'?'#faf3f2':(theme==='blueprint'?'#f0f4f8':'#f6f4ef'));
+    document.documentElement.style.background=bg;
+  }catch(e){}
+})();
+</script>
 <title>Orders — LeadPages</title>
 <link rel="icon" type="image/x-icon" href="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico">
 <link rel="shortcut icon" href="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico">
@@ -14,6 +34,7 @@
 <link rel="stylesheet" href="/assets/lp-admin-responsive.css">
 <link rel="stylesheet" href="/assets/lp-super-admin.css">
 <script src="/assets/lp-workspace-appearance.js"></script>
+<script src="/assets/lp-hub-embed.js"></script>
 <link rel="stylesheet" href="/assets/lp-logo.css">
 <script src="/assets/lp-logo.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
