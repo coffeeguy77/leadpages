@@ -298,7 +298,13 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
 .modal-body{padding:16px;max-height:70vh;overflow:auto;font-size:var(--fs-base)}
 .modal-foot{padding:12px 16px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
 .item-block{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px}
+.item-block-head{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start;justify-content:space-between}
+.item-block-head strong{flex:1;min-width:0}
 .item-block .meta{font-size:var(--fs-sm);color:var(--ink-soft);margin:4px 0 8px}
+.om-add-item{margin:14px 0 0;padding:14px;border:1px dashed var(--line);border-radius:12px;background:color-mix(in srgb,var(--ink) 3%,transparent)}
+.om-add-item h4{margin:0 0 10px;font-family:var(--font-display);font-size:var(--fs-md)}
+.om-add-row{display:grid;grid-template-columns:minmax(180px,2fr) 80px 100px auto;gap:8px;align-items:end}
+@media(max-width:700px){.om-add-row{grid-template-columns:1fr 1fr}.om-add-row .prod-combo{grid-column:1/-1}}
 .toast-host{position:fixed;right:16px;bottom:16px;z-index:120;display:flex;flex-direction:column;gap:8px;max-width:min(360px,calc(100vw - 32px))}
 .toast{
   padding:12px 14px;border-radius:12px;border:1px solid var(--line);
@@ -1857,6 +1863,7 @@ body.embed .hub{min-height:70vh}
     body.innerHTML = '<p class="notice">Loading order…</p>';
     foot.innerHTML = '';
     try {
+      try { await loadProductsCache({ includeQuestions: true }); } catch (_pc) {}
       var data = await api('/api/order/orders?' + siteQuery('id=' + encodeURIComponent(id)));
       state.detail = data;
       renderOrderDetail(data);
@@ -1907,12 +1914,168 @@ body.embed .hub{min-height:70vh}
     return bits.length ? bits.join(' · ') : '';
   }
 
+  function orderItemsEditable(order){
+    var st = order && order.status;
+    return ['cancelled', 'archived', 'completed', 'refunded'].indexOf(st) < 0;
+  }
+
+  function omProductNeedsWeight(p){
+    if (!p) return false;
+    if (p.pricing_method === 'per_weight' || p.pricing_method === 'price_tbc') return true;
+    var o = p.options || {};
+    if (o.size_mode === 'pack' || o.size_mode === 'fixed' || o.size_mode === 'each' || o.size_mode === 'unit' || o.size_mode === 'individual') {
+      return false;
+    }
+    return o.size_mode === 'variable' || o.weight_required === true;
+  }
+
+  function wireOmAddProductPanel(order){
+    var panel = $('om-add-item');
+    if (!panel || !orderItemsEditable(order)) return;
+    var search = panel.querySelector('[data-om-product-search]');
+    var sel = panel.querySelector('[data-om-product-id]');
+    var list = panel.querySelector('[data-om-combo-list]');
+    var qtyWrap = panel.querySelector('[data-om-qty-wrap]');
+    var kgWrap = panel.querySelector('[data-om-kg-wrap]');
+    var optHost = panel.querySelector('[data-om-add-opt]');
+    if (!search || !sel || !list) return;
+
+    function closeList(){ list.classList.add('hide'); list.innerHTML = ''; }
+
+    function selectedProduct(){
+      var id = sel.value;
+      if (!id) return null;
+      return (state.products || []).find(function(p){ return p.id === id; }) || null;
+    }
+
+    function refreshAddFields(){
+      var p = selectedProduct();
+      var needsW = omProductNeedsWeight(p);
+      if (qtyWrap) qtyWrap.classList.toggle('hide', !p || needsW);
+      if (kgWrap) kgWrap.classList.toggle('hide', !p || !needsW);
+      if (optHost) {
+        if (p) {
+          optHost.innerHTML = '<div class="line-opt"></div>';
+          renderLineOptions(optHost, p);
+        } else {
+          optHost.innerHTML = '';
+        }
+      }
+      var kgInput = panel.querySelector('[data-om-weight]');
+      if (kgInput && p && needsW) {
+        var minK = minimumKgForProduct(p);
+        var defW = p.default_weight_kg != null ? Number(p.default_weight_kg) : null;
+        if (!kgInput.value && (defW || minK)) kgInput.value = String(defW != null && isFinite(defW) ? defW : (minK || ''));
+        kgInput.min = minK || 0.1;
+      }
+    }
+
+    function choose(p){
+      sel.value = p.id;
+      search.value = productLabel(p);
+      closeList();
+      refreshAddFields();
+    }
+
+    function renderList(q){
+      var items = filterProducts(q);
+      if (!items.length) {
+        list.innerHTML = '<li class="muted">No matching products</li>';
+        list.classList.remove('hide');
+        return;
+      }
+      list.innerHTML = items.map(function(p){
+        return '<li data-id="' + esc(p.id) + '">' + esc(productLabel(p)) + '</li>';
+      }).join('');
+      list.classList.remove('hide');
+      list.querySelectorAll('li[data-id]').forEach(function(li){
+        li.addEventListener('mousedown', function(ev){
+          ev.preventDefault();
+          var p = (state.products || []).find(function(x){ return x.id === li.getAttribute('data-id'); });
+          if (p) choose(p);
+        });
+      });
+    }
+
+    search.addEventListener('focus', function(){ renderList(search.value); });
+    search.addEventListener('input', function(){
+      sel.value = '';
+      refreshAddFields();
+      renderList(search.value);
+    });
+    search.addEventListener('keydown', function(ev){
+      if (ev.key === 'Escape') { closeList(); return; }
+      if (ev.key === 'Enter') {
+        var first = list.querySelector('li[data-id]');
+        if (first && !list.classList.contains('hide')) {
+          ev.preventDefault();
+          first.dispatchEvent(new Event('mousedown'));
+        }
+      }
+    });
+    search.addEventListener('blur', function(){ setTimeout(closeList, 150); });
+
+    var addBtn = $('om-add-item-btn');
+    if (addBtn) {
+      addBtn.addEventListener('click', async function(){
+        var product = selectedProduct();
+        if (!product) {
+          toast('Search and select a product first', 'err');
+          return;
+        }
+        var needsW = omProductNeedsWeight(product);
+        var qtyEl = panel.querySelector('[data-om-qty]');
+        var kgEl = panel.querySelector('[data-om-weight]');
+        var notesEl = panel.querySelector('[data-om-notes]');
+        var qty = needsW ? 1 : (Number(qtyEl && qtyEl.value) || 0);
+        var wRaw = kgEl && kgEl.value;
+        if (!needsW && qty < 1) {
+          toast('Enter a quantity', 'err');
+          return;
+        }
+        if (needsW) {
+          var kg = wRaw !== '' ? Number(wRaw) : null;
+          if (kg == null || !isFinite(kg) || kg <= 0) {
+            toast('Enter weight (kg) for this product', 'err');
+            return;
+          }
+          var minK = minimumKgForProduct(product);
+          if (minK != null && kg + 0.0001 < minK) {
+            toast('Minimum weight is ' + minK + ' kg', 'err');
+            return;
+          }
+        }
+        addBtn.disabled = true;
+        try {
+          var body = {
+            site_id: state.siteId,
+            action: 'add_order_item',
+            order_id: order.id,
+            product_id: product.id,
+            quantity: qty,
+            notes: notesEl && notesEl.value.trim() ? notesEl.value.trim() : null,
+            answers: collectLineAnswers(panel)
+          };
+          if (needsW && wRaw !== '') body.requested_weight_kg = Number(wRaw);
+          await api('/api/order/orders', { method: 'POST', body: body });
+          toast('Product added', 'ok');
+          await openOrderDetail(order.id);
+        } catch (e) {
+          toast((e && e.message) || String(e), 'err');
+          addBtn.disabled = false;
+        }
+      });
+    }
+    refreshAddFields();
+  }
+
   function renderOrderDetail(data){
     var o = data.order || {};
     var items = data.items || [];
     var display = data.display || {};
     $('om-title').textContent = o.order_number || 'Order';
     var isVoided = o.status === 'cancelled';
+    var canEditItems = orderItemsEditable(o);
     var html = '';
     html += '<div class="om-tabs">';
     html += '<button type="button" class="btn ghost on" data-om-tab="details">Details</button>';
@@ -1945,7 +2108,11 @@ body.embed .hub{min-height:70vh}
         it.pricing_method === 'per_weight' || it.pricing_method === 'price_tbc';
       var optTxt = formatItemOptions(it, data);
       html += '<div class="item-block" data-item="' + esc(it.id) + '">';
-      html += '<strong>' + esc(it.product_name) + '</strong> ' + priceBadge(it);
+      html += '<div class="item-block-head"><div><strong>' + esc(it.product_name) + '</strong> ' + priceBadge(it) + '</div>';
+      if (canEditItems) {
+        html += '<button class="btn ghost" type="button" data-remove-item="' + esc(it.id) + '" title="Remove line">Remove</button>';
+      }
+      html += '</div>';
       html += '<div class="meta">Qty ' + esc(it.quantity) +
         (it.requested_weight_kg != null ? ' · Req ' + esc(it.requested_weight_kg) + ' kg' : '') +
         (it.actual_weight_kg != null ? ' · Actual ' + esc(it.actual_weight_kg) + ' kg' : '') +
@@ -1964,6 +2131,22 @@ body.embed .hub{min-height:70vh}
       }
       html += '</div>';
     });
+    if (canEditItems) {
+      html += '<div class="om-add-item" id="om-add-item">';
+      html += '<h4>Add product</h4>';
+      html += '<div class="om-add-row">';
+      html += '<div class="field prod-combo" style="margin:0"><label>Search product</label>';
+      html += '<input data-om-product-search placeholder="Find a product…" autocomplete="off">';
+      html += '<select data-om-product-id class="hide"><option value=""></option></select>';
+      html += '<ul class="prod-combo-list hide" data-om-combo-list></ul></div>';
+      html += '<div class="field" style="margin:0" data-om-qty-wrap><label>Qty</label><input data-om-qty type="number" min="1" step="1" value="1"></div>';
+      html += '<div class="field" style="margin:0" data-om-kg-wrap><label>Weight kg</label><input data-om-weight type="number" min="0" step="0.1" inputmode="decimal" placeholder="kg"></div>';
+      html += '<button class="btn solid" type="button" id="om-add-item-btn">Add product</button>';
+      html += '</div>';
+      html += '<div class="field full" style="margin:10px 0 0"><label>Line notes (optional)</label><input data-om-notes placeholder="Notes for this line"></div>';
+      html += '<div data-om-add-opt></div>';
+      html += '</div>';
+    }
     html += '<div class="actions-row" style="margin-top:12px"><button class="btn solid" type="button" id="om-save-order">Save changes</button></div>';
     html += '</div>';
 
@@ -2032,6 +2215,33 @@ body.embed .hub{min-height:70vh}
         }
       });
     });
+
+    $('om-body').querySelectorAll('[data-remove-item]').forEach(function(btn){
+      btn.addEventListener('click', async function(){
+        var itemId = btn.getAttribute('data-remove-item');
+        var block = btn.closest('.item-block');
+        var label = block && block.querySelector('strong') ? block.querySelector('strong').textContent.trim() : 'this item';
+        if (!confirm('Remove ' + label + ' from the order?')) return;
+        btn.disabled = true;
+        try {
+          await api('/api/order/orders', {
+            method: 'POST',
+            body: {
+              site_id: state.siteId,
+              action: 'remove_order_item',
+              order_item_id: itemId
+            }
+          });
+          toast('Item removed', 'ok');
+          await openOrderDetail(o.id);
+        } catch (e) {
+          toast((e && e.message) || String(e), 'err');
+          btn.disabled = false;
+        }
+      });
+    });
+
+    wireOmAddProductPanel(o);
 
     async function saveOrderPatch(extra){
       var patch = Object.assign({
