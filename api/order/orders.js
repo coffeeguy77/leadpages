@@ -135,7 +135,7 @@ module.exports = async function (req, res) {
           items: result.items,
           portal_url: PUBLIC_BASE + '/order-portal?t=' + encodeURIComponent(result.portal_token),
           deposit_url: result.deposit_token
-            ? PUBLIC_BASE + '/order-portal?t=' + encodeURIComponent(result.deposit_token) + '&pay=1'
+            ? PUBLIC_BASE + '/order-portal?t=' + encodeURIComponent(result.deposit_token)
             : null,
           after_create: result.after_create || {}
         });
