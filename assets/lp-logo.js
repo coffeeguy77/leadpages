@@ -65,8 +65,8 @@
       return { accent: opts.accent, ink: opts.ink };
     }
 
-    /* Admin workspace always follows the chosen theme — not marketing ink heuristics */
-    if (opts.inkMode === 'workspace' || (isAdminWorkspace() && opts.inkMode !== 'light' && opts.inkMode !== 'dark')) {
+    /* Admin workspace follows theme unless ink mode is explicit */
+    if (opts.inkMode === 'workspace' || (isAdminWorkspace() && opts.inkMode !== 'light' && opts.inkMode !== 'dark' && opts.inkMode !== 'custom')) {
       if (fromTheme) return { accent: fromTheme.accent, ink: fromTheme.ink };
     }
 
@@ -130,10 +130,22 @@
     return wrap;
   }
 
+  function isFooterLogo(el) {
+    if (!el) return false;
+    if (el.classList && el.classList.contains('lp-foot-logo')) return true;
+    return !!(el.closest && el.closest('#lpFooter'));
+  }
+
   function applyTokens(wrap, tokens) {
-    wrap.style.setProperty('--lp-logo-accent', tokens.accent);
-    wrap.style.setProperty('--lp-logo-ink', tokens.ink);
+    var imp = isFooterLogo(wrap) ? 'important' : '';
+    wrap.style.setProperty('--lp-logo-accent', tokens.accent, imp);
+    wrap.style.setProperty('--lp-logo-ink', tokens.ink, imp);
     wrap.style.setProperty('--lp-logo-pulse-bg', 'transparent');
+    var svg = wrap.querySelector && wrap.querySelector('svg');
+    if (svg) {
+      svg.style.setProperty('--lp-logo-accent', tokens.accent, imp);
+      svg.style.setProperty('--lp-logo-ink', tokens.ink, imp);
+    }
   }
 
   function inkFromSrc(el) {
@@ -243,6 +255,7 @@
         svg.setAttribute('focusable', 'false');
         if (!svg.getAttribute('role')) svg.removeAttribute('role');
       }
+      applyTokens(wrap, tokens);
 
       if (el !== wrap && el.parentNode) el.parentNode.replaceChild(wrap, el);
       wrap.dataset.lpLogoMounted = 'true';

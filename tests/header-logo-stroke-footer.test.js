@@ -48,10 +48,13 @@ describe('header logo, section stroke, buy-bar gap', () => {
     const logoJs = fs.readFileSync(path.join(ROOT, 'assets/lp-logo.js'), 'utf8');
     const manage = fs.readFileSync(path.join(ROOT, 'manage.html'), 'utf8');
     const demo = fs.readFileSync(path.join(ROOT, 'marketplace/demos/demo-shared.js'), 'utf8');
+    const demoCss = fs.readFileSync(path.join(ROOT, 'marketplace/demos/demo-shared.css'), 'utf8');
     assert.match(css, /data-lp-logo-ink="light"\]:not\(\.lp-foot-logo\)/);
-    assert.match(css, /#lpFooter/);
+    assert.doesNotMatch(css, /#lpFooter[^\n]*\n[^\n]*--lp-logo-ink:\s*var\(--on-dark/);
     assert.match(logoJs, /explicit === 'custom'/);
+    assert.match(logoJs, /isFooterLogo/);
     assert.match(manage, /inkAttr.*custom/);
     assert.match(demo, /'custom':'light'/);
+    assert.doesNotMatch(demoCss, /\.lp-foot-logo\{[^}]*--lp-logo-ink:#ffffff/);
   });
 });

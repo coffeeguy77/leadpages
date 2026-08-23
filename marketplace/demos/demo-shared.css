@@ -255,7 +255,7 @@ footer.site.foot-no-blurb .foot-blurb{display:none}
 .lp-foot.lpf-left .lp-foot-in{justify-content:flex-start}
 .lp-foot.lpf-right .lp-foot-in{justify-content:flex-end}
 .lp-foot-link{display:inline-flex;line-height:0;pointer-events:auto}
-.lp-foot-logo{display:block;height:30px;width:auto;--lp-logo-ink:#ffffff;--lp-logo-accent:var(--hivis,#ff6a1f)}
+.lp-foot-logo{display:block;height:30px;width:auto;--lp-logo-accent:var(--hivis,#ff6a1f)}
 .lp-foot-txt{font-size:13px;line-height:1.4;color:#ffffff}
 
 /* sticky mobile call bar */
