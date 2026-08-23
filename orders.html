@@ -77,7 +77,8 @@ body{display:flex;flex-direction:column;min-height:100%;-webkit-font-smoothing:a
 .hub{display:none;flex:1;min-height:0}
 .hub.on{display:flex}
 .side{
-  width:248px;flex:none;display:flex;flex-direction:column;
+  width:25%;min-width:220px;max-width:420px;flex:0 0 25%;
+  display:flex;flex-direction:column;
   border-right:1px solid var(--line);background:var(--bg-soft,var(--surface));
   padding:16px 12px 18px;
 }
@@ -126,7 +127,7 @@ body{display:flex;flex-direction:column;min-height:100%;-webkit-font-smoothing:a
 .btn.wide{width:100%;justify-content:center}
 .btn:disabled{opacity:.55;cursor:default}
 .btn.danger{border-color:#b91c1c;color:#b91c1c}
-.main{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--bg)}
+.main{flex:1 1 75%;min-width:0;display:flex;flex-direction:column;background:var(--bg)}
 .top{
   flex:none;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
   padding:10px 16px;border-bottom:1px solid var(--line);background:var(--surface);
@@ -277,33 +278,34 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
 .no-prod-card:hover{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,transparent)}
 .no-prod-card strong{display:block;font-size:var(--fs-sm);line-height:1.3;margin:0 0 4px}
 .no-prod-card .meta{font-size:var(--fs-xs);color:var(--ink-soft)}
-.no-split{
-  display:grid;grid-template-columns:minmax(220px,25%) minmax(0,75%);gap:16px 20px;align-items:start;
+.no-main-split{
+  display:grid;grid-template-columns:minmax(260px,42%) minmax(0,58%);gap:20px;align-items:start;
 }
-.no-menu-col{min-width:0;max-height:calc(100vh - 180px);overflow:auto;padding-right:4px;border-right:1px solid var(--line)}
+.no-products-col{min-width:0;max-height:calc(100vh - 200px);overflow:auto;padding-right:4px}
 .no-editor-col{min-width:0}
 .side-nav-wrap{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column}
 .side-order-cart{
-  flex:none;border-top:1px solid var(--line);margin-top:8px;padding:12px 8px 4px;
-  max-height:min(42vh,360px);overflow:auto;
+  flex:none;border-top:1px solid var(--line);margin-top:8px;padding:12px 4px 8px;
+  min-height:120px;max-height:min(46vh,400px);overflow:auto;
+  background:color-mix(in srgb,var(--accent) 4%,var(--surface));
+  border-radius:10px;
 }
+.side-order-cart.hide{display:none!important}
 .side-order-cart h4{margin:0 0 8px;font-size:var(--fs-xs);font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
 .side-order-cart-empty{font-size:var(--fs-xs);color:var(--ink-faint);margin:0 0 8px;line-height:1.35}
 .side-order-cart-list{display:flex;flex-direction:column;gap:6px;margin:0}
 .side-order-cart-item{
   display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 8px;align-items:start;
-  padding:7px 8px;border-radius:8px;border:1px solid var(--line);background:color-mix(in srgb,var(--accent) 4%,var(--surface));
+  padding:7px 8px;border-radius:8px;border:1px solid var(--line);background:var(--surface);
 }
 .side-order-cart-item strong{font-size:var(--fs-xs);line-height:1.25;display:block}
 .side-order-cart-item .meta{font-size:10px;color:var(--ink-soft);line-height:1.3}
 .side-order-cart-item .rm{align-self:center;padding:4px 8px;min-height:0;font-size:var(--fs-xs)}
 @media(max-width:1100px){
-  .no-split{grid-template-columns:1fr}
-  .no-menu-col{max-height:none;border-right:0;border-bottom:1px solid var(--line);padding-bottom:14px}
+  .no-main-split{grid-template-columns:1fr}
+  .no-products-col{max-height:none;padding-right:0;padding-bottom:14px}
+  .side{width:100%;max-width:none;flex:none}
 }
-.no-layout-toggle{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px}
-.no-layout-toggle .lbl{font-size:var(--fs-xs);font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-faint);margin-right:4px}
-.no-layout-btn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
 .no-fast-list{display:flex;flex-direction:column;gap:12px;margin:0 0 18px}
 .no-fast-row{
   border:1px solid var(--line);border-radius:14px;padding:14px 16px;background:var(--surface);
@@ -543,14 +545,9 @@ body.embed .hub{min-height:70vh}
           <h3>New order</h3>
           <p class="sub">Browse products on the left; your cart fills in the sidebar. Complete customer details and payment on the right.</p>
           <form id="new-order-form">
-            <div class="no-split">
-              <div class="no-menu-col">
-                <h4 class="section-title" style="margin-top:0">Menu</h4>
-                <div class="no-layout-toggle" id="no-layout-toggle">
-                  <span class="lbl">Layout</span>
-                  <button type="button" class="btn ghost no-layout-btn" data-no-mode="fast">Fast order</button>
-                  <button type="button" class="btn ghost no-layout-btn" data-no-mode="traditional">Traditional</button>
-                </div>
+            <div class="no-main-split">
+              <div class="no-products-col">
+                <h4 class="section-title" style="margin-top:0">Products</h4>
                 <div id="no-cat-pills" class="no-cat-pills"></div>
                 <div id="no-traditional-wrap">
                   <div id="no-product-grid" class="no-product-grid"></div>
@@ -1824,8 +1821,9 @@ body.embed .hub{min-height:70vh}
   function updateSideOrderCartVisibility(){
     var el = $('side-order-cart');
     if (!el) return;
-    var hasItems = collectStaffCartEntries().length > 0;
-    el.classList.toggle('hide', state.currentView !== 'new' && !hasItems);
+    var onNew = state.currentView === 'new';
+    el.classList.toggle('hide', !onNew);
+    if (onNew) renderNoStaffCart();
   }
 
   function paintSites(){
@@ -3003,28 +3001,9 @@ body.embed .hub{min-height:70vh}
     var fastWrap = $('no-fast-wrap');
     if (trad) trad.classList.toggle('hide', fast);
     if (fastWrap) fastWrap.classList.toggle('hide', !fast);
-    document.querySelectorAll('.no-layout-btn').forEach(function(btn){
-      var on = btn.getAttribute('data-no-mode') === state.noOrderMode;
-      btn.classList.toggle('on', on);
-      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
-    });
     if (fast) renderNoFastList();
     else renderNoProductGrid();
     renderNoStaffCart();
-  }
-
-  function wireNoLayoutToggle(){
-    var host = $('no-layout-toggle');
-    if (!host || host.getAttribute('data-wired') === '1') return;
-    host.setAttribute('data-wired', '1');
-    host.addEventListener('click', function(ev){
-      var btn = ev.target.closest('.no-layout-btn');
-      if (!btn) return;
-      state.noOrderMode = btn.getAttribute('data-no-mode') === 'traditional' ? 'traditional' : 'fast';
-      try { localStorage.setItem('lp_orders_staff_layout_' + (state.siteId || ''), state.noOrderMode); } catch (_e) {}
-      applyNoOrderLayout();
-      updateNoSubmitEnabled();
-    });
   }
 
   function resolveNoOrderModeFromSettings(settings){
@@ -3097,10 +3076,21 @@ body.embed .hub{min-height:70vh}
     if ($('no-phone')) $('no-phone').addEventListener('input', updateNoSubmitEnabled);
   }
 
+  function categoriesForNoOrderPills(){
+    var cats = (state.categories || []).filter(function(c){ return c.active !== false; });
+    var withProducts = {};
+    (state.products || []).forEach(function(p){
+      if (p.active === false) return;
+      productCategoryIdsLocal(p).forEach(function(id){ if (id) withProducts[id] = true; });
+    });
+    var visible = cats.filter(function(c){ return withProducts[c.id]; });
+    return visible.length ? visible : cats;
+  }
+
   function renderNoCatPills(){
     var host = $('no-cat-pills');
     if (!host) return;
-    var cats = (state.categories || []).filter(function(c){ return c.active !== false; });
+    var cats = categoriesForNoOrderPills();
     var pills = [{ id: '', name: 'All' }].concat(cats);
     host.innerHTML = pills.map(function(c){
       var on = (state.noSelectedCat || '') === (c.id || '');
@@ -5633,8 +5623,6 @@ body.embed .hub{min-height:70vh}
         state.noFastAdded = {};
         state.noSelectedCustomerId = null;
         state.noCustomerMode = 'new';
-        renderNoCatPills();
-        wireNoLayoutToggle();
         wireNoPayCreate();
         wireNoCustomerControls();
         applyNoCustomerMode();
@@ -5649,6 +5637,7 @@ body.embed .hub{min-height:70vh}
             loadPickupWindows()
           ]);
         } catch (_e) {}
+        renderNoCatPills();
         applyNoOrderLayout();
         renderNoStaffCart();
         updateSideOrderCartVisibility();
