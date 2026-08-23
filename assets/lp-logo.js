@@ -76,6 +76,12 @@
         ink: opts.ink || '#ffffff'
       };
     }
+    if (opts.inkMode === 'custom') {
+      return {
+        accent: opts.accent || (fromTheme && fromTheme.accent) || '#2ecc8f',
+        ink: opts.ink || '#ffffff'
+      };
+    }
     if (opts.inkMode === 'dark') {
       return {
         accent: opts.accent || (fromTheme && fromTheme.accent) || '#1f7a63',
@@ -195,7 +201,7 @@
 
   function resolveInkMode(el) {
     var explicit = el.getAttribute('data-lp-logo-ink');
-    if (explicit === 'light' || explicit === 'dark') return explicit;
+    if (explicit === 'light' || explicit === 'dark' || explicit === 'custom') return explicit;
     if (isAdminWorkspace()) return 'workspace';
     if (isDarkBackground(el)) return 'light';
     if (explicit === 'auto' || !explicit) return 'dark';
@@ -218,9 +224,10 @@
     return loadSvgMarkup().then(function (markup) {
       var wrap = el.classList && el.classList.contains('lp-logo-wrap') ? el : wrapFromElement(el);
       var inkMode = resolveInkMode(el);
+      var inkFromStyle = (el.style && el.style.getPropertyValue('--lp-logo-ink')) ? el.style.getPropertyValue('--lp-logo-ink').trim() : '';
       var tokens = logoTokens({
         accent: opts.accent || el.getAttribute('data-lp-logo-accent'),
-        ink: opts.ink || (inkMode === 'light' ? '#ffffff' : inkMode === 'dark' ? '#13161b' : null),
+        ink: opts.ink || inkFromStyle || (inkMode === 'light' ? '#ffffff' : inkMode === 'dark' ? '#13161b' : null),
         inkMode: inkMode,
         theme: opts.theme,
         pulse: opts.pulse
@@ -242,10 +249,12 @@
 
       if (isPartnerTemplatePage()) {
         var pAccent = partnerAccent() || tokens.accent;
-        var pInk = resolveInkMode(wrap) === 'light' ? '#ffffff' : '#1a1612';
+        var pMode = resolveInkMode(wrap);
+        var pInk = pMode === 'light' ? '#ffffff' : pMode === 'custom' ? tokens.ink : '#1a1612';
         applyTokens(wrap, { accent: pAccent, ink: pInk });
       } else if (isMarketingHost()) {
-        if (!el.getAttribute('data-lp-logo-ink') || el.getAttribute('data-lp-logo-ink') === 'auto' || el.getAttribute('data-lp-logo-ink') === 'light') {
+        var mInkAttr = el.getAttribute('data-lp-logo-ink');
+        if (!mInkAttr || mInkAttr === 'auto' || mInkAttr === 'light') {
           applyTokens(wrap, { accent: tokens.accent, ink: '#ffffff' });
         }
       } else if (isAdminWorkspace()) {
