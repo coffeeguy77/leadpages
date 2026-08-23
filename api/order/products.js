@@ -106,7 +106,25 @@ module.exports = async function (req, res) {
         .select('*')
         .eq('order_system_id', system.id)
         .order('sort_order');
-      return json(res, 200, { products: data || [], categories: categories || [] });
+      const { minimumKg, defaultWeightKg } = require('../../lib/order/product-weight');
+      const { minimumKgOption } = require('../../lib/order/product-options');
+      const enriched = (data || []).map(function (p) {
+        return Object.assign({}, p, {
+          minimum_kg: minimumKg(p) || minimumKgOption(p) || null,
+          default_weight_kg: defaultWeightKg(p)
+        });
+      });
+      var payload = { products: enriched, categories: categories || [] };
+      if (req.query && req.query.include_questions === '1' && (data || []).length) {
+        const ids = (data || []).map(function (p) { return p.id; });
+        const { data: questions } = await admin
+          .from('order_product_questions')
+          .select('*')
+          .in('product_id', ids)
+          .order('sort_order');
+        payload.questions = questions || [];
+      }
+      return json(res, 200, payload);
     }
 
     if (req.method === 'POST' && body.action === 'upsert_category') {

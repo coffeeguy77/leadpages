@@ -3,6 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
+(function(){
+  try{
+    var raw=localStorage.getItem('leadpages_workspace_appearance');
+    var prefs=raw?JSON.parse(raw):null;
+    var theme=(prefs&&prefs.theme)||'classic-light';
+    if(theme==='system'){
+      theme=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'command-dark':'classic-light';
+    }
+    var allowed=['classic-light','command-dark','neon-pink','electric-blue','blush','blueprint'];
+    if(allowed.indexOf(theme)<0) theme='classic-light';
+    document.documentElement.dataset.theme=theme;
+    var dark=(theme==='command-dark'||theme==='neon-pink'||theme==='electric-blue');
+    document.documentElement.style.colorScheme=dark?'dark':'light';
+    var bg=dark?(theme==='neon-pink'?'#140f14':(theme==='electric-blue'?'#0f1419':'#12151a'))
+      :(theme==='blush'?'#faf3f2':(theme==='blueprint'?'#f0f4f8':'#f6f4ef'));
+    document.documentElement.style.background=bg;
+  }catch(e){}
+})();
+</script>
 <title>Orders — LeadPages</title>
 <link rel="icon" type="image/x-icon" href="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico">
 <link rel="shortcut icon" href="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico">
@@ -14,6 +34,7 @@
 <link rel="stylesheet" href="/assets/lp-admin-responsive.css">
 <link rel="stylesheet" href="/assets/lp-super-admin.css">
 <script src="/assets/lp-workspace-appearance.js"></script>
+<script src="/assets/lp-hub-embed.js"></script>
 <link rel="stylesheet" href="/assets/lp-logo.css">
 <script src="/assets/lp-logo.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -220,7 +241,33 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
   .line-row{grid-template-columns:1fr 1fr}
   .line-row .prod-combo{grid-column:1/-1}
 }
-.modal-back{
+.no-cat-pills{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 14px}
+.no-cat-pill{
+  appearance:none;border:2px solid var(--line-strong);background:var(--surface);color:var(--ink);
+  font:700 16px/1.25 var(--font-ui);padding:14px 24px;border-radius:999px;cursor:pointer;
+  min-height:48px;
+}
+.no-cat-pill.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--ink)}
+.no-cat-pill:hover{border-color:var(--accent)}
+.no-product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:10px;margin:0 0 18px}
+.no-prod-card{
+  text-align:left;border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--surface);
+  cursor:pointer;font:inherit;color:inherit;min-height:72px;
+}
+.no-prod-card:hover{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,transparent)}
+.no-prod-card strong{display:block;font-size:var(--fs-sm);line-height:1.3;margin:0 0 4px}
+.no-prod-card .meta{font-size:var(--fs-xs);color:var(--ink-soft)}
+.line-opt{margin:8px 0 0;padding:8px 0 0;border-top:1px dashed var(--line)}
+.line-opt .field{margin:0 0 8px}
+.om-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px}
+.om-tabs button{font-size:var(--fs-sm);padding:7px 12px}
+.om-panel{display:none}
+.om-panel.on{display:block}
+.om-history{max-height:240px;overflow:auto;font-size:var(--fs-sm)}
+.om-history .ev{padding:8px 0;border-bottom:1px solid var(--line)}
+.pay-on-create{border:1px solid var(--line);border-radius:12px;padding:14px;margin:14px 0}
+.pay-on-create label{display:flex;gap:8px;align-items:flex-start;font-weight:600;margin:0 0 10px;cursor:pointer}
+.modal-back.sub{z-index:90}
   position:fixed;inset:0;background:rgba(18,21,26,.48);z-index:80;
   display:flex;align-items:flex-start;justify-content:center;padding:24px 12px;overflow:auto;
 }
@@ -358,7 +405,8 @@ body.embed .hub{min-height:70vh}
               <option value="collected">Collected</option>
               <option value="completed">Completed / archived</option>
               <option value="archived">Archived</option>
-              <option value="cancelled">Cancelled</option>
+              <option value="cancelled">Voided / cancelled</option>
+              <option value="voided">Voided only</option>
               <option value="draft">Draft</option>
             </select>
             <button class="btn solid" type="button" id="orders-search">Search</button>
@@ -392,11 +440,35 @@ body.embed .hub{min-height:70vh}
             <div class="field full"><label for="no-notes">Notes</label>
               <textarea id="no-notes" class="notes-grow" rows="1" placeholder="Optional order notes"></textarea>
             </div>
-            <h4 class="section-title">Line items</h4>
+            <h4 class="section-title">Products</h4>
+            <div id="no-cat-pills" class="no-cat-pills"></div>
+            <div id="no-product-grid" class="no-product-grid"></div>
+            <h4 class="section-title">Order lines</h4>
             <div id="no-lines"></div>
             <div class="actions-row">
-              <button class="btn ghost" type="button" id="no-add-line">Add line</button>
-              <button class="btn solid" type="submit" id="no-submit">Create order</button>
+              <button class="btn ghost" type="button" id="no-add-line">Add product</button>
+            </div>
+            <div class="pay-on-create">
+              <p class="notice" style="margin-top:0"><strong>Payment on create</strong> — choose one option before creating the order.</p>
+              <label><input type="radio" name="no-pay-action" value="send_invoice_link"> Send invoice link (SMS payment link to customer)</label>
+              <label><input type="radio" name="no-pay-action" value="inhouse_payment"> In-house payment (deposit received now)</label>
+              <div id="no-inhouse-panel" class="hide" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line)">
+                <div class="field"><label for="no-inhouse-method">Payment method</label>
+                  <select id="no-inhouse-method">
+                    <option value="">Select method…</option>
+                    <option value="cash_deposit">Cash deposit</option>
+                    <option value="eftpos">EFTPOS</option>
+                    <option value="direct_deposit">Direct deposit</option>
+                    <option value="contra">Contra</option>
+                  </select>
+                </div>
+                <div class="field full"><label for="no-inhouse-notes">Staff notes (optional)</label>
+                  <textarea id="no-inhouse-notes" class="notes-grow" rows="1" placeholder="e.g. Paid cash at counter"></textarea>
+                </div>
+              </div>
+            </div>
+            <div class="actions-row">
+              <button class="btn solid" type="submit" id="no-submit" disabled>Create order</button>
             </div>
             <p class="notice" id="no-msg"></p>
           </form>
@@ -1040,6 +1112,63 @@ body.embed .hub{min-height:70vh}
   </div>
 </div>
 
+<div id="void-modal" class="modal-back sub hide" role="dialog" aria-modal="true">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-head"><h3>Void order</h3><button class="btn ghost" type="button" id="void-close">✕</button></div>
+    <div class="modal-body">
+      <p class="notice">This cancels the order. You can restore it later from the voided orders list.</p>
+      <div class="field full"><label for="void-reason">Reason / staff note</label>
+        <textarea id="void-reason" class="notes-grow" rows="2" placeholder="Why is this order being voided?"></textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" type="button" id="void-cancel">Cancel</button>
+      <button class="btn danger solid" type="button" id="void-confirm">Void order</button>
+    </div>
+  </div>
+</div>
+
+<div id="deposit-phone-modal" class="modal-back sub hide" role="dialog" aria-modal="true">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-head"><h3>Send deposit link</h3><button class="btn ghost" type="button" id="dpm-close">✕</button></div>
+    <div class="modal-body">
+      <div class="field full"><label for="dpm-phone">Send SMS to</label>
+        <input id="dpm-phone" type="tel" placeholder="04xx xxx xxx">
+      </div>
+      <p class="notice" style="margin:0">Confirm or edit the phone number before sending.</p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" type="button" id="dpm-cancel">Cancel</button>
+      <button class="btn solid" type="button" id="dpm-send">Send</button>
+    </div>
+  </div>
+</div>
+
+<div id="inhouse-pay-modal" class="modal-back sub hide" role="dialog" aria-modal="true">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-head"><h3>Record in-house payment</h3><button class="btn ghost" type="button" id="ihp-close">✕</button></div>
+    <div class="modal-body">
+      <p class="notice" style="margin-top:0">Counts as deposit received. A receipt is sent to the customer after recording.</p>
+      <div class="field full"><label for="ihp-method">Payment method</label>
+        <select id="ihp-method">
+          <option value="">Select method…</option>
+          <option value="cash_deposit">Cash deposit</option>
+          <option value="eftpos">EFTPOS</option>
+          <option value="direct_deposit">Direct deposit</option>
+          <option value="contra">Contra</option>
+        </select>
+      </div>
+      <div class="field full"><label for="ihp-notes">Staff notes (optional)</label>
+        <textarea id="ihp-notes" class="notes-grow" rows="2" placeholder="e.g. Paid EFTPOS at counter"></textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" type="button" id="ihp-cancel">Cancel</button>
+      <button class="btn solid" type="button" id="ihp-confirm">Record payment &amp; send receipt</button>
+    </div>
+  </div>
+</div>
+
 <div id="order-modal" class="modal-back hide" role="dialog" aria-modal="true" aria-labelledby="om-title">
   <div class="modal">
     <div class="modal-head">
@@ -1095,7 +1224,12 @@ body.embed .hub{min-height:70vh}
     detail: null,
     navCounts: { customers: null, orders: null, new_orders: null, archived: null },
     prodDeleteUnlocked: false,
-    prodDeleteSelected: {}
+    prodDeleteSelected: {},
+    productQuestions: [],
+    noSelectedCat: '',
+    voidOrderId: null,
+    depositLinkOrderId: null,
+    inhousePaymentOrderId: null
   };
 
   var $ = function(id){ return document.getElementById(id); };
@@ -1242,6 +1376,7 @@ body.embed .hub{min-height:70vh}
     else if (s === 'ready' || s === 'confirmed') cls = 'ok';
     else if (s === 'awaiting_deposit' || s === 'changes_open' || s === 'draft') cls = 'warn';
     else if (s === 'cancelled' || s === 'refunded') cls = 'bad';
+    if (s === 'cancelled') label = 'voided';
     else if (s === 'locked' || s === 'in_preparation') cls = 'info';
     else if (s === 'collected') cls = 'purple';
     return '<span class="badge ' + cls + '">' + esc(label) + '</span>';
@@ -1528,6 +1663,7 @@ body.embed .hub{min-height:70vh}
       if (q) extra += 'q=' + encodeURIComponent(q);
       if (st === 'active') extra += (extra ? '&' : '') + 'active=1';
       else if (st === 'archived') extra += (extra ? '&' : '') + 'status=archived';
+      else if (st === 'voided' || st === 'cancelled') extra += (extra ? '&' : '') + 'status=cancelled';
       else if (st) extra += (extra ? '&' : '') + 'status=' + encodeURIComponent(st);
       var data = await api('/api/order/orders?' + siteQuery(extra));
       var orders = data.orders || [];
@@ -1577,37 +1713,83 @@ body.embed .hub{min-height:70vh}
     }
   }
 
+  function formatAuditLabel(ev){
+    var t = ev.event_type || '';
+    var map = {
+      order_created: 'Order created',
+      invoice_created: 'Invoice created',
+      invoice_sent: 'Invoice sent',
+      deposit_link_sent: 'Deposit link sent',
+      receipt_sent: 'Receipt sent',
+      portal_viewed: 'Customer viewed portal',
+      invoice_viewed: 'Customer viewed invoice',
+      inhouse_payment_recorded: 'In-house payment recorded',
+      order_voided: 'Order voided',
+      order_restored: 'Order restored',
+      order_edited: 'Order edited',
+      customer_notified: 'Message sent',
+      status_changed: 'Status changed'
+    };
+    return map[t] || t.replace(/_/g, ' ');
+  }
+
+  function answersForItem(itemId, data){
+    return (data.item_answers || []).filter(function(a){ return a.order_item_id === itemId; });
+  }
+
+  function formatItemOptions(item, data){
+    var snap = item.product_snapshot || {};
+    var sel = snap.selected_options || (item.options_snapshot && item.options_snapshot.selected) || [];
+    var bits = [];
+    if (Array.isArray(sel)) {
+      sel.forEach(function(o){ if (o && o.label) bits.push(o.label); });
+    }
+    answersForItem(item.id, data).forEach(function(a){
+      var v = a.value;
+      if (v && typeof v === 'object' && v.label) bits.push(a.question_label + ': ' + v.label);
+      else if (v != null && v !== '') bits.push(a.question_label + ': ' + String(v));
+    });
+    return bits.length ? bits.join(' · ') : '';
+  }
+
   function renderOrderDetail(data){
     var o = data.order || {};
     var items = data.items || [];
     var display = data.display || {};
     $('om-title').textContent = o.order_number || 'Order';
+    var isVoided = o.status === 'cancelled';
     var html = '';
+    html += '<div class="om-tabs">';
+    html += '<button type="button" class="btn ghost on" data-om-tab="details">Details</button>';
+    html += '<button type="button" class="btn ghost" data-om-tab="notes">Staff notes</button>';
+    html += '<button type="button" class="btn ghost" data-om-tab="history">History</button>';
+    html += '</div>';
+
+    html += '<div class="om-panel on" data-om-panel="details">';
     html += '<div class="grid2">';
-    html += '<div><p class="notice" style="margin:0"><strong>Customer</strong><br>' + esc(o.customer_name) +
-      '<br>' + esc(o.customer_phone || '—') + '<br>' + esc(o.customer_email || '—') + '</p></div>';
-    html += '<div><p class="notice" style="margin:0"><strong>Pickup</strong><br>' + esc(o.pickup_date || '—') +
-      (o.pickup_time ? ' · ' + esc(o.pickup_time) : '') +
-      '<br>Status: ' + statusBadge(o.status) + ' · Edit: ' + esc(o.editing_state || '—') +
-      '<br>Known: ' + esc(display.known_subtotal || formatAud(o.known_subtotal_cents)) +
+    html += '<div class="field"><label>Customer name</label><input id="om-cust-name" value="' + esc(o.customer_name || '') + '"></div>';
+    html += '<div class="field"><label>Phone</label><input id="om-cust-phone" type="tel" value="' + esc(o.customer_phone || '') + '"></div>';
+    html += '<div class="field"><label>Email</label><input id="om-cust-email" type="email" value="' + esc(o.customer_email || '') + '"></div>';
+    html += '<div class="field"><label>Pickup date</label><input id="om-pickup" type="date" value="' + esc(o.pickup_date || '') + '"></div>';
+    html += '</div>';
+    html += '<div class="field full"><label>Customer notes</label><textarea id="om-cust-notes" class="notes-grow" rows="1">' + esc(o.customer_notes || '') + '</textarea></div>';
+    html += '<p class="notice" style="margin:8px 0"><strong>Status:</strong> ' + statusBadge(o.status) +
+      ' · Known: ' + esc(display.known_subtotal || formatAud(o.known_subtotal_cents)) +
       ' · Deposit: ' + esc(display.deposit_paid || formatAud(o.deposit_paid_cents)) +
-      ' / ' + esc(display.deposit_required || formatAud(o.deposit_required_cents)) +
-      '</p></div></div>';
-    if (o.customer_notes || o.internal_notes) {
-      html += '<p class="notice"><strong>Notes</strong><br>' + esc(o.customer_notes || '') +
-        (o.internal_notes ? '<br><em>' + esc(o.internal_notes) + '</em>' : '') + '</p>';
-    }
+      ' / ' + esc(display.deposit_required || formatAud(o.deposit_required_cents)) + '</p>';
     html += '<h3 style="font-family:var(--font-display);font-size:1.05rem;margin:14px 0 8px">Items</h3>';
     if (!items.length) html += '<p class="empty">No items.</p>';
     items.forEach(function(it){
       var needsWeight = it.price_status === 'tbc' || it.price_status === 'pending_weight' ||
         it.pricing_method === 'per_weight' || it.pricing_method === 'price_tbc';
+      var optTxt = formatItemOptions(it, data);
       html += '<div class="item-block" data-item="' + esc(it.id) + '">';
       html += '<strong>' + esc(it.product_name) + '</strong> ' + priceBadge(it);
       html += '<div class="meta">Qty ' + esc(it.quantity) +
         (it.requested_weight_kg != null ? ' · Req ' + esc(it.requested_weight_kg) + ' kg' : '') +
         (it.actual_weight_kg != null ? ' · Actual ' + esc(it.actual_weight_kg) + ' kg' : '') +
         ' · Line ' + esc(formatAud(it.line_final_cents != null ? it.line_final_cents : it.line_known_cents)) +
+        (optTxt ? '<br><em>' + esc(optTxt) + '</em>' : '') +
         (it.notes ? '<br>' + esc(it.notes) : '') + '</div>';
       if (needsWeight && it.price_status !== 'final') {
         html += '<div class="grid3">';
@@ -1621,7 +1803,46 @@ body.embed .hub{min-height:70vh}
       }
       html += '</div>';
     });
+    html += '<div class="actions-row" style="margin-top:12px"><button class="btn solid" type="button" id="om-save-order">Save changes</button></div>';
+    html += '</div>';
+
+    html += '<div class="om-panel" data-om-panel="notes">';
+    html += '<div class="field full"><label>Staff-only notes</label>';
+    html += '<textarea id="om-internal-notes" class="notes-grow" rows="3" placeholder="Internal notes for staff…">' + esc(o.internal_notes || '') + '</textarea></div>';
+    html += '<button class="btn solid" type="button" id="om-save-notes">Save staff notes</button>';
+    html += '</div>';
+
+    html += '<div class="om-panel" data-om-panel="history">';
+    html += '<div class="om-history">';
+    var events = (data.audit_events || []).concat((data.messages || []).map(function(m){
+      return { created_at: m.created_at, event_type: 'message_' + (m.channel || 'sms'), actor_label: m.destination, payload: { body: m.body } };
+    }));
+    events.sort(function(a,b){ return String(b.created_at||'').localeCompare(String(a.created_at||'')); });
+    if (!events.length) html += '<p class="notice">No history yet.</p>';
+    events.slice(0, 40).forEach(function(ev){
+      var when = (ev.created_at || '').slice(0, 16).replace('T', ' ');
+      var detail = '';
+      if (ev.payload && ev.payload.phone) detail = ' → ' + ev.payload.phone;
+      if (ev.payload && ev.payload.url) detail += ' ' + String(ev.payload.url).slice(0, 48) + '…';
+      if (ev.payload && ev.payload.body) detail = ' — ' + String(ev.payload.body).slice(0, 120);
+      if (ev.payload && ev.payload.reason) detail = ' — ' + ev.payload.reason;
+      html += '<div class="ev"><strong>' + esc(formatAuditLabel(ev)) + '</strong> · ' + esc(when) +
+        (ev.actor_label ? ' · ' + esc(ev.actor_label) : '') + esc(detail) + '</div>';
+    });
+    html += '</div></div>';
+
     $('om-body').innerHTML = html;
+    wireNotesGrow($('om-body'));
+
+    $('om-body').querySelectorAll('[data-om-tab]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var tab = btn.getAttribute('data-om-tab');
+        $('om-body').querySelectorAll('[data-om-tab]').forEach(function(b){ b.classList.toggle('on', b === btn); });
+        $('om-body').querySelectorAll('.om-panel').forEach(function(p){
+          p.classList.toggle('on', p.getAttribute('data-om-panel') === tab);
+        });
+      });
+    });
 
     $('om-body').querySelectorAll('[data-finalise]').forEach(function(btn){
       btn.addEventListener('click', async function(){
@@ -1651,12 +1872,49 @@ body.embed .hub{min-height:70vh}
       });
     });
 
+    async function saveOrderPatch(extra){
+      var patch = Object.assign({
+        site_id: state.siteId,
+        id: o.id,
+        customer_name: $('om-cust-name').value.trim(),
+        customer_phone: $('om-cust-phone').value.trim() || null,
+        customer_email: $('om-cust-email').value.trim() || null,
+        pickup_date: $('om-pickup').value || null,
+        customer_notes: $('om-cust-notes').value.trim() || null,
+        internal_notes: $('om-internal-notes') ? $('om-internal-notes').value.trim() || null : undefined
+      }, extra || {});
+      await api('/api/order/orders', { method: 'PATCH', body: patch });
+    }
+    var saveBtn = $('om-save-order');
+    if (saveBtn) saveBtn.addEventListener('click', async function(){
+      saveBtn.disabled = true;
+      try {
+        await saveOrderPatch();
+        toast('Order saved', 'ok');
+        await openOrderDetail(o.id);
+      } catch (e) { toast((e && e.message) || String(e), 'err'); saveBtn.disabled = false; }
+    });
+    var saveNotes = $('om-save-notes');
+    if (saveNotes) saveNotes.addEventListener('click', async function(){
+      saveNotes.disabled = true;
+      try {
+        await saveOrderPatch({ internal_notes: $('om-internal-notes').value.trim() || null });
+        toast('Staff notes saved', 'ok');
+      } catch (e) { toast((e && e.message) || String(e), 'err'); }
+      saveNotes.disabled = false;
+    });
+
     var foot = '';
     foot += '<button class="btn ghost" type="button" data-print="slip">Print packing slip</button>';
     foot += '<button class="btn ghost" type="button" data-print="receipt">Print receipt</button>';
-    foot += '<button class="btn ghost" type="button" data-print="slip" data-airprint="1" title="Opens print dialog for AirPrint / Save as PDF">AirPrint slip</button>';
     foot += '<button class="btn ghost" type="button" data-act="deposit-link">Send deposit link</button>';
     foot += '<button class="btn ghost" type="button" data-act="checkout">Checkout deposit</button>';
+    if (!isVoided) {
+      foot += '<button class="btn ghost" type="button" data-act="inhouse-pay">Record in-house payment</button>';
+      foot += '<button class="btn ghost" type="button" data-act="void">Void order</button>';
+    } else {
+      foot += '<button class="btn ghost" type="button" data-act="restore">Restore order</button>';
+    }
     foot += '<button class="btn ghost" type="button" data-act="lock">Lock</button>';
     foot += '<button class="btn ghost" type="button" data-act="ready">Mark ready</button>';
     foot += '<button class="btn ghost" type="button" data-act="collected">Mark collected</button>';
@@ -1678,18 +1936,43 @@ body.embed .hub{min-height:70vh}
 
   async function runOrderAction(act, order, btn){
     if (!order || !order.id) return;
+    if (act === 'deposit-link') {
+      state.depositLinkOrderId = order.id;
+      $('dpm-phone').value = order.customer_phone || '';
+      $('deposit-phone-modal').classList.remove('hide');
+      return;
+    }
+    if (act === 'inhouse-pay') {
+      state.inhousePaymentOrderId = order.id;
+      $('ihp-method').value = '';
+      $('ihp-notes').value = '';
+      $('inhouse-pay-modal').classList.remove('hide');
+      wireNotesGrow($('inhouse-pay-modal'));
+      return;
+    }
+    if (act === 'void') {
+      state.voidOrderId = order.id;
+      $('void-reason').value = '';
+      $('void-modal').classList.remove('hide');
+      wireNotesGrow($('void-modal'));
+      return;
+    }
+    if (act === 'restore') {
+      if (!confirm('Restore this voided order?')) return;
+      btn.disabled = true;
+      try {
+        await api('/api/order/orders', {
+          method: 'POST',
+          body: { site_id: state.siteId, action: 'restore_order', order_id: order.id }
+        });
+        toast('Order restored', 'ok');
+        await openOrderDetail(order.id);
+      } catch (e) { toast((e && e.message) || String(e), 'err'); btn.disabled = false; }
+      return;
+    }
     btn.disabled = true;
     try {
-      if (act === 'deposit-link') {
-        var r = await api('/api/order/orders', {
-          method: 'POST',
-          body: { site_id: state.siteId, action: 'send_deposit_link', order_id: order.id }
-        });
-        if (r.deposit_url) {
-          try { await navigator.clipboard.writeText(r.deposit_url); } catch (_e) {}
-          toast('Deposit link sent/copied: ' + r.deposit_url, 'ok');
-        } else toast('Deposit link sent', 'ok');
-      } else if (act === 'checkout') {
+      if (act === 'checkout') {
         var c = await api('/api/order/checkout-deposit', {
           method: 'POST',
           body: { site_id: state.siteId, order_id: order.id }
@@ -1726,6 +2009,173 @@ body.embed .hub{min-height:70vh}
   }
 
   /* ---------- New order ---------- */
+  function questionsForProduct(pid){
+    return (state.productQuestions || []).filter(function(q){
+      return q.product_id === pid && q.staff_only !== true;
+    }).sort(function(a,b){ return (a.sort_order||0)-(b.sort_order||0); });
+  }
+
+  function minimumKgForProduct(p){
+    if (!p) return null;
+    if (p.minimum_kg != null) {
+      var mk = Number(p.minimum_kg);
+      if (isFinite(mk) && mk > 0) return mk;
+    }
+    if (!p.options) return null;
+    var n = Number(p.options.minimum_kg);
+    return isFinite(n) && n > 0 ? n : null;
+  }
+
+  function productNeedsWeight(p){
+    if (!p) return false;
+    if (p.pricing_method === 'per_weight') return true;
+    var o = p.options || {};
+    return o.size_mode === 'variable' || o.size_mode === 'pack';
+  }
+
+  function updateNoSubmitEnabled(){
+    var btn = $('no-submit');
+    if (!btn) return;
+    var pay = document.querySelector('input[name="no-pay-action"]:checked');
+    var okPay = false;
+    if (pay && pay.value === 'send_invoice_link') okPay = true;
+    if (pay && pay.value === 'inhouse_payment') {
+      var m = $('no-inhouse-method');
+      okPay = !!(m && m.value);
+    }
+    var hasLines = $('no-lines') && $('no-lines').querySelectorAll('.line-row').length > 0;
+    var hasName = $('no-name') && $('no-name').value.trim();
+    btn.disabled = !(okPay && hasLines && hasName);
+  }
+
+  function wireNoPayCreate(){
+    document.querySelectorAll('input[name="no-pay-action"]').forEach(function(r){
+      r.addEventListener('change', function(){
+        var panel = $('no-inhouse-panel');
+        if (panel) panel.classList.toggle('hide', r.value !== 'inhouse_payment' || !r.checked);
+        updateNoSubmitEnabled();
+      });
+    });
+    var meth = $('no-inhouse-method');
+    if (meth) meth.addEventListener('change', updateNoSubmitEnabled);
+    if ($('no-name')) $('no-name').addEventListener('input', updateNoSubmitEnabled);
+  }
+
+  function renderNoCatPills(){
+    var host = $('no-cat-pills');
+    if (!host) return;
+    var cats = (state.categories || []).filter(function(c){ return c.active !== false; });
+    var pills = [{ id: '', name: 'All' }].concat(cats);
+    host.innerHTML = pills.map(function(c){
+      var on = (state.noSelectedCat || '') === (c.id || '');
+      return '<button type="button" class="no-cat-pill' + (on ? ' on' : '') + '" data-cat="' + esc(c.id || '') + '">' + esc(c.name) + '</button>';
+    }).join('');
+    host.querySelectorAll('.no-cat-pill').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        state.noSelectedCat = btn.getAttribute('data-cat') || '';
+        renderNoCatPills();
+        renderNoProductGrid();
+      });
+    });
+  }
+
+  function productsForNoGrid(){
+    var cat = state.noSelectedCat || '';
+    return (state.products || []).filter(function(p){
+      if (p.active === false) return false;
+      if (!cat) return true;
+      return productInCategoryLocal(p, cat);
+    });
+  }
+
+  function renderNoProductGrid(){
+    var host = $('no-product-grid');
+    if (!host) return;
+    var list = productsForNoGrid();
+    if (!list.length) {
+      host.innerHTML = '<p class="notice">No products in this category.</p>';
+      return;
+    }
+    host.innerHTML = list.map(function(p){
+      var price = p.pricing_method === 'per_weight'
+        ? formatAud(p.price_per_kg_cents) + '/kg'
+        : p.pricing_method === 'price_tbc' ? 'TBC' : formatAud(p.price_cents);
+      var minK = minimumKgForProduct(p);
+      var meta = price + (minK ? ' · min ' + minK + ' kg' : '');
+      return '<button type="button" class="no-prod-card" data-pid="' + esc(p.id) + '"><strong>' + esc(p.name) +
+        '</strong><span class="meta">' + esc(meta) + '</span></button>';
+    }).join('');
+    host.querySelectorAll('.no-prod-card').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var p = (state.products || []).find(function(x){ return x.id === btn.getAttribute('data-pid'); });
+        if (p) addProductLine(p);
+      });
+    });
+  }
+
+  function renderLineOptions(row, product){
+    var host = row.querySelector('.line-opt');
+    if (!host) return;
+    var qs = questionsForProduct(product.id);
+    if (!qs.length) { host.innerHTML = ''; return; }
+    host.innerHTML = qs.map(function(q){
+      var choices = [];
+      try { choices = Array.isArray(q.options) ? q.options : (typeof q.options === 'string' ? JSON.parse(q.options) : []); } catch (_e) {}
+      if (q.field_type === 'radio' || q.field_type === 'dropdown' || q.field_type === 'select') {
+        var opts = '<option value="">Choose…</option>' + choices.map(function(c){
+          var lab = (c && c.label) || c;
+          var val = (c && c.value != null) ? c.value : lab;
+          return '<option value="' + esc(val) + '">' + esc(lab) + '</option>';
+        }).join('');
+        return '<div class="field"><label>' + esc(q.label) + '</label><select data-q="' + esc(q.key) + '" data-qtype="' + esc(q.field_type) + '">' + opts + '</select></div>';
+      }
+      return '<div class="field"><label>' + esc(q.label) + '</label><input data-q="' + esc(q.key) + '" data-qtype="' + esc(q.field_type) + '"></div>';
+    }).join('');
+  }
+
+  function collectLineAnswers(row){
+    var answers = {};
+    row.querySelectorAll('[data-q]').forEach(function(el){
+      var key = el.getAttribute('data-q');
+      var val = el.value;
+      if (!key || val === '') return;
+      var label = el.closest('.field') && el.closest('.field').querySelector('label');
+      answers[key] = { value: val, label: label ? label.textContent : key, field_type: el.getAttribute('data-qtype') || 'short_text' };
+    });
+    return answers;
+  }
+
+  function addProductLine(product){
+    if (!product) return addNewLine();
+    var host = $('no-lines');
+    var row = document.createElement('div');
+    row.className = 'line-row';
+    row.setAttribute('data-product-id', product.id);
+    var minK = minimumKgForProduct(product);
+    var defW = product.default_weight_kg != null ? Number(product.default_weight_kg) : null;
+    var wVal = productNeedsWeight(product) ? String(defW != null && isFinite(defW) ? defW : (minK || '')) : '';
+    row.innerHTML =
+      '<div class="field" style="margin:0;grid-column:1/-1"><label>Product</label><strong>' + esc(product.name) + '</strong>' +
+        '<input type="hidden" data-f="product_id" value="' + esc(product.id) + '"></div>' +
+      '<div class="field" style="margin:0"><label>Qty</label><input data-f="quantity" type="number" min="1" step="1" value="1"></div>' +
+      '<div class="field" style="margin:0"><label>Weight kg' + (minK ? ' (min ' + minK + ')' : '') + '</label><input data-f="requested_weight_kg" type="number" min="' +
+        (minK || 0) + '" step="0.1" inputmode="decimal" placeholder="' + (minK ? String(minK) : 'optional') + '" value="' + esc(wVal) + '"></div>' +
+      '<div class="field" style="margin:0"><label>Notes</label><input data-f="notes" placeholder="optional"></div>' +
+      '<button class="btn ghost" type="button" data-remove>Remove</button>' +
+      '<div class="line-opt" style="grid-column:1/-1"></div>';
+    host.appendChild(row);
+    renderLineOptions(row, product);
+    row.querySelector('[data-remove]').addEventListener('click', function(){
+      host.removeChild(row);
+      updateNoSubmitEnabled();
+    });
+    row.querySelectorAll('input,select').forEach(function(el){
+      el.addEventListener('input', updateNoSubmitEnabled);
+      el.addEventListener('change', updateNoSubmitEnabled);
+    });
+    updateNoSubmitEnabled();
+  }
+
   function ensureNewLines(){
     var host = $('no-lines');
     if (!host.children.length) addNewLine();
@@ -1810,26 +2260,7 @@ body.embed .hub{min-height:70vh}
   }
 
   function addNewLine(){
-    var host = $('no-lines');
-    var row = document.createElement('div');
-    row.className = 'line-row';
-    row.innerHTML =
-      '<div class="field prod-combo" style="margin:0">' +
-        '<label>Product</label>' +
-        '<input data-f="product_search" type="search" autocomplete="off" placeholder="Search or pick a product…" aria-autocomplete="list">' +
-        '<select data-f="product_id" tabindex="-1" aria-hidden="true">' + productOptionsHtml() + '</select>' +
-        '<ul class="prod-combo-list hide" data-combo-list></ul>' +
-      '</div>' +
-      '<div class="field" style="margin:0"><label>Qty</label><input data-f="quantity" type="number" min="1" step="1" value="1"></div>' +
-      '<div class="field" style="margin:0"><label>Weight kg</label><input data-f="requested_weight_kg" type="number" min="0" step="0.1" inputmode="decimal" placeholder="e.g. 1.2" title="100g increments"></div>' +
-      '<div class="field" style="margin:0"><label>Notes</label><input data-f="notes" placeholder="optional"></div>' +
-      '<button class="btn ghost" type="button" data-remove>Remove</button>';
-    host.appendChild(row);
-    wireProductCombo(row);
-    row.querySelector('[data-remove]').addEventListener('click', function(){
-      if (host.children.length <= 1) { toast('Keep at least one line', 'err'); return; }
-      host.removeChild(row);
-    });
+    toast('Tap a product above to add it to the order', 'err');
   }
 
   function refreshNewLineProductSelects(){
@@ -1846,11 +2277,14 @@ body.embed .hub{min-height:70vh}
     });
   }
 
-  async function loadProductsCache(){
-    if (!state.siteId) { state.products = []; state.categories = []; return { products: [], categories: [] }; }
-    var data = await api('/api/order/products?' + siteQuery());
+  async function loadProductsCache(opts){
+    opts = opts || {};
+    if (!state.siteId) { state.products = []; state.categories = []; state.productQuestions = []; return { products: [], categories: [] }; }
+    var qs = opts.includeQuestions ? 'include_questions=1&active=1' : '';
+    var data = await api('/api/order/products?' + siteQuery(qs));
     state.products = data.products || [];
     state.categories = data.categories || [];
+    if (data.questions) state.productQuestions = data.questions;
     return data;
   }
 
@@ -2132,6 +2566,12 @@ body.embed .hub{min-height:70vh}
     var btn = $('no-submit');
     var msg = $('no-msg');
     msg.textContent = '';
+    var payEl = document.querySelector('input[name="no-pay-action"]:checked');
+    if (!payEl) {
+      msg.textContent = 'Choose a payment option before creating the order.';
+      toast(msg.textContent, 'err');
+      return;
+    }
     var items = [];
     $('no-lines').querySelectorAll('.line-row').forEach(function(row){
       var product_id = row.querySelector('[data-f="product_id"]').value;
@@ -2139,13 +2579,13 @@ body.embed .hub{min-height:70vh}
       var qty = Number(row.querySelector('[data-f="quantity"]').value) || 1;
       var wRaw = row.querySelector('[data-f="requested_weight_kg"]').value;
       var notes = row.querySelector('[data-f="notes"]').value.trim();
-      var line = { product_id: product_id, quantity: qty };
+      var line = { product_id: product_id, quantity: qty, answers: collectLineAnswers(row) };
       if (wRaw !== '') line.requested_weight_kg = Number(wRaw);
       if (notes) line.notes = notes;
       items.push(line);
     });
     if (!items.length) {
-      msg.textContent = 'Add at least one product line.';
+      msg.textContent = 'Add at least one product.';
       toast(msg.textContent, 'err');
       return;
     }
@@ -2159,25 +2599,33 @@ body.embed .hub{min-height:70vh}
         customer_email: $('no-email').value.trim() || null,
         pickup_date: $('no-pickup').value || null,
         customer_notes: $('no-notes').value.trim() || null,
-        items: items
+        items: items,
+        after_create_action: payEl.value,
+        send_phone: $('no-phone').value.trim() || null
       };
+      if (payEl.value === 'inhouse_payment') {
+        body.inhouse_payment_method = $('no-inhouse-method').value;
+        body.inhouse_payment_notes = $('no-inhouse-notes').value.trim() || null;
+      }
       var r = await api('/api/order/orders', { method: 'POST', body: body });
       var note = 'Created ' + ((r.order && r.order.order_number) || 'order');
-      if (r.portal_url) {
-        try { await navigator.clipboard.writeText(r.portal_url); } catch (_e) {}
-        note += ' — portal URL copied';
-      }
-      msg.textContent = note + (r.portal_url ? ': ' + r.portal_url : '');
+      if (payEl.value === 'send_invoice_link') note += ' — invoice link sent';
+      if (payEl.value === 'inhouse_payment') note += ' — payment recorded & receipt sent';
+      msg.textContent = note;
       toast(note, 'ok');
       $('new-order-form').reset();
       $('no-lines').innerHTML = '';
-      addNewLine();
+      document.querySelectorAll('input[name="no-pay-action"]').forEach(function(r){ r.checked = false; });
+      if ($('no-inhouse-panel')) $('no-inhouse-panel').classList.add('hide');
+      updateNoSubmitEnabled();
+      renderNoCatPills();
+      renderNoProductGrid();
       if (r.order && r.order.id) openOrderDetail(r.order.id);
     } catch (e) {
       msg.textContent = (e && e.message) || String(e);
       toast(msg.textContent, 'err');
     }
-    btn.disabled = false;
+    updateNoSubmitEnabled();
   }
 
   /* ---------- Products ---------- */
@@ -3652,10 +4100,12 @@ body.embed .hub{min-height:70vh}
       title.textContent = c.name || 'Customer';
       var html = '';
       html += '<div class="grid2">';
-      html += '<div><p class="notice" style="margin:0"><strong>Contact</strong><br>' + esc(c.phone || '—') + '<br>' + esc(c.email || '—') + '</p></div>';
-      html += '<div><p class="notice" style="margin:0"><strong>Lifetime</strong><br>' + formatAud(c.lifetime_spend_cents) +
-        '<br>' + esc(c.order_count || 0) + ' orders</p></div>';
+      html += '<div class="field"><label>Name</label><input id="cd-name" value="' + esc(c.name || '') + '"></div>';
+      html += '<div class="field"><label>Phone</label><input id="cd-phone" type="tel" value="' + esc(c.phone || '') + '"></div>';
+      html += '<div class="field"><label>Email</label><input id="cd-email" type="email" value="' + esc(c.email || '') + '"></div>';
+      html += '<div class="field"><label>Staff notes</label><input id="cd-notes" value="' + esc(c.notes || '') + '"></div>';
       html += '</div>';
+      html += '<p class="notice"><strong>Lifetime</strong> ' + formatAud(c.lifetime_spend_cents) + ' · ' + esc(c.order_count || 0) + ' orders</p>';
       html += '<h4 style="margin:16px 0 8px">Orders</h4>';
       if (!orders.length) html += '<p class="notice">No orders yet.</p>';
       else {
@@ -3688,8 +4138,29 @@ body.embed .hub{min-height:70vh}
           openOrderDetail(tr.getAttribute('data-open-order'));
         });
       });
-      foot.innerHTML = '<button class="btn ghost" type="button" id="om-close-2">Close</button>';
+      foot.innerHTML = '<button class="btn solid" type="button" id="cd-save">Save customer</button> <button class="btn ghost" type="button" id="om-close-2">Close</button>';
       $('om-close-2').onclick = function(){ modal.classList.add('hide'); };
+      $('cd-save').onclick = async function(){
+        var btn = $('cd-save');
+        btn.disabled = true;
+        try {
+          await api('/api/order/customers', {
+            method: 'PATCH',
+            body: {
+              site_id: state.siteId,
+              id: c.id,
+              name: $('cd-name').value.trim(),
+              phone: $('cd-phone').value.trim() || null,
+              email: $('cd-email').value.trim() || null,
+              notes: $('cd-notes').value.trim() || null
+            }
+          });
+          toast('Customer saved', 'ok');
+          modal.classList.add('hide');
+          loadCustomers();
+        } catch (e) { toast((e && e.message) || String(e), 'err'); }
+        btn.disabled = false;
+      };
     } catch (e) {
       body.innerHTML = '<p class="notice">' + esc((e && e.message) || e) + '</p>';
     }
@@ -3763,10 +4234,13 @@ body.embed .hub{min-height:70vh}
       if (v === 'dashboard') await loadDashboard();
       else if (v === 'orders') await loadOrders();
       else if (v === 'new') {
-        try { await loadProductsCache(); } catch (_e) {}
+        try { await loadProductsCache({ includeQuestions: true }); } catch (_e) {}
         try { await loadPickupWindows(); } catch (_e2) {}
-        refreshNewLineProductSelects();
-        ensureNewLines();
+        state.noSelectedCat = '';
+        renderNoCatPills();
+        renderNoProductGrid();
+        wireNoPayCreate();
+        updateNoSubmitEnabled();
         wireNotesGrow($('view-new'));
         await refreshPickupDateControl();
       }
@@ -3836,8 +4310,77 @@ body.embed .hub{min-height:70vh}
   $('orders-q').addEventListener('keydown', function(e){
     if (e.key === 'Enter') loadOrders();
   });
-  $('no-add-line').addEventListener('click', addNewLine);
+  if ($('no-add-line')) $('no-add-line').addEventListener('click', addNewLine);
   $('new-order-form').addEventListener('submit', submitNewOrder);
+
+  if ($('void-close')) $('void-close').addEventListener('click', function(){ $('void-modal').classList.add('hide'); state.voidOrderId = null; });
+  if ($('void-cancel')) $('void-cancel').addEventListener('click', function(){ $('void-modal').classList.add('hide'); state.voidOrderId = null; });
+  if ($('void-confirm')) $('void-confirm').addEventListener('click', async function(){
+    if (!state.voidOrderId) return;
+    var btn = $('void-confirm');
+    btn.disabled = true;
+    try {
+      await api('/api/order/orders', {
+        method: 'POST',
+        body: { site_id: state.siteId, action: 'void_order', order_id: state.voidOrderId, reason: $('void-reason').value.trim() }
+      });
+      toast('Order voided', 'ok');
+      $('void-modal').classList.add('hide');
+      state.voidOrderId = null;
+      closeOrderModal();
+      loadOrders();
+    } catch (e) { toast((e && e.message) || String(e), 'err'); }
+    btn.disabled = false;
+  });
+  if ($('dpm-close')) $('dpm-close').addEventListener('click', function(){ $('deposit-phone-modal').classList.add('hide'); });
+  if ($('dpm-cancel')) $('dpm-cancel').addEventListener('click', function(){ $('deposit-phone-modal').classList.add('hide'); });
+  if ($('dpm-send')) $('dpm-send').addEventListener('click', async function(){
+    if (!state.depositLinkOrderId) return;
+    var btn = $('dpm-send');
+    btn.disabled = true;
+    try {
+      var r = await api('/api/order/orders', {
+        method: 'POST',
+        body: { site_id: state.siteId, action: 'send_deposit_link', order_id: state.depositLinkOrderId, phone: $('dpm-phone').value.trim() }
+      });
+      toast('Deposit link sent to ' + (r.phone || $('dpm-phone').value), 'ok');
+      $('deposit-phone-modal').classList.add('hide');
+      if (state.detail && state.detail.order) await openOrderDetail(state.depositLinkOrderId);
+    } catch (e) { toast((e && e.message) || String(e), 'err'); }
+    btn.disabled = false;
+  });
+  if ($('ihp-close')) $('ihp-close').addEventListener('click', function(){ $('inhouse-pay-modal').classList.add('hide'); state.inhousePaymentOrderId = null; });
+  if ($('ihp-cancel')) $('ihp-cancel').addEventListener('click', function(){ $('inhouse-pay-modal').classList.add('hide'); state.inhousePaymentOrderId = null; });
+  if ($('ihp-confirm')) $('ihp-confirm').addEventListener('click', async function(){
+    if (!state.inhousePaymentOrderId) return;
+    var method = $('ihp-method').value;
+    if (!method) { toast('Select a payment method', 'err'); return; }
+    var btn = $('ihp-confirm');
+    btn.disabled = true;
+    try {
+      await api('/api/order/orders', {
+        method: 'POST',
+        body: {
+          site_id: state.siteId,
+          action: 'record_inhouse_payment',
+          order_id: state.inhousePaymentOrderId,
+          method: method,
+          notes: $('ihp-notes').value.trim() || null
+        }
+      });
+      await api('/api/order/orders', {
+        method: 'POST',
+        body: { site_id: state.siteId, action: 'send_receipt', order_id: state.inhousePaymentOrderId }
+      });
+      toast('Payment recorded & receipt sent', 'ok');
+      $('inhouse-pay-modal').classList.add('hide');
+      var oid = state.inhousePaymentOrderId;
+      state.inhousePaymentOrderId = null;
+      await openOrderDetail(oid);
+      loadOrders();
+    } catch (e) { toast((e && e.message) || String(e), 'err'); }
+    btn.disabled = false;
+  });
   $('prod-new').addEventListener('click', function(){ openProductEditor(null); });
   if ($('prod-option-add')) $('prod-option-add').addEventListener('click', function(){ appendProductOptionGroup(null); });
   if ($('prod-size-mode')) $('prod-size-mode').addEventListener('change', syncPackFieldsVisibility);
