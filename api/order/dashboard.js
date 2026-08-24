@@ -85,6 +85,7 @@ module.exports = async function (req, res) {
       .select('id, order_number, customer_name, status, pickup_date, known_subtotal_cents, deposit_paid_cents, has_unknown_prices, editing_state, created_at')
       .eq('order_system_id', system.id)
       .gte('created_at', recentSinceIso)
+      .not('status', 'in', '("cancelled","draft","archived","completed","refunded")')
       .order('created_at', { ascending: false })
       .limit(12);
 
