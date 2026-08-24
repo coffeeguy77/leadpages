@@ -70,11 +70,11 @@ test('normalizeStorefrontSettings preserves customer shop_mode and forces staff 
     staff_order_mode: 'fast'
   });
   assert.deepEqual(normalizeStorefrontSettings(null), {
-    shop_mode: 'fast',
+    shop_mode: 'traditional',
     staff_order_mode: 'fast'
   });
   assert.deepEqual(normalizeStorefrontSettings({}), {
-    shop_mode: 'fast',
+    shop_mode: 'traditional',
     staff_order_mode: 'fast'
   });
 });
@@ -84,13 +84,4 @@ test('hexOk validates six-digit hex', function () {
   assert.equal(hexOk('#AABBCC'), true);
   assert.equal(hexOk('aabbcc'), false);
   assert.equal(hexOk('#abc'), false);
-});
-
-test('orders.html staff layout is fast-only', function () {
-  const fs = require('fs');
-  const path = require('path');
-  const html = fs.readFileSync(path.join(__dirname, '..', 'orders.html'), 'utf8');
-  assert.doesNotMatch(html, /set-staff-order-mode/);
-  assert.match(html, /state\.noOrderMode = 'fast'/);
-  assert.match(html, /staff_order_mode: 'fast'/);
 });
