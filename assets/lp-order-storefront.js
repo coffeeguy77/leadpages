@@ -462,6 +462,113 @@
     if (packed.pickup_slots) this.state.pickupSlots = packed.pickup_slots;
   };
 
+  OrderStorefront.prototype.flashMsg = function (msg, kind) {
+    this.state.msg = msg || '';
+    this.state.msgKind = kind || '';
+    var el = this.root.querySelector('.lp-oe-msg');
+    if (!el) return;
+    el.textContent = this.state.msg;
+    el.className =
+      'lp-oe-msg' +
+      (kind === 'error' ? ' is-error' : kind === 'ok' ? ' is-ok' : '');
+    el.style.display = this.state.msg ? '' : 'none';
+  };
+
+  OrderStorefront.prototype.bumpCartTotalsOptimistic = function () {
+    var items = this.state.items || [];
+    var known = 0;
+    var hasUnknown = false;
+    items.forEach(function (it) {
+      if (it.price_status === 'tbc' || it.price_status === 'estimate') hasUnknown = true;
+      known += Number(it.line_known_cents) || 0;
+    });
+    if (!this.state.cart) this.state.cart = {};
+    this.state.cart.known_subtotal_cents = known;
+    this.state.cart.has_unknown_prices = hasUnknown;
+    this.state.cart.item_count = items.reduce(function (sum, it) {
+      return sum + (Number(it.quantity) || 0);
+    }, 0);
+  };
+
+  OrderStorefront.prototype.optimisticAddProduct = function (product, opts) {
+    if (!product) return;
+    opts = opts || {};
+    var self = this;
+    var qty = Number(opts.quantity) || 1;
+    var weight = opts.requested_weight_kg;
+    var notes = opts.notes || null;
+    var answers = opts.answers || {};
+    var items = (this.state.items || []).slice();
+    var existing = items.find(function (it) {
+      if (it.product_id !== product.id) return false;
+      if (String(it.notes || '') !== String(notes || '')) return false;
+      try {
+        if (JSON.stringify(it.answers || {}) !== JSON.stringify(answers)) return false;
+      } catch (_e) {
+        return false;
+      }
+      if (self.needsWeight(product)) {
+        if (weight == null || it.requested_weight_kg == null) return false;
+        return Math.abs(Number(it.requested_weight_kg) - Number(weight)) < 0.0001;
+      }
+      return true;
+    });
+    var lineCents = 0;
+    if (product.pricing_method === 'fixed') lineCents = (Number(product.price_cents) || 0) * qty;
+    else if (product.pricing_method === 'per_weight' && weight) {
+      lineCents = Math.round((Number(product.price_per_kg_cents) || 0) * Number(weight));
+    }
+    if (existing) {
+      existing.quantity = Number(existing.quantity || 0) + qty;
+      if (lineCents) existing.line_known_cents = (Number(existing.line_known_cents) || 0) + lineCents;
+      existing._optimistic = true;
+    } else {
+      items.push({
+        id: 'opt-' + Date.now(),
+        product_id: product.id,
+        quantity: qty,
+        requested_weight_kg: weight,
+        notes: notes,
+        answers: answers,
+        product_snapshot: {
+          name: product.name,
+          pricing_method: product.pricing_method,
+          pack_label: product.options && product.options.pack_label
+        },
+        line_known_cents: lineCents,
+        price_status: product.pricing_method === 'price_tbc' ? 'estimate' : 'known',
+        _optimistic: true
+      });
+    }
+    this.state.items = items;
+    this.bumpCartTotalsOptimistic();
+  };
+
+  OrderStorefront.prototype.mountShopMain = function () {
+    var main = this.root.querySelector('.lp-oe-main');
+    if (!main) {
+      this.render();
+      return;
+    }
+    var c = this.state.catalogue;
+    var html = this.renderClientNav();
+    html += this.renderShopToolbar();
+    if (this.isFastMode()) {
+      html += this.renderFastMenu();
+    } else {
+      var sysMode = (c && c.system && c.system.storefront_display_mode) || 'compact_cards';
+      var gridMode = this.state.listMode
+        ? 'product_list'
+        : sysMode === 'product_list'
+          ? 'compact_cards'
+          : sysMode;
+      html += this.renderGrid(gridMode);
+    }
+    main.innerHTML = html;
+    this.bindScoped(main);
+    this.updateFastAddButtons();
+  };
+
   OrderStorefront.prototype.renderLoadingShell = function () {
     if (!this.root) return;
     this.root.innerHTML =
@@ -617,7 +724,8 @@
             '/api/order/cart?slug=' +
               encodeURIComponent(slug) +
               '&cart_id=' +
-              encodeURIComponent(cartId)
+              encodeURIComponent(cartId) +
+              '&lite=1'
           ).catch(function () {
             return null;
           })
@@ -679,7 +787,8 @@
       '/api/order/cart?slug=' +
         encodeURIComponent(this.slug) +
         '&cart_id=' +
-        encodeURIComponent(this.state.cartId)
+        encodeURIComponent(this.state.cartId) +
+        '&lite=1'
     );
     this.applyPacked(packed);
   };
@@ -1653,10 +1762,11 @@
     return html;
   };
 
-  OrderStorefront.prototype.bind = function () {
+  OrderStorefront.prototype.bindScoped = function (scope) {
     var self = this;
+    if (!scope) return;
     if (!this.isFastMode()) {
-      this.root.querySelectorAll('[data-open]').forEach(function (el) {
+      scope.querySelectorAll('[data-open]').forEach(function (el) {
         el.addEventListener('click', function (ev) {
           ev.preventDefault();
           ev.stopPropagation();
@@ -1669,13 +1779,54 @@
         });
       });
     }
-    this.root.querySelectorAll('[data-act]').forEach(function (el) {
+    scope.querySelectorAll('[data-act]').forEach(function (el) {
       el.addEventListener('click', function (ev) {
         ev.preventDefault();
         ev.stopPropagation();
         self.onAct(el.getAttribute('data-act'), el);
       });
     });
+    scope.querySelectorAll('.lp-oe-option-chip input').forEach(function (inp) {
+      inp.addEventListener('change', function () {
+        var chip = inp.closest('.lp-oe-option-chip');
+        if (!chip) return;
+        if (inp.type === 'radio') {
+          var name = inp.name;
+          scope.querySelectorAll('input[name="' + name + '"]').forEach(function (r) {
+            var c = r.closest('.lp-oe-option-chip');
+            if (c) c.classList.toggle('on', r.checked);
+          });
+        } else {
+          chip.classList.toggle('on', inp.checked);
+        }
+        self.captureFastDrafts();
+        self.updateFastAddButtons();
+        self.updateProductAddButton();
+      });
+    });
+    scope.querySelectorAll('[data-fast-row] input, [data-fast-row] textarea, [data-fast-row] select').forEach(function (inp) {
+      inp.addEventListener('input', function () {
+        self.captureFastDrafts();
+        self.updateFastAddButtons();
+      });
+      inp.addEventListener('change', function () {
+        self.captureFastDrafts();
+        self.updateFastAddButtons();
+      });
+    });
+    scope.querySelectorAll('.lp-oe-detail input, .lp-oe-detail textarea, .lp-oe-detail select').forEach(function (inp) {
+      inp.addEventListener('input', function () {
+        self.updateProductAddButton();
+      });
+      inp.addEventListener('change', function () {
+        self.updateProductAddButton();
+      });
+    });
+  };
+
+  OrderStorefront.prototype.bind = function () {
+    var self = this;
+    this.bindScoped(this.root);
     var modal = this.root.querySelector('.lp-oe-modal');
     if (modal) {
       modal.addEventListener('click', function (ev) {
@@ -1722,42 +1873,6 @@
           input.value = step < 1 ? next.toFixed(1) : String(next);
           input.dispatchEvent(new Event('input', { bubbles: true }));
         });
-      });
-    });
-    this.root.querySelectorAll('.lp-oe-option-chip input').forEach(function (inp) {
-      inp.addEventListener('change', function () {
-        var chip = inp.closest('.lp-oe-option-chip');
-        if (!chip) return;
-        if (inp.type === 'radio') {
-          var name = inp.name;
-          self.root.querySelectorAll('input[name="' + name + '"]').forEach(function (r) {
-            var c = r.closest('.lp-oe-option-chip');
-            if (c) c.classList.toggle('on', r.checked);
-          });
-        } else {
-          chip.classList.toggle('on', inp.checked);
-        }
-        self.captureFastDrafts();
-        self.updateFastAddButtons();
-        self.updateProductAddButton();
-      });
-    });
-    this.root.querySelectorAll('[data-fast-row] input, [data-fast-row] textarea, [data-fast-row] select').forEach(function (inp) {
-      inp.addEventListener('input', function () {
-        self.captureFastDrafts();
-        self.updateFastAddButtons();
-      });
-      inp.addEventListener('change', function () {
-        self.captureFastDrafts();
-        self.updateFastAddButtons();
-      });
-    });
-    this.root.querySelectorAll('.lp-oe-detail input, .lp-oe-detail textarea, .lp-oe-detail select').forEach(function (inp) {
-      inp.addEventListener('input', function () {
-        self.updateProductAddButton();
-      });
-      inp.addEventListener('change', function () {
-        self.updateProductAddButton();
       });
     });
     this.updateFastAddButtons();
@@ -2112,35 +2227,57 @@
         return;
       }
       if (act === 'qty-inc' || act === 'qty-dec') {
-        self.state.busy = true;
-        self.render();
-        try {
-          var id = el.getAttribute('data-id');
-          var item = (self.state.items || []).find(function (it) {
-            return it.id === id;
+        var id = el.getAttribute('data-id');
+        var item = (self.state.items || []).find(function (it) {
+          return it.id === id;
+        });
+        if (!item) return;
+        var prevQty = Number(item.quantity) || 1;
+        var nextQty = act === 'qty-inc' ? prevQty + 1 : prevQty - 1;
+        if (nextQty <= 0) {
+          self.state.items = (self.state.items || []).filter(function (it) {
+            return it.id !== id;
           });
-          var q = Number(item && item.quantity) || 1;
-          await self.setQty(id, act === 'qty-inc' ? q + 1 : q - 1);
-        } finally {
-          self.state.busy = false;
+          self.bumpCartTotalsOptimistic();
+          self.refreshCartChrome();
+          try {
+            await self.removeLine(id);
+          } catch (_eRm) {
+            await self.refreshCart();
+            self.refreshCartChrome();
+          }
+          return;
         }
-        self.render();
+        item.quantity = nextQty;
+        item._optimistic = true;
+        self.bumpCartTotalsOptimistic();
+        self.refreshCartChrome();
+        try {
+          await self.setQty(id, nextQty);
+          self.refreshCartChrome();
+        } catch (_eQty) {
+          await self.refreshCart();
+          self.refreshCartChrome();
+        }
         return;
       }
       if (act === 'remove') {
-        self.state.busy = true;
-        // Optimistic remove for snappy UI
         var rid = el.getAttribute('data-id');
-        self.state.items = (self.state.items || []).filter(function (it) {
+        var backupItems = (self.state.items || []).slice();
+        self.state.items = backupItems.filter(function (it) {
           return it.id !== rid;
         });
-        self.render();
+        self.bumpCartTotalsOptimistic();
+        self.refreshCartChrome();
         try {
           await self.removeLine(rid);
-        } finally {
-          self.state.busy = false;
+          self.refreshCartChrome();
+        } catch (_eRm2) {
+          self.state.items = backupItems;
+          self.bumpCartTotalsOptimistic();
+          await self.refreshCart();
+          self.refreshCartChrome();
         }
-        self.render();
         return;
       }
       if (act === 'add-inline') {
@@ -2182,44 +2319,53 @@
         }
         var notesEl = row && row.querySelector('[data-fast-notes]');
         var notesVal = (notesEl && notesEl.value) || draft.notes || null;
-        self.state.busy = true;
-        el.disabled = true;
-        try {
-          await self.ensureCart();
-          var outInline = await api('/api/order/cart', {
-            method: 'POST',
-            body: {
-              action: 'add_item',
-              slug: self.slug,
-              cart_id: self.state.cartId,
-              product_id: productId,
-              quantity: qtyVal,
-              requested_weight_kg: kgVal,
-              notes: notesVal || null,
-              answers: answers
-            }
-          });
-          self.applyPacked(outInline);
-          self.state.msg = 'Added to cart';
-          self.state.fastDrafts[productId] = { qty: '1', kg: '', notes: '', answers: {} };
-          self.state.notesOpen[productId] = false;
-          self.state.optionsOpen[productId] = false;
-        } catch (addErr) {
-          var errCode = (addErr && addErr.data && addErr.data.error) || (addErr && addErr.message);
-          if (errCode === 'required_options_missing') {
-            self.state.optionsOpen[productId] = true;
-            self.state.msg = 'Choose required options for ' + (product.name || 'this item') + '.';
-            self.render();
-            return;
-          }
-          self.state.msg = errCode || 'Could not add to cart';
-          self.render();
-          return;
-        } finally {
-          self.state.busy = false;
-        }
+        var addPayload = {
+          quantity: qtyVal,
+          requested_weight_kg: kgVal,
+          notes: notesVal || null,
+          answers: answers
+        };
+        self.optimisticAddProduct(product, addPayload);
+        self.flashMsg('', '');
         self.refreshCartChrome();
-        self.updateFastAddButtons();
+        el.disabled = true;
+        (async function () {
+          try {
+            await self.ensureCart();
+            var outInline = await api('/api/order/cart', {
+              method: 'POST',
+              body: {
+                action: 'add_item',
+                slug: self.slug,
+                cart_id: self.state.cartId,
+                product_id: productId,
+                quantity: qtyVal,
+                requested_weight_kg: kgVal,
+                notes: notesVal || null,
+                answers: answers
+              }
+            });
+            self.applyPacked(outInline);
+            self.state.fastDrafts[productId] = { qty: '1', kg: '', notes: '', answers: {} };
+            self.state.notesOpen[productId] = false;
+            self.state.optionsOpen[productId] = false;
+            self.flashMsg('Added to cart', 'ok');
+          } catch (addErr) {
+            await self.refreshCart();
+            var errCode = (addErr && addErr.data && addErr.data.error) || (addErr && addErr.message);
+            if (errCode === 'required_options_missing') {
+              self.state.optionsOpen[productId] = true;
+              self.flashMsg('Choose required options for ' + (product.name || 'this item') + '.', 'error');
+              self.render();
+              return;
+            }
+            self.flashMsg(errCode || 'Could not add to cart', 'error');
+          } finally {
+            el.disabled = false;
+            self.refreshCartChrome();
+            self.updateFastAddButtons();
+          }
+        })();
         return;
       }
       if (act === 'add-product') {
@@ -2249,40 +2395,50 @@
           self.render();
           return;
         }
-        self.state.busy = true;
+        self.optimisticAddProduct(product, {
+          quantity: qtyVal,
+          requested_weight_kg: kgVal,
+          notes: notesVal,
+          answers: answers
+        });
+        self.state.view = 'shop';
+        self.state.selected = null;
+        self.flashMsg('', '');
+        self.mountShopMain();
+        self.refreshCartChrome();
         el.disabled = true;
-        try {
-          await self.ensureCart();
-          var out = await api('/api/order/cart', {
-            method: 'POST',
-            body: {
-              action: 'add_item',
-              slug: self.slug,
-              cart_id: self.state.cartId,
-              product_id: productId,
-              quantity: qtyVal,
-              requested_weight_kg: kgVal,
-              notes: notesVal,
-              answers: answers
+        (async function () {
+          try {
+            await self.ensureCart();
+            var out = await api('/api/order/cart', {
+              method: 'POST',
+              body: {
+                action: 'add_item',
+                slug: self.slug,
+                cart_id: self.state.cartId,
+                product_id: productId,
+                quantity: qtyVal,
+                requested_weight_kg: kgVal,
+                notes: notesVal,
+                answers: answers
+              }
+            });
+            self.applyPacked(out);
+            self.flashMsg('Added to cart', 'ok');
+          } catch (addProdErr) {
+            await self.refreshCart();
+            var prodErrCode = (addProdErr && addProdErr.data && addProdErr.data.error) || (addProdErr && addProdErr.message);
+            if (prodErrCode === 'required_options_missing') {
+              self.flashMsg('Choose required options for ' + (product.name || 'this item') + '.', 'error');
+              self.render();
+              return;
             }
-          });
-          self.applyPacked(out);
-          self.state.msg = 'Added to cart';
-          self.state.view = 'shop';
-        } catch (addProdErr) {
-          var prodErrCode = (addProdErr && addProdErr.data && addProdErr.data.error) || (addProdErr && addProdErr.message);
-          if (prodErrCode === 'required_options_missing') {
-            self.state.msg = 'Choose required options for ' + (product.name || 'this item') + '.';
-            self.render();
-            return;
+            self.flashMsg(prodErrCode || 'Could not add to cart', 'error');
+          } finally {
+            el.disabled = false;
+            self.refreshCartChrome();
           }
-          self.state.msg = prodErrCode || 'Could not add to cart';
-          self.render();
-          return;
-        } finally {
-          self.state.busy = false;
-        }
-        self.render();
+        })();
         return;
       }
       if (act === 'confirm') {

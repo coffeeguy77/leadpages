@@ -794,7 +794,7 @@ function injectOrderStorefront(html, slug, cfg) {
   const sec = cfg && cfg.sections && cfg.sections.orderStorefront;
   if (!sec || sec.on !== true) return html;
   const safeSlug = esc(slug || (cfg && cfg.slug) || '');
-  const SCRIPT = '/assets/lp-order-storefront.js?v=oe-15';
+  const SCRIPT = '/assets/lp-order-storefront.js?v=oe-16';
   const showPortal = sec.showPortalLink !== false;
   const portalLabel = esc(sec.portalCtaLabel || 'Sign in to your orders');
 
@@ -805,7 +805,7 @@ function injectOrderStorefront(html, slug, cfg) {
     if (doc.indexOf('/assets/lp-order-storefront.js') >= 0) {
       return doc.replace(
         /\/assets\/lp-order-storefront\.js(?:\?[^"']*)?/g,
-        '/assets/lp-order-storefront.js?v=oe-15'
+        '/assets/lp-order-storefront.js?v=oe-16'
       );
     }
     return doc.indexOf('</body>') !== -1

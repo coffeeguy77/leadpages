@@ -152,7 +152,7 @@ test('storefront has SMS auth modal and in-page My orders', function () {
   assert.match(js, /lp-oe-modal-backdrop/);
   assert.match(js, /lp-oe-client-nav/);
   assert.match(js, /action:\s*'reorder'/);
-  assert.match(shop, /lp-order-storefront\.js\?v=oe-15/);
+  assert.match(shop, /lp-order-storefront\.js\?v=oe-16/);
 });
 
 test('displayGivenName prefers first name with title case', function () {
