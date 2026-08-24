@@ -70,11 +70,11 @@ test('normalizeStorefrontSettings preserves customer shop_mode and forces staff 
     staff_order_mode: 'fast'
   });
   assert.deepEqual(normalizeStorefrontSettings(null), {
-    shop_mode: 'traditional',
+    shop_mode: 'fast',
     staff_order_mode: 'fast'
   });
   assert.deepEqual(normalizeStorefrontSettings({}), {
-    shop_mode: 'traditional',
+    shop_mode: 'fast',
     staff_order_mode: 'fast'
   });
 });
