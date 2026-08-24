@@ -82,7 +82,7 @@ body{display:flex;flex-direction:column;min-height:100%;-webkit-font-smoothing:a
   display:flex;flex-direction:column;
   border-right:1px solid var(--line);background:var(--bg-soft,var(--surface));
   padding:12px 10px 14px;
-  min-height:0;height:100%;
+  min-height:0;height:100%;overflow:hidden;
   transition:width .22s ease,flex-basis .22s ease,min-width .22s ease,max-width .22s ease,padding .22s ease;
 }
 .side.collapsed-rail{
@@ -99,17 +99,11 @@ body{display:flex;flex-direction:column;min-height:100%;-webkit-font-smoothing:a
 }
 .side-collapse:hover{border-color:var(--accent);color:var(--ink)}
 .side-collapse svg{width:16px;height:16px}
-.side-brand .mark{
-  width:34px;height:34px;border-radius:10px;overflow:hidden;flex:none;
-  background:color-mix(in srgb,var(--accent) 16%,transparent);
-  display:flex;align-items:center;justify-content:center;
-  font-weight:700;color:var(--accent);font-size:var(--fs-sm);
-}
 .side-brand .eyebrow{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:0 0 2px}
 .side-brand h1{font-family:var(--font-display);font-size:var(--fs-md);font-weight:600;margin:0;line-height:1.15}
-.nav{display:flex;flex-direction:column;gap:2px;padding:10px 0;overflow:auto}
+.nav{display:flex;flex-direction:column;gap:2px;padding:10px 0;overflow-x:hidden;overflow-y:auto;min-width:0}
 .nav-item,.nav-group-btn{
-  appearance:none;width:100%;text-align:left;border:1px solid transparent;
+  appearance:none;width:100%;max-width:100%;min-width:0;text-align:left;border:1px solid transparent;
   background:transparent;color:var(--ink-soft);font:600 14px/1.25 var(--font-ui);
   padding:0 10px;border-radius:10px;cursor:pointer;
   display:flex;align-items:center;gap:8px;min-height:43px;
@@ -119,7 +113,7 @@ body{display:flex;flex-direction:column;min-height:100%;-webkit-font-smoothing:a
 .nav-ico{width:18px;height:18px;flex:none;display:block}
 .nav-chevron{width:14px;height:14px;flex:none;margin-left:auto;opacity:.72;transition:transform .2s ease}
 .nav-group-btn.expanded .nav-chevron{transform:rotate(90deg)}
-.nav-label{min-width:0;flex:1}
+.nav-label{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .nav-badge{
   flex:none;min-width:1.35em;padding:1px 6px;border-radius:999px;
   font:700 10px/1.35 var(--font-ui);letter-spacing:.02em;
@@ -135,11 +129,11 @@ body{display:flex;flex-direction:column;min-height:100%;-webkit-font-smoothing:a
 }
 .nav-sub-wrap.open{opacity:1}
 .nav-sub-list{
-  list-style:none;margin:2px 0 4px;padding:0 0 0 12px;
+  list-style:none;margin:2px 0 4px;padding:0 0 0 10px;
   border-left:2px solid color-mix(in srgb,var(--line) 85%,transparent);
 }
 .nav-sub-item{
-  appearance:none;width:100%;text-align:left;border:0;border-radius:8px;
+  appearance:none;width:100%;max-width:100%;min-width:0;text-align:left;border:0;border-radius:8px;
   background:transparent;color:var(--ink-soft);font:500 13.5px/1.3 var(--font-ui);
   padding:7px 10px 7px 12px;cursor:pointer;display:flex;align-items:center;gap:8px;min-height:36px;
   position:relative;
@@ -153,14 +147,15 @@ body{display:flex;flex-direction:column;min-height:100%;-webkit-font-smoothing:a
 .side.collapsed-rail .nav-label,.side.collapsed-rail .nav-badge,.side.collapsed-rail .nav-chevron,.side.collapsed-rail .nav-sub-wrap{display:none!important}
 .side.collapsed-rail .nav-item,.side.collapsed-rail .nav-group-btn{justify-content:center;padding:0;min-height:44px}
 .side.collapsed-rail .nav-group-btn.on,.side.collapsed-rail .nav-item.on{box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--accent) 35%,transparent)}
-.nav-tooltip-host{position:relative}
+.nav-tooltip-host{position:relative;min-width:0;max-width:100%}
 .nav-tooltip{
-  position:absolute;left:calc(100% + 8px);top:50%;transform:translateY(-50%);
+  display:none;position:absolute;left:calc(100% + 8px);top:50%;transform:translateY(-50%);
   background:var(--ink);color:var(--surface,#fff);font:600 12px/1.3 var(--font-ui);
   padding:6px 10px;border-radius:8px;white-space:nowrap;pointer-events:none;opacity:0;z-index:40;
   transition:opacity .12s ease;
 }
-.nav-tooltip-host:focus-within .nav-tooltip,.nav-tooltip-host:hover .nav-tooltip{opacity:1}
+.side.collapsed-rail .nav-tooltip-host:focus-within .nav-tooltip,
+.side.collapsed-rail .nav-tooltip-host:hover .nav-tooltip{display:block;opacity:1}
 .nav-drawer-backdrop{
   position:fixed;inset:0;background:rgba(15,18,22,.45);z-index:90;opacity:0;pointer-events:none;transition:opacity .2s ease;
 }
@@ -344,7 +339,7 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
   background:color-mix(in srgb,var(--accent) 4%,var(--bg-soft,var(--surface)));
   border:1px solid var(--line);
 }
-.side-nav-wrap{flex:0 1 auto;min-height:0;overflow-y:auto;display:flex;flex-direction:column}
+.side-nav-wrap{flex:0 1 auto;min-height:0;min-width:0;overflow-x:hidden;overflow-y:auto;display:flex;flex-direction:column}
 .side-order-cart{
   flex:1 1 auto;border-top:1px solid var(--line);margin-top:8px;padding:10px 8px 8px;
   min-height:72px;max-height:none;overflow:hidden;
@@ -578,7 +573,6 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
   <div id="nav-drawer-backdrop" class="nav-drawer-backdrop" aria-hidden="true"></div>
   <aside class="side" id="side">
     <div class="side-brand">
-      <div class="mark" aria-hidden="true">OE</div>
       <div class="side-brand-text">
         <p class="eyebrow">LeadPages</p>
         <h1>Orders</h1>
@@ -1969,7 +1963,6 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     var route = state.navRoute || 'dashboard';
     var expanded = state.navExpandedGroup;
     var activeParent = NAV.parentGroupForRoute(route);
-    if (activeParent) expanded = activeParent;
     var html = '';
     tree.forEach(function(node){
       if (node.route && !node.group) {
@@ -2026,8 +2019,11 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
           paintNav();
           return;
         }
-        if (state.navExpandedGroup === gid) state.navExpandedGroup = null;
-        else state.navExpandedGroup = gid;
+        if (state.navExpandedGroup === gid) {
+          state.navExpandedGroup = null;
+        } else {
+          state.navExpandedGroup = gid;
+        }
         try {
           if (state.navExpandedGroup) localStorage.setItem(NAV_EXPAND_KEY, state.navExpandedGroup);
           else localStorage.removeItem(NAV_EXPAND_KEY);

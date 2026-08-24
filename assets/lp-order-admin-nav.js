@@ -48,8 +48,7 @@
       children: [
         { id: 'products', label: 'Products', route: 'products' },
         { id: 'products-categories', label: 'Categories', route: 'products-categories' },
-        { id: 'products-options', label: 'Product Options', route: 'products-options' },
-        { id: 'catalogue-cutoffs', label: 'Availability & Cutoffs', route: 'settings-schedule' }
+        { id: 'products-options', label: 'Product Options', route: 'products-options' }
       ]
     },
     {
@@ -73,13 +72,6 @@
         { id: 'payments-deposits', label: 'Deposits', route: 'payments-deposits', badge: 'awaiting_deposit', requiresDeposits: true },
         { id: 'payments', label: 'Transactions', route: 'payments' }
       ]
-    },
-    {
-      id: 'reports',
-      label: 'Reports',
-      icon: 'reports',
-      type: 'group',
-      children: [{ id: 'supply-report', label: 'Product Totals', route: 'supply' }]
     },
     {
       id: 'settings',
