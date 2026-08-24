@@ -10,21 +10,39 @@ test('nav tree uses industry-neutral labels', function () {
   const blob = JSON.stringify(nav.NAV_TREE);
   assert.doesNotMatch(blob, /butcher|butchery|christmas|turkey|meat prep|weigh order/i);
   assert.match(blob, /Supply & Preparation/);
-  assert.match(blob, /Finalise Orders/);
+  assert.doesNotMatch(blob, /Operations|Catalogue|Message Templates|Product Options/);
 });
 
 test('flattenVisibleTree hides payments when disabled', function () {
   const hidden = nav.flattenVisibleTree({ paymentsEnabled: false, depositsEnabled: false, isSuper: false });
-  assert.ok(!hidden.some(function (n) { return n.id === 'payments'; }));
+  assert.ok(!hidden.some(function (n) { return n.route === 'payments'; }));
   const shown = nav.flattenVisibleTree({ paymentsEnabled: true, depositsEnabled: true, isSuper: false });
-  assert.ok(shown.some(function (n) { return n.id === 'payments'; }));
+  assert.ok(shown.some(function (n) { return n.route === 'payments'; }));
 });
 
-test('routeMeta maps operational shortcuts to existing views', function () {
-  assert.equal(nav.routeMeta('orders-finalise').view, 'orders');
-  assert.equal(nav.routeMeta('orders-packing').view, 'orders');
-  assert.equal(nav.routeMeta('settings-schedule').view, 'settings');
-  assert.equal(nav.parentGroupForRoute('messaging-templates'), 'customers');
+test('top-level routes for products customers and schedule', function () {
+  const tree = nav.flattenVisibleTree({ paymentsEnabled: true, depositsEnabled: true, isSuper: false });
+  const routes = tree.filter(function (n) { return n.route; }).map(function (n) { return n.route; });
+  assert.ok(routes.indexOf('products') >= 0);
+  assert.ok(routes.indexOf('customers') >= 0);
+  assert.ok(routes.indexOf('calendar') >= 0);
+  assert.ok(routes.indexOf('supply') >= 0);
+});
+
+test('settings group includes messaging and abandoned carts', function () {
+  const settings = nav.NAV_TREE.find(function (n) { return n.id === 'settings'; });
+  assert.ok(settings);
+  assert.ok(settings.children.some(function (c) { return c.route === 'messaging'; }));
+  assert.ok(settings.children.some(function (c) { return c.route === 'abandoned'; }));
+  assert.ok(settings.children.some(function (c) { return c.route === 'import'; }));
+  assert.equal(nav.parentGroupForRoute('messaging'), 'settings');
+  assert.equal(nav.parentGroupForRoute('abandoned'), 'settings');
+});
+
+test('settings routes map to distinct sections', function () {
+  assert.equal(nav.routeMeta('settings-cart').settingsSection, 'order-setup');
+  assert.equal(nav.routeMeta('settings-schedule').settingsSection, 'schedule');
+  assert.equal(nav.routeMeta('settings-store').settingsSection, 'store');
 });
 
 test('orders.html wires accordion navigation', function () {
@@ -36,6 +54,8 @@ test('orders.html wires accordion navigation', function () {
   assert.match(html, /oanav-sub-panel/);
   assert.match(html, /btn-side-collapse/);
   assert.match(html, /openNavRoute/);
+  assert.match(html, /applySettingsSection/);
+  assert.match(html, /pay-tab/);
   assert.doesNotMatch(html, /class="mark"/);
   assert.doesNotMatch(html, /if \(activeParent\) expanded = activeParent/);
 });

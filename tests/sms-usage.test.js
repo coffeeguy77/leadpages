@@ -25,14 +25,15 @@ test('estimateSegments uses GSM single and multipart rules', function () {
   assert.equal(estimateSegments('x'.repeat(161)), 2);
 });
 
-test('orders.html nests Import under Settings and Messaging under Customers', function () {
+test('orders.html nests Import and Messaging under Settings', function () {
   const fs = require('fs');
   const path = require('path');
   const nav = require('../assets/lp-order-admin-nav');
   const settings = nav.NAV_TREE.find(function (n) { return n.id === 'settings'; });
   const customers = nav.NAV_TREE.find(function (n) { return n.id === 'customers'; });
   assert.ok(settings && settings.children.some(function (c) { return c.route === 'import'; }));
-  assert.ok(customers && customers.children.some(function (c) { return c.route === 'messaging'; }));
+  assert.ok(settings && settings.children.some(function (c) { return c.route === 'messaging'; }));
+  assert.ok(customers && customers.type === 'item' && customers.route === 'customers');
   const html = fs.readFileSync(path.join(__dirname, '..', 'orders.html'), 'utf8');
   assert.match(html, /lp-order-admin-nav\.js/);
   assert.match(html, /oanav-group-head/);

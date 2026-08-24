@@ -201,7 +201,10 @@ input,select,textarea{
 .prod-extra-cats .muted{font-size:12.5px;color:var(--muted,var(--ink-soft))}
 .prod-delete-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px;padding:10px 12px;border-radius:10px;border:1px dashed var(--line);background:color-mix(in srgb,var(--ink) 4%,transparent)}
 .prod-delete-bar.locked{opacity:.85}
-.settings-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+.settings-tabs{display:none}
+.settings-page-lead{margin:0 0 18px;color:var(--muted);max-width:56ch;line-height:1.45}
+.pay-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 16px}
+.pay-tab.on{background:color-mix(in srgb,var(--accent) 12%,var(--surface));border-color:color-mix(in srgb,var(--accent) 45%,var(--line));color:var(--accent)}
 .settings-tab.on{background:var(--accent);color:#fff;border-color:var(--accent)}
 .prod-thumb{width:40px;height:40px;border-radius:8px;background:transparent center/contain no-repeat;flex:none}
 .prod-thumb:empty{display:none}
@@ -1022,9 +1025,14 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
             <button class="btn solid" type="button" id="pay-load">Refresh</button>
             <a class="btn ghost" id="pay-export" href="#">Export CSV</a>
           </div>
+          <p class="sub" style="margin:0 0 8px">Deposits and transactions for this site. Click a row to open the order.</p>
+          <div class="pay-tabs" role="tablist">
+            <button type="button" class="btn ghost pay-tab on" data-pay-tab="unpaid">Unpaid deposits</button>
+            <button type="button" class="btn ghost pay-tab" data-pay-tab="paid">Paid deposits</button>
+          </div>
           <div class="kpis" id="pay-kpis"></div>
           <div class="table-wrap"><table class="oe"><thead><tr>
-            <th>When</th><th>Kind</th><th>Status</th><th>Amount</th><th>Order</th>
+            <th>Date</th><th>Customer</th><th>Order</th><th>Amount</th><th>Status</th>
           </tr></thead><tbody id="pay-tbody"></tbody></table></div>
         </div>
       </section>
@@ -1035,7 +1043,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
             <h3 style="margin:0;flex:1">Abandoned carts</h3>
             <button class="btn solid" type="button" id="abd-load">Refresh</button>
           </div>
-          <p class="notice">At most <strong>one reminder per cart</strong> (or two if enabled in Settings → Cart). Turn automatic messaging off under Settings → Cart → Abandoned cart reminders. Use Messaging → Open carts for a one-off manual nudge.</p>
+          <p class="notice">At most <strong>one reminder per cart</strong> (or two if enabled in Settings → Order Setup). Turn automatic messaging off there, or use Messaging for a one-off manual nudge.</p>
           <div class="kpis" id="abd-kpis"></div>
           <div class="table-wrap"><table class="oe"><thead><tr>
             <th>Updated</th><th>Status</th><th>Items</th><th>Known</th><th>Contact</th>
@@ -1044,10 +1052,10 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
       </section>
 
       <section class="view" id="view-settings" data-view="settings">
-        <div class="card">
-          <h3>Settings</h3>
-          <p class="sub">Order system configuration for the selected site.</p>
-          <div class="settings-tabs" role="tablist">
+        <div class="card settings-shell">
+          <h3 id="settings-heading">Order Setup</h3>
+          <p class="settings-page-lead" id="settings-sub">Shop behaviour, abandoned-cart recovery, and how customers place orders online.</p>
+          <div class="settings-tabs" role="tablist" aria-hidden="true">
             <button type="button" class="btn ghost settings-tab on" data-set-tab="cart">Cart settings</button>
             <button type="button" class="btn ghost settings-tab" data-set-tab="payments">Payment settings</button>
             <button type="button" class="btn ghost settings-tab" data-set-tab="general">General settings</button>
@@ -1057,7 +1065,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
             <div id="settings-panel-cart">
           <p class="notice" id="settings-shop-link">Customer shop: enable <strong>Order Storefront</strong> on the site (Page editor → Lead Capture) or open <code>/order-shop?slug=…</code>.</p>
             <h4 class="section-title">Abandoned cart reminders</h4>
-            <p class="notice">Turn <strong>Off</strong> to stop all automatic recovery SMS/email. Customise message text under <strong>Messaging → Saved templates</strong> (<code>abandoned_cart</code> and <code>abandoned_cart_2</code>).</p>
+            <p class="notice">Turn <strong>Off</strong> to stop all automatic recovery SMS/email. Customise message text under <strong>Settings → Messaging</strong> (<code>abandoned_cart</code> and <code>abandoned_cart_2</code>).</p>
             <div class="grid2">
               <div class="field"><label for="set-abd-enabled">Automatic reminders</label>
                 <select id="set-abd-enabled">
@@ -1123,7 +1131,9 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
               </div>
             </div>
 
+            <div id="settings-panel-store" class="hide">
             <h4 class="section-title">Shop look &amp; feel</h4>
+            <p class="notice">Colours and layout for the customer order shop. Changes apply after save.</p>
             <div class="actions-row" style="margin-bottom:10px">
               <button class="btn solid" type="button" id="settings-save-theme">Save shop theme only</button>
               <span class="notice" id="settings-theme-msg" style="margin:0"></span>
@@ -1189,7 +1199,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
             </div>
 
             <h4 class="section-title">Deposit reminders</h4>
-            <p class="notice">Automatic reminders for <strong>awaiting deposit</strong> orders. Customise templates under <strong>Messaging → Saved templates</strong>.</p>
+            <p class="notice">Automatic reminders for <strong>awaiting deposit</strong> orders. Customise templates under <strong>Settings → Messaging</strong>.</p>
             <div class="grid2">
               <div class="field"><label for="set-dep-rem-enabled">Automatic reminders</label>
                 <select id="set-dep-rem-enabled">
@@ -1282,11 +1292,10 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
             <button class="btn solid" type="submit" id="settings-save">Save settings</button>
             <p class="notice" id="settings-msg"></p>
           </form>
-        </div>
 
-        <div class="card hide" id="settings-pickup-card" style="margin-top:16px">
-          <h3>Pickup windows</h3>
-          <p class="sub">Set a <strong>booking date range</strong>, <strong>default opening hours</strong> (applied to every open day), <strong>closed days</strong>, and optional <strong>date overrides</strong> (e.g. early close).</p>
+        <div class="hide" id="settings-pickup-card">
+          <h4 class="section-title" style="margin-top:4px">Pickup windows</h4>
+          <p class="notice">Set a <strong>booking date range</strong>, <strong>default opening hours</strong> (applied to every open day), <strong>closed days</strong>, and optional <strong>date overrides</strong> (e.g. early close).</p>
 
           <h4 class="section-title" style="margin-top:12px">Booking period, hours &amp; closures</h4>
           <div class="grid2" style="margin-bottom:12px">
@@ -1346,6 +1355,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
             <th>Date / rule</th><th>Hours</th><th>Status</th><th></th>
           </tr></thead><tbody id="pw-tbody"><tr><td colspan="4" class="empty">Loading…</td></tr></tbody></table></div>
           <p class="notice" id="pw-msg"></p>
+        </div>
         </div>
       </section>
     </div>
@@ -1478,7 +1488,10 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     ordersExtraFilter: {},
     dashCutoffAt: null,
     dashDashboardData: null,
-    settingsTab: 'cart'
+    settingsSection: 'order-setup',
+    settingsTab: 'cart',
+    paymentsTab: 'unpaid',
+    paymentsCache: null
   };
 
   var $ = function(id){ return document.getElementById(id); };
@@ -1529,6 +1542,27 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     if (j === 2 && k !== 12) return 'nd';
     if (j === 3 && k !== 13) return 'rd';
     return 'th';
+  }
+
+  function formatAuDateTime(iso){
+    if (!iso) return '—';
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return String(iso).slice(0, 16);
+    var dd = String(d.getDate()).padStart(2, '0');
+    var mm = String(d.getMonth() + 1).padStart(2, '0');
+    var yyyy = d.getFullYear();
+    var hh = String(d.getHours()).padStart(2, '0');
+    var min = String(d.getMinutes()).padStart(2, '0');
+    return dd + '/' + mm + '/' + yyyy + ' ' + hh + ':' + min;
+  }
+
+  function formatAuDate(iso){
+    if (!iso) return '—';
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return String(iso).slice(0, 10);
+    var dd = String(d.getDate()).padStart(2, '0');
+    var mm = String(d.getMonth() + 1).padStart(2, '0');
+    return dd + '/' + mm + '/' + d.getFullYear();
   }
 
   function formatPickupDateLong(iso, suffix){
@@ -1917,10 +1951,12 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     tree.forEach(function(node){
       if (node.route && !node.group) {
         var dashOn = route === node.route ? ' on' : '';
+        var iconName = node.icon || 'dashboard';
+        var itemBadgeHtml = node.badge ? navBadgeHtml(node.badge) : '';
         html += '<div class="oanav-tip-host">' +
           '<button type="button" class="oanav-dash' + dashOn + '" data-route="' + esc(node.route) + '">' +
-          '<span class="oanav-ico-wrap">' + navIconHtml('dashboard') + '</span>' +
-          '<span class="oanav-label">' + esc(node.label) + '</span></button>' +
+          '<span class="oanav-ico-wrap">' + navIconHtml(iconName) + '</span>' +
+          '<span class="oanav-label">' + esc(node.label) + '</span>' + itemBadgeHtml + '</button>' +
           '<span class="oanav-tip" role="tooltip">' + esc(node.label) + '</span></div>';
         return;
       }
@@ -1931,10 +1967,8 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
       var groupBadgeHtml = '';
       if (groupId === 'orders' && groupBadge) {
         groupBadgeHtml = '<span class="oanav-badge tone-blue" title="Needs attention">' + esc(String(groupBadge)) + '</span>';
-      } else if (groupId === 'operations' && groupBadge) {
-        groupBadgeHtml = '<span class="oanav-badge tone-amber" title="Needs attention">' + esc(String(groupBadge)) + '</span>';
-      } else if (groupId === 'payments' && groupBadge) {
-        groupBadgeHtml = navBadgeHtml('awaiting_deposit');
+      } else if (groupId === 'settings' && groupBadge) {
+        groupBadgeHtml = navBadgeHtml('abandoned_carts');
       }
       html += '<div class="oanav-group' + (isExpanded ? ' is-open' : '') + '" data-nav-group="' + esc(groupId) + '">' +
         '<div class="oanav-tip-host">' +
@@ -2015,6 +2049,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
 
   function applyNavRouteMeta(meta){
     if (!meta) return;
+    if (meta.settingsSection) state.settingsSection = meta.settingsSection;
     if (meta.settingsTab) state.settingsTab = meta.settingsTab;
     if (meta.ordersPreset) {
       state.ordersExtraFilter = {};
@@ -2023,41 +2058,62 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
       if (p.price_tbc) state.ordersExtraFilter.price_tbc = p.price_tbc;
       if (p.editing_state) state.ordersExtraFilter.editing_state = p.editing_state;
     }
-    state.settingsFocus = meta.settingsFocus || null;
-    state.productsFocus = meta.productsFocus || null;
-    state.messagingFocus = meta.messagingFocus || null;
+    if (meta.paymentsTab) state.paymentsTab = meta.paymentsTab;
   }
 
-  function focusMessagingSection(){
-    if (state.messagingFocus === 'templates') {
-      var tpl = document.querySelector('#view-messaging h3');
-      var saved = document.querySelector('#view-messaging .table-wrap');
-      var target = saved || tpl;
-      if (target && target.scrollIntoView) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  var SETTINGS_SECTION_COPY = {
+    'order-setup': {
+      title: 'Order Setup',
+      sub: 'Shop behaviour, abandoned-cart recovery, and how customers place orders online.'
+    },
+    schedule: {
+      title: 'Schedule & Opening Hours',
+      sub: 'Booking date range, default hours, closed days, and per-date overrides for pickup slots.'
+    },
+    rules: {
+      title: 'Order Rules',
+      sub: 'Cutoff timing, customer editing, and whether the order system is enabled for this site.'
+    },
+    'tax-payments': {
+      title: 'Tax & Payments',
+      sub: 'Deposit rules, Stripe Connect, deposit reminders, and GST category settings.'
+    },
+    store: {
+      title: 'Store Configuration',
+      sub: 'Colours and layout for the customer order shop.'
     }
+  };
+
+  function applySettingsSection(section){
+    section = section || state.settingsSection || 'order-setup';
+    state.settingsSection = section;
+    var copy = SETTINGS_SECTION_COPY[section] || SETTINGS_SECTION_COPY['order-setup'];
+    var heading = $('settings-heading');
+    var sub = $('settings-sub');
+    if (heading) heading.textContent = copy.title;
+    if (sub) sub.textContent = copy.sub;
+    var panelMap = {
+      'order-setup': ['settings-panel-cart'],
+      schedule: ['settings-pickup-card'],
+      rules: ['settings-panel-general'],
+      'tax-payments': ['settings-panel-payments', 'settings-panel-gst'],
+      store: ['settings-panel-store']
+    };
+    var show = panelMap[section] || panelMap['order-setup'];
+    ['settings-panel-cart', 'settings-panel-store', 'settings-panel-payments', 'settings-panel-general', 'settings-panel-gst', 'settings-pickup-card'].forEach(function(id){
+      var el = $(id);
+      if (el) el.classList.toggle('hide', show.indexOf(id) < 0);
+    });
+    var saveBtn = $('settings-save');
+    if (saveBtn) saveBtn.classList.toggle('hide', section === 'schedule');
+    var themeBtn = $('settings-save-theme');
+    if (themeBtn) themeBtn.classList.toggle('hide', section !== 'store');
+    state.settingsTab = section === 'tax-payments' ? 'payments' : section === 'rules' ? 'general' : section === 'store' ? 'cart' : section === 'order-setup' ? 'cart' : 'general';
   }
 
-  function focusProductsSection(){
-    if (state.productsFocus === 'categories') {
-      var el = $('prod-cat-filter');
-      if (el && el.closest) {
-        var bar = el.closest('.prod-cat-bar');
-        if (bar && bar.scrollIntoView) bar.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    } else if (state.productsFocus === 'options') {
-      var card = $('prod-form-card');
-      if (card && !card.classList.contains('hide') && card.scrollIntoView) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }
-
-  function focusSettingsSection(){
-    if (state.settingsFocus === 'pickup') {
-      var card = $('settings-pickup-card');
-      if (card && card.scrollIntoView) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } else if (state.settingsFocus === 'theme') {
-      var themeBtn = $('settings-save-theme');
-      if (themeBtn && themeBtn.scrollIntoView) themeBtn.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+  function switchSettingsTab(tab){
+    var map = { cart: 'order-setup', payments: 'tax-payments', general: 'rules', gst: 'tax-payments' };
+    applySettingsSection(map[tab] || 'order-setup');
   }
 
   function openNavRoute(route, opts){
@@ -2071,7 +2127,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     syncNavExpandedForRoute(route);
     var hash = route;
     if (meta.view === 'settings') {
-      hash = meta.settingsTab && meta.settingsTab !== 'cart' ? 'settings-' + meta.settingsTab : 'settings';
+      hash = route;
     } else if (meta.view === route && LEGACY_VIEW_IDS.indexOf(meta.view) >= 0) {
       hash = meta.view;
     }
@@ -2083,12 +2139,9 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     document.querySelectorAll('.view').forEach(function(el){
       el.classList.toggle('on', el.getAttribute('data-view') === meta.view);
     });
-    if (meta.view === 'settings') switchSettingsTab(state.settingsTab || 'cart');
+    if (meta.view === 'settings') applySettingsSection(meta.settingsSection || state.settingsSection || 'order-setup');
     updateSideOrderCartVisibility();
     loadCurrentView().then(function(){
-      focusSettingsSection();
-      focusProductsSection();
-      focusMessagingSection();
       if (meta.view === 'orders' && meta.ordersPreset) loadOrders();
     });
   }
@@ -2261,7 +2314,9 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
       state.ordersExtraFilter.pickup_date = data.tomorrow;
       $('orders-status').value = 'active';
     } else if (filter === 'awaiting_deposit') {
-      $('orders-status').value = 'awaiting_deposit';
+      state.paymentsTab = 'unpaid';
+      openNavRoute('payments');
+      return;
     } else if (filter === 'locked') {
       $('orders-status').value = 'active';
       state.ordersExtraFilter.editing_state = 'locked';
@@ -4078,23 +4133,6 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     });
   }
 
-  function switchSettingsTab(tab){
-    state.settingsTab = tab || 'cart';
-    var cart = $('settings-panel-cart');
-    var payments = $('settings-panel-payments');
-    var general = $('settings-panel-general');
-    var gst = $('settings-panel-gst');
-    var pickup = $('settings-pickup-card');
-    document.querySelectorAll('.settings-tab').forEach(function(btn){
-      btn.classList.toggle('on', btn.getAttribute('data-set-tab') === tab);
-    });
-    if (cart) cart.classList.toggle('hide', tab !== 'cart');
-    if (payments) payments.classList.toggle('hide', tab !== 'payments');
-    if (general) general.classList.toggle('hide', tab !== 'general');
-    if (gst) gst.classList.toggle('hide', tab !== 'gst');
-    if (pickup) pickup.classList.toggle('hide', tab !== 'general');
-  }
-
   var CW_CLOUD = 'dzx6x1hou';
   var CW_MAX_BYTES = 5 * 1024 * 1024;
   function cwSeg(s){ return String(s || 'x').toLowerCase().replace(/[^a-z0-9_\-]/g, '') || 'x'; }
@@ -5233,7 +5271,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
       var loaded = 'Preset: ' + (s.industry_preset || 'custom') + ' · Role: ' + (data.role || '—');
       if (msg) msg.textContent = loaded;
       await loadPickupWindows();
-      if (state.currentView === 'settings') switchSettingsTab(state.settingsTab || 'cart');
+      if (state.currentView === 'settings') applySettingsSection(state.settingsSection || 'order-setup');
     } catch (e) {
       var err = (e && e.message) || String(e);
       if (msg) msg.textContent = err;
@@ -5850,19 +5888,53 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     tbody.innerHTML = '<tr><td colspan="5">Loading…</td></tr>';
     try {
       var data = await api('/api/order/payments?' + siteQuery());
-      var s = data.summary || {};
-      kpis.innerHTML =
-        '<div class="kpi"><p class="l">Payments</p><p class="v">' + esc(s.count) + '</p></div>' +
-        '<div class="kpi"><p class="l">Paid</p><p class="v">' + esc(s.paid_count) + '</p></div>' +
-        '<div class="kpi"><p class="l">Collected</p><p class="v">' + esc(s.paid_total) + '</p></div>';
-      tbody.innerHTML = (data.payments || []).map(function(p){
-        return '<tr><td>' + esc((p.paid_at || p.created_at || '').slice(0, 16).replace('T', ' ')) +
-          '</td><td>' + esc(p.kind) + '</td><td>' + esc(p.status) +
-          '</td><td>' + formatAud(p.amount_cents) + '</td><td>' + esc(p.order_id || '—') + '</td></tr>';
-      }).join('') || '<tr><td colspan="5" class="empty">No payments</td></tr>';
+      state.paymentsCache = data;
+      paintPaymentsView();
     } catch (e) {
       tbody.innerHTML = '<tr><td colspan="5">' + esc((e && e.message) || e) + '</td></tr>';
     }
+  }
+
+  function paymentStatusLabel(status){
+    if (status === 'awaiting') return 'Awaiting payment';
+    if (status === 'paid') return 'Paid';
+    if (status === 'pending') return 'Pending';
+    if (status === 'requires_action') return 'Action required';
+    if (status === 'failed') return 'Failed';
+    return status || '—';
+  }
+
+  function paintPaymentsView(){
+    var tbody = $('pay-tbody');
+    var kpis = $('pay-kpis');
+    var data = state.paymentsCache || {};
+    var s = data.summary || {};
+    var tab = state.paymentsTab || 'unpaid';
+    document.querySelectorAll('.pay-tab').forEach(function(btn){
+      btn.classList.toggle('on', btn.getAttribute('data-pay-tab') === tab);
+    });
+    var rows = tab === 'paid'
+      ? ((data.deposits && data.deposits.paid) || [])
+      : ((data.deposits && data.deposits.unpaid) || []);
+    kpis.innerHTML =
+      '<div class="kpi"><p class="l">Unpaid deposits</p><p class="v">' + esc(s.unpaid_deposit_count != null ? s.unpaid_deposit_count : '—') + '</p></div>' +
+      '<div class="kpi"><p class="l">Paid deposits</p><p class="v">' + esc(s.paid_deposit_count != null ? s.paid_deposit_count : '—') + '</p></div>' +
+      '<div class="kpi"><p class="l">Total collected</p><p class="v">' + esc(s.paid_total || '—') + '</p></div>';
+    tbody.innerHTML = rows.map(function(p){
+      var when = formatAuDateTime(p.paid_at || p.created_at);
+      var orderLabel = p.order_number || '—';
+      return '<tr class="clickable" data-open-order="' + esc(p.order_id) + '">' +
+        '<td>' + esc(when) + '</td>' +
+        '<td>' + esc(p.customer_name || '—') + '</td>' +
+        '<td><strong>' + esc(orderLabel) + '</strong></td>' +
+        '<td>' + formatAud(p.amount_cents) + '</td>' +
+        '<td>' + esc(paymentStatusLabel(p.status)) + '</td></tr>';
+    }).join('') || '<tr><td colspan="5" class="empty">No ' + (tab === 'paid' ? 'paid' : 'unpaid') + ' deposits</td></tr>';
+    tbody.querySelectorAll('[data-open-order]').forEach(function(tr){
+      tr.addEventListener('click', function(){
+        openOrderDetail(tr.getAttribute('data-open-order'));
+      });
+    });
   }
 
   async function loadAbandoned(){
@@ -6130,6 +6202,13 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
   document.querySelectorAll('.settings-tab').forEach(function(btn){
     btn.addEventListener('click', function(){
       switchSettingsTab(btn.getAttribute('data-set-tab') || 'general');
+    });
+  });
+  document.querySelectorAll('.pay-tab').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      state.paymentsTab = btn.getAttribute('data-pay-tab') || 'unpaid';
+      if (state.paymentsCache) paintPaymentsView();
+      else loadPayments();
     });
   });
   if ($('prod-image-upload')) $('prod-image-upload').addEventListener('click', function(){ $('prod-image-file').click(); });
