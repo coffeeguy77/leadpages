@@ -24,12 +24,10 @@
 })();
 </script>
 <title>Orders — LeadPages</title>
-<link rel="icon" type="image/x-icon" href="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico">
-<link rel="shortcut icon" href="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico">
+<link rel="icon" type="image/png" href="/assets/apple-touch-icon-180.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon-180.png">
 <meta name="theme-color" content="#12151a">
 <meta name="robots" content="noindex">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/lp-themes.css">
 <link rel="stylesheet" href="/assets/lp-admin-responsive.css">
 <link rel="stylesheet" href="/assets/lp-super-admin.css">
@@ -38,13 +36,10 @@
 <script src="/assets/lp-order-admin-nav.js"></script>
 <link rel="stylesheet" href="/assets/lp-order-admin-nav.css">
 <link rel="stylesheet" href="/assets/lp-logo.css">
-<script src="/assets/lp-logo.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
 <style>
 :root{
-  --font-display:'Fraunces',Georgia,serif;
-  --font-ui:'Inter',system-ui,sans-serif;
+  --font-display:Georgia,'Times New Roman',serif;
+  --font-ui:system-ui,-apple-system,'Segoe UI',sans-serif;
   --fs-xs:11px;
   --fs-sm:12px;
   --fs-base:13.5px;
@@ -499,7 +494,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
 }
 </style>
 </head>
-<body>
+<body data-lp-admin-page="orders">
 <div id="gate" class="gate">
   <div class="gate-card" id="gate-login">
     <h1>Order Engine</h1>
@@ -1502,6 +1497,8 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
 
 <div class="toast-host" id="toasts" aria-live="polite"></div>
 
+<script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 (function(){
   'use strict';
@@ -1884,7 +1881,11 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
 
   async function api(path, opts){
     opts = opts || {};
-    var session = (await sb.auth.getSession()).data.session;
+    var session = state.session;
+    if (!session || !session.access_token) {
+      session = (await sb.auth.getSession()).data.session;
+      if (session) state.session = session;
+    }
     if (!session) throw new Error('Not signed in');
     var headers = Object.assign({
       'Authorization': 'Bearer ' + session.access_token,
@@ -2179,7 +2180,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     if (themeBtn) themeBtn.classList.toggle('hide', section !== 'store');
     state.settingsTab = section === 'tax-payments' ? 'payments' : section === 'rules' ? 'general' : section === 'store' ? 'cart' : section === 'menu-layouts' ? 'cart' : 'general';
     if (section === 'schedule') {
-      loadPickupWindows().then(function(){ tickMasterLockCountdown(); });
+      tickMasterLockCountdown();
     }
     if (section === 'tax-payments') {
       loadProductsCache().then(function(){
@@ -2192,6 +2193,23 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
   function switchSettingsTab(tab){
     var map = { cart: 'menu-layouts', payments: 'tax-payments', general: 'rules', gst: 'tax-payments' };
     applySettingsSection(map[tab] || 'menu-layouts');
+  }
+
+  var dashCutoffTimer = null;
+
+  function stopDashCutoffTimer(){
+    if (dashCutoffTimer) {
+      clearInterval(dashCutoffTimer);
+      dashCutoffTimer = null;
+    }
+  }
+
+  function startDashCutoffTimer(){
+    stopDashCutoffTimer();
+    dashCutoffTimer = setInterval(function(){
+      if (state.currentView !== 'dashboard' || document.hidden) return;
+      tickDashCutoff();
+    }, 30000);
   }
 
   function openNavRoute(route, opts){
@@ -2219,6 +2237,8 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     });
     if (meta.view === 'settings') applySettingsSection(meta.settingsSection || state.settingsSection || 'menu-layouts');
     updateSideOrderCartVisibility();
+    if (meta.view === 'dashboard') startDashCutoffTimer();
+    else stopDashCutoffTimer();
     loadCurrentView().then(function(){
       if (meta.view === 'orders' && meta.ordersPreset) loadOrders();
     });
@@ -2402,6 +2422,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     }
     var el = $('dash-cutoff-val');
     if (!el || !state.dashCutoffAt) return;
+    var ms = new Date(state.dashCutoffAt).getTime() - Date.now();
     el.textContent = formatCountdownMs(ms);
     var banner = $('dash-cutoff');
     if (banner) {
@@ -6352,7 +6373,9 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     if (e.key === 'Enter') $('gate-go').click();
   });
   $('gate-out').addEventListener('click', async function(){
+    stopDashCutoffTimer();
     await sb.auth.signOut();
+    state.session = null;
     showGate('login');
   });
   $('btn-menu').addEventListener('click', function(){
@@ -6404,7 +6427,9 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     } catch (e) { toast((e && e.message) || String(e), 'err'); }
     btn.disabled = false;
   });
-  setInterval(tickDashCutoff, 30000);
+  document.addEventListener('visibilitychange', function(){
+    if (!document.hidden && state.currentView === 'dashboard') tickDashCutoff();
+  });
   $('orders-q').addEventListener('keydown', function(e){
     if (e.key === 'Enter') loadOrders();
   });
