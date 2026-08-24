@@ -9,6 +9,7 @@ const { earliestPickupDate, effectiveOrderCutoff } = require('../../lib/order/cu
 const { storeCutoffRuleLabel, cutoffSummary, formatCutoffDateTime } = require('../../lib/order/cutoff-display');
 const { resolvePaymentRule, computeDepositRequired } = require('../../lib/order/deposit');
 const { listWindows, buildPickupSlots, parsePickupSchedule } = require('../../lib/order/fulfilment-windows');
+const { isMasterLockActive, msUntilMasterLock } = require('../../lib/order/master-lock');
 
 async function resolveSite(slug, siteId) {
   const admin = getAdmin();
@@ -220,6 +221,18 @@ module.exports = async function (req, res) {
       cutoff: {
         rule_label: storeCutoffRuleLabel(system),
         preview: cutoffPreview
+      },
+      master_lock: {
+        date: schedule.master_lock_date,
+        active: isMasterLockActive(schedule, new Date()),
+        ms_until: msUntilMasterLock(schedule, new Date()),
+        countdown: {
+          enabled: schedule.countdown_enabled !== false && !!schedule.master_lock_date,
+          eyebrow: schedule.countdown_eyebrow || '',
+          title: schedule.countdown_title || 'Order cutoff',
+          intro: schedule.countdown_intro || ''
+        },
+        cart_disclaimer: schedule.cart_disclaimer || ''
       }
     });
   } catch (e) {

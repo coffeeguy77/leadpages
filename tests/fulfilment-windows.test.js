@@ -121,11 +121,57 @@ test('orders UI has pickup schedule controls', function () {
   const html = fs.readFileSync(path.join(__dirname, '..', 'orders.html'), 'utf8');
   const api = fs.readFileSync(path.join(__dirname, '..', 'api/order/fulfilment-windows.js'), 'utf8');
   assert.match(html, /pw-master-lock/);
+  assert.match(html, /pw-countdown-enabled/);
+  assert.match(html, /pw-countdown-title/);
+  assert.match(html, /pw-cart-disclaimer/);
   assert.match(html, /pw-hours-tbody/);
   assert.match(html, /pw-pickup-pattern/);
   assert.match(html, /pw-range-start/);
   assert.match(api, /save_schedule/);
+  assert.match(api, /countdown_enabled/);
+  assert.match(api, /cart_disclaimer/);
   assert.match(api, /weekly_hours/);
+});
+
+test('parsePickupSchedule reads countdown and cart disclaimer fields', function () {
+  var s = parsePickupSchedule({
+    settings: {
+      pickup_schedule: {
+        master_lock_date: '2026-12-15',
+        countdown_enabled: false,
+        countdown_eyebrow: 'Christmas orders',
+        countdown_title: 'Orders close soon',
+        countdown_intro: 'Place your order before the cutoff.',
+        cart_disclaimer: 'Meat weights may vary slightly.'
+      }
+    }
+  });
+  assert.equal(s.master_lock_date, '2026-12-15');
+  assert.equal(s.countdown_enabled, false);
+  assert.equal(s.countdown_eyebrow, 'Christmas orders');
+  assert.equal(s.countdown_title, 'Orders close soon');
+  assert.equal(s.countdown_intro, 'Place your order before the cutoff.');
+  assert.equal(s.cart_disclaimer, 'Meat weights may vary slightly.');
+});
+
+test('countdown defaults on when master lock date set', function () {
+  var s = parsePickupSchedule({
+    settings: { pickup_schedule: { master_lock_date: '2026-12-15' } }
+  });
+  assert.equal(s.countdown_enabled, true);
+});
+
+test('storefront exposes master lock countdown and disclaimer', function () {
+  const fs = require('fs');
+  const path = require('path');
+  const api = fs.readFileSync(path.join(__dirname, '..', 'api/order/storefront.js'), 'utf8');
+  const js = fs.readFileSync(path.join(__dirname, '..', 'assets/lp-order-storefront.js'), 'utf8');
+  assert.match(api, /master_lock:/);
+  assert.match(api, /countdown:/);
+  assert.match(api, /cart_disclaimer/);
+  assert.match(js, /renderMasterLockCountdown/);
+  assert.match(js, /renderCartDisclaimer/);
+  assert.match(js, /oe-master-lock-val/);
 });
 
 test('weekly hours apply per weekday in slot builder', function () {

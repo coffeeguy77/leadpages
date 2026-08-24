@@ -44,6 +44,11 @@ module.exports = async function (req, res) {
     if (req.method === 'POST' && body.action === 'save_schedule') {
       const result = await savePickupSchedule(system, {
         master_lock_date: body.master_lock_date,
+        countdown_enabled: body.countdown_enabled,
+        countdown_eyebrow: body.countdown_eyebrow,
+        countdown_title: body.countdown_title,
+        countdown_intro: body.countdown_intro,
+        cart_disclaimer: body.cart_disclaimer,
         range_start: body.range_start,
         range_end: body.range_end,
         default_window_start: body.default_window_start,

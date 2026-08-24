@@ -91,6 +91,17 @@ body{margin:0;min-height:100vh;font-family:var(--font-ui);color:var(--ink);backg
 .lp-oe-account-actions{display:flex;flex-wrap:wrap;gap:8px}
 .lp-oe-account-btn{appearance:none;border:1px solid var(--accent);background:var(--accent);color:#fff;font:600 12.5px/1 var(--font-ui);padding:9px 12px;border-radius:10px;cursor:pointer}
 .lp-oe-account-btn.ghost{background:transparent;color:var(--accent)}
+.lp-oe-lock-countdown{margin:0 0 14px;padding:14px;border-radius:14px;border:1px solid color-mix(in srgb,var(--accent) 30%,var(--line));background:linear-gradient(165deg,color-mix(in srgb,var(--accent) 12%,var(--card)),var(--card))}
+.lp-oe-lock-countdown.is-soon{border-color:color-mix(in srgb,#d97706 45%,var(--line))}
+.lp-oe-lock-countdown.is-locked{border-color:color-mix(in srgb,#b91c1c 40%,var(--line))}
+.lp-oe-lock-ey{margin:0 0 6px;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.lp-oe-lock-title{margin:0 0 6px;font-size:17px;font-weight:700;line-height:1.25}
+.lp-oe-lock-intro{margin:0 0 10px;font-size:12.5px;line-height:1.45;color:var(--muted)}
+.lp-oe-lock-val{font-size:22px;font-weight:700}
+.lp-oe-lock-meta{font-size:12px;color:var(--muted)}
+.lp-oe-cart-disclaimer{margin-top:14px;padding:12px 14px;border-radius:12px;border:1px dashed color-mix(in srgb,var(--accent) 28%,var(--line));background:color-mix(in srgb,var(--accent) 5%,var(--card));font-size:12.5px;line-height:1.5;color:var(--muted)}
+.lp-oe-cart-disclaimer p{margin:0 0 8px}
+.lp-oe-cart-disclaimer p:last-child{margin-bottom:0}
 .lp-oe-orders-title{margin:8px 0 6px;font-family:var(--font-display);font-size:clamp(22px,3vw,28px)}
 .lp-oe-order-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:0 0 12px}
 .lp-oe-modal-backdrop{position:fixed;inset:0;z-index:10050;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(18,24,20,.48)}
@@ -121,6 +132,6 @@ body{margin:0;min-height:100vh;font-family:var(--font-ui);color:var(--ink);backg
   }
 })();
 </script>
-<script src="/assets/lp-order-storefront.js?v=oe-14" defer></script>
+<script src="/assets/lp-order-storefront.js?v=oe-15" defer></script>
 </body>
 </html>
