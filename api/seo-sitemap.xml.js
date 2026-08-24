@@ -9,6 +9,7 @@ const {
 } = require('../lib/seo/sitemap.js');
 const { listLiveSiteSlugs } = require('../lib/seo/store.js');
 const { PLATFORM_ORIGIN } = require('./platform-seo');
+const { isTenantCustomDomain, resolvePrimaryHosts } = require('../lib/tenant-domain-seo');
 
 const XML_HEADERS = {
   'content-type': 'application/xml; charset=utf-8',
@@ -48,6 +49,15 @@ function originFromReq(req) {
 
 module.exports = async (req, res) => {
   try {
+    const host = String(req.headers['x-forwarded-host'] || req.headers.host || '').split(',')[0].trim();
+    if (isTenantCustomDomain(host, resolvePrimaryHosts(process.env.PRIMARY_HOSTS))) {
+      res.statusCode = 404;
+      res.setHeader('content-type', 'text/plain; charset=utf-8');
+      res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+      res.setHeader('cache-control', 'no-store');
+      return res.end('Not found');
+    }
+
     const origin = originFromReq(req);
     let data;
     try {

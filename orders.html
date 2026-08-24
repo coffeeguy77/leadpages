@@ -81,6 +81,7 @@ body{display:flex;flex-direction:column;min-height:100%;-webkit-font-smoothing:a
   display:flex;flex-direction:column;
   border-right:1px solid var(--line);background:var(--bg-soft,var(--surface));
   padding:16px 12px 18px;
+  min-height:0;height:100%;
 }
 .side-brand{display:flex;align-items:center;gap:10px;padding:4px 8px 14px;border-bottom:1px solid var(--line)}
 .side-brand .mark{
@@ -112,7 +113,7 @@ body{display:flex;flex-direction:column;min-height:100%;-webkit-font-smoothing:a
   color:var(--ink-faint);padding:14px 12px 6px;margin:0;
 }
 .nav button.nav-sub{padding-left:22px;font-size:var(--fs-sm)}
-.side-foot{border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:8px}
+.side-foot{flex:0 0 auto;border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:8px}
 .who{font-size:var(--fs-xs);color:var(--ink-faint);padding:0 8px;word-break:break-all}
 .side-actions{display:flex;flex-wrap:wrap;gap:6px;padding:0 4px}
 .btn{
@@ -288,17 +289,18 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
   background:color-mix(in srgb,var(--accent) 4%,var(--bg-soft,var(--surface)));
   border:1px solid var(--line);
 }
-.side-nav-wrap{flex:1 1 auto;min-height:0;overflow:auto;display:flex;flex-direction:column}
+.side-nav-wrap{flex:0 1 auto;min-height:0;overflow-y:auto;display:flex;flex-direction:column}
 .side-order-cart{
-  flex:none;border-top:1px solid var(--line);margin-top:8px;padding:10px 4px 6px;
-  min-height:64px;max-height:min(28vh,240px);overflow:auto;
+  flex:1 1 auto;border-top:1px solid var(--line);margin-top:8px;padding:10px 8px 8px;
+  min-height:72px;max-height:none;overflow:hidden;
+  display:flex;flex-direction:column;
   background:color-mix(in srgb,var(--accent) 4%,var(--surface));
   border-radius:10px;
 }
 .side-order-cart.hide{display:none!important}
-.side-order-cart h4{margin:0 0 8px;font-size:var(--fs-xs);font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
-.side-order-cart-empty{font-size:var(--fs-xs);color:var(--ink-faint);margin:0 0 8px;line-height:1.35}
-.side-order-cart-list{display:flex;flex-direction:column;gap:6px;margin:0}
+.side-order-cart h4{margin:0 0 8px;flex:0 0 auto;font-size:var(--fs-xs);font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
+.side-order-cart-empty{font-size:var(--fs-xs);color:var(--ink-faint);margin:0 0 8px;line-height:1.35;flex:0 0 auto}
+.side-order-cart-list{display:flex;flex-direction:column;gap:6px;margin:0;flex:1 1 auto;min-height:0;overflow-y:auto}
 .side-order-cart-item{
   display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 8px;align-items:start;
   padding:7px 8px;border-radius:8px;border:1px solid var(--line);background:var(--surface);
@@ -463,19 +465,26 @@ body.embed .hub{
   min-height:70vh;height:100%;overflow:hidden;
 }
 body.embed .side{
-  width:200px;min-width:200px;max-width:220px;flex:0 0 200px;
+  width:25%;min-width:220px;max-width:420px;flex:0 0 25%;
   height:100%;overflow:hidden;
 }
-body.embed .side-nav-wrap{flex:1 1 auto;min-height:0}
-body.embed .side-order-cart{max-height:min(22vh,200px);min-height:56px}
+body.embed .side-nav-wrap{flex:0 1 auto;min-height:0;overflow-y:auto}
+body.embed .side-order-cart{
+  flex:1 1 auto;min-height:72px;max-height:none;overflow:hidden;
+  display:flex;flex-direction:column;
+}
+body.embed .side-order-cart-list{flex:1 1 auto;min-height:0;overflow-y:auto}
 body.embed .main{
-  flex:1 1 auto;min-width:0;width:auto;max-width:none;
+  flex:1 1 75%;min-width:0;width:auto;max-width:none;
   height:100%;overflow:hidden;display:flex;flex-direction:column;
 }
 body.embed .content{flex:1;min-height:0;overflow:auto}
 @media (max-width:900px){
   body.embed .hub{flex-direction:row}
-  body.embed .side{width:200px;min-width:200px;max-width:220px;flex:0 0 200px;border-bottom:0}
+  body.embed .side{
+    width:25%;min-width:200px;max-width:320px;flex:0 0 25%;
+    border-bottom:0;
+  }
   body.embed .menu-toggle{display:none}
   body.embed .side.collapsed .nav,
   body.embed .side.collapsed .side-foot{display:flex}
