@@ -1313,6 +1313,35 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
             </div>
           </div>
 
+          <h4 class="section-title">Storefront countdown</h4>
+          <p class="notice">Shown above <strong>Your account</strong> on the customer order shop. Requires a master lock date.</p>
+          <div class="grid2" style="margin-bottom:12px">
+            <div class="field"><label for="pw-countdown-enabled">Show countdown on shop</label>
+              <select id="pw-countdown-enabled">
+                <option value="1">On</option>
+                <option value="0">Off</option>
+              </select>
+            </div>
+            <div class="field"><label for="pw-countdown-eyebrow">Eyebrow</label>
+              <input id="pw-countdown-eyebrow" type="text" placeholder="Christmas orders">
+              <span class="field-hint">Small label above the title (e.g. Christmas orders).</span>
+            </div>
+            <div class="field"><label for="pw-countdown-title">Countdown title</label>
+              <input id="pw-countdown-title" type="text" placeholder="Orders close soon">
+            </div>
+            <div class="field" style="grid-column:1/-1"><label for="pw-countdown-intro">Intro text</label>
+              <textarea id="pw-countdown-intro" class="notes-grow" rows="2" placeholder="Place your order before the cutoff — we’ll prepare everything for your pickup date."></textarea>
+            </div>
+          </div>
+
+          <h4 class="section-title">Cart disclaimer</h4>
+          <p class="notice">Optional box at the bottom of the customer cart sidebar — e.g. Christmas info, weight variation policy.</p>
+          <div class="field" style="margin-bottom:16px">
+            <label for="pw-cart-disclaimer">Disclaimer text</label>
+            <textarea id="pw-cart-disclaimer" class="notes-grow" rows="4" placeholder="Meat weights may vary slightly. We will give you the piece closest to your request that is available."></textarea>
+            <span class="field-hint">Plain text; line breaks are preserved on the shop.</span>
+          </div>
+
           <h4 class="section-title">Opening hours</h4>
           <p class="notice">Set trading hours per weekday or as a range — e.g. Mon–Thu 7:30am–6pm, Fri 7:30am–5pm, Sat 7:30am–1:30pm, Sun closed.</p>
           <div class="table-wrap" style="margin-bottom:10px">
@@ -5627,6 +5656,13 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
   function fillPickupScheduleForm(schedule){
     schedule = schedule || {};
     if ($('pw-master-lock')) $('pw-master-lock').value = schedule.master_lock_date || '';
+    if ($('pw-countdown-enabled')) {
+      $('pw-countdown-enabled').value = schedule.countdown_enabled === false ? '0' : '1';
+    }
+    if ($('pw-countdown-eyebrow')) $('pw-countdown-eyebrow').value = schedule.countdown_eyebrow || '';
+    if ($('pw-countdown-title')) $('pw-countdown-title').value = schedule.countdown_title || '';
+    if ($('pw-countdown-intro')) $('pw-countdown-intro').value = schedule.countdown_intro || '';
+    if ($('pw-cart-disclaimer')) $('pw-cart-disclaimer').value = schedule.cart_disclaimer || '';
     if ($('pw-range-start')) $('pw-range-start').value = schedule.range_start || '';
     if ($('pw-range-end')) $('pw-range-end').value = schedule.range_end || '';
     if ($('pw-pickup-pattern')) $('pw-pickup-pattern').value = schedule.pickup_pattern || 'weekly';
@@ -5667,6 +5703,11 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
           site_id: state.siteId,
           action: 'save_schedule',
           master_lock_date: $('pw-master-lock') ? $('pw-master-lock').value || null : null,
+          countdown_enabled: $('pw-countdown-enabled') ? $('pw-countdown-enabled').value === '1' : true,
+          countdown_eyebrow: $('pw-countdown-eyebrow') ? String($('pw-countdown-eyebrow').value || '').trim() : '',
+          countdown_title: $('pw-countdown-title') ? String($('pw-countdown-title').value || '').trim() : '',
+          countdown_intro: $('pw-countdown-intro') ? String($('pw-countdown-intro').value || '').trim() : '',
+          cart_disclaimer: $('pw-cart-disclaimer') ? String($('pw-cart-disclaimer').value || '').trim() : '',
           range_start: $('pw-range-start') ? $('pw-range-start').value || null : null,
           range_end: $('pw-range-end') ? $('pw-range-end').value || null : null,
           default_window_start: first ? first.start : null,

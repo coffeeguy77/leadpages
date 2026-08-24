@@ -52,7 +52,7 @@ test('orders.html uses LeadPages-scale type and nav counts', function () {
   const path = require('path');
   const html = fs.readFileSync(path.join(__dirname, '..', 'orders.html'), 'utf8');
   assert.match(html, /--fs-base/);
-  assert.match(html, /nav-count/);
+  assert.match(html, /oanav-badge/);
   assert.match(html, /refreshNavCounts/);
   assert.match(html, /Active \(hide archived\)/);
   assert.match(html, /offset:\s*offset/);
@@ -152,7 +152,7 @@ test('storefront has SMS auth modal and in-page My orders', function () {
   assert.match(js, /lp-oe-modal-backdrop/);
   assert.match(js, /lp-oe-client-nav/);
   assert.match(js, /action:\s*'reorder'/);
-  assert.match(shop, /lp-order-storefront\.js\?v=oe-14/);
+  assert.match(shop, /lp-order-storefront\.js\?v=oe-15/);
 });
 
 test('displayGivenName prefers first name with title case', function () {

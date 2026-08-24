@@ -626,6 +626,7 @@
       this.state.catalogue = await catalogPromise;
       this.state.pickupSlots = this.state.catalogue.pickup_slots || [];
       this.state.earliest = this.state.catalogue.earliest_pickup_date;
+      this.state.masterLock = this.state.catalogue.master_lock || null;
       this.state.cutoffRule =
         (this.state.catalogue.cutoff && this.state.catalogue.cutoff.rule_label) || '';
       var cfg = this.storefrontCfg();
@@ -709,6 +710,61 @@
     if (hours || days) parts.push(hours + 'h');
     parts.push(mins + 'm');
     return parts.join(' ');
+  };
+
+  OrderStorefront.prototype.masterLockState = function () {
+    var ml =
+      this.state.masterLock ||
+      (this.state.catalogue && this.state.catalogue.master_lock) ||
+      null;
+    return ml;
+  };
+
+  OrderStorefront.prototype.formatAuDateShort = function (iso) {
+    if (!iso) return '';
+    var p = String(iso).slice(0, 10).split('-');
+    if (p.length !== 3) return iso;
+    return p[2] + '/' + p[1] + '/' + p[0];
+  };
+
+  OrderStorefront.prototype.renderMasterLockCountdown = function () {
+    var ml = this.masterLockState();
+    if (!ml || !ml.countdown || !ml.countdown.enabled || !ml.date) return '';
+    var c = ml.countdown;
+    var ms = ml.ms_until != null ? ml.ms_until : null;
+    if (ml.active) ms = 0;
+    var html = '<div class="lp-oe-lock-countdown' + (ml.active ? ' is-locked' : ms != null && ms <= 8 * 3600000 ? ' is-soon' : '') + '" id="oe-master-lock-banner" role="status" aria-live="polite">';
+    if (c.eyebrow) {
+      html += '<p class="lp-oe-lock-ey">' + esc(c.eyebrow) + '</p>';
+    }
+    html += '<p class="lp-oe-lock-title">' + esc(c.title || 'Order cutoff') + '</p>';
+    if (c.intro) {
+      html += '<p class="lp-oe-lock-intro">' + esc(c.intro) + '</p>';
+    }
+    html += '<div class="lp-oe-lock-timer">';
+    if (ml.active) {
+      html += '<span class="lp-oe-lock-val">Ordering closed</span>';
+      html += '<span class="lp-oe-lock-meta">Closed ' + esc(this.formatAuDateShort(ml.date)) + '</span>';
+    } else {
+      html += '<span class="lp-oe-lock-val" id="oe-master-lock-val">' + esc(this.formatCountdown(ms)) + '</span>';
+      html += '<span class="lp-oe-lock-meta">until ' + esc(this.formatAuDateShort(ml.date)) + '</span>';
+    }
+    html += '</div></div>';
+    return html;
+  };
+
+  OrderStorefront.prototype.renderCartDisclaimer = function () {
+    var ml = this.masterLockState();
+    var text = ml && ml.cart_disclaimer ? String(ml.cart_disclaimer).trim() : '';
+    if (!text) return '';
+    var html = '<div class="lp-oe-cart-disclaimer" role="note">';
+    text.split(/\n/).forEach(function (line) {
+      line = String(line || '').trim();
+      if (!line) return;
+      html += '<p>' + esc(line) + '</p>';
+    });
+    html += '</div>';
+    return html;
   };
 
   OrderStorefront.prototype.refreshCutoffPreview = async function (dateStr) {
@@ -1466,11 +1522,13 @@
     var self = this;
     var d = this.state.checkoutDraft || {};
     var html = '';
+    html += this.renderMasterLockCountdown();
     html += this.renderAccountBox();
     html += '<h3>Your cart</h3>';
 
     if (!this.state.items.length) {
       html += '<p class="lp-oe-empty" style="padding:12px 0">Cart is empty — add items from the menu.</p>';
+      html += this.renderCartDisclaimer();
       return html;
     }
     this.state.items.forEach(function (it) {
@@ -1591,6 +1649,7 @@
       '>' +
       esc((this.state.display && this.state.display.cta) || 'Place order') +
       '</button>';
+    html += this.renderCartDisclaimer();
     return html;
   };
 
@@ -1731,9 +1790,22 @@
       var tickSelf = this;
       this._cutoffTick = setInterval(function () {
         var el = document.getElementById('oe-cutoff-val');
-        if (!el || !tickSelf.state.cutoffPreview || !tickSelf.state.cutoffPreview.effective_cutoff_at) return;
-        var ms = new Date(tickSelf.state.cutoffPreview.effective_cutoff_at).getTime() - Date.now();
-        el.textContent = tickSelf.formatCountdown(ms);
+        if (el && tickSelf.state.cutoffPreview && tickSelf.state.cutoffPreview.effective_cutoff_at) {
+          var ms = new Date(tickSelf.state.cutoffPreview.effective_cutoff_at).getTime() - Date.now();
+          el.textContent = tickSelf.formatCountdown(ms);
+        }
+        var mlEl = document.getElementById('oe-master-lock-val');
+        var ml = tickSelf.masterLockState();
+        if (mlEl && ml && ml.date && !ml.active) {
+          var end = new Date(String(ml.date).slice(0, 10) + 'T23:59:59').getTime();
+          var mlMs = end - Date.now();
+          mlEl.textContent = tickSelf.formatCountdown(mlMs);
+          var banner = document.getElementById('oe-master-lock-banner');
+          if (banner) {
+            banner.classList.toggle('is-locked', mlMs <= 0);
+            banner.classList.toggle('is-soon', mlMs > 0 && mlMs <= 8 * 3600000);
+          }
+        }
       }, 30000);
     }
     if (this.state.authModal && this.state.authModal.open) {
@@ -2390,6 +2462,20 @@
       '.lp-oe-cutoff-timer{margin:0;color:var(--oe-muted)}',
       '.lp-oe-cutoff-timer.is-soon{color:#b45309;border-top:1px dashed color-mix(in srgb,#d97706 35%,var(--oe-line));padding-top:8px;margin-top:8px}',
       '.lp-oe-cutoff-timer.is-locked{color:#b91c1c}',
+      '.lp-oe-lock-countdown{margin:0 0 14px;padding:14px;border-radius:14px;border:1px solid color-mix(in srgb,var(--oe-accent) 30%,var(--oe-line));background:linear-gradient(165deg,color-mix(in srgb,var(--oe-accent) 12%,var(--oe-card)),var(--oe-card));box-shadow:0 8px 22px rgba(28,36,30,.05)}',
+      '.lp-oe-lock-countdown.is-soon{border-color:color-mix(in srgb,#d97706 45%,var(--oe-line));background:linear-gradient(165deg,color-mix(in srgb,#d97706 10%,var(--oe-card)),var(--oe-card))}',
+      '.lp-oe-lock-countdown.is-locked{border-color:color-mix(in srgb,#b91c1c 40%,var(--oe-line));background:linear-gradient(165deg,color-mix(in srgb,#b91c1c 8%,var(--oe-card)),var(--oe-card))}',
+      '.lp-oe-lock-ey{margin:0 0 6px;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--oe-accent)}',
+      '.lp-oe-lock-title{margin:0 0 6px;font-size:17px;font-weight:700;line-height:1.25;color:var(--oe-ink)}',
+      '.lp-oe-lock-intro{margin:0 0 10px;font-size:12.5px;line-height:1.45;color:var(--oe-muted)}',
+      '.lp-oe-lock-timer{display:flex;flex-direction:column;gap:4px}',
+      '.lp-oe-lock-val{font-size:22px;font-weight:700;letter-spacing:-.02em;color:var(--oe-ink)}',
+      '.lp-oe-lock-countdown.is-soon .lp-oe-lock-val{color:#b45309}',
+      '.lp-oe-lock-countdown.is-locked .lp-oe-lock-val{color:#b91c1c}',
+      '.lp-oe-lock-meta{font-size:12px;color:var(--oe-muted)}',
+      '.lp-oe-cart-disclaimer{margin-top:14px;padding:12px 14px;border-radius:12px;border:1px dashed color-mix(in srgb,var(--oe-accent) 28%,var(--oe-line));background:color-mix(in srgb,var(--oe-accent) 5%,var(--oe-card));font-size:12.5px;line-height:1.5;color:var(--oe-muted)}',
+      '.lp-oe-cart-disclaimer p{margin:0 0 8px}',
+      '.lp-oe-cart-disclaimer p:last-child{margin-bottom:0}',
       '.lp-oe-detail{background:var(--oe-card);border:1px solid var(--oe-line);border-radius:var(--oe-radius);padding:16px;margin:0 0 14px}',
       '.lp-oe-fields{display:grid;gap:10px;margin:14px 0}',
       '.lp-oe-fields-app{gap:12px}',
