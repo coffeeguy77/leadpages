@@ -48,8 +48,7 @@
       children: [
         { id: 'products', label: 'Products', route: 'products' },
         { id: 'products-categories', label: 'Categories', route: 'products-categories' },
-        { id: 'products-options', label: 'Product Options', route: 'products-options' },
-        { id: 'catalogue-cutoffs', label: 'Availability & Cutoffs', route: 'settings-schedule' }
+        { id: 'products-options', label: 'Product Options', route: 'products-options' }
       ]
     },
     {
@@ -73,13 +72,6 @@
         { id: 'payments-deposits', label: 'Deposits', route: 'payments-deposits', badge: 'awaiting_deposit', requiresDeposits: true },
         { id: 'payments', label: 'Transactions', route: 'payments' }
       ]
-    },
-    {
-      id: 'reports',
-      label: 'Reports',
-      icon: 'reports',
-      type: 'group',
-      children: [{ id: 'supply-report', label: 'Product Totals', route: 'supply' }]
     },
     {
       id: 'settings',
@@ -142,23 +134,23 @@
 
   var ICONS = {
     dashboard:
-      '<svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.75"/><rect x="13" y="3" width="8" height="5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.75"/><rect x="13" y="10" width="8" height="11" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.75"/><rect x="3" y="13" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.75"/></svg>',
+      '<svg class="oanav-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.75"/><rect x="13" y="3" width="8" height="5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.75"/><rect x="13" y="10" width="8" height="11" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.75"/><rect x="3" y="13" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.75"/></svg>',
     orders:
-      '<svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10l2 4H5l2-4Z" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/><path d="M5 8v11a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8" fill="none" stroke="currentColor" stroke-width="1.75"/><path d="M9 12h6M9 16h4" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>',
+      '<svg class="oanav-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10l2 4H5l2-4Z" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/><path d="M5 8v11a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8" fill="none" stroke="currentColor" stroke-width="1.75"/><path d="M9 12h6M9 16h4" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>',
     operations:
-      '<svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.75"/><path d="M8 3v4M16 3v4M3 10h18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/><path d="m9 14 2 2 4-4" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+      '<svg class="oanav-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.75"/><path d="M8 3v4M16 3v4M3 10h18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/><path d="m9 14 2 2 4-4" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>',
     catalogue:
-      '<svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/><path d="M18 17h2v2h-2v-2Z" fill="currentColor"/></svg>',
+      '<svg class="oanav-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/><path d="M18 17h2v2h-2v-2Z" fill="currentColor"/></svg>',
     customers:
-      '<svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5" fill="none" stroke="currentColor" stroke-width="1.75"/><path d="M3 19c0-3 2.7-5 6-5s6 2 6 5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/><circle cx="17" cy="9" r="2.5" fill="none" stroke="currentColor" stroke-width="1.75"/><path d="M15 19c.3-2 1.8-3.5 4-3.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>',
+      '<svg class="oanav-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5" fill="none" stroke="currentColor" stroke-width="1.75"/><path d="M3 19c0-3 2.7-5 6-5s6 2 6 5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/><circle cx="17" cy="9" r="2.5" fill="none" stroke="currentColor" stroke-width="1.75"/><path d="M15 19c.3-2 1.8-3.5 4-3.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>',
     payments:
-      '<svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.75"/><path d="M2 10h20" fill="none" stroke="currentColor" stroke-width="1.75"/></svg>',
+      '<svg class="oanav-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.75"/><path d="M2 10h20" fill="none" stroke="currentColor" stroke-width="1.75"/></svg>',
     reports:
-      '<svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/><rect x="7" y="11" width="3" height="8" rx=".5" fill="none" stroke="currentColor" stroke-width="1.75"/><rect x="12" y="8" width="3" height="11" rx=".5" fill="none" stroke="currentColor" stroke-width="1.75"/><rect x="17" y="13" width="3" height="6" rx=".5" fill="none" stroke="currentColor" stroke-width="1.75"/></svg>',
+      '<svg class="oanav-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/><rect x="7" y="11" width="3" height="8" rx=".5" fill="none" stroke="currentColor" stroke-width="1.75"/><rect x="12" y="8" width="3" height="11" rx=".5" fill="none" stroke="currentColor" stroke-width="1.75"/><rect x="17" y="13" width="3" height="6" rx=".5" fill="none" stroke="currentColor" stroke-width="1.75"/></svg>',
     settings:
-      '<svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.75"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>',
+      '<svg class="oanav-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.75"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>',
     chevron:
-      '<svg class="nav-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+      '<svg class="oanav-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
   };
 
   function routeMeta(route) {
