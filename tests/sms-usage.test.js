@@ -25,16 +25,17 @@ test('estimateSegments uses GSM single and multipart rules', function () {
   assert.equal(estimateSegments('x'.repeat(161)), 2);
 });
 
-test('orders.html nests Import and Messaging under Settings nav group', function () {
+test('orders.html nests Import under Settings and Messaging under Customers', function () {
   const fs = require('fs');
   const path = require('path');
+  const nav = require('../assets/lp-order-admin-nav');
+  const settings = nav.NAV_TREE.find(function (n) { return n.id === 'settings'; });
+  const customers = nav.NAV_TREE.find(function (n) { return n.id === 'customers'; });
+  assert.ok(settings && settings.children.some(function (c) { return c.route === 'import'; }));
+  assert.ok(customers && customers.children.some(function (c) { return c.route === 'messaging'; }));
   const html = fs.readFileSync(path.join(__dirname, '..', 'orders.html'), 'utf8');
-  assert.match(html, /NAV_SETTINGS/);
-  assert.match(html, /nav-group-label.*Settings/s);
-  assert.match(html, /nav-sub/);
-  assert.match(html, /id: 'import', label: 'Import'/);
-  assert.match(html, /id: 'messaging', label: 'Messaging'/);
-  assert.doesNotMatch(html, /id: 'import', label: 'Import'[\s\S]*id: 'payments'/);
+  assert.match(html, /lp-order-admin-nav\.js/);
+  assert.match(html, /nav-group-btn/);
 });
 
 test('messaging records normalized SMS kind', function () {
