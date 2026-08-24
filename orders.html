@@ -2655,19 +2655,34 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     var panel = $('om-add-item');
     if (!panel || !orderItemsEditable(order)) return;
     var search = panel.querySelector('[data-om-product-search]');
-    var sel = panel.querySelector('[data-om-product-id]');
+    var idInput = panel.querySelector('[data-om-product-id]');
     var list = panel.querySelector('[data-om-combo-list]');
     var qtyWrap = panel.querySelector('[data-om-qty-wrap]');
     var kgWrap = panel.querySelector('[data-om-kg-wrap]');
     var optHost = panel.querySelector('[data-om-add-opt]');
-    if (!search || !sel || !list) return;
+    if (!search || !idInput || !list) return;
 
     function closeList(){ list.classList.add('hide'); list.innerHTML = ''; }
 
     function selectedProduct(){
-      var id = sel.value;
+      var id = idInput.value;
       if (!id) return null;
       return (state.products || []).find(function(p){ return p.id === id; }) || null;
+    }
+
+    function resolveOmProduct(){
+      var p = selectedProduct();
+      if (p) return p;
+      var q = String(search.value || '').trim();
+      if (!q) return null;
+      var items = filterProducts(q);
+      var exact = items.filter(function(x){
+        return productLabel(x).toLowerCase() === q.toLowerCase() ||
+          String(x.name || '').toLowerCase() === q.toLowerCase();
+      });
+      if (exact.length === 1) return exact[0];
+      if (items.length === 1) return items[0];
+      return null;
     }
 
     function refreshAddFields(){
@@ -2692,7 +2707,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     }
 
     function choose(p){
-      sel.value = p.id;
+      idInput.value = p.id;
       search.value = productLabel(p);
       closeList();
       refreshAddFields();
@@ -2720,7 +2735,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
 
     search.addEventListener('focus', function(){ renderList(search.value); });
     search.addEventListener('input', function(){
-      sel.value = '';
+      idInput.value = '';
       refreshAddFields();
       renderList(search.value);
     });
@@ -2739,11 +2754,13 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     var addBtn = $('om-add-item-btn');
     if (addBtn) {
       addBtn.addEventListener('click', async function(){
-        var product = selectedProduct();
+        var product = resolveOmProduct();
         if (!product) {
           toast('Search and select a product first', 'err');
           return;
         }
+        idInput.value = product.id;
+        search.value = productLabel(product);
         var needsW = omProductNeedsWeight(product);
         var qtyEl = panel.querySelector('[data-om-qty]');
         var kgEl = panel.querySelector('[data-om-weight]');
@@ -2858,7 +2875,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
       html += '<div class="om-add-row">';
       html += '<div class="field prod-combo" style="margin:0"><label>Search product</label>';
       html += '<input data-om-product-search placeholder="Find a product…" autocomplete="off">';
-      html += '<select data-om-product-id class="hide"><option value=""></option></select>';
+      html += '<input type="hidden" data-om-product-id value="">';
       html += '<ul class="prod-combo-list hide" data-om-combo-list></ul></div>';
       html += '<div class="field" style="margin:0" data-om-qty-wrap><label>Qty</label><input data-om-qty type="number" min="1" step="1" value="1"></div>';
       html += '<div class="field" style="margin:0" data-om-kg-wrap><label>Weight kg</label><input data-om-weight type="number" min="0" step="0.1" inputmode="decimal" placeholder="kg"></div>';
