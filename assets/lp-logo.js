@@ -348,7 +348,7 @@
       // (it covers sticky action bars like Theme Studio "Next").
       if (body.classList.contains('lp-super-admin') || body.classList.contains('ws-body')) return false;
     }
-    if (/^\/(manage|partner|partners-admin|apps-admin|marketplace-admin|theme-studio|theme-studio-v2|command|admin)(\/|$)/.test(path)) {
+    if (/^\/(manage|partner|partners-admin|apps-admin|marketplace-admin|theme-studio|theme-studio-v2|command|admin|orders)(\/|$)/.test(path)) {
       return false;
     }
     return true;
@@ -406,6 +406,10 @@
   }
 
   function init() {
+    if (!global.document) return;
+    var hasLogo =
+      global.document.querySelector('[data-lp-logo], .leadpages-logo, img.leadpages-logo');
+    if (!hasLogo && !isPartnerTemplatePage()) return;
     upgradeAll({ pulse: true }).then(function () {
       applyWorkspaceTheme();
       if (isPartnerTemplatePage()) {
