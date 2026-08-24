@@ -1039,11 +1039,60 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
 
       <section class="view" id="view-abandoned" data-view="abandoned">
         <div class="card">
+          <h3>Abandoned carts</h3>
+          <p class="sub">Recovery settings and carts that did not convert to orders.</p>
+          <h4 class="section-title">Automatic reminders</h4>
+          <p class="notice">Turn <strong>Off</strong> to stop all automatic recovery SMS/email. Customise message text under <strong>Settings → Messaging</strong> (<code>abandoned_cart</code> and <code>abandoned_cart_2</code>).</p>
+          <form id="abd-settings-form" class="grid2" style="margin-bottom:20px">
+            <div class="field"><label for="set-abd-enabled">Automatic reminders</label>
+              <select id="set-abd-enabled">
+                <option value="0">Off</option>
+                <option value="1">On</option>
+              </select>
+            </div>
+            <div class="field"><label for="set-abd-delay">First reminder after (minutes idle)</label>
+              <input id="set-abd-delay" type="number" min="5" step="5" placeholder="60">
+              <span class="field-hint">Default 60. Cron checks about every 15 minutes.</span>
+            </div>
+            <div class="field"><label for="set-abd-max-customer">Max messages per customer</label>
+              <input id="set-abd-max-customer" type="number" min="0" max="20" step="1" placeholder="1">
+              <span class="field-hint">Across all carts in the lookback window (0 = unlimited).</span>
+            </div>
+            <div class="field"><label for="set-abd-lookback">Customer lookback (days)</label>
+              <input id="set-abd-lookback" type="number" min="1" max="365" step="1" placeholder="90">
+            </div>
+            <div class="field"><label for="set-abd-stages">Reminders per cart</label>
+              <select id="set-abd-stages">
+                <option value="1">1 — first reminder only</option>
+                <option value="2">2 — first + follow-up</option>
+              </select>
+            </div>
+            <div class="field"><label for="set-abd-second-val">Follow-up after</label>
+              <div style="display:flex;gap:8px;align-items:center">
+                <input id="set-abd-second-val" type="number" min="1" max="365" step="1" placeholder="48" style="max-width:100px">
+                <select id="set-abd-second-unit" style="max-width:120px">
+                  <option value="hours">hours</option>
+                  <option value="days">days</option>
+                </select>
+              </div>
+              <span class="field-hint">Only when reminders per cart = 2. Uses the <code>abandoned_cart_2</code> template.</span>
+            </div>
+            <div class="field"><label for="set-abd-channels">Channels</label>
+              <select id="set-abd-channels">
+                <option value="email">Email only</option>
+                <option value="sms">SMS only</option>
+                <option value="email,sms">Email + SMS</option>
+              </select>
+            </div>
+            <div class="field" style="grid-column:1/-1">
+              <button class="btn solid" type="submit" id="abd-settings-save">Save reminder settings</button>
+              <span class="notice" id="abd-settings-msg" style="margin-left:10px"></span>
+            </div>
+          </form>
           <div class="toolbar">
-            <h3 style="margin:0;flex:1">Abandoned carts</h3>
+            <h4 style="margin:0;flex:1">Open carts</h4>
             <button class="btn solid" type="button" id="abd-load">Refresh</button>
           </div>
-          <p class="notice">At most <strong>one reminder per cart</strong> (or two if enabled in Settings → Order Setup). Turn automatic messaging off there, or use Messaging for a one-off manual nudge.</p>
           <div class="kpis" id="abd-kpis"></div>
           <div class="table-wrap"><table class="oe"><thead><tr>
             <th>Updated</th><th>Status</th><th>Items</th><th>Known</th><th>Contact</th>
@@ -1053,8 +1102,8 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
 
       <section class="view" id="view-settings" data-view="settings">
         <div class="card settings-shell">
-          <h3 id="settings-heading">Order Setup</h3>
-          <p class="settings-page-lead" id="settings-sub">Shop behaviour, abandoned-cart recovery, and how customers place orders online.</p>
+          <h3 id="settings-heading">Menu Layouts</h3>
+          <p class="settings-page-lead" id="settings-sub">How the customer order shop menu behaves and which category customers see first.</p>
           <div class="settings-tabs" role="tablist" aria-hidden="true">
             <button type="button" class="btn ghost settings-tab on" data-set-tab="cart">Cart settings</button>
             <button type="button" class="btn ghost settings-tab" data-set-tab="payments">Payment settings</button>
@@ -1064,51 +1113,6 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
           <form id="settings-form">
             <div id="settings-panel-cart">
           <p class="notice" id="settings-shop-link">Customer shop: enable <strong>Order Storefront</strong> on the site (Page editor → Lead Capture) or open <code>/order-shop?slug=…</code>.</p>
-            <h4 class="section-title">Abandoned cart reminders</h4>
-            <p class="notice">Turn <strong>Off</strong> to stop all automatic recovery SMS/email. Customise message text under <strong>Settings → Messaging</strong> (<code>abandoned_cart</code> and <code>abandoned_cart_2</code>).</p>
-            <div class="grid2">
-              <div class="field"><label for="set-abd-enabled">Automatic reminders</label>
-                <select id="set-abd-enabled">
-                  <option value="0">Off</option>
-                  <option value="1">On</option>
-                </select>
-              </div>
-              <div class="field"><label for="set-abd-delay">First reminder after (minutes idle)</label>
-                <input id="set-abd-delay" type="number" min="5" step="5" placeholder="60">
-                <span class="field-hint">Default 60. Cron checks about every 15 minutes.</span>
-              </div>
-              <div class="field"><label for="set-abd-max-customer">Max messages per customer</label>
-                <input id="set-abd-max-customer" type="number" min="0" max="20" step="1" placeholder="1">
-                <span class="field-hint">Across all carts in the lookback window (0 = unlimited).</span>
-              </div>
-              <div class="field"><label for="set-abd-lookback">Customer lookback (days)</label>
-                <input id="set-abd-lookback" type="number" min="1" max="365" step="1" placeholder="90">
-              </div>
-              <div class="field"><label for="set-abd-stages">Reminders per cart</label>
-                <select id="set-abd-stages">
-                  <option value="1">1 — first reminder only</option>
-                  <option value="2">2 — first + follow-up</option>
-                </select>
-              </div>
-              <div class="field"><label for="set-abd-second-val">Follow-up after</label>
-                <div style="display:flex;gap:8px;align-items:center">
-                  <input id="set-abd-second-val" type="number" min="1" max="365" step="1" placeholder="48" style="max-width:100px">
-                  <select id="set-abd-second-unit" style="max-width:120px">
-                    <option value="hours">hours</option>
-                    <option value="days">days</option>
-                  </select>
-                </div>
-                <span class="field-hint">Only when reminders per cart = 2. Uses the <code>abandoned_cart_2</code> template.</span>
-              </div>
-              <div class="field"><label for="set-abd-channels">Channels</label>
-                <select id="set-abd-channels">
-                  <option value="email">Email only</option>
-                  <option value="sms">SMS only</option>
-                  <option value="email,sms">Email + SMS</option>
-                </select>
-              </div>
-            </div>
-
             <h4 class="section-title">Customer shop (menu)</h4>
             <p class="notice">Controls how the homepage / order shop catalogue behaves. Empty categories and categories with no enabled products are always hidden.</p>
             <div class="grid2">
@@ -1129,6 +1133,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
                   <option value="">First category with products</option>
                 </select>
               </div>
+            </div>
             </div>
 
             <div id="settings-panel-store" class="hide">
@@ -1294,27 +1299,63 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
           </form>
 
         <div class="hide" id="settings-pickup-card">
-          <h4 class="section-title" style="margin-top:4px">Pickup windows</h4>
-          <p class="notice">Set a <strong>booking date range</strong>, <strong>default opening hours</strong> (applied to every open day), <strong>closed days</strong>, and optional <strong>date overrides</strong> (e.g. early close).</p>
-
-          <h4 class="section-title" style="margin-top:12px">Booking period, hours &amp; closures</h4>
+          <h4 class="section-title" style="margin-top:4px">Master lock date</h4>
+          <p class="notice">After this date, customers cannot place new orders or edit existing orders. Backend staff can still make changes.</p>
           <div class="grid2" style="margin-bottom:12px">
-            <div class="field"><label for="pw-range-start">Range start</label>
+            <div class="field"><label for="pw-master-lock">Lock date</label>
+              <input id="pw-master-lock" type="date">
+              <span class="field-hint">e.g. 15/12/2026 — locks at end of that day (site timezone).</span>
+            </div>
+            <div class="field"><label>Countdown</label>
+              <div class="cutoff-banner soon" id="pw-master-lock-countdown" style="margin:0;padding:12px 14px">
+                <div><strong id="pw-master-lock-label">Not set</strong></div>
+              </div>
+            </div>
+          </div>
+
+          <h4 class="section-title">Opening hours</h4>
+          <p class="notice">Set trading hours per weekday or as a range — e.g. Mon–Thu 7:30am–6pm, Fri 7:30am–5pm, Sat 7:30am–1:30pm, Sun closed.</p>
+          <div class="table-wrap" style="margin-bottom:10px">
+            <table class="data" id="pw-hours-table"><thead><tr>
+              <th>Days</th><th>Open</th><th>Close</th><th></th>
+            </tr></thead><tbody id="pw-hours-tbody"></tbody></table>
+          </div>
+          <div class="actions-row" style="margin-bottom:16px">
+            <button class="btn ghost" type="button" id="pw-hours-add">Add hours rule</button>
+          </div>
+
+          <h4 class="section-title">Pickup period &amp; pattern</h4>
+          <p class="notice">Define when customers can choose a pickup date — e.g. Christmas period 16/12/2026–24/12/2026 within business hours.</p>
+          <div class="grid2" style="margin-bottom:12px">
+            <div class="field"><label for="pw-range-start">Pickup range start</label>
               <input id="pw-range-start" type="date">
-              <span class="field-hint">First day customers can pick a slot (optional).</span>
+              <span class="field-hint">First day customers can pick a slot.</span>
             </div>
-            <div class="field"><label for="pw-range-end">Range end</label>
+            <div class="field"><label for="pw-range-end">Pickup range end</label>
               <input id="pw-range-end" type="date">
-              <span class="field-hint">Last day in the season (optional).</span>
+              <span class="field-hint">Last day in the season (e.g. 24/12/2026).</span>
             </div>
-            <div class="field"><label for="pw-default-start">Default opening hours</label>
-              <input id="pw-default-start" type="time" value="09:00">
-              <span class="field-hint">Used on every day in range unless that date has an override below.</span>
+            <div class="field"><label for="pw-pickup-pattern">Pickup pattern</label>
+              <select id="pw-pickup-pattern">
+                <option value="weekly">Weekly — any matching day in range</option>
+                <option value="fortnightly">Fortnightly — every second week from range start</option>
+                <option value="monthly">Monthly — same day-of-month as range start</option>
+                <option value="custom">Custom — only selected weekdays below</option>
+              </select>
             </div>
-            <div class="field"><label for="pw-default-end">Default closing time</label>
-              <input id="pw-default-end" type="time" value="16:00">
+            <div class="field" style="grid-column:1/-1"><label>Pickup days (repeat)</label>
+              <div class="pw-closed-days" id="pw-pickup-days">
+                <label><input type="checkbox" value="0" data-pw-pickup-day> Sun</label>
+                <label><input type="checkbox" value="1" data-pw-pickup-day> Mon</label>
+                <label><input type="checkbox" value="2" data-pw-pickup-day> Tue</label>
+                <label><input type="checkbox" value="3" data-pw-pickup-day> Wed</label>
+                <label><input type="checkbox" value="4" data-pw-pickup-day> Thu</label>
+                <label><input type="checkbox" value="5" data-pw-pickup-day> Fri</label>
+                <label><input type="checkbox" value="6" data-pw-pickup-day> Sat</label>
+              </div>
+              <span class="field-hint">e.g. tick Fri + Sat for pickup every Friday and Saturday.</span>
             </div>
-            <div class="field" style="grid-column:1/-1"><label>Closed weekdays (within range)</label>
+            <div class="field" style="grid-column:1/-1"><label>Always closed weekdays</label>
               <div class="pw-closed-days" id="pw-closed-days">
                 <label><input type="checkbox" value="0" data-pw-closed> Sun</label>
                 <label><input type="checkbox" value="1" data-pw-closed> Mon</label>
@@ -1324,19 +1365,18 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
                 <label><input type="checkbox" value="5" data-pw-closed> Fri</label>
                 <label><input type="checkbox" value="6" data-pw-closed> Sat</label>
               </div>
-              <span class="field-hint">e.g. tick Sun so every Sunday in the range is closed.</span>
             </div>
             <div class="field" style="grid-column:1/-1"><label for="pw-closed-dates">Extra closed dates</label>
-              <input id="pw-closed-dates" type="text" placeholder="2025-12-25, 2025-12-26">
-              <span class="field-hint">Comma-separated YYYY-MM-DD for one-off closures (public holidays).</span>
+              <input id="pw-closed-dates" type="text" placeholder="2026-12-25, 2026-12-26">
+              <span class="field-hint">Comma-separated dates (DD/MM/YYYY or YYYY-MM-DD) for public holidays.</span>
             </div>
           </div>
           <div class="actions-row" style="margin-bottom:16px">
             <button class="btn solid" type="button" id="pw-save-schedule">Save schedule</button>
           </div>
 
-          <h4 class="section-title">Date overrides (optional)</h4>
-          <p class="notice" style="margin:0 0 12px">Add a row only when a specific date needs different hours — e.g. early close on Christmas Eve. All other days use the default hours above.</p>
+          <h4 class="section-title">Date overrides</h4>
+          <p class="notice" style="margin:0 0 12px">Custom hours on a specific date — e.g. early close on Christmas Eve during the pickup period.</p>
           <div class="grid2" style="margin-bottom:12px">
             <div class="field"><label for="pw-date">Date</label>
               <input id="pw-date" type="date">
@@ -1488,7 +1528,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     ordersExtraFilter: {},
     dashCutoffAt: null,
     dashDashboardData: null,
-    settingsSection: 'order-setup',
+    settingsSection: 'menu-layouts',
     settingsTab: 'cart',
     paymentsTab: 'unpaid',
     paymentsCache: null
@@ -2062,13 +2102,13 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
   }
 
   var SETTINGS_SECTION_COPY = {
-    'order-setup': {
-      title: 'Order Setup',
-      sub: 'Shop behaviour, abandoned-cart recovery, and how customers place orders online.'
+    'menu-layouts': {
+      title: 'Menu Layouts',
+      sub: 'How the customer order shop menu behaves and which category customers see first.'
     },
     schedule: {
       title: 'Schedule & Opening Hours',
-      sub: 'Booking date range, default hours, closed days, and per-date overrides for pickup slots.'
+      sub: 'Master lock date, trading hours, pickup period, and date-specific overrides.'
     },
     rules: {
       title: 'Order Rules',
@@ -2085,21 +2125,21 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
   };
 
   function applySettingsSection(section){
-    section = section || state.settingsSection || 'order-setup';
+    section = section || state.settingsSection || 'menu-layouts';
     state.settingsSection = section;
-    var copy = SETTINGS_SECTION_COPY[section] || SETTINGS_SECTION_COPY['order-setup'];
+    var copy = SETTINGS_SECTION_COPY[section] || SETTINGS_SECTION_COPY['menu-layouts'];
     var heading = $('settings-heading');
     var sub = $('settings-sub');
     if (heading) heading.textContent = copy.title;
     if (sub) sub.textContent = copy.sub;
     var panelMap = {
-      'order-setup': ['settings-panel-cart'],
+      'menu-layouts': ['settings-panel-cart'],
       schedule: ['settings-pickup-card'],
       rules: ['settings-panel-general'],
       'tax-payments': ['settings-panel-payments', 'settings-panel-gst'],
       store: ['settings-panel-store']
     };
-    var show = panelMap[section] || panelMap['order-setup'];
+    var show = panelMap[section] || panelMap['menu-layouts'];
     ['settings-panel-cart', 'settings-panel-store', 'settings-panel-payments', 'settings-panel-general', 'settings-panel-gst', 'settings-pickup-card'].forEach(function(id){
       var el = $(id);
       if (el) el.classList.toggle('hide', show.indexOf(id) < 0);
@@ -2108,12 +2148,21 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     if (saveBtn) saveBtn.classList.toggle('hide', section === 'schedule');
     var themeBtn = $('settings-save-theme');
     if (themeBtn) themeBtn.classList.toggle('hide', section !== 'store');
-    state.settingsTab = section === 'tax-payments' ? 'payments' : section === 'rules' ? 'general' : section === 'store' ? 'cart' : section === 'order-setup' ? 'cart' : 'general';
+    state.settingsTab = section === 'tax-payments' ? 'payments' : section === 'rules' ? 'general' : section === 'store' ? 'cart' : section === 'menu-layouts' ? 'cart' : 'general';
+    if (section === 'schedule') {
+      loadPickupWindows().then(function(){ tickMasterLockCountdown(); });
+    }
+    if (section === 'tax-payments') {
+      loadProductsCache().then(function(){
+        var gst = (state.orderSystemMeta && state.orderSystemMeta.settings && state.orderSystemMeta.settings.gst) || {};
+        renderGstCategorySettings((gst && gst.category_ids) || []);
+      }).catch(function(){});
+    }
   }
 
   function switchSettingsTab(tab){
-    var map = { cart: 'order-setup', payments: 'tax-payments', general: 'rules', gst: 'tax-payments' };
-    applySettingsSection(map[tab] || 'order-setup');
+    var map = { cart: 'menu-layouts', payments: 'tax-payments', general: 'rules', gst: 'tax-payments' };
+    applySettingsSection(map[tab] || 'menu-layouts');
   }
 
   function openNavRoute(route, opts){
@@ -2139,7 +2188,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     document.querySelectorAll('.view').forEach(function(el){
       el.classList.toggle('on', el.getAttribute('data-view') === meta.view);
     });
-    if (meta.view === 'settings') applySettingsSection(meta.settingsSection || state.settingsSection || 'order-setup');
+    if (meta.view === 'settings') applySettingsSection(meta.settingsSection || state.settingsSection || 'menu-layouts');
     updateSideOrderCartVisibility();
     loadCurrentView().then(function(){
       if (meta.view === 'orders' && meta.ordersPreset) loadOrders();
@@ -2270,11 +2319,33 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     if (!el) return;
     var c = (data && data.cutoff) || {};
     var nearest = c.nearest;
-    state.dashCutoffAt = nearest && nearest.at ? nearest.at : null;
+    state.dashCutoffAt = null;
+    state.dashMasterLockMs = c.master_lock_ms;
     state.dashDashboardData = data;
     var cls = 'cutoff-banner';
-    if (nearest && nearest.state === 'locked') cls += ' locked';
+    if (c.master_lock_active) cls += ' locked';
+    else if (nearest && nearest.state === 'locked') cls += ' locked';
     else if (nearest && nearest.state === 'closing_soon') cls += ' soon';
+    else if (c.master_lock_ms != null && c.master_lock_ms <= 8 * 3600000) cls += ' soon';
+
+    if (c.master_lock_date) {
+      var html = '<div><strong>Master lock</strong><p class="sub" style="margin:4px 0 0">No customer orders or changes after ' + esc(formatAuDate(c.master_lock_date)) + '</p></div>';
+      html += '<div class="cutoff-clock">';
+      if (c.master_lock_active) {
+        html += '<span class="lbl">Status</span><span class="val" id="dash-cutoff-val">Locked</span>';
+        html += '<span class="meta">Staff can still edit orders in the backend</span>';
+      } else {
+        html += '<span class="lbl">Lock in</span><span class="val" id="dash-cutoff-val">' + esc(formatCountdownMs(c.master_lock_ms)) + '</span>';
+        html += '<span class="meta">Season closes ' + esc(formatAuDate(c.master_lock_date)) + '</span>';
+      }
+      html += '</div>';
+      el.className = cls;
+      el.innerHTML = html;
+      el.classList.remove('hide');
+      return;
+    }
+
+    state.dashCutoffAt = nearest && nearest.at ? nearest.at : null;
     var html = '<div><strong>Order lock</strong><p class="sub" style="margin:4px 0 0">' + esc(c.rule_label || 'See Settings for cutoff rules') + '</p></div>';
     html += '<div class="cutoff-clock">';
     if (nearest && nearest.at && nearest.state !== 'locked') {
@@ -2293,10 +2364,15 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
   }
 
   function tickDashCutoff(){
-    if (!state.dashCutoffAt) return;
+    if (state.dashMasterLockMs != null) {
+      var el = $('dash-cutoff-val');
+      if (!el) return;
+      state.dashMasterLockMs = Math.max(0, state.dashMasterLockMs - 60000);
+      el.textContent = formatCountdownMs(state.dashMasterLockMs);
+      return;
+    }
     var el = $('dash-cutoff-val');
-    if (!el) return;
-    var ms = new Date(state.dashCutoffAt).getTime() - Date.now();
+    if (!el || !state.dashCutoffAt) return;
     el.textContent = formatCountdownMs(ms);
     var banner = $('dash-cutoff');
     if (banner) {
@@ -5266,12 +5342,13 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
       setClr('set-sf-ibg', ap.input_bg, '#ffffff');
       setClr('set-sf-ibd', ap.input_border, '#e4e0d8');
       setClr('set-sf-page', ap.page_bg, '#ffffff');
+      state.orderSystemMeta = s;
       var gst = (s.settings && s.settings.gst) || {};
       renderGstCategorySettings(gst.category_ids || []);
       var loaded = 'Preset: ' + (s.industry_preset || 'custom') + ' · Role: ' + (data.role || '—');
       if (msg) msg.textContent = loaded;
       await loadPickupWindows();
-      if (state.currentView === 'settings') applySettingsSection(state.settingsSection || 'order-setup');
+      if (state.currentView === 'settings') applySettingsSection(state.settingsSection || 'menu-layouts');
     } catch (e) {
       var err = (e && e.message) || String(e);
       if (msg) msg.textContent = err;
@@ -5474,29 +5551,105 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     return out.sort();
   }
 
+  function readPickupDaysFromForm(){
+    var out = [];
+    document.querySelectorAll('[data-pw-pickup-day]').forEach(function(cb){
+      if (cb.checked) out.push(Number(cb.value));
+    });
+    return out.sort();
+  }
+
+  function readWeeklyHoursFromForm(){
+    var rows = [];
+    var tb = $('pw-hours-tbody');
+    if (!tb) return rows;
+    tb.querySelectorAll('tr[data-pw-h-row]').forEach(function(tr){
+      var weekdays = [];
+      tr.querySelectorAll('[data-pw-h-day]').forEach(function(cb){
+        if (cb.checked) weekdays.push(Number(cb.value));
+      });
+      var startEl = tr.querySelector('[data-pw-h-start]');
+      var endEl = tr.querySelector('[data-pw-h-end]');
+      if (!weekdays.length || !startEl || !endEl) return;
+      rows.push({ weekdays: weekdays.sort(), start: startEl.value, end: endEl.value });
+    });
+    return rows;
+  }
+
+  function paintWeeklyHoursRows(rows){
+    var tb = $('pw-hours-tbody');
+    if (!tb) return;
+    if (!rows || !rows.length) {
+      rows = [
+        { weekdays: [1, 2, 3, 4], start: '07:30', end: '18:00' },
+        { weekdays: [5], start: '07:30', end: '17:00' },
+        { weekdays: [6], start: '07:30', end: '13:30' }
+      ];
+    }
+    state.weeklyHoursDraft = rows.slice();
+    tb.innerHTML = rows.map(function(r, idx){
+      var dayChecks = PW_DAYS.map(function(lbl, di){
+        var on = (r.weekdays || []).indexOf(di) >= 0;
+        return '<label style="margin-right:6px;white-space:nowrap"><input type="checkbox" data-pw-h-day value="' + di + '"' + (on ? ' checked' : '') + '> ' + lbl + '</label>';
+      }).join('');
+      return '<tr data-pw-h-row="' + idx + '"><td style="min-width:220px">' + dayChecks + '</td>' +
+        '<td><input type="time" data-pw-h-start value="' + esc(String(r.start || '09:00').slice(0, 5)) + '"></td>' +
+        '<td><input type="time" data-pw-h-end value="' + esc(String(r.end || '17:00').slice(0, 5)) + '"></td>' +
+        '<td><button type="button" class="btn ghost" data-pw-h-del="' + idx + '">Remove</button></td></tr>';
+    }).join('');
+    tb.querySelectorAll('[data-pw-h-del]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var i = Number(btn.getAttribute('data-pw-h-del'));
+        var next = readWeeklyHoursFromForm();
+        next.splice(i, 1);
+        paintWeeklyHoursRows(next);
+      });
+    });
+  }
+
+  function tickMasterLockCountdown(){
+    var label = $('pw-master-lock-label');
+    var box = $('pw-master-lock-countdown');
+    if (!label || !box) return;
+    var iso = $('pw-master-lock') ? $('pw-master-lock').value : '';
+    if (!iso) {
+      label.textContent = 'Not set';
+      box.classList.remove('locked');
+      return;
+    }
+    var end = new Date(iso + 'T23:59:59');
+    var ms = end.getTime() - Date.now();
+    label.textContent = ms <= 0 ? 'Locked — ' + formatAuDate(iso) : formatCountdownMs(ms) + ' until ' + formatAuDate(iso);
+    box.classList.toggle('locked', ms <= 0);
+    box.classList.toggle('soon', ms > 0 && ms <= 8 * 3600000);
+  }
+
   function fillPickupScheduleForm(schedule){
     schedule = schedule || {};
+    if ($('pw-master-lock')) $('pw-master-lock').value = schedule.master_lock_date || '';
     if ($('pw-range-start')) $('pw-range-start').value = schedule.range_start || '';
     if ($('pw-range-end')) $('pw-range-end').value = schedule.range_end || '';
+    if ($('pw-pickup-pattern')) $('pw-pickup-pattern').value = schedule.pickup_pattern || 'weekly';
     if ($('pw-closed-dates')) {
       $('pw-closed-dates').value = Array.isArray(schedule.closed_dates)
         ? schedule.closed_dates.join(', ')
         : '';
     }
-    if ($('pw-default-start')) {
-      $('pw-default-start').value = schedule.default_window_start
-        ? String(schedule.default_window_start).slice(0, 5)
-        : '09:00';
-    }
-    if ($('pw-default-end')) {
-      $('pw-default-end').value = schedule.default_window_end
-        ? String(schedule.default_window_end).slice(0, 5)
-        : '16:00';
-    }
     var closed = Array.isArray(schedule.closed_weekdays) ? schedule.closed_weekdays : [];
     document.querySelectorAll('[data-pw-closed]').forEach(function(cb){
       cb.checked = closed.indexOf(Number(cb.value)) >= 0;
     });
+    var pickupDays = Array.isArray(schedule.pickup_repeat_weekdays) ? schedule.pickup_repeat_weekdays : [];
+    document.querySelectorAll('[data-pw-pickup-day]').forEach(function(cb){
+      cb.checked = pickupDays.indexOf(Number(cb.value)) >= 0;
+    });
+    var hours = schedule.weekly_hours && schedule.weekly_hours.length
+      ? schedule.weekly_hours
+      : (schedule.default_window_start && schedule.default_window_end
+        ? [{ weekdays: [0, 1, 2, 3, 4, 5, 6], start: String(schedule.default_window_start).slice(0, 5), end: String(schedule.default_window_end).slice(0, 5) }]
+        : null);
+    paintWeeklyHoursRows(hours);
+    tickMasterLockCountdown();
   }
 
   async function savePickupSchedule(){
@@ -5506,23 +5659,30 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     if (btn) btn.disabled = true;
     try {
       var closedDatesRaw = $('pw-closed-dates') ? String($('pw-closed-dates').value || '') : '';
+      var weeklyHours = readWeeklyHoursFromForm();
+      var first = weeklyHours[0] || null;
       var r = await api('/api/order/fulfilment-windows', {
         method: 'POST',
         body: {
           site_id: state.siteId,
           action: 'save_schedule',
+          master_lock_date: $('pw-master-lock') ? $('pw-master-lock').value || null : null,
           range_start: $('pw-range-start') ? $('pw-range-start').value || null : null,
           range_end: $('pw-range-end') ? $('pw-range-end').value || null : null,
-          default_window_start: $('pw-default-start') ? $('pw-default-start').value || null : null,
-          default_window_end: $('pw-default-end') ? $('pw-default-end').value || null : null,
+          default_window_start: first ? first.start : null,
+          default_window_end: first ? first.end : null,
+          weekly_hours: weeklyHours,
+          pickup_pattern: $('pw-pickup-pattern') ? $('pw-pickup-pattern').value : 'weekly',
+          pickup_repeat_weekdays: readPickupDaysFromForm(),
           closed_weekdays: readClosedWeekdaysFromForm(),
           closed_dates: closedDatesRaw.split(/[\s,;]+/).filter(Boolean)
         }
       });
       state.pickupSchedule = r.schedule || null;
       state.pickupSlotPreview = r.slot_preview || [];
-      if (msg) msg.textContent = 'Booking period saved.';
-      toast('Pickup schedule saved', 'ok');
+      if (msg) msg.textContent = 'Schedule saved.';
+      toast('Schedule saved', 'ok');
+      tickMasterLockCountdown();
       await refreshPickupDateControl();
     } catch (e) {
       if (msg) msg.textContent = (e && e.message) || String(e);
@@ -5547,25 +5707,31 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
       await refreshPickupDateControl();
       if (!tb) return;
       var sched = state.pickupSchedule || {};
+      var hoursLines = (sched.weekly_hours || []).map(function(r){
+        var days = (r.weekdays || []).map(function(d){ return PW_DAYS[d] || d; }).join(', ');
+        return '<tr><td><em>' + esc(days) + '</em></td><td>' +
+          esc(String(r.start || '').slice(0, 5)) + '–' + esc(String(r.end || '').slice(0, 5)) +
+          '</td><td>Weekly hours</td><td></td></tr>';
+      }).join('');
       var defaultLine =
-        sched.default_window_start && sched.default_window_end
+        !hoursLines && sched.default_window_start && sched.default_window_end
           ? '<tr><td><em>Default (all open days)</em></td><td>' +
             esc(String(sched.default_window_start).slice(0, 5)) +
             '–' +
             esc(String(sched.default_window_end).slice(0, 5)) +
             '</td><td>From schedule</td><td></td></tr>'
           : '';
-      if (!rows.length && !defaultLine) {
+      if (!rows.length && !defaultLine && !hoursLines) {
         tb.innerHTML =
-          '<tr><td colspan="4" class="empty">Set default opening hours and save schedule — add date overrides only when a day needs different hours.</td></tr>';
+          '<tr><td colspan="4" class="empty">Add opening hours and save schedule — use date overrides for special days.</td></tr>';
         return;
       }
       if (!rows.length) {
-        tb.innerHTML = defaultLine;
+        tb.innerHTML = hoursLines + defaultLine;
         return;
       }
       tb.innerHTML =
-        defaultLine +
+        hoursLines + defaultLine +
         rows
           .map(function (w) {
             var when = w.specific_date
@@ -5937,8 +6103,83 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     });
   }
 
+  async function loadAbandonedSettings(){
+    if (!requireSite()) return;
+    try {
+      var data = await api('/api/order/system?' + siteQuery());
+      var s = data.system || {};
+      state.orderSystemMeta = s;
+      if ($('set-abd-enabled')) $('set-abd-enabled').value = s.abandoned_cart_enabled === true ? '1' : '0';
+      if ($('set-abd-delay')) $('set-abd-delay').value = s.abandoned_cart_delay_minutes != null ? s.abandoned_cart_delay_minutes : 60;
+      if ($('set-abd-channels')) {
+        var ch = Array.isArray(s.abandoned_cart_channels) ? s.abandoned_cart_channels.slice().sort().join(',') : 'email';
+        if (ch === 'sms,email') ch = 'email,sms';
+        $('set-abd-channels').value = ch === 'sms' || ch === 'email,sms' ? ch : 'email';
+      }
+      var abd = (s.settings && s.settings.abandoned_cart) || {};
+      if ($('set-abd-max-customer')) $('set-abd-max-customer').value = abd.max_per_customer != null ? abd.max_per_customer : 1;
+      if ($('set-abd-lookback')) $('set-abd-lookback').value = abd.customer_lookback_days != null ? abd.customer_lookback_days : 90;
+      if ($('set-abd-stages')) $('set-abd-stages').value = String(abd.messages_per_cart != null ? abd.messages_per_cart : 1);
+      if ($('set-abd-second-val')) $('set-abd-second-val').value = abd.second_delay_value != null ? abd.second_delay_value : 48;
+      if ($('set-abd-second-unit')) $('set-abd-second-unit').value = abd.second_delay_unit === 'days' ? 'days' : 'hours';
+    } catch (_e) {}
+  }
+
+  async function saveAbandonedSettings(ev){
+    if (ev) ev.preventDefault();
+    if (!requireSite()) return;
+    var msg = $('abd-settings-msg');
+    var btn = $('abd-settings-save');
+    if (btn) btn.disabled = true;
+    try {
+      var existing = {};
+      try {
+        var cur = await api('/api/order/system?' + siteQuery());
+        existing = (cur.system && cur.system.settings) || {};
+      } catch (_e) { existing = {}; }
+      await api('/api/order/system', {
+        method: 'POST',
+        body: {
+          site_id: state.siteId,
+          abandoned_cart_enabled: $('set-abd-enabled') ? $('set-abd-enabled').value === '1' : false,
+          abandoned_cart_delay_minutes: $('set-abd-delay') && $('set-abd-delay').value !== ''
+            ? Math.max(5, Number($('set-abd-delay').value) || 60)
+            : 60,
+          abandoned_cart_channels: (function(){
+            var v = $('set-abd-channels') ? $('set-abd-channels').value : 'email';
+            if (v === 'sms') return ['sms'];
+            if (v === 'email,sms') return ['email', 'sms'];
+            return ['email'];
+          })(),
+          settings: Object.assign({}, existing, {
+            abandoned_cart: {
+              max_per_customer: $('set-abd-max-customer') && $('set-abd-max-customer').value !== ''
+                ? Math.max(0, Number($('set-abd-max-customer').value) || 1)
+                : 1,
+              messages_per_cart: $('set-abd-stages') ? Math.min(2, Math.max(1, Number($('set-abd-stages').value) || 1)) : 1,
+              second_delay_value: $('set-abd-second-val') && $('set-abd-second-val').value !== ''
+                ? Math.max(1, Number($('set-abd-second-val').value) || 48)
+                : 48,
+              second_delay_unit: $('set-abd-second-unit') && $('set-abd-second-unit').value === 'days' ? 'days' : 'hours',
+              customer_lookback_days: $('set-abd-lookback') && $('set-abd-lookback').value !== ''
+                ? Math.max(1, Number($('set-abd-lookback').value) || 90)
+                : 90
+            }
+          })
+        }
+      });
+      if (msg) msg.textContent = 'Reminder settings saved.';
+      toast('Abandoned cart settings saved', 'ok');
+    } catch (e) {
+      if (msg) msg.textContent = (e && e.message) || String(e);
+      toast((e && e.message) || String(e), 'err');
+    }
+    if (btn) btn.disabled = false;
+  }
+
   async function loadAbandoned(){
     if (!requireSite()) return;
+    await loadAbandonedSettings();
     var tbody = $('abd-tbody');
     var kpis = $('abd-kpis');
     tbody.innerHTML = '<tr><td colspan="5">Loading…</td></tr>';
@@ -6318,6 +6559,13 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
   if ($('settings-save-theme')) $('settings-save-theme').addEventListener('click', saveStorefrontTheme);
   if ($('pw-add')) $('pw-add').addEventListener('click', addPickupWindow);
   if ($('pw-save-schedule')) $('pw-save-schedule').addEventListener('click', savePickupSchedule);
+  if ($('pw-hours-add')) $('pw-hours-add').addEventListener('click', function(){
+    var rows = readWeeklyHoursFromForm();
+    rows.push({ weekdays: [1], start: '09:00', end: '17:00' });
+    paintWeeklyHoursRows(rows);
+  });
+  if ($('pw-master-lock')) $('pw-master-lock').addEventListener('change', tickMasterLockCountdown);
+  if ($('abd-settings-form')) $('abd-settings-form').addEventListener('submit', saveAbandonedSettings);
   $('settings-preset').addEventListener('click', applyButcherPreset);
   $('om-close').addEventListener('click', closeOrderModal);
   $('order-modal').addEventListener('click', function(e){

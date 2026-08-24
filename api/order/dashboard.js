@@ -6,6 +6,8 @@ const { getAdmin } = require('../../lib/order/supabase');
 const { formatAud } = require('../../lib/order/money');
 const { storeCutoffRuleLabel, nearestFutureCutoff, cutoffSummary } = require('../../lib/order/cutoff-display');
 const { parseDepositReminderSettings } = require('../../lib/order/deposit-reminder-settings');
+const { parsePickupSchedule } = require('../../lib/order/pickup-schedule');
+const { msUntilMasterLock, isMasterLockActive } = require('../../lib/order/master-lock');
 
 module.exports = async function (req, res) {
   try {
@@ -110,6 +112,9 @@ module.exports = async function (req, res) {
 
     const nearestCutoff = nearestFutureCutoff(depositAwaiting || [], new Date());
     const reminderSettings = parseDepositReminderSettings(system);
+    const schedule = parsePickupSchedule(system);
+    const masterLockMs = msUntilMasterLock(schedule, new Date());
+    const masterLockActive = isMasterLockActive(schedule, new Date());
 
     return json(res, 200, {
       system: {
@@ -147,7 +152,10 @@ module.exports = async function (req, res) {
       cutoff: {
         rule_label: storeCutoffRuleLabel(system),
         nearest: nearestCutoff,
-        awaiting_deposit_unpaid: awaitingDeposit
+        awaiting_deposit_unpaid: awaitingDeposit,
+        master_lock_date: schedule.master_lock_date,
+        master_lock_active: masterLockActive,
+        master_lock_ms: masterLockMs
       },
       deposit_reminder: reminderSettings
     });

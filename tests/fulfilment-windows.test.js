@@ -120,9 +120,46 @@ test('orders UI has pickup schedule controls', function () {
   const path = require('path');
   const html = fs.readFileSync(path.join(__dirname, '..', 'orders.html'), 'utf8');
   const api = fs.readFileSync(path.join(__dirname, '..', 'api/order/fulfilment-windows.js'), 'utf8');
+  assert.match(html, /pw-master-lock/);
+  assert.match(html, /pw-hours-tbody/);
+  assert.match(html, /pw-pickup-pattern/);
   assert.match(html, /pw-range-start/);
-  assert.match(html, /pw-closed-days/);
-  assert.match(html, /pw-default-start/);
-  assert.match(html, /pw-default-end/);
   assert.match(api, /save_schedule/);
+  assert.match(api, /weekly_hours/);
+});
+
+test('weekly hours apply per weekday in slot builder', function () {
+  var schedule = {
+    range_start: '2025-12-01',
+    range_end: '2025-12-07',
+    closed_weekdays: [0],
+    weekly_hours: [
+      { weekdays: [1, 2, 3, 4], start: '07:30:00', end: '18:00:00' },
+      { weekdays: [5], start: '07:30:00', end: '17:00:00' },
+      { weekdays: [6], start: '07:30:00', end: '13:30:00' }
+    ]
+  };
+  var slots = buildPickupSlots([], '2025-12-01', 60, schedule);
+  var fri = slots.filter(function (s) { return s.date === '2025-12-05'; })[0];
+  var sat = slots.filter(function (s) { return s.date === '2025-12-06'; })[0];
+  assert.ok(fri);
+  assert.ok(sat);
+  assert.equal(String(fri.window_end).slice(0, 5), '17:00');
+  assert.equal(String(sat.window_end).slice(0, 5), '13:30');
+});
+
+test('pickup repeat weekdays filter slots', function () {
+  var schedule = {
+    range_start: '2025-12-01',
+    range_end: '2025-12-14',
+    closed_weekdays: [],
+    pickup_pattern: 'custom',
+    pickup_repeat_weekdays: [5, 6],
+    weekly_hours: [{ weekdays: [0, 1, 2, 3, 4, 5, 6], start: '09:00:00', end: '16:00:00' }]
+  };
+  var slots = buildPickupSlots([], '2025-12-01', 60, schedule);
+  var weekdays = {};
+  slots.forEach(function (s) { weekdays[s.date] = true; });
+  assert.ok(weekdays['2025-12-05'] || weekdays['2025-12-06']);
+  assert.equal(weekdays['2025-12-01'], undefined, 'Monday excluded when only Fri/Sat selected');
 });

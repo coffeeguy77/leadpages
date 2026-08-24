@@ -40,7 +40,7 @@ test('settings group includes messaging and abandoned carts', function () {
 });
 
 test('settings routes map to distinct sections', function () {
-  assert.equal(nav.routeMeta('settings-cart').settingsSection, 'order-setup');
+  assert.equal(nav.routeMeta('settings-cart').settingsSection, 'menu-layouts');
   assert.equal(nav.routeMeta('settings-schedule').settingsSection, 'schedule');
   assert.equal(nav.routeMeta('settings-store').settingsSection, 'store');
 });

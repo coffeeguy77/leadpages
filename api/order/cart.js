@@ -24,6 +24,11 @@ const {
   findMatchingSlot
 } = require('../../lib/order/fulfilment-windows');
 const { parseGstSettings } = require('../../lib/order/gst');
+const { isMasterLockActive } = require('../../lib/order/master-lock');
+
+function customerOrderingBlocked(system) {
+  return isMasterLockActive(parsePickupSchedule(system));
+}
 
 async function siteBySlugOrId(slug, siteId) {
   const admin = getAdmin();
@@ -56,6 +61,10 @@ module.exports = async function (req, res) {
 
     if (req.method === 'POST') {
       const action = body.action || 'create';
+      const mutating = action !== 'preview';
+      if (mutating && customerOrderingBlocked(system)) {
+        return json(res, 403, { error: 'master_lock_active', message: 'Ordering is closed — the season lock date has passed.' });
+      }
 
       if (action === 'create') {
         const cart = await createCart(system, site.id, {
