@@ -15,6 +15,7 @@ const {
   resolveAccessToken
 } = require('../../lib/order/tokens');
 const { queueAndSend, twilioOtpConfigured, sendPortalOtpSms, checkPortalOtpSms } = require('../../lib/order/messaging');
+const { recordSmsUsage } = require('../../lib/order/sms-usage');
 const { createCart, addReorderLines } = require('../../lib/order/cart');
 const { parseGstSettings } = require('../../lib/order/gst');
 const { packCartResponse } = require('../../lib/order/cart-pack');
@@ -256,6 +257,18 @@ module.exports = async function (req, res) {
             message: 'Could not send the SMS code. Please try again in a moment.'
           });
         }
+        await recordSmsUsage({
+          order_system_id: system.id,
+          site_id: site.id,
+          customer_id: customer.id,
+          kind: 'otp',
+          destination: phone,
+          segments: 1,
+          body: otpBody,
+          status: 'sent',
+          billable: true,
+          meta: { provider: 'twilio_verify', event_type: 'otp' }
+        });
         return json(res, 200, { ok: true, sent: true, provider: 'twilio_verify' });
       }
 
