@@ -56,7 +56,8 @@ module.exports = async function (req, res) {
       if (!cartId) return json(res, 400, { error: 'cart_id_required' });
       const packed = await getCart(cartId);
       if (!packed || packed.cart.site_id !== site.id) return json(res, 404, { error: 'cart_not_found' });
-      return json(res, 200, await packCartResponse(system, packed));
+      const lite = q.lite === '1' || q.lite === 'true';
+      return json(res, 200, await packCartResponse(system, packed, { lite: lite }));
     }
 
     if (req.method === 'POST') {
@@ -80,20 +81,25 @@ module.exports = async function (req, res) {
         const packed = await getCart(body.cart_id);
         if (!packed || packed.cart.site_id !== site.id) return json(res, 404, { error: 'cart_not_found' });
         if (!body.product_id) return json(res, 400, { error: 'product_id_required' });
-        const { data: product } = await admin
+        const productQuery = admin
           .from('order_products')
           .select('*')
           .eq('id', body.product_id)
           .eq('site_id', site.id)
           .eq('active', true)
           .maybeSingle();
-        if (!product) return json(res, 404, { error: 'product_not_found' });
-        const { data: questions } = await admin
+        const questionsQuery = admin
           .from('order_product_questions')
           .select('*')
-          .eq('product_id', product.id)
+          .eq('product_id', body.product_id)
           .order('sort_order');
-        await addOrUpdateItem(packed.cart, product, {
+        const [productRes, questionsRes] = await Promise.all([productQuery, questionsQuery]);
+        const product = productRes.data;
+        if (!product) return json(res, 404, { error: 'product_not_found' });
+        const questions = (questionsRes.data || []).filter(function (q) {
+          return !q.staff_only;
+        });
+        const result = await addOrUpdateItem(packed.cart, product, {
           cart_item_id: body.cart_item_id,
           quantity: body.quantity,
           requested_weight_kg: body.requested_weight_kg,
@@ -101,9 +107,7 @@ module.exports = async function (req, res) {
           notes: body.notes,
           system: system,
           gst_settings: parseGstSettings(system),
-          questions: (questions || []).filter(function (q) {
-            return !q.staff_only;
-          }),
+          questions: questions,
           existing_items: packed.items
         });
         if (body.guest_name || body.guest_phone || body.guest_email) {
@@ -113,16 +117,15 @@ module.exports = async function (req, res) {
             guest_email: body.guest_email || packed.cart.guest_email
           });
         }
-        const out = await getCart(packed.cart.id);
-        return json(res, 200, await packCartResponse(system, out, { lite: true }));
+        return json(res, 200, await packCartResponse(system, result, { lite: true }));
       }
 
       if (action === 'remove_item') {
         if (!body.cart_id || !body.cart_item_id) return json(res, 400, { error: 'cart_and_item_required' });
         const packed = await getCart(body.cart_id);
         if (!packed || packed.cart.site_id !== site.id) return json(res, 404, { error: 'cart_not_found' });
-        await removeItem(body.cart_id, body.cart_item_id);
-        return json(res, 200, await packCartResponse(system, await getCart(body.cart_id)));
+        const result = await removeItem(body.cart_id, body.cart_item_id, { packed: packed });
+        return json(res, 200, await packCartResponse(system, result, { lite: true }));
       }
 
       if (action === 'checkout') {
