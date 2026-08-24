@@ -53,6 +53,8 @@ test('orders.html includes edit-order item hooks', function () {
   assert.match(html, /action: 'add_order_item'/);
   assert.match(html, /action: 'remove_order_item'/);
   assert.match(html, /data-om-product-search/);
+  assert.match(html, /type="hidden" data-om-product-id/);
+  assert.match(html, /resolveOmProduct/);
   assert.match(html, /data-remove-item/);
   assert.match(html, /om-add-item-btn/);
 });
