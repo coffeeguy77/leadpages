@@ -46,7 +46,7 @@
       icon: 'settings',
       type: 'group',
       children: [
-        { id: 'settings-order-setup', label: 'Order Setup', route: 'settings-cart' },
+        { id: 'settings-order-setup', label: 'Menu Layouts', route: 'settings-cart' },
         { id: 'settings-schedule', label: 'Schedule & Opening Hours', route: 'settings-schedule' },
         { id: 'settings-rules', label: 'Order Rules', route: 'settings-general' },
         { id: 'settings-tax-payments', label: 'Tax & Payments', route: 'settings-payments' },
@@ -71,7 +71,7 @@
     messaging: { view: 'messaging', label: 'Messaging', group: 'settings' },
     abandoned: { view: 'abandoned', label: 'Abandoned Carts', group: 'settings' },
     import: { view: 'import', label: 'Import', group: 'settings' },
-    'settings-cart': { view: 'settings', label: 'Order Setup', group: 'settings', settingsSection: 'order-setup' },
+    'settings-cart': { view: 'settings', label: 'Menu Layouts', group: 'settings', settingsSection: 'menu-layouts' },
     'settings-schedule': { view: 'settings', label: 'Schedule & Opening Hours', group: 'settings', settingsSection: 'schedule' },
     'settings-general': { view: 'settings', label: 'Order Rules', group: 'settings', settingsSection: 'rules' },
     'settings-payments': { view: 'settings', label: 'Tax & Payments', group: 'settings', settingsSection: 'tax-payments' },

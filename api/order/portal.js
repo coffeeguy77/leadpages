@@ -9,6 +9,8 @@ const { editingStateFor } = require('../../lib/order/cutoff');
 const { writeChange, writeAudit } = require('../../lib/order/audit');
 const { recalculateOrder } = require('../../lib/order/service');
 const { priceLineAtOrder } = require('../../lib/order/pricing');
+const { parsePickupSchedule } = require('../../lib/order/pickup-schedule');
+const { isMasterLockActive } = require('../../lib/order/master-lock');
 
 module.exports = async function (req, res) {
   try {
@@ -36,6 +38,8 @@ module.exports = async function (req, res) {
     const liveEdit = editingStateFor(order.effective_cutoff_at);
     const editingState =
       order.editing_state === 'locked' || liveEdit === 'locked' ? 'locked' : liveEdit;
+
+    const masterLocked = isMasterLockActive(parsePickupSchedule(system));
 
     if (req.method === 'GET') {
       const gstSummary = orderGstSummary(items || []);
@@ -114,18 +118,24 @@ module.exports = async function (req, res) {
                 ? 'Final balance TBC'
                 : formatAud(0),
           locked_message:
-            editingState === 'locked'
+            masterLocked
+              ? 'ORDERING CLOSED — The season lock date has passed. Please contact us if you need assistance.'
+              : editingState === 'locked'
               ? 'ORDER LOCKED — Your order is now being prepared and can no longer be changed online. Please contact us if you require assistance.'
               : null
         },
-        can_edit: editingState !== 'locked' && !!(system && system.customer_editing_enabled),
+        can_edit:
+          !masterLocked &&
+          editingState !== 'locked' &&
+          !!(system && system.customer_editing_enabled),
+        master_lock_active: masterLocked,
         purpose: tokenRow.purpose
       });
     }
 
     // POST — customer edit (only when open)
-    if (editingState === 'locked' || !(system && system.customer_editing_enabled)) {
-      return json(res, 403, { error: 'order_locked' });
+    if (masterLocked || editingState === 'locked' || !(system && system.customer_editing_enabled)) {
+      return json(res, 403, { error: masterLocked ? 'master_lock_active' : 'order_locked' });
     }
     if (system.change_mode === 'approval_required') {
       await admin.from('order_change_requests').insert({
