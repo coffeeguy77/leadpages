@@ -35,7 +35,7 @@ test('orders.html nests Import under Settings and Messaging under Customers', fu
   assert.ok(customers && customers.children.some(function (c) { return c.route === 'messaging'; }));
   const html = fs.readFileSync(path.join(__dirname, '..', 'orders.html'), 'utf8');
   assert.match(html, /lp-order-admin-nav\.js/);
-  assert.match(html, /nav-group-btn/);
+  assert.match(html, /oanav-group-head/);
 });
 
 test('messaging records normalized SMS kind', function () {

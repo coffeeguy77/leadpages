@@ -30,11 +30,12 @@ test('routeMeta maps operational shortcuts to existing views', function () {
 test('orders.html wires accordion navigation', function () {
   const html = fs.readFileSync(path.join(__dirname, '..', 'orders.html'), 'utf8');
   assert.match(html, /lp-order-admin-nav\.js/);
-  assert.match(html, /nav-group-btn/);
-  assert.match(html, /nav-sub-wrap/);
+  assert.match(html, /lp-order-admin-nav\.css/);
+  assert.match(html, /class="oanav"/);
+  assert.match(html, /oanav-group-head/);
+  assert.match(html, /oanav-sub-panel/);
   assert.match(html, /btn-side-collapse/);
   assert.match(html, /openNavRoute/);
   assert.doesNotMatch(html, /class="mark"/);
   assert.doesNotMatch(html, /if \(activeParent\) expanded = activeParent/);
-  assert.doesNotMatch(html, /nav-group-label.*Settings/s);
 });

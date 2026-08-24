@@ -36,6 +36,7 @@
 <script src="/assets/lp-workspace-appearance.js"></script>
 <script src="/assets/lp-hub-embed.js"></script>
 <script src="/assets/lp-order-admin-nav.js"></script>
+<link rel="stylesheet" href="/assets/lp-order-admin-nav.css">
 <link rel="stylesheet" href="/assets/lp-logo.css">
 <script src="/assets/lp-logo.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -101,68 +102,14 @@ body{display:flex;flex-direction:column;min-height:100%;-webkit-font-smoothing:a
 .side-collapse svg{width:16px;height:16px}
 .side-brand .eyebrow{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:0 0 2px}
 .side-brand h1{font-family:var(--font-display);font-size:var(--fs-md);font-weight:600;margin:0;line-height:1.15}
-.nav{display:flex;flex-direction:column;gap:2px;padding:10px 0;overflow-x:hidden;overflow-y:auto;min-width:0}
-.nav-item,.nav-group-btn{
-  appearance:none;width:100%;max-width:100%;min-width:0;text-align:left;border:1px solid transparent;
-  background:transparent;color:var(--ink-soft);font:600 14px/1.25 var(--font-ui);
-  padding:0 10px;border-radius:10px;cursor:pointer;
-  display:flex;align-items:center;gap:8px;min-height:43px;
-}
-.nav-item:hover,.nav-group-btn:hover{background:color-mix(in srgb,var(--accent) 10%,transparent);color:var(--ink);border-color:color-mix(in srgb,var(--accent) 18%,transparent)}
-.nav-item.on,.nav-group-btn.on,.nav-group-btn.expanded{background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--ink);border-color:color-mix(in srgb,var(--accent) 26%,transparent)}
-.nav-ico{width:18px;height:18px;flex:none;display:block}
-.nav-chevron{width:14px;height:14px;flex:none;margin-left:auto;opacity:.72;transition:transform .2s ease}
-.nav-group-btn.expanded .nav-chevron{transform:rotate(90deg)}
-.nav-label{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.nav-badge{
-  flex:none;min-width:1.35em;padding:1px 6px;border-radius:999px;
-  font:700 10px/1.35 var(--font-ui);letter-spacing:.02em;
-}
-.nav-badge.tone-neutral{background:color-mix(in srgb,var(--ink) 10%,transparent);color:var(--ink-soft)}
-.nav-badge.tone-blue{background:color-mix(in srgb,#2563eb 18%,transparent);color:#1d4ed8}
-.nav-badge.tone-amber{background:color-mix(in srgb,#d97706 20%,transparent);color:#b45309}
-.nav-badge.tone-red{background:color-mix(in srgb,#dc2626 18%,transparent);color:#b91c1c}
-.nav-badge.tone-green{background:color-mix(in srgb,#16a34a 18%,transparent);color:#15803d}
-.nav-sub-wrap{
-  overflow:hidden;max-height:0;opacity:0;
-  transition:max-height .24s ease,opacity .18s ease;
-}
-.nav-sub-wrap.open{opacity:1}
-.nav-sub-list{
-  list-style:none;margin:2px 0 4px;padding:0 0 0 10px;
-  border-left:2px solid color-mix(in srgb,var(--line) 85%,transparent);
-}
-.nav-sub-item{
-  appearance:none;width:100%;max-width:100%;min-width:0;text-align:left;border:0;border-radius:8px;
-  background:transparent;color:var(--ink-soft);font:500 13.5px/1.3 var(--font-ui);
-  padding:7px 10px 7px 12px;cursor:pointer;display:flex;align-items:center;gap:8px;min-height:36px;
-  position:relative;
-}
-.nav-sub-item:hover{background:color-mix(in srgb,var(--accent) 8%,transparent);color:var(--ink)}
-.nav-sub-item.on{
-  background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--ink);font-weight:600;
-  box-shadow:inset 3px 0 0 var(--accent);
-}
-.nav-sub-item .nav-badge{margin-left:auto}
-.side.collapsed-rail .nav-label,.side.collapsed-rail .nav-badge,.side.collapsed-rail .nav-chevron,.side.collapsed-rail .nav-sub-wrap{display:none!important}
-.side.collapsed-rail .nav-item,.side.collapsed-rail .nav-group-btn{justify-content:center;padding:0;min-height:44px}
-.side.collapsed-rail .nav-group-btn.on,.side.collapsed-rail .nav-item.on{box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--accent) 35%,transparent)}
-.nav-tooltip-host{position:relative;min-width:0;max-width:100%}
-.nav-tooltip{
-  display:none;position:absolute;left:calc(100% + 8px);top:50%;transform:translateY(-50%);
-  background:var(--ink);color:var(--surface,#fff);font:600 12px/1.3 var(--font-ui);
-  padding:6px 10px;border-radius:8px;white-space:nowrap;pointer-events:none;opacity:0;z-index:40;
-  transition:opacity .12s ease;
-}
-.side.collapsed-rail .nav-tooltip-host:focus-within .nav-tooltip,
-.side.collapsed-rail .nav-tooltip-host:hover .nav-tooltip{display:block;opacity:1}
+.side-nav-wrap{flex:0 1 auto;min-height:0;min-width:0;overflow-x:hidden;overflow-y:auto;display:flex;flex-direction:column}
 .nav-drawer-backdrop{
   position:fixed;inset:0;background:rgba(15,18,22,.45);z-index:90;opacity:0;pointer-events:none;transition:opacity .2s ease;
 }
 .nav-drawer-backdrop.open{opacity:1;pointer-events:auto}
 body.nav-drawer-open{overflow:hidden}
 @media (prefers-reduced-motion:reduce){
-  .nav-sub-wrap,.nav-chevron,.side,.nav-drawer-backdrop{transition:none!important}
+  .side,.nav-drawer-backdrop{transition:none!important}
 }
 .side-foot{flex:0 0 auto;border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:8px}
 .side-actions{display:flex;flex-wrap:wrap;gap:6px;padding:0 4px}
@@ -339,7 +286,6 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
   background:color-mix(in srgb,var(--accent) 4%,var(--bg-soft,var(--surface)));
   border:1px solid var(--line);
 }
-.side-nav-wrap{flex:0 1 auto;min-height:0;min-width:0;overflow-x:hidden;overflow-y:auto;display:flex;flex-direction:column}
 .side-order-cart{
   flex:1 1 auto;border-top:1px solid var(--line);margin-top:8px;padding:10px 8px 8px;
   min-height:72px;max-height:none;overflow:hidden;
@@ -582,7 +528,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
       </button>
     </div>
     <div class="side-nav-wrap">
-      <nav class="nav" id="nav" aria-label="Order views"></nav>
+      <nav class="oanav" id="nav" aria-label="Order views"></nav>
     </div>
     <div class="side-order-cart hide" id="side-order-cart" aria-label="Current order cart">
       <h4>Order cart</h4>
@@ -1942,7 +1888,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     document.body.classList.toggle('nav-drawer-open', !!open);
     if (menuBtn) menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
     if (open && side.querySelector) {
-      var focusEl = side.querySelector('.nav-sub-item.on, .nav-item.on, .nav-group-btn');
+      var focusEl = side.querySelector('.oanav-sub-item.on, .oanav-dash.on, .oanav-group-head');
       if (focusEl) focusEl.focus();
     }
   }
@@ -1952,7 +1898,11 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     var val = badges[key];
     if (val == null || val === 0) return '';
     var tone = NAV.badgeTone(key, badges) || 'neutral';
-    return '<span class="nav-badge tone-' + esc(tone) + '" title="Needs attention">' + esc(String(val)) + '</span>';
+    return '<span class="oanav-badge tone-' + esc(tone) + '" title="Needs attention">' + esc(String(val)) + '</span>';
+  }
+
+  function navIconHtml(name){
+    return NAV.ICONS[name] || '';
   }
 
   function paintNav(){
@@ -1967,40 +1917,45 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     tree.forEach(function(node){
       if (node.route && !node.group) {
         var dashOn = route === node.route ? ' on' : '';
-        html += '<div class="nav-tooltip-host">' +
-          '<button type="button" class="nav-item' + dashOn + '" data-route="' + esc(node.route) + '">' +
-          NAV.ICONS.dashboard + '<span class="nav-label">' + esc(node.label) + '</span></button>' +
-          '<span class="nav-tooltip" role="tooltip">' + esc(node.label) + '</span></div>';
+        html += '<div class="oanav-tip-host">' +
+          '<button type="button" class="oanav-dash' + dashOn + '" data-route="' + esc(node.route) + '">' +
+          '<span class="oanav-ico-wrap">' + navIconHtml('dashboard') + '</span>' +
+          '<span class="oanav-label">' + esc(node.label) + '</span></button>' +
+          '<span class="oanav-tip" role="tooltip">' + esc(node.label) + '</span></div>';
         return;
       }
       var groupId = node.id;
       var isExpanded = expanded === groupId;
       var groupActive = activeParent === groupId;
       var groupBadge = NAV.aggregateGroupBadge(groupId, state.navBadges);
-      var groupBadgeHtml = groupBadge ? navBadgeHtml(groupId === 'orders' ? 'orders_new' : groupId === 'operations' ? 'price_tbc_open' : 'awaiting_deposit') : '';
+      var groupBadgeHtml = '';
       if (groupId === 'orders' && groupBadge) {
-        groupBadgeHtml = '<span class="nav-badge tone-blue" title="Needs attention">' + esc(String(groupBadge)) + '</span>';
+        groupBadgeHtml = '<span class="oanav-badge tone-blue" title="Needs attention">' + esc(String(groupBadge)) + '</span>';
       } else if (groupId === 'operations' && groupBadge) {
-        groupBadgeHtml = '<span class="nav-badge tone-amber" title="Needs attention">' + esc(String(groupBadge)) + '</span>';
+        groupBadgeHtml = '<span class="oanav-badge tone-amber" title="Needs attention">' + esc(String(groupBadge)) + '</span>';
       } else if (groupId === 'payments' && groupBadge) {
         groupBadgeHtml = navBadgeHtml('awaiting_deposit');
       }
-      html += '<div class="nav-group" data-nav-group="' + esc(groupId) + '">' +
-        '<div class="nav-tooltip-host">' +
-        '<button type="button" class="nav-group-btn' + (groupActive ? ' on' : '') + (isExpanded ? ' expanded' : '') + '" ' +
+      html += '<div class="oanav-group' + (isExpanded ? ' is-open' : '') + '" data-nav-group="' + esc(groupId) + '">' +
+        '<div class="oanav-tip-host">' +
+        '<button type="button" class="oanav-group-head' + (groupActive ? ' on' : '') + '" ' +
         'data-nav-toggle="' + esc(groupId) + '" aria-expanded="' + (isExpanded ? 'true' : 'false') + '" aria-controls="nav-sub-' + esc(groupId) + '">' +
-        (NAV.ICONS[groupId] || '') + '<span class="nav-label">' + esc(node.label) + '</span>' + groupBadgeHtml + NAV.ICONS.chevron +
-        '</button><span class="nav-tooltip" role="tooltip">' + esc(node.label) + '</span></div>' +
-        '<div id="nav-sub-' + esc(groupId) + '" class="nav-sub-wrap' + (isExpanded ? ' open' : '') + '" role="region" aria-label="' + esc(node.label) + ' submenu" ' +
-        'style="max-height:' + (isExpanded ? (node.children.length * 40 + 12) + 'px' : '0') + '">' +
-        '<ul class="nav-sub-list">';
+        '<span class="oanav-ico-wrap">' + navIconHtml(groupId) + '</span>' +
+        '<span class="oanav-label">' + esc(node.label) + '</span>' + groupBadgeHtml +
+        navIconHtml('chevron') +
+        '</button><span class="oanav-tip" role="tooltip">' + esc(node.label) + '</span></div>' +
+        '<div id="nav-sub-' + esc(groupId) + '" class="oanav-sub-wrap" role="region" aria-label="' + esc(node.label) + ' submenu">' +
+        '<div class="oanav-sub-panel">' +
+        '<p class="oanav-sub-heading">' + esc(node.label) + '</p>' +
+        '<ul class="oanav-sub-list">';
       node.children.forEach(function(child){
         var on = route === child.route ? ' on' : '';
-        html += '<li><button type="button" class="nav-sub-item' + on + '" data-route="' + esc(child.route) + '">' +
-          '<span class="nav-label">' + esc(child.label) + '</span>' +
+        html += '<li><button type="button" class="oanav-sub-item' + on + '" data-route="' + esc(child.route) + '">' +
+          '<span class="oanav-sub-marker" aria-hidden="true"></span>' +
+          '<span class="oanav-label">' + esc(child.label) + '</span>' +
           (child.badge ? navBadgeHtml(child.badge) : '') + '</button></li>';
       });
-      html += '</ul></div></div>';
+      html += '</ul></div></div></div>';
     });
     nav.innerHTML = html;
     nav.querySelectorAll('[data-route]').forEach(function(btn){
