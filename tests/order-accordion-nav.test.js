@@ -34,5 +34,7 @@ test('orders.html wires accordion navigation', function () {
   assert.match(html, /nav-sub-wrap/);
   assert.match(html, /btn-side-collapse/);
   assert.match(html, /openNavRoute/);
+  assert.doesNotMatch(html, /class="mark"/);
+  assert.doesNotMatch(html, /if \(activeParent\) expanded = activeParent/);
   assert.doesNotMatch(html, /nav-group-label.*Settings/s);
 });
