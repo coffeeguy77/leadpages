@@ -6,7 +6,11 @@ const { getAdmin } = require('../../lib/order/supabase');
 const { listPresets, getPreset } = require('../../lib/order/presets');
 const { writeAudit } = require('../../lib/order/audit');
 const { slugify } = require('../../lib/order/service');
-const { mergeStorefront, normalizeCutoffMode } = require('../../lib/order/storefront-appearance');
+const {
+  mergeStorefront,
+  normalizeCutoffMode,
+  normalizeStorefrontSettings
+} = require('../../lib/order/storefront-appearance');
 
 module.exports = async function (req, res) {
   try {
@@ -26,6 +30,13 @@ module.exports = async function (req, res) {
     if (req.method === 'GET') {
       let system = await getOrderSystemForSite(siteId);
       if (!system) system = await ensureOrderSystem(siteId, { preset: 'custom' });
+      if (system && system.settings && typeof system.settings === 'object') {
+        const settings = Object.assign({}, system.settings);
+        if (settings.storefront && typeof settings.storefront === 'object') {
+          settings.storefront = normalizeStorefrontSettings(settings.storefront);
+        }
+        system = Object.assign({}, system, { settings: settings });
+      }
       return json(res, 200, { system: system, site: access.site, role: access.role });
     }
 

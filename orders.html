@@ -592,7 +592,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
       <section class="view" id="view-new" data-view="new">
         <div class="card">
           <h3>New order</h3>
-          <p class="sub">Use the sidebar cart (left) while you browse products here. Layout mode is set under Settings → Cart settings.</p>
+          <p class="sub">Use the sidebar cart (left) while you browse products here. Customer shop layout is set under Settings → Cart settings.</p>
           <form id="new-order-form">
             <div class="no-main-split">
               <div class="no-products-col">
@@ -1091,14 +1091,8 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
             <div class="grid2">
               <div class="field"><label for="set-sf-shop-mode">Customer shop layout</label>
                 <select id="set-sf-shop-mode">
+                  <option value="fast">Fast order — qty &amp; weight on one page</option>
                   <option value="traditional">Traditional shop — tap a product to set qty / weight</option>
-                  <option value="fast">Fast order — qty &amp; weight on one page</option>
-                </select>
-              </div>
-              <div class="field"><label for="set-staff-order-mode">Staff new order layout</label>
-                <select id="set-staff-order-mode">
-                  <option value="fast">Fast order — qty &amp; weight on one page</option>
-                  <option value="traditional">Traditional — tap a product to add lines</option>
                 </select>
               </div>
               <div class="field"><label for="set-sf-show-all">Category chips</label>
@@ -3055,14 +3049,11 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     renderNoStaffCart();
   }
 
-  function resolveNoOrderModeFromSettings(settings){
-    var sf = (settings && settings.storefront) || {};
-    var mode = sf.staff_order_mode === 'traditional' ? 'traditional' : 'fast';
+  function resolveNoOrderModeFromSettings(_settings){
     try {
-      var saved = localStorage.getItem('lp_orders_staff_layout_' + (state.siteId || ''));
-      if (saved === 'traditional' || saved === 'fast') mode = saved;
+      localStorage.removeItem('lp_orders_staff_layout_' + (state.siteId || ''));
     } catch (_e) {}
-    state.noOrderMode = mode;
+    state.noOrderMode = 'fast';
   }
 
   function updateNoSubmitEnabled(){
@@ -4979,10 +4970,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
       if ($('set-paypal-client')) $('set-paypal-client').value = pay.paypal_client_id || '';
       if ($('set-paypal-email')) $('set-paypal-email').value = pay.paypal_merchant_email || '';
       var sf = (s.settings && s.settings.storefront) || {};
-      if ($('set-sf-shop-mode')) $('set-sf-shop-mode').value = sf.shop_mode === 'fast' ? 'fast' : 'traditional';
-      if ($('set-staff-order-mode')) {
-        $('set-staff-order-mode').value = sf.staff_order_mode === 'traditional' ? 'traditional' : 'fast';
-      }
+      if ($('set-sf-shop-mode')) $('set-sf-shop-mode').value = sf.shop_mode === 'traditional' ? 'traditional' : 'fast';
       if ($('set-sf-show-all')) $('set-sf-show-all').value = sf.show_all_categories ? '1' : '0';
       try { await loadProductsCache(); } catch (_e) {}
       fillDefaultCategorySelect(sf.default_category_id || '');
@@ -5112,8 +5100,8 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
       }
       var prevAp = (existing.storefront && existing.storefront.appearance) || {};
       var storefront = Object.assign({}, existing.storefront || {}, {
-        shop_mode: $('set-sf-shop-mode') && $('set-sf-shop-mode').value === 'fast' ? 'fast' : 'traditional',
-        staff_order_mode: $('set-staff-order-mode') && $('set-staff-order-mode').value === 'traditional' ? 'traditional' : 'fast',
+        shop_mode: $('set-sf-shop-mode') && $('set-sf-shop-mode').value === 'traditional' ? 'traditional' : 'fast',
+        staff_order_mode: 'fast',
         show_all_categories: $('set-sf-show-all') ? $('set-sf-show-all').value === '1' : false,
         default_category_id: defCatId || null,
         default_category_slug: defCat ? (defCat.slug || null) : null,

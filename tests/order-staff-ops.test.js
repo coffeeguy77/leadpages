@@ -33,3 +33,13 @@ test('orders.html includes staff ops UI hooks', function () {
   assert.match(html, /inhouse-pay-modal/);
   assert.match(html, /record_inhouse_payment/);
 });
+
+test('orders.html staff new order is always fast', function () {
+  const fs = require('fs');
+  const path = require('path');
+  const html = fs.readFileSync(path.join(__dirname, '..', 'orders.html'), 'utf8');
+  assert.doesNotMatch(html, /set-staff-order-mode/);
+  assert.match(html, /state\.noOrderMode = 'fast'/);
+  assert.match(html, /staff_order_mode: 'fast'/);
+  assert.match(html, /set-sf-shop-mode/);
+});

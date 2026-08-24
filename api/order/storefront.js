@@ -1,6 +1,6 @@
 'use strict';
 
-const { readBody, json, methodOk } = require('../../lib/order/http');
+const { normalizeStorefrontSettings } = require('../../lib/order/storefront-appearance');
 const { getAdmin } = require('../../lib/order/supabase');
 const { getOrderSystemForSite } = require('../../lib/order/auth');
 const { formatAud } = require('../../lib/order/money');
@@ -92,17 +92,18 @@ module.exports = async function (req, res) {
     const schedule = parsePickupSchedule(system);
     const pickup_slots = buildPickupSlots(windows, earliest, 28, schedule);
     const paySettings = (system.settings && system.settings.payments) || {};
-    const storefrontSettings = Object.assign(
-      {
-        show_all_categories: false,
-        default_category_id: null,
-        default_category_slug: null,
-        shop_mode: 'traditional',
-        appearance: {}
-      },
-      (system.settings && system.settings.storefront) || {}
+    const storefrontSettings = normalizeStorefrontSettings(
+      Object.assign(
+        {
+          show_all_categories: false,
+          default_category_id: null,
+          default_category_slug: null,
+          shop_mode: 'fast',
+          appearance: {}
+        },
+        (system.settings && system.settings.storefront) || {}
+      )
     );
-    if (storefrontSettings.shop_mode !== 'fast') storefrontSettings.shop_mode = 'traditional';
 
     const { packLabel, isPackSize, isEachSize, minimumKgOption } = require('../../lib/order/product-options');
     const { minimumKg, defaultWeightKg } = require('../../lib/order/product-weight');

@@ -207,7 +207,7 @@
   }
 
   OrderStorefront.prototype.isFastMode = function () {
-    return this.storefrontCfg().shop_mode === 'fast';
+    return this.storefrontCfg().shop_mode !== 'traditional';
   };
 
   OrderStorefront.prototype.needsWeight = function (p) {

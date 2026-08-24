@@ -5,6 +5,7 @@ const assert = require('node:assert/strict');
 const {
   sectionToAppearance,
   mergeStorefront,
+  normalizeStorefrontSettings,
   normalizeCutoffMode,
   hexOk
 } = require('../lib/order/storefront-appearance');
@@ -53,9 +54,29 @@ test('mergeStorefront deep-merges appearance', function () {
     { appearance: { accent: '#333333', btn_bg: '#444444' } }
   );
   assert.equal(merged.shop_mode, 'fast');
+  assert.equal(merged.staff_order_mode, 'fast');
   assert.equal(merged.appearance.accent, '#333333');
   assert.equal(merged.appearance.text, '#222222');
   assert.equal(merged.appearance.btn_bg, '#444444');
+});
+
+test('normalizeStorefrontSettings preserves customer shop_mode and forces staff fast', function () {
+  assert.deepEqual(normalizeStorefrontSettings({ shop_mode: 'fast', staff_order_mode: 'traditional' }), {
+    shop_mode: 'fast',
+    staff_order_mode: 'fast'
+  });
+  assert.deepEqual(normalizeStorefrontSettings({ shop_mode: 'traditional', staff_order_mode: 'traditional' }), {
+    shop_mode: 'traditional',
+    staff_order_mode: 'fast'
+  });
+  assert.deepEqual(normalizeStorefrontSettings(null), {
+    shop_mode: 'fast',
+    staff_order_mode: 'fast'
+  });
+  assert.deepEqual(normalizeStorefrontSettings({}), {
+    shop_mode: 'fast',
+    staff_order_mode: 'fast'
+  });
 });
 
 test('hexOk validates six-digit hex', function () {
@@ -63,4 +84,13 @@ test('hexOk validates six-digit hex', function () {
   assert.equal(hexOk('#AABBCC'), true);
   assert.equal(hexOk('aabbcc'), false);
   assert.equal(hexOk('#abc'), false);
+});
+
+test('orders.html staff layout is fast-only', function () {
+  const fs = require('fs');
+  const path = require('path');
+  const html = fs.readFileSync(path.join(__dirname, '..', 'orders.html'), 'utf8');
+  assert.doesNotMatch(html, /set-staff-order-mode/);
+  assert.match(html, /state\.noOrderMode = 'fast'/);
+  assert.match(html, /staff_order_mode: 'fast'/);
 });
