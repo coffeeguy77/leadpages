@@ -1427,7 +1427,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
   var isEmbed = urlParams.get('embed') === '1';
   if (isEmbed) try { document.body.classList.add('embed'); } catch (e) {}
   if (urlSite) try { localStorage.setItem(SITE_KEY, urlSite); } catch (e) {}
-  var VIEWS = [
+  var NAV_MAIN = [
     { id: 'dashboard', label: 'Dashboard' },
     { id: 'orders', label: 'Orders' },
     { id: 'new', label: 'New Order' },
@@ -1436,12 +1436,15 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     { id: 'supply', label: 'Supply' },
     { id: 'changes', label: 'Changes' },
     { id: 'customers', label: 'Customers' },
-    { id: 'import', label: 'Import' },
     { id: 'payments', label: 'Payments' },
-    { id: 'abandoned', label: 'Abandoned Carts' },
-    { id: 'messaging', label: 'Messaging' },
-    { id: 'settings', label: 'Settings' }
+    { id: 'abandoned', label: 'Abandoned Carts' }
   ];
+  var NAV_SETTINGS = [
+    { id: 'settings', label: 'Configuration' },
+    { id: 'import', label: 'Import' },
+    { id: 'messaging', label: 'Messaging' }
+  ];
+  var VIEWS = NAV_MAIN.concat(NAV_SETTINGS);
 
   var state = {
     session: null,
@@ -1814,7 +1817,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
   function paintNav(){
     var nav = $('nav');
     var counts = state.navCounts || {};
-    nav.innerHTML = VIEWS.map(function(v){
+    function navBtn(v, sub){
       var countHtml = '';
       if (v.id === 'customers' && counts.customers != null) {
         countHtml = '<span class="nav-count" title="Total customers">' + esc(String(counts.customers)) + '</span>';
@@ -1823,10 +1826,15 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
       } else if (v.id === 'new' && counts.new_orders != null) {
         countHtml = '<span class="nav-count" title="New / awaiting attention">' + esc(String(counts.new_orders)) + '</span>';
       }
-      return '<button type="button" data-view="' + v.id + '"' +
-        (state.currentView === v.id ? ' class="on"' : '') + '>' +
+      var cls = sub ? 'nav-sub' : '';
+      if (state.currentView === v.id) cls = (cls ? cls + ' ' : '') + 'on';
+      return '<button type="button" class="' + esc(cls) + '" data-view="' + v.id + '">' +
         '<span class="nav-label">' + esc(v.label) + '</span>' + countHtml + '</button>';
-    }).join('');
+    }
+    var html = NAV_MAIN.map(function(v){ return navBtn(v, false); }).join('');
+    html += '<p class="nav-group-label">Settings</p>';
+    html += NAV_SETTINGS.map(function(v){ return navBtn(v, true); }).join('');
+    nav.innerHTML = html;
     nav.querySelectorAll('button').forEach(function(b){
       b.addEventListener('click', function(){
         openView(b.getAttribute('data-view'));
