@@ -61,6 +61,8 @@ function sampleOrders() {
 test('SNAPSHOT_FORMATS lists staff date reports', function () {
   assert.ok(isSnapshotFormat('day_run'));
   assert.ok(isSnapshotFormat('allocation'));
+  assert.ok(isSnapshotFormat('procurement'));
+  assert.ok(isSnapshotFormat('exceptions'));
   assert.equal(isSnapshotFormat('slip'), false);
   assert.ok(SNAPSHOT_FORMATS.indexOf('prep') >= 0);
 });
@@ -119,6 +121,33 @@ test('prep fingerprint uses supply lines', function () {
   assert.equal(a.line_count, 1);
   supply.lines[0].quantity = 99;
   var b = buildPrintFingerprint('prep', { orders: sampleOrders(), supply: supply });
+  assert.notEqual(a.fingerprint, b.fingerprint);
+});
+
+test('procurement fingerprint tracks buy-list lines', function () {
+  var supply = {
+    lines: [{ product_id: 'p1', product_name: 'Ham', quantity: 3, order_count: 2 }]
+  };
+  var a = buildPrintFingerprint('procurement', { orders: sampleOrders(), supply: supply });
+  assert.equal(a.line_count, 1);
+  var prep = buildPrintFingerprint('prep', { orders: sampleOrders(), supply: supply });
+  assert.notEqual(a.fingerprint, prep.fingerprint);
+  supply.lines[0].quantity = 8;
+  var b = buildPrintFingerprint('procurement', { orders: sampleOrders(), supply: supply });
+  assert.notEqual(a.fingerprint, b.fingerprint);
+});
+
+test('exceptions fingerprint only includes exception orders', function () {
+  var orders = sampleOrders();
+  orders[0].is_important = true;
+  orders[0].important_meta = { type: 'vip', colour: 'amber', reason: 'Regular' };
+  orders[0].customer_notes = 'Call first';
+  var a = buildPrintFingerprint('exceptions', { orders: orders });
+  assert.equal(a.order_count, 1);
+  assert.equal(a.line_count, 1);
+  assert.deepEqual(a.payload_summary.order_numbers, ['ORD-1']);
+  orders[0].important_meta.reason = 'Changed';
+  var b = buildPrintFingerprint('exceptions', { orders: orders });
   assert.notEqual(a.fingerprint, b.fingerprint);
 });
 

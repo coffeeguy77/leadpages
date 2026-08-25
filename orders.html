@@ -6149,7 +6149,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
         '</tr>';
       }).join('');
       var snap = await loadPrintSnapshotStatus(date, ['prep', 'pick_list', 'day_run', 'allocation', 'label', 'item_labels']);
-      renderPrintStatusBanner($('supply-print-status'), snap && snap.formats, ['prep', 'day_run', 'allocation']);
+      renderPrintStatusBanner($('supply-print-status'), snap && snap.formats, ['prep', 'procurement', 'day_run', 'allocation']);
     } catch (e) {
       tbody.innerHTML = '<tr><td colspan="5">' + esc((e && e.message) || e) + '</td></tr>';
       toast((e && e.message) || String(e), 'err');
@@ -7232,7 +7232,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     } catch (_e) {}
   }
 
-  var PRINT_SNAPSHOT_FORMATS = ['day_run', 'prep', 'pick_list', 'allocation', 'label', 'item_labels'];
+  var PRINT_SNAPSHOT_FORMATS = ['day_run', 'prep', 'procurement', 'pick_list', 'allocation', 'label', 'item_labels', 'exceptions'];
 
   function formatPrintAgo(iso){
     if (!iso) return '';
