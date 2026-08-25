@@ -839,11 +839,11 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
         </div>
       </section>
 
-      <!-- Supply -->
+      <!-- Supply / Production Summary -->
       <section class="view" id="view-supply" data-view="supply">
         <div class="card">
-          <h3>Supply</h3>
-          <p class="sub">Aggregated product demand for a pickup date.</p>
+          <h3>Production Summary</h3>
+          <p class="sub">What must be purchased and prepared for a pickup date — product totals, sizes, and estimated weight.</p>
           <div class="toolbar">
             <input id="supply-date" type="date">
             <button class="btn solid" type="button" id="supply-load">Load supply</button>
@@ -981,6 +981,22 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
             <th>Date</th><th>Orders</th><th>Known value</th><th>Deposits</th><th>Capacity</th><th>Status</th><th></th>
           </tr></thead><tbody id="cal-tbody"></tbody></table></div>
           <p class="empty hide" id="cal-empty">No pickup dates with orders yet.</p>
+        </div>
+      </section>
+
+      <section class="view" id="view-pickup-day" data-view="pickup-day">
+        <div class="card">
+          <div class="toolbar" style="flex-wrap:wrap;gap:10px">
+            <h3 style="margin:0;flex:1">Pickup Day View</h3>
+            <input id="pd-date" type="date">
+            <button class="btn solid" type="button" id="pd-load">Load day</button>
+            <button class="btn ghost" type="button" id="pd-print-run">Print run sheet</button>
+            <button class="btn ghost" type="button" id="pd-goto-prod">Production Summary</button>
+          </div>
+          <p class="sub" id="pd-heading">Operational dashboard for a single pickup day — group by time window, open orders, print run sheets.</p>
+          <div class="kpis" id="pd-kpis"></div>
+          <div id="pd-groups"></div>
+          <p class="empty hide" id="pd-empty">No orders for this pickup date.</p>
         </div>
       </section>
 
@@ -1361,11 +1377,14 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
             </div>
             <div class="field"><label for="pw-pickup-pattern">Pickup pattern</label>
               <select id="pw-pickup-pattern">
-                <option value="weekly">Weekly — any matching day in range</option>
+                <option value="weekly">Weekly — matching days in range (e.g. every Friday)</option>
                 <option value="fortnightly">Fortnightly — every second week from range start</option>
-                <option value="monthly">Monthly — same day-of-month as range start</option>
-                <option value="custom">Custom — only selected weekdays below</option>
+                <option value="monthly">Monthly — final selected weekday each month (or same day-of-month)</option>
+                <option value="custom">Custom recurring — only selected weekdays below</option>
+                <option value="fixed_range">Fixed date range — every open day in the range</option>
+                <option value="specific_dates">Specific custom dates — only date overrides below</option>
               </select>
+              <span class="field-hint">Customers only see schedule-generated dates (no free calendar). Recurring modes show the next four eligible days.</span>
             </div>
             <div class="field" style="grid-column:1/-1"><label>Pickup days (repeat)</label>
               <div class="pw-closed-days" id="pw-pickup-days">
@@ -1515,7 +1534,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
   var NAV_COLLAPSE_KEY = 'lp.orders.sidebar_collapsed';
   var NAV_EXPAND_KEY = 'lp.orders.nav_expanded_group';
   var LEGACY_VIEW_IDS = [
-    'dashboard', 'orders', 'new', 'products', 'calendar', 'supply', 'changes',
+    'dashboard', 'orders', 'new', 'products', 'calendar', 'supply', 'pickup-day', 'changes',
     'customers', 'payments', 'abandoned', 'settings', 'import', 'messaging'
   ];
 
@@ -1648,7 +1667,12 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     var weekday = d.toLocaleDateString('en-AU', { weekday: 'long' });
     var month = d.toLocaleDateString('en-AU', { month: 'long' });
     var day = d.getDate();
-    return weekday + ', ' + day + ordinalDaySuffix(day) + ' ' + month + ' ' + d.getFullYear() + (suffix || '');
+    var base = weekday + ', ' + day + ordinalDaySuffix(day) + ' ' + month + ' ' + d.getFullYear();
+    if (!suffix) return base;
+    var s = String(suffix);
+    if (s.charAt(0) === '—' || s.indexOf('—') === 0) return base + s;
+    if (s.charAt(0) === ' ' || s.charAt(0) === '·') return base + ' —' + s.replace(/^\s*·\s*/, ' ').replace(/^\s+/, ' ');
+    return base + ' — ' + s;
   }
 
   function paintPickupDateDisplay(){
@@ -1672,15 +1696,21 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
       var byDate = Object.create(null);
       slotPreview.forEach(function(s){
         if (!s || !s.date) return;
-        var start = String(s.window_start || '').slice(0, 5);
-        var end = String(s.window_end || '').slice(0, 5);
-        var bit = (start && end) ? (' · ' + start + '–' + end) : '';
-        if (!byDate[s.date]) byDate[s.date] = bit;
-        else if (bit && byDate[s.date].indexOf(bit) < 0) byDate[s.date] += bit;
+        if (s.label && !byDate[s.date]) {
+          byDate[s.date] = { value: s.date, label: s.date_label || s.label };
+          return;
+        }
+        var bit = s.window_label || '';
+        if (!bit) {
+          var start = String(s.window_start || '').slice(0, 5);
+          var end = String(s.window_end || '').slice(0, 5);
+          bit = (start && end) ? (start + '–' + end) : '';
+        }
+        if (!byDate[s.date]) {
+          byDate[s.date] = { value: s.date, label: formatPickupDateLong(s.date, bit ? (' — ' + bit) : '') };
+        }
       });
-      return Object.keys(byDate).sort().map(function(k){
-        return { value: k, label: formatPickupDateLong(k, byDate[k]) };
-      });
+      return Object.keys(byDate).sort().map(function(k){ return byDate[k]; });
     }
     var active = (windows || []).filter(function(w){ return w && w.active !== false; });
     if (!active.length) return [];
@@ -3126,6 +3156,8 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
 
     var foot = '';
     foot += '<button class="btn solid" type="button" data-act="copy-new">Copy to new order</button>';
+    foot += '<button class="btn ghost" type="button" data-act="toggle-important">' +
+      (o.is_important ? 'Unmark important' : 'Mark important') + '</button>';
     foot += '<button class="btn ghost" type="button" data-print="slip">Print packing slip</button>';
     foot += '<button class="btn ghost" type="button" data-print="receipt">Print receipt</button>';
     foot += '<button class="btn ghost" type="button" data-act="deposit-link">Send deposit link</button>';
@@ -3147,6 +3179,10 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
         var act = btn.getAttribute('data-act');
         if (act === 'copy-new') {
           copyOrderToNewOrder(data);
+          return;
+        }
+        if (act === 'toggle-important') {
+          toggleOrderImportant(o, btn);
           return;
         }
         runOrderAction(act, o, btn);
@@ -3311,6 +3347,40 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     var note = 'Previous order copied — adjust items then create.';
     if (pf.skipped) note += ' ' + pf.skipped + ' line(s) skipped (inactive or unlinked).';
     toast(note, 'ok');
+  }
+
+  async function toggleOrderImportant(order, btn){
+    if (!order || !order.id) return;
+    var next = !order.is_important;
+    if (btn) btn.disabled = true;
+    try {
+      var meta = order.important_meta && typeof order.important_meta === 'object' ? order.important_meta : {};
+      if (next) {
+        meta = Object.assign({}, meta, {
+          type: meta.type || 'staff_attention',
+          marked_at: new Date().toISOString()
+        });
+      }
+      await api('/api/order/orders', {
+        method: 'PATCH',
+        body: {
+          site_id: state.siteId,
+          id: order.id,
+          is_important: next,
+          important_meta: meta
+        }
+      });
+      toast(next ? 'Marked important' : 'Important cleared', 'ok');
+      await openOrderDetail(order.id);
+    } catch (e) {
+      var msg = (e && e.message) || String(e);
+      if (/is_important|important_meta|column/i.test(msg)) {
+        toast('Run DB migration 20260825_order_ops_important.sql to enable Important orders', 'err');
+      } else {
+        toast(msg, 'err');
+      }
+      if (btn) btn.disabled = false;
+    }
   }
 
   async function copyOrderToNewOrder(data){
@@ -6143,14 +6213,15 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
           ? ((d.capacity.used||0) + ' / ' + d.capacity.max)
           : '—';
         return '<tr>' +
-          '<td>' + esc(d.date) + '</td>' +
+          '<td>' + esc(formatPickupDateLong(d.date)) + '</td>' +
           '<td>' + esc(d.order_count) + '</td>' +
           '<td>' + esc(d.known_value) + '</td>' +
           '<td>' + esc(d.deposits) + '</td>' +
           '<td>' + esc(cap) + '</td>' +
           '<td>' + (d.locked ? '<span class="badge warn">Locked</span>' : '<span class="badge ok">Open</span>') + '</td>' +
           '<td><button class="btn ghost" type="button" data-lock-date="' + esc(d.date) + '">Lock date</button> ' +
-          '<button class="btn ghost" type="button" data-goto-supply="' + esc(d.date) + '">Supply</button></td></tr>';
+          '<button class="btn ghost" type="button" data-goto-pd="' + esc(d.date) + '">Day view</button> ' +
+          '<button class="btn ghost" type="button" data-goto-supply="' + esc(d.date) + '">Production</button></td></tr>';
       }).join('');
       tbody.querySelectorAll('[data-lock-date]').forEach(function(b){
         b.addEventListener('click', async function(){
@@ -6165,15 +6236,138 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
           } catch (e) { toast((e && e.message) || String(e), 'err'); }
         });
       });
+      tbody.querySelectorAll('[data-goto-pd]').forEach(function(b){
+        b.addEventListener('click', function(){
+          if ($('pd-date')) $('pd-date').value = b.getAttribute('data-goto-pd');
+          openNavRoute('pickup-day');
+        });
+      });
       tbody.querySelectorAll('[data-goto-supply]').forEach(function(b){
         b.addEventListener('click', function(){
           $('supply-date').value = b.getAttribute('data-goto-supply');
-          location.hash = 'supply';
-          setTimeout(loadSupply, 50);
+          openNavRoute('supply');
         });
       });
     } catch (e) {
       tbody.innerHTML = '<tr><td colspan="7">' + esc((e && e.message) || e) + '</td></tr>';
+    }
+  }
+
+  function paymentStatusLabel(o){
+    var req = Number(o.deposit_required_cents) || 0;
+    var paid = Number(o.deposit_paid_cents) || 0;
+    if (req <= 0 && paid <= 0) return { label: 'No deposit', cls: 'muted' };
+    if (paid >= req && req > 0) return { label: 'Fully paid', cls: 'ok' };
+    if (paid > 0) return { label: 'Deposit paid', cls: 'warn' };
+    return { label: 'Unpaid', cls: 'bad' };
+  }
+
+  function windowKeyForOrder(o){
+    var a = String(o.pickup_window_start || '').slice(0, 5);
+    var b = String(o.pickup_window_end || '').slice(0, 5);
+    if (a && b) return a + '–' + b;
+    if (o.pickup_time) return String(o.pickup_time).slice(0, 5);
+    return 'Any time';
+  }
+
+  async function loadPickupDay(){
+    if (!requireSite()) return;
+    var dateEl = $('pd-date');
+    var groupsEl = $('pd-groups');
+    var empty = $('pd-empty');
+    var kpis = $('pd-kpis');
+    var heading = $('pd-heading');
+    if (!dateEl.value) {
+      var today = new Date();
+      dateEl.value = isoDate(today);
+    }
+    var date = dateEl.value;
+    groupsEl.innerHTML = '<p class="notice">Loading…</p>';
+    empty.classList.add('hide');
+    kpis.innerHTML = '';
+    try {
+      var data = await api('/api/order/orders?' + siteQuery('pickup_date=' + encodeURIComponent(date) + '&limit=200'));
+      var orders = (data.orders || []).filter(function(o){
+        return o.status !== 'cancelled';
+      });
+      heading.textContent = formatPickupDateLong(date) + ' — operational pickup board';
+      if (!orders.length) {
+        groupsEl.innerHTML = '';
+        empty.classList.remove('hide');
+        kpis.innerHTML = '';
+        return;
+      }
+      var fullyPaid = 0, depositPaid = 0, unpaid = 0, ready = 0, important = 0, special = 0, items = 0;
+      orders.forEach(function(o){
+        var pay = paymentStatusLabel(o);
+        if (pay.label === 'Fully paid') fullyPaid++;
+        else if (pay.label === 'Deposit paid') depositPaid++;
+        else if (pay.label === 'Unpaid') unpaid++;
+        if (o.status === 'ready' || o.status === 'collected' || o.status === 'completed') ready++;
+        if (o.is_important) important++;
+        if (o.customer_notes) special++;
+        items += Number(o.item_count) || 0;
+      });
+      kpis.innerHTML = [
+        { l: 'Orders', v: orders.length },
+        { l: 'Items', v: items || '—' },
+        { l: 'Fully paid', v: fullyPaid },
+        { l: 'Deposit paid', v: depositPaid },
+        { l: 'Unpaid', v: unpaid },
+        { l: 'Ready', v: ready },
+        { l: 'Important', v: important },
+        { l: 'Special requests', v: special }
+      ].map(function(c){
+        return '<div class="kpi"><p class="l">' + esc(c.l) + '</p><p class="v">' + esc(c.v) + '</p></div>';
+      }).join('');
+
+      var byWindow = Object.create(null);
+      var winOrder = [];
+      orders.forEach(function(o){
+        var wk = windowKeyForOrder(o);
+        if (!byWindow[wk]) { byWindow[wk] = []; winOrder.push(wk); }
+        byWindow[wk].push(o);
+      });
+      winOrder.sort();
+
+      groupsEl.innerHTML = winOrder.map(function(wk){
+        var rows = byWindow[wk];
+        var html = '<div class="pd-window-group" style="margin:16px 0">';
+        html += '<button type="button" class="btn ghost pd-window-toggle" style="width:100%;justify-content:space-between;margin-bottom:8px" data-pd-toggle>';
+        html += '<strong>' + esc(wk) + '</strong><span>' + rows.length + ' order' + (rows.length === 1 ? '' : 's') + '</span></button>';
+        html += '<div class="table-wrap pd-window-body"><table class="oe"><thead><tr>';
+        html += '<th>Order</th><th>Customer</th><th>Mobile</th><th>Items</th><th>Payment</th><th>Status</th><th></th>';
+        html += '</tr></thead><tbody>';
+        rows.sort(function(a, b){
+          return String(a.customer_name || '').localeCompare(String(b.customer_name || ''));
+        });
+        rows.forEach(function(o){
+          var pay = paymentStatusLabel(o);
+          var cls = o.is_important ? ' clickable pd-important' : ' clickable';
+          html += '<tr class="' + cls + '" data-id="' + esc(o.id) + '" style="' + (o.is_important ? 'background:rgba(220,160,40,.12)' : '') + '">';
+          html += '<td><strong>' + esc(o.order_number) + '</strong>' + (o.is_important ? ' <span class="badge warn">Important</span>' : '') +
+            (o.customer_notes ? ' <span class="badge muted" title="' + esc(o.customer_notes) + '">Request</span>' : '') + '</td>';
+          html += '<td>' + esc(o.customer_name || '—') + '</td>';
+          html += '<td>' + esc(o.customer_phone || '—') + '</td>';
+          html += '<td>' + esc(o.item_count != null ? o.item_count : '—') + '</td>';
+          html += '<td><span class="badge ' + pay.cls + '">' + esc(pay.label) + '</span></td>';
+          html += '<td>' + statusBadge(o.status) + '</td>';
+          html += '<td><button class="btn ghost" type="button" data-open="' + esc(o.id) + '">Open</button></td>';
+          html += '</tr>';
+        });
+        html += '</tbody></table></div></div>';
+        return html;
+      }).join('');
+
+      wireOrderOpen(groupsEl);
+      groupsEl.querySelectorAll('[data-pd-toggle]').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          var body = btn.parentNode && btn.parentNode.querySelector('.pd-window-body');
+          if (body) body.classList.toggle('hide');
+        });
+      });
+    } catch (e) {
+      groupsEl.innerHTML = '<p class="notice">' + esc((e && e.message) || e) + '</p>';
     }
   }
 
@@ -6551,6 +6745,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
       }
       else if (v === 'products') await loadProductsView();
       else if (v === 'calendar') await loadCalendar();
+      else if (v === 'pickup-day') await loadPickupDay();
       else if (v === 'supply') {
         if (!$('supply-date').value) {
           var d = new Date();
@@ -6786,6 +6981,17 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     }
   });
   $('supply-load').addEventListener('click', loadSupply);
+  if ($('pd-load')) $('pd-load').addEventListener('click', loadPickupDay);
+  if ($('pd-print-run')) $('pd-print-run').addEventListener('click', function(){
+    var d = $('pd-date') && $('pd-date').value;
+    if (!d) { toast('Choose a pickup date first', 'err'); return; }
+    openPrint('pickup_date=' + encodeURIComponent(d) + '&format=day_run');
+  });
+  if ($('pd-goto-prod')) $('pd-goto-prod').addEventListener('click', function(){
+    var d = $('pd-date') && $('pd-date').value;
+    if (d && $('supply-date')) $('supply-date').value = d;
+    openNavRoute('supply');
+  });
   if ($('supply-lock')) $('supply-lock').addEventListener('click', async function(){
     if (!requireSite()) return;
     var date = $('supply-date').value;

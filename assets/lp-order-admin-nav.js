@@ -22,13 +22,22 @@
       icon: 'orders',
       type: 'group',
       children: [
-        { id: 'orders-list', label: 'All Orders', route: 'orders', badge: 'orders_new' },
+        { id: 'orders-list', label: 'Live Orders', route: 'orders', badge: 'orders_new' },
         { id: 'new', label: 'New Order', route: 'new' },
         { id: 'changes', label: 'Change Requests', route: 'changes' }
       ]
     },
-    { id: 'calendar', label: 'Schedule', icon: 'calendar', type: 'item', route: 'calendar' },
-    { id: 'supply', label: 'Supply & Preparation', icon: 'supply', type: 'item', route: 'supply' },
+    {
+      id: 'operations',
+      label: 'Order Operations',
+      icon: 'ops',
+      type: 'group',
+      children: [
+        { id: 'pickup-day', label: 'Pickup Day View', route: 'pickup-day' },
+        { id: 'supply', label: 'Production Summary', route: 'supply' },
+        { id: 'calendar', label: 'Pickup Calendar', route: 'calendar' }
+      ]
+    },
     { id: 'products', label: 'Products', icon: 'catalogue', type: 'item', route: 'products' },
     { id: 'customers', label: 'Customers', icon: 'customers', type: 'item', route: 'customers' },
     {
@@ -60,11 +69,12 @@
 
   var ROUTE_META = {
     dashboard: { view: 'dashboard', label: 'Dashboard', group: null },
-    orders: { view: 'orders', label: 'All Orders', group: 'orders' },
+    orders: { view: 'orders', label: 'Live Orders', group: 'orders' },
     new: { view: 'new', label: 'New Order', group: 'orders' },
     changes: { view: 'changes', label: 'Change Requests', group: 'orders' },
-    calendar: { view: 'calendar', label: 'Schedule', group: null },
-    supply: { view: 'supply', label: 'Supply & Preparation', group: null },
+    'pickup-day': { view: 'pickup-day', label: 'Pickup Day View', group: 'operations' },
+    calendar: { view: 'calendar', label: 'Pickup Calendar', group: 'operations' },
+    supply: { view: 'supply', label: 'Production Summary', group: 'operations' },
     products: { view: 'products', label: 'Products', group: null },
     customers: { view: 'customers', label: 'Customers', group: null },
     payments: { view: 'payments', label: 'Payments', group: null },
@@ -84,6 +94,8 @@
       '<svg class="oanav-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.75"/><rect x="13" y="3" width="8" height="5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.75"/><rect x="13" y="10" width="8" height="11" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.75"/><rect x="3" y="13" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.75"/></svg>',
     orders:
       '<svg class="oanav-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10l2 4H5l2-4Z" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/><path d="M5 8v11a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8" fill="none" stroke="currentColor" stroke-width="1.75"/><path d="M9 12h6M9 16h4" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>',
+    ops:
+      '<svg class="oanav-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/><circle cx="18" cy="18" r="3" fill="none" stroke="currentColor" stroke-width="1.75"/></svg>',
     calendar:
       '<svg class="oanav-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.75"/><path d="M8 3v4M16 3v4M3 10h18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>',
     supply:
