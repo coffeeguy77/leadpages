@@ -92,7 +92,13 @@ module.exports = async function (req, res) {
     const earliest = earliestPickupDate(system.timezone || 'Australia/Sydney', products || []);
     const windows = await windowsPromise;
     const schedule = parsePickupSchedule(system);
-    const pickup_slots = buildPickupSlots(windows, earliest, 28, schedule);
+    /* Next four eligible pickup dates for recurring patterns; full range for fixed/specific. */
+    var slotOpts = {};
+    var pat = schedule.pickup_pattern || 'weekly';
+    if (pat !== 'fixed_range' && pat !== 'specific_dates') {
+      slotOpts.maxEligibleDates = 4;
+    }
+    const pickup_slots = buildPickupSlots(windows, earliest, 90, schedule, slotOpts);
     const paySettings = (system.settings && system.settings.payments) || {};
     const storefrontSettings = normalizeStorefrontSettings(
       Object.assign(

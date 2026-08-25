@@ -805,6 +805,8 @@
     if (phone) d.phone = phone.value;
     if (email) d.email = email.value;
     if (date) d.date = date.value;
+    var dateSel = $('#oe-pickup-date', this.root);
+    if (dateSel) d.date = dateSel.value;
     if (slot) d.slotId = slot.value;
     if (notes) d.notes = notes.value;
   };
@@ -1726,26 +1728,69 @@
       esc(d.email || '') +
       '"></label>';
     if (slots.length) {
-      html += '<label>Pickup window<select id="oe-slot" required>';
-      html += '<option value="">Choose a pickup time…</option>';
+      var byDate = Object.create(null);
+      var dateOrder = [];
       slots.forEach(function (s) {
+        if (!s || !s.date) return;
+        if (!byDate[s.date]) {
+          byDate[s.date] = {
+            date: s.date,
+            date_label: s.date_label || s.label || s.date,
+            windows: []
+          };
+          dateOrder.push(s.date);
+        }
+        byDate[s.date].windows.push(s);
+      });
+      var selectedDate = d.date || '';
+      if (selectedDate && !byDate[selectedDate]) selectedDate = '';
+      if (!selectedDate && dateOrder.length === 1) selectedDate = dateOrder[0];
+      html += '<label>Pickup date<select id="oe-pickup-date" required>';
+      html += '<option value="">Choose a pickup day…</option>';
+      dateOrder.forEach(function (dk) {
+        var g = byDate[dk];
         html +=
           '<option value="' +
-          esc(s.id) +
+          esc(g.date) +
           '"' +
-          (d.slotId === s.id ? ' selected' : '') +
+          (selectedDate === g.date ? ' selected' : '') +
           '>' +
-          esc(s.label) +
+          esc(g.date_label) +
           '</option>';
       });
       html += '</select></label>';
+      var windows = selectedDate && byDate[selectedDate] ? byDate[selectedDate].windows : [];
+      if (windows.length > 1) {
+        html += '<label>Pickup time<select id="oe-slot" required>';
+        html += '<option value="">Choose a pickup time…</option>';
+        windows.forEach(function (s) {
+          html +=
+            '<option value="' +
+            esc(s.id) +
+            '"' +
+            (d.slotId === s.id ? ' selected' : '') +
+            '>' +
+            esc(s.window_label || s.label) +
+            '</option>';
+        });
+        html += '</select></label>';
+      } else if (windows.length === 1) {
+        html +=
+          '<input type="hidden" id="oe-slot" value="' +
+          esc(windows[0].id) +
+          '">';
+        html +=
+          '<p class="lp-oe-pickup-hours" style="margin:0 0 10px;font-size:13px;opacity:.85">' +
+          esc(windows[0].window_label || windows[0].label) +
+          '</p>';
+        if (!d.slotId) d.slotId = windows[0].id;
+      } else {
+        html += '<p class="lp-oe-pickup-hours" style="margin:0 0 10px;font-size:13px;opacity:.85">Select a pickup day to see available times.</p>';
+        html += '<input type="hidden" id="oe-slot" value="">';
+      }
     } else {
       html +=
-        '<label>Pickup date<input id="oe-date" type="date" min="' +
-        esc(this.state.earliest || (this.state.catalogue && this.state.catalogue.earliest_pickup_date) || '') +
-        '" value="' +
-        esc(d.date || '') +
-        '"></label>';
+        '<p class="lp-oe-pickup-hours" style="margin:0 0 12px;font-size:13px;opacity:.9">No pickup times are available right now. Please check back later or contact the shop.</p>';
     }
     html +=
       '<label class="lp-oe-field lp-oe-field-notes">Order notes<textarea id="oe-cnotes" class="lp-oe-notes-grow" rows="1" placeholder="Optional notes">' +
@@ -1878,7 +1923,7 @@
     this.updateFastAddButtons();
     this.updateProductAddButton();
     // Preserve checkout fields while typing
-    ['oe-name', 'oe-phone', 'oe-email', 'oe-date', 'oe-slot', 'oe-cnotes'].forEach(function (id) {
+    ['oe-name', 'oe-phone', 'oe-email', 'oe-date', 'oe-pickup-date', 'oe-slot', 'oe-cnotes'].forEach(function (id) {
       var el = document.getElementById(id);
       if (!el) return;
       el.addEventListener('input', function () {
@@ -1886,18 +1931,25 @@
       });
       el.addEventListener('change', function () {
         self.captureCheckoutDraft();
-        if (id === 'oe-date' || id === 'oe-slot') {
+        if (id === 'oe-date' || id === 'oe-pickup-date' || id === 'oe-slot') {
           var dateStr = '';
-          if (id === 'oe-date') dateStr = el.value;
-          else {
+          if (id === 'oe-date' || id === 'oe-pickup-date') {
+            dateStr = el.value;
+            if (id === 'oe-pickup-date') {
+              self.state.checkoutDraft.slotId = '';
+              self.render();
+            }
+          } else {
             var slot = (self.state.pickupSlots || []).find(function (s) {
               return s.id === el.value;
             });
             dateStr = slot && slot.date;
           }
-          self.refreshCutoffPreview(dateStr).then(function () {
-            self.render();
-          });
+          if (dateStr) {
+            self.refreshCutoffPreview(dateStr).then(function () {
+              if (id !== 'oe-pickup-date') self.render();
+            });
+          }
         }
       });
     });

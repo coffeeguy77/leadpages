@@ -9,8 +9,8 @@ const nav = require('../assets/lp-order-admin-nav');
 test('nav tree uses industry-neutral labels', function () {
   const blob = JSON.stringify(nav.NAV_TREE);
   assert.doesNotMatch(blob, /butcher|butchery|christmas|turkey|meat prep|weigh order/i);
-  assert.match(blob, /Supply & Preparation/);
-  assert.doesNotMatch(blob, /Operations|Catalogue|Message Templates|Product Options/);
+  assert.match(blob, /Production Summary|Order Operations|Pickup Day View/);
+  assert.doesNotMatch(blob, /Catalogue|Message Templates|Product Options/);
 });
 
 test('flattenVisibleTree hides payments when disabled', function () {
@@ -20,13 +20,23 @@ test('flattenVisibleTree hides payments when disabled', function () {
   assert.ok(shown.some(function (n) { return n.route === 'payments'; }));
 });
 
-test('top-level routes for products customers and schedule', function () {
+test('operations group includes pickup day production and calendar', function () {
+  const tree = nav.flattenVisibleTree({ paymentsEnabled: true, depositsEnabled: true, isSuper: false });
+  const ops = tree.find(function (n) { return n.group === 'operations'; });
+  assert.ok(ops);
+  const childRoutes = (ops.children || []).map(function (c) { return c.route; });
+  assert.ok(childRoutes.indexOf('pickup-day') >= 0);
+  assert.ok(childRoutes.indexOf('supply') >= 0);
+  assert.ok(childRoutes.indexOf('calendar') >= 0);
+  assert.equal(nav.parentGroupForRoute('pickup-day'), 'operations');
+  assert.equal(nav.parentGroupForRoute('supply'), 'operations');
+});
+
+test('top-level routes for products and customers', function () {
   const tree = nav.flattenVisibleTree({ paymentsEnabled: true, depositsEnabled: true, isSuper: false });
   const routes = tree.filter(function (n) { return n.route; }).map(function (n) { return n.route; });
   assert.ok(routes.indexOf('products') >= 0);
   assert.ok(routes.indexOf('customers') >= 0);
-  assert.ok(routes.indexOf('calendar') >= 0);
-  assert.ok(routes.indexOf('supply') >= 0);
 });
 
 test('settings group includes messaging and abandoned carts', function () {

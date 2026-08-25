@@ -330,6 +330,9 @@ create table if not exists order_orders (
   -- Notes
   customer_notes          text,
   internal_notes          text,
+  -- Operations flags (Pickup Day View / run sheets / labels)
+  is_important            boolean not null default false,
+  important_meta          jsonb not null default '{}'::jsonb,
   -- Payment rule snapshot
   payment_rule_snapshot   jsonb not null default '{}'::jsonb,
   -- Meta
