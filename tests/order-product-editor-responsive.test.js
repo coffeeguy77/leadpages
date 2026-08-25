@@ -88,7 +88,13 @@ test('orders.html wires shared ProductEditor shells', function () {
 
 test('existing product admin markers remain', function () {
   const html = fs.readFileSync(path.join(__dirname, '..', 'orders.html'), 'utf8');
+  const css = fs.readFileSync(path.join(__dirname, '..', 'assets/lp-order-product-editor.css'), 'utf8');
   assert.match(html, /id="prod-extra-cats"/);
+  assert.match(html, /lpe-cat-grid/);
+  assert.match(html, /lpe-cat-tile/);
+  assert.match(css, /\.lpe-cat-tile/);
+  assert.match(css, /lpe-extra-cats/);
+  assert.doesNotMatch(html, /id="prod-cat-search"/);
   assert.match(html, /id="prod-min-kg"/);
   assert.match(html, /id="prod-auto-cat"/);
   assert.match(html, /id="prod-migrate-weight"/);
