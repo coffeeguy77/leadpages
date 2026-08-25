@@ -537,9 +537,16 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
         <p class="label">Current order</p>
         <div id="no-nav-current-body"><span class="muted">No customer selected</span><br><span class="muted">0 items</span><br><span class="muted">Pickup not selected</span></div>
       </div>
-      <h4>Order cart</h4>
-      <p class="side-order-cart-empty" id="no-staff-cart-empty">No items yet.</p>
-      <div class="side-order-cart-list" id="no-staff-cart-list"></div>
+      <div class="no-mini-cart-head">
+        <h4 id="no-mini-cart-title">Order cart · 0</h4>
+        <button type="button" class="btn ghost no-mini-collapse" id="no-mini-collapse" aria-expanded="true" aria-controls="no-mini-cart-body" hidden>View current order</button>
+      </div>
+      <div id="no-mini-cart-body">
+        <p class="side-order-cart-empty" id="no-staff-cart-empty">No items yet.</p>
+        <div class="side-order-cart-list" id="no-staff-cart-list"></div>
+        <p class="no-mini-more hide" id="no-mini-more"></p>
+        <button class="btn ghost no-mini-view-pay" type="button" id="no-mini-view-pay" data-no-goto="payment">View Cart &amp; Payment</button>
+      </div>
     </div>
     <div class="side-foot">
       <div class="side-actions">
@@ -609,17 +616,11 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
         </div>
       </section>
 
-      <!-- New order — Products / Customer & Pickup / Payment & Review -->
+      <!-- New order — full-width steps; tabs only in embedded/mobile -->
       <section class="view" id="view-new" data-view="new">
-        <div class="card">
-          <div class="card-head" style="align-items:flex-end">
-            <div>
-              <h3 style="margin:0">New Order</h3>
-              <p class="no-draft-status" id="no-draft-status">Draft ready</p>
-            </div>
-          </div>
+        <div class="card no-card">
           <div class="no-workspace no-mode-fullscreen" id="no-workspace">
-            <div class="no-workflow-tabs" role="tablist" aria-label="New order steps">
+            <div class="no-workflow-tabs" id="no-workflow-tabs" role="tablist" aria-label="New order steps" hidden>
               <button type="button" class="no-workflow-tab on" role="tab" aria-selected="true" data-no-step="products" id="no-tab-products">
                 <strong>Products</strong><span id="no-tab-products-meta">Add items</span>
               </button>
@@ -627,127 +628,150 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
                 <strong>Customer &amp; Pickup</strong><span id="no-tab-customer-meta">Required</span>
               </button>
               <button type="button" class="no-workflow-tab" role="tab" aria-selected="false" data-no-step="payment" id="no-tab-payment">
-                <strong>Payment &amp; Review</strong><span id="no-tab-payment-meta">Not selected</span>
+                <strong>Cart &amp; Payment</strong><span id="no-tab-payment-meta">Not selected</span>
               </button>
             </div>
+
+            <div class="no-context-bar" id="no-context-bar" aria-live="polite">
+              <div class="no-context-main">
+                <strong id="no-context-customer">No customer selected</strong>
+                <span class="meta" id="no-context-pickup">Pickup not selected</span>
+                <span class="meta" id="no-context-items">0 items</span>
+                <span class="no-draft-status" id="no-draft-status">Draft ready</span>
+              </div>
+              <div class="no-context-actions actions-row">
+                <button class="btn ghost" type="button" id="no-find-customer">Select customer</button>
+                <button class="btn ghost" type="button" id="no-context-pickup-btn" data-no-goto="customer">Choose pickup</button>
+                <button class="btn solid" type="button" data-no-goto="payment">Cart &amp; Payment</button>
+              </div>
+            </div>
+
             <form id="new-order-form">
-              <div class="no-body">
-                <div class="no-main">
-                  <div class="no-step on" data-no-panel="products" id="no-step-products" role="tabpanel">
-                    <div class="no-products-col">
-                      <label class="field" style="margin:0 0 10px"><span class="field-hint">Search products</span>
+              <div class="no-main">
+                <div class="no-step on" data-no-panel="products" id="no-step-products" role="tabpanel">
+                  <div class="no-products-col">
+                    <div class="no-prod-toolbar">
+                      <label class="field no-prod-search-field" style="margin:0"><span class="field-hint">Search products</span>
                         <input id="no-prod-search" type="search" placeholder="Search products by name…" autocomplete="off">
                       </label>
-                      <div id="no-cat-pills" class="no-cat-pills"></div>
-                      <div id="no-traditional-wrap">
-                        <div id="no-product-grid" class="no-product-grid"></div>
-                        <div id="no-lines" class="hide" aria-hidden="true"></div>
-                        <div class="actions-row hide" id="no-add-line-wrap">
-                          <button class="btn ghost" type="button" id="no-add-line">Add product</button>
-                        </div>
-                      </div>
-                      <div id="no-fast-wrap" class="hide">
-                        <p class="sub" style="margin-top:0">Enter qty or weight, then tap <strong>Add</strong>. Changing category only filters products — your cart stays put.</p>
-                        <div id="no-fast-list" class="no-fast-list"></div>
+                      <button class="btn ghost no-emb-cart-chip" type="button" id="no-emb-cart-chip" data-no-goto="payment" hidden>
+                        Cart · <span id="no-emb-cart-count">0 items</span>
+                      </button>
+                    </div>
+                    <div id="no-cat-pills" class="no-cat-pills"></div>
+                    <div id="no-traditional-wrap">
+                      <div id="no-product-grid" class="no-product-grid"></div>
+                      <div id="no-lines" class="hide" aria-hidden="true"></div>
+                      <div class="actions-row hide" id="no-add-line-wrap">
+                        <button class="btn ghost" type="button" id="no-add-line">Add product</button>
                       </div>
                     </div>
-                  </div>
-
-                  <div class="no-step" data-no-panel="customer" id="no-step-customer" role="tabpanel" hidden>
-                    <div class="no-editor-col">
-                      <h4 class="section-title" style="margin-top:0">Customer</h4>
-                      <div class="no-cust-mode" role="radiogroup" aria-label="Customer type">
-                        <label><input type="radio" name="no-cust-mode" value="new" checked> New customer</label>
-                        <label><input type="radio" name="no-cust-mode" value="existing"> Existing customer</label>
-                      </div>
-                      <div id="no-cust-existing" class="no-cust-search-wrap hide">
-                        <div class="field full" style="margin-bottom:0">
-                          <label for="no-cust-search">Search by name, mobile or email</label>
-                          <input id="no-cust-search" type="search" autocomplete="off" placeholder="Start typing a name or mobile number…">
-                          <ul id="no-cust-results" class="prod-combo-list hide" role="listbox"></ul>
-                        </div>
-                      </div>
-                      <div class="grid2" id="no-cust-fields">
-                        <div class="field"><label for="no-name">Customer name *</label><input id="no-name" required></div>
-                        <div class="field"><label for="no-phone">Phone *</label><input id="no-phone" type="tel" required inputmode="tel" autocomplete="tel" placeholder="04xx xxx xxx"></div>
-                        <div class="field"><label for="no-email">Email</label><input id="no-email" type="email"></div>
-                        <div class="field" id="no-pickup-wrap">
-                          <label for="no-pickup">Pickup date</label>
-                          <select id="no-pickup-select" class="hide"></select>
-                          <input id="no-pickup" type="date">
-                          <p class="no-pickup-display hide" id="no-pickup-display" aria-live="polite"></p>
-                          <span class="field-hint" id="no-pickup-hint">Uses schedule windows when configured.</span>
-                        </div>
-                      </div>
-                      <div class="field full"><label for="no-notes">Customer notes</label>
-                        <textarea id="no-notes" class="notes-grow" rows="1" placeholder="Optional order notes"></textarea>
-                      </div>
-                      <div class="actions-row">
-                        <button class="btn solid" type="button" data-no-goto="payment">Continue to Payment →</button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="no-step" data-no-panel="payment" id="no-step-payment" role="tabpanel" hidden>
-                    <div class="pay-on-create">
-                      <h4 class="section-title" style="margin-top:0">Payment &amp; Review</h4>
-                      <p class="notice" style="margin-top:0">Review the cart and customer, then choose how the deposit is handled.</p>
-                      <div id="no-review-summary" class="notice" aria-live="polite"></div>
-                      <label><input type="radio" name="no-pay-action" value="send_invoice_link"> Send invoice link (SMS payment link to customer)</label>
-                      <label><input type="radio" name="no-pay-action" value="inhouse_payment"> In-house payment (deposit received now)</label>
-                      <div id="no-inhouse-panel" class="hide" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line)">
-                        <div class="field"><label for="no-inhouse-method">Payment method</label>
-                          <select id="no-inhouse-method">
-                            <option value="">Select method…</option>
-                            <option value="cash_deposit">Cash deposit</option>
-                            <option value="eftpos">EFTPOS</option>
-                            <option value="direct_deposit">Direct deposit</option>
-                            <option value="contra">Contra</option>
-                          </select>
-                        </div>
-                        <div class="field full"><label for="no-inhouse-notes">Staff notes (optional)</label>
-                          <textarea id="no-inhouse-notes" class="notes-grow" rows="1" placeholder="e.g. Paid cash at counter"></textarea>
-                        </div>
-                      </div>
-                      <div class="actions-row" style="margin-top:14px">
-                        <button class="btn solid" type="submit" id="no-submit" disabled>Create Order</button>
-                        <button class="btn ghost" type="button" id="no-save-draft">Save draft</button>
-                        <button class="btn ghost" type="button" id="no-clear-cart">Clear cart</button>
-                      </div>
-                      <p class="notice" id="no-msg"></p>
+                    <div id="no-fast-wrap" class="hide">
+                      <p class="sub" style="margin-top:0">Enter qty or weight, then tap <strong>Add</strong>. Changing category only filters products — your cart stays put.</p>
+                      <div id="no-fast-list" class="no-fast-list"></div>
                     </div>
                   </div>
                 </div>
 
-                <aside class="no-panel" id="no-order-panel" aria-label="Order summary">
-                  <div class="no-cust-summary" id="no-cust-summary">
-                    <h4>Customer &amp; Pickup</h4>
-                    <div id="no-cust-summary-body">
-                      <p class="no-cust-empty">No customer selected</p>
+                <div class="no-step" data-no-panel="customer" id="no-step-customer" role="tabpanel" hidden>
+                  <div class="no-editor-col">
+                    <h3 class="section-title" style="margin-top:0">Customer &amp; Pickup</h3>
+                    <div class="no-cust-mode" role="radiogroup" aria-label="Customer type">
+                      <label><input type="radio" name="no-cust-mode" value="new" checked> New customer</label>
+                      <label><input type="radio" name="no-cust-mode" value="existing"> Existing customer</label>
+                    </div>
+                    <div id="no-cust-existing" class="no-cust-search-wrap hide">
+                      <div class="field full" style="margin-bottom:0">
+                        <label for="no-cust-search">Search by name, mobile or email</label>
+                        <input id="no-cust-search" type="search" autocomplete="off" placeholder="Start typing a name or mobile number…">
+                        <ul id="no-cust-results" class="prod-combo-list hide" role="listbox"></ul>
+                      </div>
+                    </div>
+                    <div class="grid2" id="no-cust-fields">
+                      <div class="field"><label for="no-name">Customer name *</label><input id="no-name" required></div>
+                      <div class="field"><label for="no-phone">Phone *</label><input id="no-phone" type="tel" required inputmode="tel" autocomplete="tel" placeholder="04xx xxx xxx"></div>
+                      <div class="field"><label for="no-email">Email</label><input id="no-email" type="email"></div>
+                      <div class="field" id="no-pickup-wrap">
+                        <label for="no-pickup">Pickup date</label>
+                        <select id="no-pickup-select" class="hide"></select>
+                        <input id="no-pickup" type="date">
+                        <p class="no-pickup-display hide" id="no-pickup-display" aria-live="polite"></p>
+                        <span class="field-hint" id="no-pickup-hint">Uses schedule windows when configured.</span>
+                      </div>
+                    </div>
+                    <div class="field full"><label for="no-notes">Customer notes</label>
+                      <textarea id="no-notes" class="notes-grow" rows="1" placeholder="Optional order notes"></textarea>
                     </div>
                     <div class="actions-row">
-                      <button class="btn ghost" type="button" id="no-find-customer">Find customer</button>
-                      <button class="btn ghost" type="button" id="no-new-customer">+ New customer</button>
+                      <button class="btn solid" type="button" id="no-save-customer-pickup">Save Customer &amp; Pickup</button>
+                      <button class="btn ghost" type="button" data-no-goto="payment">Continue to Cart &amp; Payment →</button>
                     </div>
                   </div>
-                  <div class="no-order-panel-card">
-                    <h4>Order cart</h4>
-                    <p class="sub" style="margin:0 0 8px" id="no-panel-cart-count">0 items</p>
-                    <div id="no-panel-cart-list"></div>
-                    <p class="empty hide" id="no-panel-cart-empty">Cart is empty — add products.</p>
-                    <div class="actions-row" style="margin-top:10px">
-                      <button class="btn solid" type="button" id="no-continue" data-no-goto="customer">Continue →</button>
+                </div>
+
+                <div class="no-step" data-no-panel="payment" id="no-step-payment" role="tabpanel" hidden>
+                  <div class="no-cart-pay">
+                    <div class="no-cart-pay-main">
+                      <div class="toolbar" style="margin:0 0 12px;align-items:center">
+                        <h3 class="section-title" style="margin:0;flex:1">Cart &amp; Payment</h3>
+                        <button class="btn ghost" type="button" data-no-goto="products">← Products</button>
+                      </div>
+                      <div id="no-full-cart-list" class="no-full-cart-list"></div>
+                      <p class="empty hide" id="no-full-cart-empty">Cart is empty — add products first.</p>
                     </div>
+                    <aside class="no-cart-pay-side" aria-label="Review and payment">
+                      <div class="no-review-block">
+                        <h4>Customer &amp; Pickup</h4>
+                        <div id="no-review-summary" class="no-review-summary"></div>
+                        <div class="actions-row">
+                          <button class="btn ghost" type="button" data-no-goto="customer">Edit customer</button>
+                          <button class="btn ghost" type="button" id="no-new-customer" data-no-goto="customer">+ New customer</button>
+                        </div>
+                      </div>
+                      <div class="no-review-block">
+                        <h4>Order totals</h4>
+                        <div class="no-totals" id="no-pay-totals">
+                          <div><span>Items</span><strong id="no-pay-item-count">0</strong></div>
+                          <div><span>Estimated total</span><strong id="no-pay-est-total">—</strong></div>
+                        </div>
+                      </div>
+                      <div class="pay-on-create no-review-block">
+                        <h4>Payment</h4>
+                        <label><input type="radio" name="no-pay-action" value="send_invoice_link"> Send invoice / payment link</label>
+                        <label><input type="radio" name="no-pay-action" value="inhouse_payment"> In-house payment (deposit received now)</label>
+                        <div id="no-inhouse-panel" class="hide" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line)">
+                          <div class="field"><label for="no-inhouse-method">Payment method</label>
+                            <select id="no-inhouse-method">
+                              <option value="">Select method…</option>
+                              <option value="cash_deposit">Cash deposit</option>
+                              <option value="eftpos">EFTPOS</option>
+                              <option value="direct_deposit">Direct deposit</option>
+                              <option value="contra">Contra</option>
+                            </select>
+                          </div>
+                          <div class="field full"><label for="no-inhouse-notes">Staff notes (optional)</label>
+                            <textarea id="no-inhouse-notes" class="notes-grow" rows="1" placeholder="e.g. Paid cash at counter"></textarea>
+                          </div>
+                        </div>
+                        <div class="actions-row" style="margin-top:14px">
+                          <button class="btn solid" type="submit" id="no-submit" disabled>Create Order</button>
+                          <button class="btn ghost" type="button" id="no-save-draft">Save draft</button>
+                          <button class="btn ghost" type="button" id="no-clear-cart">Clear cart</button>
+                        </div>
+                        <p class="notice" id="no-msg"></p>
+                      </div>
+                    </aside>
                   </div>
-                </aside>
+                </div>
               </div>
             </form>
+
             <div class="no-mobile-bar" id="no-mobile-bar" aria-live="polite">
               <div>
                 <strong id="no-mobile-customer">No customer selected</strong>
                 <span class="meta" id="no-mobile-meta">0 items</span>
               </div>
-              <button class="btn solid" type="button" id="no-mobile-view">View Order</button>
+              <button class="btn solid" type="button" id="no-mobile-view" data-no-goto="payment">Cart &amp; Pay</button>
             </div>
             <div class="sr-only" id="no-cart-live" aria-live="polite" aria-atomic="true"></div>
           </div>
@@ -2518,6 +2542,18 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
         '<ul class="oanav-sub-list">';
       node.children.forEach(function(child){
         var on = route === child.route ? ' on' : '';
+        if (child.route === 'new') {
+          html += '<li class="oanav-new-wrap"><button type="button" class="oanav-sub-item' + on + '" data-route="new">' +
+            '<span class="oanav-sub-marker" aria-hidden="true"></span>' +
+            '<span class="oanav-label">' + esc(child.label) + '</span>' +
+            (child.badge ? navBadgeHtml(child.badge) : '') + '</button>' +
+            '<ul class="oanav-new-steps" id="no-nav-steps" aria-label="New Order steps">' +
+            '<li><button type="button" class="oanav-new-step" data-no-step="products">Add Products</button></li>' +
+            '<li><button type="button" class="oanav-new-step" data-no-step="customer">Customer &amp; Pickup</button></li>' +
+            '<li><button type="button" class="oanav-new-step" data-no-step="payment">Cart &amp; Payment</button></li>' +
+            '</ul></li>';
+          return;
+        }
         html += '<li><button type="button" class="oanav-sub-item' + on + '" data-route="' + esc(child.route) + '">' +
           '<span class="oanav-sub-marker" aria-hidden="true"></span>' +
           '<span class="oanav-label">' + esc(child.label) + '</span>' +
@@ -2532,6 +2568,16 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
         if (isMobileNav()) setNavDrawerOpen(false);
       });
     });
+    nav.querySelectorAll('.oanav-new-step[data-no-step]').forEach(function(btn){
+      btn.addEventListener('click', function(ev){
+        ev.preventDefault();
+        ev.stopPropagation();
+        if (state.currentView !== 'new') openNavRoute('new');
+        showNoStep(btn.getAttribute('data-no-step') || 'products');
+        if (isMobileNav()) setNavDrawerOpen(false);
+      });
+    });
+    syncNoNavSteps();
     nav.querySelectorAll('[data-nav-toggle]').forEach(function(btn){
       btn.addEventListener('click', function(ev){
         ev.preventDefault();
@@ -4147,94 +4193,139 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     return entries;
   }
 
+  function removeCartEntryByKey(key){
+    if (!key) return;
+    if (key.indexOf('fast:') === 0) {
+      var pid = key.slice(5);
+      if (state.noFastAdded) delete state.noFastAdded[pid];
+      if (state.noFastDrafts) delete state.noFastDrafts[pid];
+      if (isNoFastMode()) renderNoFastList();
+    } else if (key.indexOf('trad:') === 0) {
+      var idx = Number(key.slice(5));
+      var rows = $('no-lines') && $('no-lines').querySelectorAll('.line-row');
+      if (rows && rows[idx]) rows[idx].remove();
+    }
+    renderNoStaffCart();
+    updateNoSubmitEnabled();
+    scheduleNoDraftPersist();
+  }
+
   function renderNoStaffCart(){
     var list = $('no-staff-cart-list');
     var empty = $('no-staff-cart-empty');
+    var more = $('no-mini-more');
+    var title = $('no-mini-cart-title');
     var entries = collectStaffCartEntries();
-    function paintList(listEl, emptyEl, compact){
-      if (!listEl) return;
-      if (!entries.length) {
-        listEl.innerHTML = '';
-        if (emptyEl) {
-          emptyEl.classList.remove('hide');
-          emptyEl.hidden = false;
-        }
-        return;
+    var preview = entries.slice(0, 3);
+    var rest = entries.length - preview.length;
+
+    if (title) title.textContent = 'Order cart · ' + entries.length;
+    if (!entries.length) {
+      if (list) list.innerHTML = '';
+      if (empty) { empty.classList.remove('hide'); empty.hidden = false; }
+      if (more) { more.classList.add('hide'); more.textContent = ''; }
+    } else {
+      if (empty) { empty.classList.add('hide'); empty.hidden = true; }
+      if (list) {
+        list.innerHTML = preview.map(function(ent){
+          var p = ent.product;
+          var meta = staffCartLineSummary(p, ent.line);
+          return '<div class="side-order-cart-item" data-cart-key="' + esc(ent.key) + '">' +
+            '<div><strong>' + esc(p.name || 'Item') + '</strong>' +
+            (meta ? '<div class="meta">' + esc(meta) + '</div>' : '') +
+            '</div>' +
+            '<button type="button" class="btn ghost rm" data-cart-rm="' + esc(ent.key) + '" aria-label="Remove ' + esc(p.name || 'item') + '">✕</button>' +
+            '</div>';
+        }).join('');
+        list.querySelectorAll('[data-cart-rm]').forEach(function(btn){
+          btn.addEventListener('click', function(){ removeCartEntryByKey(btn.getAttribute('data-cart-rm')); });
+        });
       }
-      if (emptyEl) {
-        emptyEl.classList.add('hide');
-        emptyEl.hidden = true;
-      }
-      listEl.innerHTML = entries.map(function(ent){
-        var p = ent.product;
-        var meta = staffCartLineSummary(p, ent.line);
-        var qty = ent.line.quantity != null ? ent.line.quantity : '';
-        var kg = ent.line.requested_weight_kg != null ? ent.line.requested_weight_kg : '';
-        var controls = '';
-        if (!compact && ent.mode === 'fast') {
-          if (productNeedsWeight(p)) {
-            controls = '<label class="field" style="margin:6px 0 0"><span class="field-hint">kg</span>' +
-              '<input type="number" min="0.01" step="0.01" value="' + esc(String(kg)) + '" data-no-cart-kg="' + esc(p.id) + '"></label>';
-          } else if (productShowsQuantity(p)) {
-            controls = '<label class="field" style="margin:6px 0 0"><span class="field-hint">Qty</span>' +
-              '<input type="number" min="1" step="1" value="' + esc(String(qty || 1)) + '" data-no-cart-qty="' + esc(p.id) + '"></label>';
-          }
+      if (more) {
+        if (rest > 0) {
+          more.classList.remove('hide');
+          more.textContent = '+ ' + rest + ' more item' + (rest === 1 ? '' : 's');
+        } else {
+          more.classList.add('hide');
+          more.textContent = '';
         }
-        return '<div class="side-order-cart-item" data-cart-key="' + esc(ent.key) + '">' +
-          '<div><strong>' + esc(p.name || 'Item') + '</strong>' +
-          (meta ? '<div class="meta">' + esc(meta) + '</div>' : '') +
-          controls +
-          '</div>' +
-          '<button type="button" class="btn ghost rm" data-cart-rm="' + esc(ent.key) + '" aria-label="Remove ' + esc(p.name || 'item') + '">✕</button>' +
-          '</div>';
-      }).join('');
-      listEl.querySelectorAll('[data-cart-rm]').forEach(function(btn){
-        btn.addEventListener('click', function(){
-          var key = btn.getAttribute('data-cart-rm');
-          if (!key) return;
-          if (key.indexOf('fast:') === 0) {
-            var pid = key.slice(5);
-            if (state.noFastAdded) delete state.noFastAdded[pid];
-            if (state.noFastDrafts) delete state.noFastDrafts[pid];
-            renderNoFastList();
-          } else if (key.indexOf('trad:') === 0) {
-            var idx = Number(key.slice(5));
-            var rows = $('no-lines') && $('no-lines').querySelectorAll('.line-row');
-            if (rows && rows[idx]) rows[idx].remove();
-          }
-          renderNoStaffCart();
-          updateNoSubmitEnabled();
-          scheduleNoDraftPersist();
-        });
-      });
-      listEl.querySelectorAll('[data-no-cart-qty]').forEach(function(inp){
-        inp.addEventListener('change', function(){
-          var id = inp.getAttribute('data-no-cart-qty');
-          var d = state.noFastDrafts[id] || { qty: 1, kg: '', notes: '', answers: {} };
-          d.qty = String(Math.max(1, Number(inp.value) || 1));
-          state.noFastDrafts[id] = d;
-          state.noFastAdded[id] = true;
-          renderNoFastList();
-          scheduleNoDraftPersist();
-        });
-      });
-      listEl.querySelectorAll('[data-no-cart-kg]').forEach(function(inp){
-        inp.addEventListener('change', function(){
-          var id = inp.getAttribute('data-no-cart-kg');
-          var d = state.noFastDrafts[id] || { qty: 1, kg: '', notes: '', answers: {} };
-          d.kg = String(inp.value || '');
-          state.noFastDrafts[id] = d;
-          state.noFastAdded[id] = true;
-          renderNoFastList();
-          scheduleNoDraftPersist();
-        });
-      });
+      }
     }
-    paintList(list, empty, true);
-    paintList($('no-panel-cart-list'), $('no-panel-cart-empty'), false);
-    var countLabel = entries.length + ' item' + (entries.length === 1 ? '' : 's');
-    if ($('no-panel-cart-count')) $('no-panel-cart-count').textContent = countLabel;
+    renderNoFullCart(entries);
     syncNoOrderSurfaces();
+  }
+
+  function renderNoFullCart(entries){
+    entries = entries || collectStaffCartEntries();
+    var list = $('no-full-cart-list');
+    var empty = $('no-full-cart-empty');
+    if (!list) return;
+    if (!entries.length) {
+      list.innerHTML = '';
+      if (empty) empty.classList.remove('hide');
+      return;
+    }
+    if (empty) empty.classList.add('hide');
+    list.innerHTML = entries.map(function(ent){
+      var p = ent.product;
+      var meta = staffCartLineSummary(p, ent.line);
+      var qty = ent.line.quantity != null ? ent.line.quantity : '';
+      var kg = ent.line.requested_weight_kg != null ? ent.line.requested_weight_kg : '';
+      var note = ent.line.notes || '';
+      var controls = '';
+      if (ent.mode === 'fast') {
+        if (productNeedsWeight(p)) {
+          controls += '<label class="field"><span class="field-hint">kg</span>' +
+            '<input type="number" min="0.01" step="0.01" value="' + esc(String(kg)) + '" data-no-cart-kg="' + esc(p.id) + '"></label>';
+        } else if (productShowsQuantity(p)) {
+          controls += '<label class="field"><span class="field-hint">Qty</span>' +
+            '<input type="number" min="1" step="1" value="' + esc(String(qty || 1)) + '" data-no-cart-qty="' + esc(p.id) + '"></label>';
+        }
+        controls += '<label class="field" style="flex:1 1 140px"><span class="field-hint">Note</span>' +
+          '<input type="text" value="' + esc(note) + '" data-no-cart-note="' + esc(p.id) + '" placeholder="Optional"></label>';
+      }
+      return '<div class="no-full-cart-item" data-cart-key="' + esc(ent.key) + '">' +
+        '<div><strong>' + esc(p.name || 'Item') + '</strong>' +
+        (meta ? '<div class="meta">' + esc(meta) + '</div>' : '') +
+        '<div class="no-full-cart-controls">' + controls + '</div></div>' +
+        '<button type="button" class="btn ghost" data-cart-rm="' + esc(ent.key) + '" aria-label="Remove">Remove</button></div>';
+    }).join('');
+    list.querySelectorAll('[data-cart-rm]').forEach(function(btn){
+      btn.addEventListener('click', function(){ removeCartEntryByKey(btn.getAttribute('data-cart-rm')); });
+    });
+    list.querySelectorAll('[data-no-cart-qty]').forEach(function(inp){
+      inp.addEventListener('change', function(){
+        var id = inp.getAttribute('data-no-cart-qty');
+        var d = state.noFastDrafts[id] || { qty: 1, kg: '', notes: '', answers: {} };
+        d.qty = String(Math.max(1, Number(inp.value) || 1));
+        state.noFastDrafts[id] = d;
+        state.noFastAdded[id] = true;
+        renderNoFastList();
+        scheduleNoDraftPersist();
+      });
+    });
+    list.querySelectorAll('[data-no-cart-kg]').forEach(function(inp){
+      inp.addEventListener('change', function(){
+        var id = inp.getAttribute('data-no-cart-kg');
+        var d = state.noFastDrafts[id] || { qty: 1, kg: '', notes: '', answers: {} };
+        d.kg = String(inp.value || '');
+        state.noFastDrafts[id] = d;
+        state.noFastAdded[id] = true;
+        renderNoFastList();
+        scheduleNoDraftPersist();
+      });
+    });
+    list.querySelectorAll('[data-no-cart-note]').forEach(function(inp){
+      inp.addEventListener('change', function(){
+        var id = inp.getAttribute('data-no-cart-note');
+        var d = state.noFastDrafts[id] || { qty: 1, kg: '', notes: '', answers: {} };
+        d.notes = String(inp.value || '').trim();
+        state.noFastDrafts[id] = d;
+        state.noFastAdded[id] = true;
+        scheduleNoDraftPersist();
+        renderNoStaffCart();
+      });
+    });
   }
 
   function draftApi(){
@@ -4345,19 +4436,29 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     setNoDraftStatus('Draft restored', 'ok');
   }
 
+  function noPickupLabel(){
+    var pickup = (($('no-pickup') && $('no-pickup').value) || '').trim();
+    var sel = $('no-pickup-select');
+    if (sel && !sel.classList.contains('hide') && sel.value && sel.selectedIndex > 0) {
+      return sel.options[sel.selectedIndex].textContent || pickup;
+    }
+    if (pickup) return formatPickupDateLong(pickup);
+    return '';
+  }
+
+  function syncNoNavSteps(){
+    var step = state.noCurrentStep || 'products';
+    document.querySelectorAll('.oanav-new-step').forEach(function(btn){
+      btn.classList.toggle('on', btn.getAttribute('data-no-step') === step);
+    });
+  }
+
   function syncNoOrderSurfaces(){
     var entries = collectStaffCartEntries();
     var name = (($('no-name') && $('no-name').value) || '').trim();
     var phone = (($('no-phone') && $('no-phone').value) || '').trim();
     var email = (($('no-email') && $('no-email').value) || '').trim();
-    var pickup = (($('no-pickup') && $('no-pickup').value) || '').trim();
-    var pickupLabel = '';
-    var sel = $('no-pickup-select');
-    if (sel && !sel.classList.contains('hide') && sel.value && sel.selectedIndex > 0) {
-      pickupLabel = sel.options[sel.selectedIndex].textContent || pickup;
-    } else if (pickup) {
-      pickupLabel = formatPickupDateLong(pickup);
-    }
+    var pickupLabel = noPickupLabel();
     var payEl = document.querySelector('input[name="no-pay-action"]:checked');
     var api = draftApi();
     var hints = api && api.stepCompleteness
@@ -4368,41 +4469,19 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
       : {
           products: entries.length ? (entries.length + ' item' + (entries.length === 1 ? '' : 's')) : 'Add items',
           customer: name || 'Required',
-          payment: payEl ? 'Selected' : 'Not selected'
+          payment: payEl ? 'Selected' : 'Review'
         };
     if ($('no-tab-products-meta')) $('no-tab-products-meta').textContent = hints.products;
     if ($('no-tab-customer-meta')) $('no-tab-customer-meta').textContent = hints.customer;
     if ($('no-tab-payment-meta')) $('no-tab-payment-meta').textContent = hints.payment;
 
-    var body = $('no-cust-summary-body');
-    if (body) {
-      if (!name) {
-        body.innerHTML = '<p class="no-cust-empty">No customer selected</p>' +
-          (pickupLabel ? '' : '<p class="no-cust-meta" style="margin-top:8px">Pickup not selected</p>') +
-          (pickupLabel ? '<p class="no-cust-meta" style="margin-top:8px"><strong>Pickup</strong><br>' + esc(pickupLabel) + '</p>' : '');
-      } else {
-        body.innerHTML = '<p class="no-cust-name">' + esc(name) + '</p>' +
-          '<p class="no-cust-meta">' + (state.noSelectedCustomerId ? 'Existing customer' : 'New customer') + '</p>' +
-          '<p class="no-cust-meta">' + esc(phone || '—') + '</p>' +
-          '<p class="no-cust-meta">' + esc(email || '—') + '</p>' +
-          '<div class="actions-row" style="margin-top:8px">' +
-          '<button class="btn ghost" type="button" data-no-goto="customer">Edit</button>' +
-          '<button class="btn ghost" type="button" id="no-change-customer">Change</button></div>' +
-          '<p class="no-cust-meta" style="margin-top:10px"><strong>Pickup</strong></p>' +
-          (pickupLabel
-            ? '<p class="no-cust-name" style="font-size:13px">' + esc(pickupLabel) + '</p><button class="btn ghost" type="button" data-no-goto="customer" style="margin-top:6px">Edit</button>'
-            : '<p class="no-cust-empty">Pickup not selected</p><button class="btn ghost" type="button" data-no-goto="customer" style="margin-top:6px">Choose pickup</button>');
-        var changeBtn = $('no-change-customer');
-        if (changeBtn) {
-          changeBtn.addEventListener('click', function(){
-            state.noCustomerMode = 'existing';
-            applyNoCustomerMode();
-            showNoStep('customer');
-            if ($('no-cust-search')) $('no-cust-search').focus();
-          });
-        }
-      }
-    }
+    if ($('no-context-customer')) $('no-context-customer').textContent = name || 'No customer selected';
+    if ($('no-context-pickup')) $('no-context-pickup').textContent = pickupLabel ? ('Pickup: ' + pickupLabel) : 'Pickup not selected';
+    if ($('no-context-items')) $('no-context-items').textContent = entries.length + ' item' + (entries.length === 1 ? '' : 's');
+    var findBtn = $('no-find-customer');
+    if (findBtn) findBtn.textContent = name ? 'Change customer' : 'Select customer';
+    var pickBtn = $('no-context-pickup-btn');
+    if (pickBtn) pickBtn.textContent = pickupLabel ? 'Edit pickup' : 'Choose pickup';
 
     var navBody = $('no-nav-current-body');
     if (navBody) {
@@ -4411,30 +4490,24 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
         esc(pickupLabel || 'Pickup not selected');
     }
 
-    if ($('no-mobile-customer')) $('no-mobile-customer').textContent = name || 'No customer selected';
+    if ($('no-mobile-customer')) {
+      $('no-mobile-customer').textContent = name
+        ? (name + (pickupLabel ? ' · ' + pickupLabel : ''))
+        : (entries.length ? 'Customer and pickup required' : 'No customer selected');
+    }
     if ($('no-mobile-meta')) $('no-mobile-meta').textContent = entries.length + ' item' + (entries.length === 1 ? '' : 's');
+    if ($('no-emb-cart-count')) $('no-emb-cart-count').textContent = entries.length + ' item' + (entries.length === 1 ? '' : 's');
+    if ($('no-pay-item-count')) $('no-pay-item-count').textContent = String(entries.length);
+    if ($('no-pay-est-total')) $('no-pay-est-total').textContent = entries.length ? 'See lines' : '—';
 
     var review = $('no-review-summary');
     if (review) {
-      review.innerHTML = '<strong>' + esc(name || 'No customer') + '</strong> · ' +
-        esc(entries.length + ' item' + (entries.length === 1 ? '' : 's')) +
-        (pickupLabel ? ' · ' + esc(pickupLabel) : '');
+      review.innerHTML = '<strong>' + esc(name || 'No customer selected') + '</strong><br>' +
+        esc(phone || '—') + (email ? ' · ' + esc(email) : '') + '<br>' +
+        esc(pickupLabel || 'Pickup not selected');
     }
 
-    var cont = $('no-continue');
-    if (cont) {
-      if (state.noCurrentStep === 'products') {
-        cont.setAttribute('data-no-goto', 'customer');
-        cont.textContent = 'Continue to Customer →';
-      } else if (state.noCurrentStep === 'customer') {
-        cont.setAttribute('data-no-goto', 'payment');
-        cont.textContent = 'Continue to Payment →';
-      } else {
-        cont.setAttribute('data-no-goto', 'payment');
-        cont.textContent = 'Review payment';
-      }
-    }
-
+    syncNoNavSteps();
     document.querySelectorAll('[data-no-goto]').forEach(function(btn){
       if (btn._noGotoWired) return;
       btn._noGotoWired = true;
@@ -4465,8 +4538,13 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
       if (on) panel.removeAttribute('hidden');
       else panel.setAttribute('hidden', 'hidden');
     });
+    if (step === 'payment') renderNoFullCart();
     syncNoOrderSurfaces();
     scheduleNoDraftPersist();
+    var titles = { products: 'Add Products', customer: 'Customer & Pickup', payment: 'Cart & Payment' };
+    if (state.currentView === 'new' && $('panel-title')) {
+      $('panel-title').textContent = titles[step] || 'New Order';
+    }
   }
 
   function resolveNoDisplayMode(width){
@@ -4485,6 +4563,12 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     state.noDisplayMode = mode;
     ws.classList.remove('no-mode-fullscreen', 'no-mode-embedded', 'no-mode-mobile');
     ws.classList.add('no-mode-' + mode);
+    document.body.setAttribute('data-no-mode', mode);
+    var tabs = $('no-workflow-tabs');
+    if (tabs) {
+      if (mode === 'fullscreen') tabs.setAttribute('hidden', 'hidden');
+      else tabs.removeAttribute('hidden');
+    }
     return mode;
   }
 
@@ -4509,22 +4593,8 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
   }
 
   function openNoMobileSheet(){
-    var sheet = $('no-mobile-sheet');
-    var body = $('no-sheet-body');
-    if (!sheet || !body) return;
-    var entries = collectStaffCartEntries();
-    var name = (($('no-name') && $('no-name').value) || '').trim();
-    body.innerHTML = ($('no-cust-summary') ? $('no-cust-summary').innerHTML : '') +
-      '<div class="no-order-panel-card" style="margin-top:12px"><h4>Cart · ' + entries.length + '</h4>' +
-      (entries.length
-        ? entries.map(function(e){ return '<div class="side-order-cart-item"><div><strong>' + esc(e.product.name) + '</strong><div class="meta">' + esc(staffCartLineSummary(e.product, e.line)) + '</div></div></div>'; }).join('')
-        : '<p class="empty">Cart is empty</p>') +
-      '</div>' +
-      '<div class="actions-row" style="margin-top:12px">' +
-      '<button class="btn solid" type="button" data-no-goto="customer">Continue</button>' +
-      '<button class="btn ghost" type="button" id="no-sheet-goto-pay" data-no-goto="payment">Payment</button></div>';
-    sheet.classList.remove('hide');
-    syncNoOrderSurfaces();
+    showNoStep('payment');
+    closeNoMobileSheet();
   }
 
   function closeNoMobileSheet(){
@@ -4582,6 +4652,12 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
         if ($('no-name')) $('no-name').focus();
       });
     }
+    if ($('no-save-customer-pickup')) {
+      $('no-save-customer-pickup').addEventListener('click', function(){
+        if (persistNoDraftNow()) toast('Customer & pickup saved', 'ok');
+        syncNoOrderSurfaces();
+      });
+    }
     if ($('no-save-draft')) {
       $('no-save-draft').addEventListener('click', function(){
         if (persistNoDraftNow()) toast('Draft saved', 'ok');
@@ -4589,11 +4665,18 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
       });
     }
     if ($('no-clear-cart')) $('no-clear-cart').addEventListener('click', clearNoCartWithConfirm);
-    if ($('no-mobile-view')) $('no-mobile-view').addEventListener('click', openNoMobileSheet);
     if ($('no-sheet-close')) $('no-sheet-close').addEventListener('click', closeNoMobileSheet);
     if ($('no-mobile-sheet')) {
       $('no-mobile-sheet').addEventListener('click', function(ev){
         if (ev.target === $('no-mobile-sheet')) closeNoMobileSheet();
+      });
+    }
+    if ($('no-mini-collapse')) {
+      $('no-mini-collapse').addEventListener('click', function(){
+        var cart = $('side-order-cart');
+        if (!cart) return;
+        var collapsed = cart.classList.toggle('is-collapsed');
+        $('no-mini-collapse').setAttribute('aria-expanded', collapsed ? 'false' : 'true');
       });
     }
     ['no-name', 'no-phone', 'no-email', 'no-notes'].forEach(function(id){
