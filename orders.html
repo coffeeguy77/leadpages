@@ -1035,6 +1035,14 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
           </div>
           <p class="sub" id="pd-heading">Operational dashboard for a single pickup day — group by time window, open orders, print run sheets.</p>
           <div class="notice hide" id="pd-print-status" style="margin:0 0 12px"></div>
+          <div class="toolbar" id="pd-filters" style="flex-wrap:wrap;gap:6px;margin:0 0 10px">
+            <button type="button" class="btn ghost on" data-pd-filter="all">All</button>
+            <button type="button" class="btn ghost" data-pd-filter="exceptions">Exceptions</button>
+            <button type="button" class="btn ghost" data-pd-filter="important">Important</button>
+            <button type="button" class="btn ghost" data-pd-filter="notes">Notes</button>
+            <button type="button" class="btn ghost" data-pd-filter="unpaid">Unpaid</button>
+            <button type="button" class="btn ghost" data-pd-filter="price_tbc">Price TBC</button>
+          </div>
           <div class="kpis" id="pd-kpis"></div>
           <div id="pd-groups"></div>
           <p class="empty hide" id="pd-empty">No orders for this pickup date.</p>
@@ -5388,7 +5396,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
         '</tr>';
       }).join('');
       var snap = await loadPrintSnapshotStatus(date, ['prep', 'pick_list', 'day_run', 'allocation', 'label', 'item_labels']);
-      renderPrintStatusBanner($('supply-print-status'), snap && snap.formats, ['prep', 'day_run', 'allocation']);
+      renderPrintStatusBanner($('supply-print-status'), snap && snap.formats, ['prep', 'procurement', 'day_run', 'allocation']);
     } catch (e) {
       tbody.innerHTML = '<tr><td colspan="5">' + esc((e && e.message) || e) + '</td></tr>';
       toast((e && e.message) || String(e), 'err');
@@ -6471,7 +6479,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     } catch (_e) {}
   }
 
-  var PRINT_SNAPSHOT_FORMATS = ['day_run', 'prep', 'pick_list', 'allocation', 'label', 'item_labels'];
+  var PRINT_SNAPSHOT_FORMATS = ['day_run', 'prep', 'procurement', 'pick_list', 'allocation', 'label', 'item_labels', 'exceptions'];
 
   function formatPrintAgo(iso){
     if (!iso) return '';
@@ -6819,7 +6827,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
         });
       });
       var snap = await loadPrintSnapshotStatus(date, ['day_run', 'label', 'pick_list']);
-      renderPrintStatusBanner($('pd-print-status'), snap && snap.formats, ['day_run', 'label']);
+      renderPrintStatusBanner($('pd-print-status'), snap && snap.formats, ['day_run', 'exceptions', 'label']);
     } catch (e) {
       groupsEl.innerHTML = '<p class="notice">' + esc((e && e.message) || e) + '</p>';
     }
