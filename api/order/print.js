@@ -151,12 +151,12 @@ module.exports = async function (req, res) {
       );
     }
 
-    if (fmt === 'prep' || fmt === 'allocation' || fmt === 'day_run' || fmt === 'pick_list') {
+    if (fmt === 'prep' || fmt === 'procurement' || fmt === 'allocation' || fmt === 'day_run' || fmt === 'pick_list' || fmt === 'exceptions') {
       if (!pickupDate) {
         return sendHtml(res, 400, buildPrintDocument({ format: 'slip', business: business, order: { order_number: 'pickup_date required' }, items: [] }));
       }
       const orders = await loadOrdersForDate(admin, system.id, siteId, pickupDate);
-      if (fmt === 'prep' || fmt === 'allocation') {
+      if (fmt === 'prep' || fmt === 'procurement' || fmt === 'allocation') {
         const supply = await supplyForDate(system.id, siteId, pickupDate);
         let known = 0;
         let deposits = 0;

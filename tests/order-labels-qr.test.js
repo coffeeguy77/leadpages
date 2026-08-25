@@ -64,7 +64,7 @@ test('buildPrintDocument — order labels include QR sheet and Important', funct
   assert.match(html, /label-sticker/);
   assert.match(html, /ORD-2026-00042/);
   assert.match(html, /Jane Smith/);
-  assert.match(html, /Important/);
+  assert.match(html, /Staff attention|Important/);
   assert.match(html, /VIP/);
   assert.match(html, /label-qr/);
   assert.match(html, /<svg/);

@@ -855,6 +855,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
             <button class="btn ghost" type="button" id="supply-print-run">All orders (packing slips)</button>
             <button class="btn ghost" type="button" id="supply-print-pick">Pick list (one page)</button>
             <button class="btn ghost" type="button" id="supply-print-prep">Prep summary</button>
+            <button class="btn ghost" type="button" id="supply-print-buy">Procurement checklist</button>
             <button class="btn ghost" type="button" id="supply-print-alloc">Allocation checklist</button>
             <button class="btn ghost" type="button" id="supply-print-labels">Order labels</button>
             <button class="btn ghost" type="button" id="supply-print-item-labels">Item stickers</button>
@@ -1028,6 +1029,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
             <input id="pd-date" type="date">
             <button class="btn solid" type="button" id="pd-load">Load day</button>
             <button class="btn ghost" type="button" id="pd-print-run">Print run sheet</button>
+            <button class="btn ghost" type="button" id="pd-print-exceptions">Print exceptions</button>
             <button class="btn ghost" type="button" id="pd-print-labels">Print labels</button>
             <button class="btn ghost" type="button" id="pd-goto-prod">Production Summary</button>
           </div>
@@ -1665,7 +1667,9 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     catalogWarmPromise: null,
     dashDataCache: null,
     dashDataCacheAt: 0,
-    noCopyPrefill: null
+    noCopyPrefill: null,
+    pdFilter: 'all',
+    pdOrders: []
   };
 
   var CATALOG_CACHE_TTL_MS = 5 * 60 * 1000;
@@ -3051,6 +3055,42 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     html += '<div class="field"><label>Pickup date</label><input id="om-pickup" type="date" value="' + esc(o.pickup_date || '') + '"></div>';
     html += '</div>';
     html += '<div class="field full"><label>Customer notes</label><textarea id="om-cust-notes" class="notes-grow" rows="1">' + esc(o.customer_notes || '') + '</textarea></div>';
+    html += '<div class="card" style="margin:12px 0;padding:12px;border:1px solid var(--line,#e4e0d8);border-radius:10px;background:var(--card,#fffcf7)">';
+    html += '<div class="toolbar" style="margin:0 0 8px;flex-wrap:wrap;gap:8px"><strong style="flex:1">Importance</strong>';
+    html += '<label style="display:inline-flex;align-items:center;gap:6px;margin:0;font-weight:600"><input type="checkbox" id="om-important"' +
+      (o.is_important ? ' checked' : '') + '> Mark important</label></div>';
+    var im = o.important_meta && typeof o.important_meta === 'object' ? o.important_meta : {};
+    html += '<div class="grid2">';
+    html += '<div class="field"><label for="om-imp-type">Type</label><select id="om-imp-type">';
+    [
+      ['staff_attention', 'Staff attention'],
+      ['vip', 'VIP'],
+      ['allergy', 'Allergy / dietary'],
+      ['special_request', 'Special request'],
+      ['fragile', 'Fragile / handle with care'],
+      ['other', 'Other']
+    ].forEach(function(opt){
+      html += '<option value="' + opt[0] + '"' + ((im.type || 'staff_attention') === opt[0] ? ' selected' : '') + '>' + opt[1] + '</option>';
+    });
+    html += '</select></div>';
+    html += '<div class="field"><label for="om-imp-colour">Colour</label><select id="om-imp-colour">';
+    [
+      ['amber', 'Amber'],
+      ['red', 'Red'],
+      ['blue', 'Blue'],
+      ['green', 'Green'],
+      ['purple', 'Purple']
+    ].forEach(function(opt){
+      html += '<option value="' + opt[0] + '"' + ((im.colour || 'amber') === opt[0] ? ' selected' : '') + '>' + opt[1] + '</option>';
+    });
+    html += '</select></div>';
+    html += '<div class="field" style="grid-column:1/-1"><label for="om-imp-reason">Reason</label>';
+    html += '<input id="om-imp-reason" maxlength="120" placeholder="e.g. nut allergy — keep separate" value="' + esc(im.reason || '') + '"></div>';
+    html += '<div class="field"><label for="om-imp-labels">Show on labels</label>';
+    html += '<select id="om-imp-labels"><option value="1"' + (im.show_on_labels === false ? '' : ' selected') + '>Yes</option>';
+    html += '<option value="0"' + (im.show_on_labels === false ? ' selected' : '') + '>No</option></select></div>';
+    html += '<div class="field" style="display:flex;align-items:flex-end"><button class="btn solid" type="button" id="om-save-important">Save importance</button></div>';
+    html += '</div></div>';
     html += '<p class="notice" style="margin:8px 0"><strong>Status:</strong> ' + statusBadge(o.status) +
       ' · Known: ' + esc(display.known_subtotal || formatAud(o.known_subtotal_cents)) +
       ' · Deposit: ' + esc(display.deposit_paid || formatAud(o.deposit_paid_cents)) +
@@ -3233,6 +3273,18 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
         toast('Staff notes saved', 'ok');
       } catch (e) { toast((e && e.message) || String(e), 'err'); }
       saveNotes.disabled = false;
+    });
+    var saveImp = $('om-save-important');
+    if (saveImp) saveImp.addEventListener('click', async function(){
+      saveImp.disabled = true;
+      try {
+        await saveOrderImportance(o);
+        toast('Importance saved', 'ok');
+        await openOrderDetail(o.id);
+      } catch (e) {
+        toast((e && e.message) || String(e), 'err');
+        saveImp.disabled = false;
+      }
     });
 
     var foot = '';
@@ -3432,6 +3484,30 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     toast(note, 'ok');
   }
 
+  async function saveOrderImportance(order){
+    if (!order || !order.id) return;
+    var marked = $('om-important') ? !!$('om-important').checked : !!order.is_important;
+    var prev = order.important_meta && typeof order.important_meta === 'object' ? order.important_meta : {};
+    var meta = Object.assign({}, prev, {
+      type: $('om-imp-type') ? $('om-imp-type').value : (prev.type || 'staff_attention'),
+      colour: $('om-imp-colour') ? $('om-imp-colour').value : (prev.colour || 'amber'),
+      reason: $('om-imp-reason') ? String($('om-imp-reason').value || '').trim().slice(0, 120) : (prev.reason || ''),
+      show_on_labels: $('om-imp-labels') ? $('om-imp-labels').value !== '0' : prev.show_on_labels !== false
+    });
+    if (marked) {
+      meta.marked_at = meta.marked_at || new Date().toISOString();
+    }
+    await api('/api/order/orders', {
+      method: 'PATCH',
+      body: {
+        site_id: state.siteId,
+        id: order.id,
+        is_important: marked,
+        important_meta: meta
+      }
+    });
+  }
+
   async function toggleOrderImportant(order, btn){
     if (!order || !order.id) return;
     var next = !order.is_important;
@@ -3441,6 +3517,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
       if (next) {
         meta = Object.assign({}, meta, {
           type: meta.type || 'staff_attention',
+          colour: meta.colour || 'amber',
           show_on_labels: meta.show_on_labels !== false,
           marked_at: new Date().toISOString()
         });
@@ -6551,7 +6628,8 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     }
   }
 
-  function paymentStatusLabel(o){
+  /** Deposit/payment badge for pickup-day / ops boards (not Stripe payment row status). */
+  function orderDepositPayLabel(o){
     var req = Number(o.deposit_required_cents) || 0;
     var paid = Number(o.deposit_paid_cents) || 0;
     if (req <= 0 && paid <= 0) return { label: 'No deposit', cls: 'muted' };
@@ -6566,6 +6644,106 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     if (a && b) return a + '–' + b;
     if (o.pickup_time) return String(o.pickup_time).slice(0, 5);
     return 'Any time';
+  }
+
+  function pdImportantColour(o){
+    var meta = o && o.important_meta && typeof o.important_meta === 'object' ? o.important_meta : {};
+    var map = { amber: '#c47a00', red: '#b42318', blue: '#175cd3', green: '#1f5c3a', purple: '#6941c6' };
+    if (/^#[0-9a-fA-F]{6}$/.test(String(meta.colour || ''))) return meta.colour;
+    return map[meta.colour] || '#c47a00';
+  }
+
+  function pdClassify(o){
+    var flags = [];
+    if (o.is_important) flags.push('important');
+    if (o.customer_notes) flags.push('notes');
+    var pay = orderDepositPayLabel(o);
+    if (pay.label === 'Unpaid' || o.status === 'awaiting_deposit') flags.push('unpaid');
+    if (o.has_unknown_prices) flags.push('price_tbc');
+    return flags;
+  }
+
+  function pdFilterOrders(orders, filter){
+    filter = filter || state.pdFilter || 'all';
+    return (orders || []).filter(function(o){
+      if (o.status === 'cancelled') return false;
+      if (filter === 'all') return true;
+      var flags = pdClassify(o);
+      if (filter === 'exceptions') return flags.length > 0;
+      return flags.indexOf(filter) >= 0;
+    });
+  }
+
+  function renderPickupDayGroups(orders){
+    var groupsEl = $('pd-groups');
+    var empty = $('pd-empty');
+    var filtered = pdFilterOrders(orders, state.pdFilter || 'all');
+    if (!filtered.length) {
+      groupsEl.innerHTML = '';
+      empty.classList.remove('hide');
+      empty.textContent = (state.pdFilter && state.pdFilter !== 'all')
+        ? 'No orders match this filter.'
+        : 'No orders for this pickup date.';
+      return;
+    }
+    empty.classList.add('hide');
+    var byWindow = Object.create(null);
+    var winOrder = [];
+    filtered.forEach(function(o){
+      var wk = windowKeyForOrder(o);
+      if (!byWindow[wk]) { byWindow[wk] = []; winOrder.push(wk); }
+      byWindow[wk].push(o);
+    });
+    winOrder.sort();
+
+    groupsEl.innerHTML = winOrder.map(function(wk){
+      var rows = byWindow[wk];
+      var html = '<div class="pd-window-group" style="margin:16px 0">';
+      html += '<button type="button" class="btn ghost pd-window-toggle" style="width:100%;justify-content:space-between;margin-bottom:8px" data-pd-toggle>';
+      html += '<strong>' + esc(wk) + '</strong><span>' + rows.length + ' order' + (rows.length === 1 ? '' : 's') + '</span></button>';
+      html += '<div class="table-wrap pd-window-body"><table class="oe"><thead><tr>';
+      html += '<th>Order</th><th>Customer</th><th>Mobile</th><th>Items</th><th>Payment</th><th>Status</th><th></th>';
+      html += '</tr></thead><tbody>';
+      rows.sort(function(a, b){
+        return String(a.customer_name || '').localeCompare(String(b.customer_name || ''));
+      });
+      rows.forEach(function(o){
+        var pay = orderDepositPayLabel(o);
+        var flags = pdClassify(o);
+        var colour = o.is_important ? pdImportantColour(o) : '';
+        var bg = colour ? 'background:' + colour + '1f' : '';
+        var cls = o.is_important ? ' clickable pd-important' : ' clickable';
+        var meta = o.important_meta && typeof o.important_meta === 'object' ? o.important_meta : {};
+        var impTitle = [meta.type, meta.reason].filter(Boolean).join(' — ');
+        html += '<tr class="' + cls + '" data-id="' + esc(o.id) + '" style="' + bg + '">';
+        html += '<td><strong>' + esc(o.order_number) + '</strong>';
+        if (o.is_important) {
+          html += ' <span class="badge warn" title="' + esc(impTitle) + '" style="' +
+            (colour ? 'background:' + colour + '33;color:' + colour : '') + '">Important</span>';
+        }
+        if (o.customer_notes) html += ' <span class="badge muted" title="' + esc(o.customer_notes) + '">Request</span>';
+        if (flags.indexOf('unpaid') >= 0) html += ' <span class="badge warn">Unpaid</span>';
+        if (flags.indexOf('price_tbc') >= 0) html += ' <span class="badge muted">TBC</span>';
+        html += '</td>';
+        html += '<td>' + esc(o.customer_name || '—') + '</td>';
+        html += '<td>' + esc(o.customer_phone || '—') + '</td>';
+        html += '<td>' + esc(o.item_count != null ? o.item_count : '—') + '</td>';
+        html += '<td><span class="badge ' + pay.cls + '">' + esc(pay.label) + '</span></td>';
+        html += '<td>' + statusBadge(o.status) + '</td>';
+        html += '<td><button class="btn ghost" type="button" data-open="' + esc(o.id) + '">Open</button></td>';
+        html += '</tr>';
+      });
+      html += '</tbody></table></div></div>';
+      return html;
+    }).join('');
+
+    wireOrderOpen(groupsEl);
+    groupsEl.querySelectorAll('[data-pd-toggle]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var body = btn.parentNode && btn.parentNode.querySelector('.pd-window-body');
+        if (body) body.classList.toggle('hide');
+      });
+    });
   }
 
   async function loadPickupDay(){
@@ -6588,70 +6766,46 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
       var orders = (data.orders || []).filter(function(o){
         return o.status !== 'cancelled';
       });
+      state.pdOrders = orders;
       heading.textContent = formatPickupDateLong(date) + ' — operational pickup board';
       if (!orders.length) {
         groupsEl.innerHTML = '';
         empty.classList.remove('hide');
+        empty.textContent = 'No orders for this pickup date.';
         kpis.innerHTML = '';
         return;
       }
-      var fullyPaid = 0, depositPaid = 0, unpaid = 0, ready = 0, important = 0, special = 0, items = 0;
+      var fullyPaid = 0, depositPaid = 0, unpaid = 0, ready = 0, important = 0, special = 0, items = 0, exceptions = 0, tbc = 0;
       orders.forEach(function(o){
-        var pay = paymentStatusLabel(o);
+        var pay = orderDepositPayLabel(o);
         if (pay.label === 'Fully paid') fullyPaid++;
         else if (pay.label === 'Deposit paid') depositPaid++;
         else if (pay.label === 'Unpaid') unpaid++;
         if (o.status === 'ready' || o.status === 'collected' || o.status === 'completed') ready++;
         if (o.is_important) important++;
         if (o.customer_notes) special++;
+        if (o.has_unknown_prices) tbc++;
+        if (pdClassify(o).length) exceptions++;
         items += Number(o.item_count) || 0;
       });
       kpis.innerHTML = [
         { l: 'Orders', v: orders.length },
         { l: 'Items', v: items || '—' },
+        { l: 'Exceptions', v: exceptions },
         { l: 'Fully paid', v: fullyPaid },
         { l: 'Deposit paid', v: depositPaid },
         { l: 'Unpaid', v: unpaid },
         { l: 'Ready', v: ready },
         { l: 'Important', v: important },
-        { l: 'Special requests', v: special }
+        { l: 'Special requests', v: special },
+        { l: 'Price TBC', v: tbc }
       ].map(function(c){
         return '<div class="kpi"><p class="l">' + esc(c.l) + '</p><p class="v">' + esc(c.v) + '</p></div>';
       }).join('');
 
-      var byWindow = Object.create(null);
-      var winOrder = [];
-      orders.forEach(function(o){
-        var wk = windowKeyForOrder(o);
-        if (!byWindow[wk]) { byWindow[wk] = []; winOrder.push(wk); }
-        byWindow[wk].push(o);
-      });
-      winOrder.sort();
-
-      groupsEl.innerHTML = winOrder.map(function(wk){
-        var rows = byWindow[wk];
-        var html = '<div class="pd-window-group" style="margin:16px 0">';
-        html += '<button type="button" class="btn ghost pd-window-toggle" style="width:100%;justify-content:space-between;margin-bottom:8px" data-pd-toggle>';
-        html += '<strong>' + esc(wk) + '</strong><span>' + rows.length + ' order' + (rows.length === 1 ? '' : 's') + '</span></button>';
-        html += '<div class="table-wrap pd-window-body"><table class="oe"><thead><tr>';
-        html += '<th>Order</th><th>Customer</th><th>Mobile</th><th>Items</th><th>Payment</th><th>Status</th><th></th>';
-        html += '</tr></thead><tbody>';
-        rows.sort(function(a, b){
-          return String(a.customer_name || '').localeCompare(String(b.customer_name || ''));
-        });
-        rows.forEach(function(o){
-          var pay = paymentStatusLabel(o);
-          var cls = o.is_important ? ' clickable pd-important' : ' clickable';
-          html += '<tr class="' + cls + '" data-id="' + esc(o.id) + '" style="' + (o.is_important ? 'background:rgba(220,160,40,.12)' : '') + '">';
-          html += '<td><strong>' + esc(o.order_number) + '</strong>' + (o.is_important ? ' <span class="badge warn">Important</span>' : '') +
-            (o.customer_notes ? ' <span class="badge muted" title="' + esc(o.customer_notes) + '">Request</span>' : '') + '</td>';
-          html += '<td>' + esc(o.customer_name || '—') + '</td>';
-          html += '<td>' + esc(o.customer_phone || '—') + '</td>';
-          html += '<td>' + esc(o.item_count != null ? o.item_count : '—') + '</td>';
-          html += '<td><span class="badge ' + pay.cls + '">' + esc(pay.label) + '</span></td>';
-          html += '<td>' + statusBadge(o.status) + '</td>';
-          html += '<td><button class="btn ghost" type="button" data-open="' + esc(o.id) + '">Open</button></td>';
-          html += '</tr>';
+      if ($('pd-filters')) {
+        $('pd-filters').querySelectorAll('[data-pd-filter]').forEach(function(btn){
+          btn.classList.toggle('on', btn.getAttribute('data-pd-filter') === (state.pdFilter || 'all'));
         });
         html += '</tbody></table></div></div>';
         return html;
@@ -7298,11 +7452,27 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     if (!d) { toast('Choose a pickup date first', 'err'); return; }
     openPrint('pickup_date=' + encodeURIComponent(d) + '&format=day_run');
   });
+  if ($('pd-print-exceptions')) $('pd-print-exceptions').addEventListener('click', function(){
+    var d = $('pd-date') && $('pd-date').value;
+    if (!d) { toast('Choose a pickup date first', 'err'); return; }
+    openPrint('pickup_date=' + encodeURIComponent(d) + '&format=exceptions');
+  });
   if ($('pd-print-labels')) $('pd-print-labels').addEventListener('click', function(){
     var d = $('pd-date') && $('pd-date').value;
     if (!d) { toast('Choose a pickup date first', 'err'); return; }
     openPrint('pickup_date=' + encodeURIComponent(d) + '&format=label');
   });
+  if ($('pd-filters')) {
+    $('pd-filters').addEventListener('click', function(ev){
+      var btn = ev.target && ev.target.closest ? ev.target.closest('[data-pd-filter]') : null;
+      if (!btn) return;
+      state.pdFilter = btn.getAttribute('data-pd-filter') || 'all';
+      $('pd-filters').querySelectorAll('[data-pd-filter]').forEach(function(b){
+        b.classList.toggle('on', b.getAttribute('data-pd-filter') === state.pdFilter);
+      });
+      renderPickupDayGroups(state.pdOrders || []);
+    });
+  }
   if ($('pd-goto-prod')) $('pd-goto-prod').addEventListener('click', function(){
     var d = $('pd-date') && $('pd-date').value;
     if (d && $('supply-date')) $('supply-date').value = d;
@@ -7333,6 +7503,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
   if ($('supply-print-run')) $('supply-print-run').addEventListener('click', function(){ supplyPrint('day_run'); });
   if ($('supply-print-pick')) $('supply-print-pick').addEventListener('click', function(){ supplyPrint('pick_list'); });
   if ($('supply-print-prep')) $('supply-print-prep').addEventListener('click', function(){ supplyPrint('prep'); });
+  if ($('supply-print-buy')) $('supply-print-buy').addEventListener('click', function(){ supplyPrint('procurement'); });
   if ($('supply-print-alloc')) $('supply-print-alloc').addEventListener('click', function(){ supplyPrint('allocation'); });
   if ($('supply-print-labels')) $('supply-print-labels').addEventListener('click', function(){ supplyPrint('label'); });
   if ($('supply-print-item-labels')) $('supply-print-item-labels').addEventListener('click', function(){ supplyPrint('item_labels'); });
