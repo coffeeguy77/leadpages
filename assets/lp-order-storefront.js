@@ -1838,13 +1838,24 @@
         } else if (g.windows.length > 1) {
           optionLabel = g.date_label + ' (' + g.windows.length + ' times)';
         }
+        var dayFull = g.windows.every(function (s) {
+          return s.available === false || (s.capacity_info && s.capacity_info.ok === false);
+        });
+        var remHint = '';
+        var dayCap = g.windows[0] && g.windows[0].capacity_info;
+        if (dayCap && dayCap.scope === 'day' && dayCap.remaining != null && dayCap.max != null) {
+          remHint = dayFull ? ' — full' : ' — ' + dayCap.remaining + ' left';
+        } else if (dayFull) {
+          remHint = ' — full';
+        }
         html +=
           '<option value="' +
           esc(g.date) +
           '"' +
           (selectedDate === g.date ? ' selected' : '') +
+          (dayFull ? ' disabled' : '') +
           '>' +
-          esc(optionLabel) +
+          esc(optionLabel + remHint) +
           '</option>';
       });
       html += '</select></label>';
@@ -1853,13 +1864,21 @@
         html += '<label>Pickup time<select id="oe-slot" required>';
         html += '<option value="">Choose a pickup time…</option>';
         windows.forEach(function (s) {
+          var full = s.available === false || (s.capacity_info && s.capacity_info.ok === false);
+          var tLabel = s.window_label || s.label || '';
+          if (s.capacity_info && s.capacity_info.remaining != null && s.capacity_info.max != null) {
+            tLabel += full ? ' (full)' : ' (' + s.capacity_info.remaining + ' left)';
+          } else if (full) {
+            tLabel += ' (full)';
+          }
           html +=
             '<option value="' +
             esc(s.id) +
             '"' +
             (d.slotId === s.id ? ' selected' : '') +
+            (full ? ' disabled' : '') +
             '>' +
-            esc(s.window_label || s.label) +
+            esc(tLabel) +
             '</option>';
         });
         html += '</select></label>';
@@ -2734,6 +2753,8 @@
             if (e.data && e.data.pickup_slots) self.state.pickupSlots = e.data.pickup_slots;
           } else if (msg === 'date_at_capacity') {
             msg = 'That pickup day is full — please choose another.';
+          } else if (msg === 'window_at_capacity') {
+            msg = 'That pickup time is full — please choose another.';
           }
           self.state.msg = msg;
           self.state.busy = false;

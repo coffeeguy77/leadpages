@@ -5,11 +5,12 @@ const { normalizeStorefrontSettings } = require('../../lib/order/storefront-appe
 const { getAdmin } = require('../../lib/order/supabase');
 const { getOrderSystemForSite } = require('../../lib/order/auth');
 const { formatAud } = require('../../lib/order/money');
-const { earliestPickupDate, effectiveOrderCutoff } = require('../../lib/order/cutoff');
+const { earliestPickupDate, resolveChangeDeadline } = require('../../lib/order/cutoff');
 const { storeCutoffRuleLabel, combinedCutoffRuleLabel, cutoffSummary, formatCutoffDateTime } = require('../../lib/order/cutoff-display');
 const { resolvePaymentRule, computeDepositRequired } = require('../../lib/order/deposit');
 const { listWindows, buildPickupSlots, parsePickupSchedule } = require('../../lib/order/fulfilment-windows');
-const { isMasterLockActive, msUntilMasterLock, earlierChangeDeadline } = require('../../lib/order/master-lock');
+const { isMasterLockActive, msUntilMasterLock } = require('../../lib/order/master-lock');
+const { enrichSlotsWithCapacity, isDateAvailable } = require('../../lib/order/capacity');
 
 async function resolveSite(slug, siteId) {
   const admin = getAdmin();
@@ -98,7 +99,8 @@ module.exports = async function (req, res) {
     if (pat !== 'fixed_range' && pat !== 'specific_dates') {
       slotOpts.maxEligibleDates = 4;
     }
-    const pickup_slots = buildPickupSlots(windows, earliest, 90, schedule, slotOpts);
+    const pickup_slots_raw = buildPickupSlots(windows, earliest, 90, schedule, slotOpts);
+    const pickup_slots = await enrichSlotsWithCapacity(system, pickup_slots_raw);
     const paySettings = (system.settings && system.settings.payments) || {};
     const storefrontSettings = normalizeStorefrontSettings(
       Object.assign(
@@ -168,28 +170,30 @@ module.exports = async function (req, res) {
     const pickupDatePreview = (req.query && req.query.pickup_date) || '';
     var cutoffPreview = null;
     if (pickupDatePreview) {
-      var cutoffCalc = effectiveOrderCutoff(products || [], system, pickupDatePreview);
-      var merged = earlierChangeDeadline(schedule, cutoffCalc.effective_cutoff_at, new Date());
-      if (merged.iso) {
-        var sum = cutoffSummary(merged.iso);
+      var cutoffCalc = resolveChangeDeadline(products || [], system, pickupDatePreview, schedule);
+      if (cutoffCalc.effective_cutoff_at) {
+        var sum = cutoffSummary(cutoffCalc.effective_cutoff_at);
         cutoffPreview = {
           pickup_date: pickupDatePreview,
-          pickup_cutoff_at: cutoffCalc.effective_cutoff_at || null,
-          pickup_cutoff_reason: cutoffCalc.cutoff_reason || null,
-          effective_cutoff_at: merged.iso,
-          cutoff_source: merged.source,
-          cutoff_reason:
-            merged.source === 'master_lock'
-              ? 'Season cutoff (' + (schedule.master_lock_date || '') + ')'
-              : cutoffCalc.cutoff_reason,
+          pickup_cutoff_at: cutoffCalc.pickup_cutoff_at || null,
+          pickup_cutoff_reason: cutoffCalc.cutoff_source === 'master_lock' ? null : cutoffCalc.cutoff_reason,
+          effective_cutoff_at: cutoffCalc.effective_cutoff_at,
+          cutoff_source: cutoffCalc.cutoff_source,
+          cutoff_reason: cutoffCalc.cutoff_reason,
           state: sum.state,
           countdown_label: sum.label,
           locked: sum.locked,
-          display_at: formatCutoffDateTime(merged.iso, system.timezone)
+          display_at: formatCutoffDateTime(cutoffCalc.effective_cutoff_at, system.timezone)
         };
       }
     }
 
+    var capacitySummary = { ok: true, enabled: !!system.capacity_enabled, per_day: system.capacity_per_day || null };
+    if (system.capacity_enabled && system.capacity_per_day && pickupDatePreview) {
+      capacitySummary = Object.assign(capacitySummary, await isDateAvailable(system, pickupDatePreview));
+    }
+
+    const tz = system.timezone || 'Australia/Sydney';
     return json(res, 200, {
       site: { id: site.id, slug: site.slug, business_name: site.business_name },
       system: {
@@ -230,7 +234,7 @@ module.exports = async function (req, res) {
       },
       earliest_pickup_date: earliest,
       pickup_slots: pickup_slots,
-      capacity: { ok: true },
+      capacity: capacitySummary,
       cutoff: {
         rule_label: combinedCutoffRuleLabel(system, schedule.master_lock_date),
         pickup_rule_label: storeCutoffRuleLabel(system),
@@ -238,8 +242,8 @@ module.exports = async function (req, res) {
       },
       master_lock: {
         date: schedule.master_lock_date,
-        active: isMasterLockActive(schedule, new Date()),
-        ms_until: msUntilMasterLock(schedule, new Date()),
+        active: isMasterLockActive(schedule, new Date(), tz),
+        ms_until: msUntilMasterLock(schedule, new Date(), tz),
         countdown: {
           enabled: schedule.countdown_enabled !== false && !!schedule.master_lock_date,
           eyebrow: schedule.countdown_eyebrow || '',
