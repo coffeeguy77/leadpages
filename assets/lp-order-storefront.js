@@ -1749,13 +1749,23 @@
       html += '<option value="">Choose a pickup day…</option>';
       dateOrder.forEach(function (dk) {
         var g = byDate[dk];
+        var optionLabel = g.date_label;
+        if (g.windows.length === 1) {
+          var hours = g.windows[0].window_label || '';
+          if (!hours && g.windows[0].label && g.windows[0].label.indexOf('—') >= 0) {
+            hours = g.windows[0].label.split('—').slice(1).join('—').trim();
+          }
+          if (hours) optionLabel = g.date_label + ' (' + hours + ')';
+        } else if (g.windows.length > 1) {
+          optionLabel = g.date_label + ' (' + g.windows.length + ' times)';
+        }
         html +=
           '<option value="' +
           esc(g.date) +
           '"' +
           (selectedDate === g.date ? ' selected' : '') +
           '>' +
-          esc(g.date_label) +
+          esc(optionLabel) +
           '</option>';
       });
       html += '</select></label>';
@@ -1779,13 +1789,8 @@
           '<input type="hidden" id="oe-slot" value="' +
           esc(windows[0].id) +
           '">';
-        html +=
-          '<p class="lp-oe-pickup-hours" style="margin:0 0 10px;font-size:13px;opacity:.85">' +
-          esc(windows[0].window_label || windows[0].label) +
-          '</p>';
         if (!d.slotId) d.slotId = windows[0].id;
       } else {
-        html += '<p class="lp-oe-pickup-hours" style="margin:0 0 10px;font-size:13px;opacity:.85">Select a pickup day to see available times.</p>';
         html += '<input type="hidden" id="oe-slot" value="">';
       }
     } else {
