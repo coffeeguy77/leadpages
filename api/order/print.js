@@ -7,6 +7,7 @@ const { resolveAccessToken } = require('../../lib/order/tokens');
 const { supplyForDate } = require('../../lib/order/service');
 const { formatAud } = require('../../lib/order/money');
 const { buildPrintDocument, normaliseFormat } = require('../../lib/order/print-document');
+const { attachPortalQrToOrders } = require('../../lib/order/qr');
 
 async function loadOrderWithItems(admin, orderId, siteId) {
   const { data: order, error } = await admin
@@ -111,6 +112,44 @@ module.exports = async function (req, res) {
     const system = await ensureOrderSystem(siteId);
     const fmt = normaliseFormat(format, false);
     const business = access.site || {};
+
+    if (fmt === 'label' || fmt === 'item_labels') {
+      let orders = [];
+      let dateLabel = pickupDate || null;
+      if (pickupDate) {
+        orders = await loadOrdersForDate(admin, system.id, siteId, pickupDate);
+      } else if (orderId) {
+        const loaded = await loadOrderWithItems(admin, orderId, siteId);
+        if (!loaded) {
+          return sendHtml(res, 404, buildPrintDocument({ format: 'slip', business: business, order: { order_number: 'Not found' }, items: [] }));
+        }
+        orders = [Object.assign({}, loaded.order, { items: loaded.items })];
+        dateLabel = loaded.order.pickup_date;
+      } else {
+        return sendHtml(
+          res,
+          400,
+          buildPrintDocument({
+            format: 'slip',
+            business: business,
+            order: { order_number: 'pickup_date or order_id required' },
+            items: []
+          })
+        );
+      }
+      await attachPortalQrToOrders(orders, siteId);
+      return sendHtml(
+        res,
+        200,
+        buildPrintDocument({
+          format: fmt,
+          business: business,
+          pickup_date: dateLabel,
+          orders: orders,
+          autoprint: autoprint
+        })
+      );
+    }
 
     if (fmt === 'prep' || fmt === 'allocation' || fmt === 'day_run' || fmt === 'pick_list') {
       if (!pickupDate) {

@@ -856,6 +856,8 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
             <button class="btn ghost" type="button" id="supply-print-pick">Pick list (one page)</button>
             <button class="btn ghost" type="button" id="supply-print-prep">Prep summary</button>
             <button class="btn ghost" type="button" id="supply-print-alloc">Allocation checklist</button>
+            <button class="btn ghost" type="button" id="supply-print-labels">Order labels</button>
+            <button class="btn ghost" type="button" id="supply-print-item-labels">Item stickers</button>
             <button class="btn ghost" type="button" id="supply-print-air" title="Opens print dialog — great on iPad AirPrint">AirPrint day run</button>
             <button class="btn ghost" type="button" id="supply-goto-alloc">Open Product Allocation</button>
           </div>
@@ -876,12 +878,26 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
             <input id="alloc-date" type="date">
             <button class="btn solid" type="button" id="alloc-load">Load allocation</button>
             <button class="btn ghost" type="button" id="alloc-print">Print checklist</button>
+            <button class="btn ghost" type="button" id="alloc-print-labels">Print labels</button>
             <button class="btn ghost" type="button" id="alloc-goto-supply">Production Summary</button>
           </div>
           <p class="sub">Pack by product and variation — tick lines as they are packed. Totals stay on Production Summary; this view is the per-customer checklist.</p>
           <div class="kpis" id="alloc-kpis"></div>
           <div id="alloc-groups"></div>
           <p class="empty hide" id="alloc-empty">No allocation lines for this date.</p>
+        </div>
+      </section>
+
+      <section class="view" id="view-labels" data-view="labels">
+        <div class="card">
+          <div class="toolbar" style="flex-wrap:wrap;gap:10px">
+            <h3 style="margin:0;flex:1">Labels &amp; Stickers</h3>
+            <input id="lbl-date" type="date">
+            <button class="btn solid" type="button" id="lbl-print-orders">Print order labels</button>
+            <button class="btn ghost" type="button" id="lbl-print-items">Print item stickers</button>
+          </div>
+          <p class="sub">Two-up A4 stickers (~92×48mm) with customer, pickup window, and a QR code to the order portal. Important orders show an Important badge when enabled on the order.</p>
+          <div class="notice" id="lbl-hint">Choose a pickup date, then print order labels (one per order) or item stickers (one per line).</div>
         </div>
       </section>
 
@@ -1009,6 +1025,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
             <input id="pd-date" type="date">
             <button class="btn solid" type="button" id="pd-load">Load day</button>
             <button class="btn ghost" type="button" id="pd-print-run">Print run sheet</button>
+            <button class="btn ghost" type="button" id="pd-print-labels">Print labels</button>
             <button class="btn ghost" type="button" id="pd-goto-prod">Production Summary</button>
           </div>
           <p class="sub" id="pd-heading">Operational dashboard for a single pickup day — group by time window, open orders, print run sheets.</p>
@@ -3178,6 +3195,8 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
       (o.is_important ? 'Unmark important' : 'Mark important') + '</button>';
     foot += '<button class="btn ghost" type="button" data-print="slip">Print packing slip</button>';
     foot += '<button class="btn ghost" type="button" data-print="receipt">Print receipt</button>';
+    foot += '<button class="btn ghost" type="button" data-print="label">Print order label</button>';
+    foot += '<button class="btn ghost" type="button" data-print="item_labels">Print item stickers</button>';
     foot += '<button class="btn ghost" type="button" data-act="deposit-link">Send deposit link</button>';
     foot += '<button class="btn ghost" type="button" data-act="checkout">Checkout deposit</button>';
     if (!isVoided) {
@@ -3376,6 +3395,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
       if (next) {
         meta = Object.assign({}, meta, {
           type: meta.type || 'staff_attention',
+          show_on_labels: meta.show_on_labels !== false,
           marked_at: new Date().toISOString()
         });
       }
@@ -6861,6 +6881,11 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
       else if (v === 'calendar') await loadCalendar();
       else if (v === 'pickup-day') await loadPickupDay();
       else if (v === 'allocation') await loadAllocation();
+      else if (v === 'labels') {
+        if ($('lbl-date') && !$('lbl-date').value) {
+          $('lbl-date').value = isoDate(new Date());
+        }
+      }
       else if (v === 'supply') {
         if (!$('supply-date').value) {
           var d = new Date();
@@ -7102,6 +7127,11 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     if (!d) { toast('Choose a pickup date first', 'err'); return; }
     openPrint('pickup_date=' + encodeURIComponent(d) + '&format=day_run');
   });
+  if ($('pd-print-labels')) $('pd-print-labels').addEventListener('click', function(){
+    var d = $('pd-date') && $('pd-date').value;
+    if (!d) { toast('Choose a pickup date first', 'err'); return; }
+    openPrint('pickup_date=' + encodeURIComponent(d) + '&format=label');
+  });
   if ($('pd-goto-prod')) $('pd-goto-prod').addEventListener('click', function(){
     var d = $('pd-date') && $('pd-date').value;
     if (d && $('supply-date')) $('supply-date').value = d;
@@ -7133,6 +7163,8 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
   if ($('supply-print-pick')) $('supply-print-pick').addEventListener('click', function(){ supplyPrint('pick_list'); });
   if ($('supply-print-prep')) $('supply-print-prep').addEventListener('click', function(){ supplyPrint('prep'); });
   if ($('supply-print-alloc')) $('supply-print-alloc').addEventListener('click', function(){ supplyPrint('allocation'); });
+  if ($('supply-print-labels')) $('supply-print-labels').addEventListener('click', function(){ supplyPrint('label'); });
+  if ($('supply-print-item-labels')) $('supply-print-item-labels').addEventListener('click', function(){ supplyPrint('item_labels'); });
   if ($('supply-print-air')) $('supply-print-air').addEventListener('click', function(){ supplyPrint('day_run', true); });
   if ($('supply-goto-alloc')) $('supply-goto-alloc').addEventListener('click', function(){
     var d = $('supply-date') && $('supply-date').value;
@@ -7145,11 +7177,23 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     if (!date) { toast('Pick a date', 'err'); return; }
     openPrint('pickup_date=' + encodeURIComponent(date) + '&format=allocation');
   });
+  if ($('alloc-print-labels')) $('alloc-print-labels').addEventListener('click', function(){
+    var date = $('alloc-date') && $('alloc-date').value;
+    if (!date) { toast('Pick a date', 'err'); return; }
+    openPrint('pickup_date=' + encodeURIComponent(date) + '&format=label');
+  });
   if ($('alloc-goto-supply')) $('alloc-goto-supply').addEventListener('click', function(){
     var d = $('alloc-date') && $('alloc-date').value;
     if (d && $('supply-date')) $('supply-date').value = d;
     openNavRoute('supply');
   });
+  function labelsPrint(format){
+    var date = $('lbl-date') && $('lbl-date').value;
+    if (!date) { toast('Pick a date', 'err'); return; }
+    openPrint('pickup_date=' + encodeURIComponent(date) + '&format=' + encodeURIComponent(format));
+  }
+  if ($('lbl-print-orders')) $('lbl-print-orders').addEventListener('click', function(){ labelsPrint('label'); });
+  if ($('lbl-print-items')) $('lbl-print-items').addEventListener('click', function(){ labelsPrint('item_labels'); });
   if ($('orders-export')) $('orders-export').addEventListener('click', function(e){ e.preventDefault(); downloadExport('orders'); });
   if ($('items-export')) $('items-export').addEventListener('click', function(e){ e.preventDefault(); downloadExport('order_items'); });
   if ($('cal-load')) $('cal-load').addEventListener('click', loadCalendar);
