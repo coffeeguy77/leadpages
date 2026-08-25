@@ -113,7 +113,6 @@ module.exports = async function (req, res) {
     const nearestCutoff = nearestFutureCutoff(depositAwaiting || [], new Date());
     const reminderSettings = parseDepositReminderSettings(system);
     const schedule = parsePickupSchedule(system);
-    const tz = system.timezone || 'Australia/Sydney';
     const masterLockMs = msUntilMasterLock(schedule, new Date(), tz);
     const masterLockActive = isMasterLockActive(schedule, new Date(), tz);
 
