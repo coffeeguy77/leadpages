@@ -32,6 +32,7 @@ module.exports = async function (req, res) {
     if (req.method === 'GET') {
       const id = req.query && req.query.id;
       if (id) {
+        const lite = req.query && req.query.lite === '1';
         const { data: customer } = await admin
           .from('order_customers')
           .select('*')
@@ -39,42 +40,50 @@ module.exports = async function (req, res) {
           .eq('site_id', siteId)
           .maybeSingle();
         if (!customer) return json(res, 404, { error: 'not_found' });
-        const { data: orders } = await admin
+        const ordersRes = await admin
           .from('order_orders')
           .select('id,order_number,status,pickup_date,known_subtotal_cents,deposit_paid_cents,created_at')
           .eq('customer_id', id)
           .order('created_at', { ascending: false })
           .limit(50);
-        var orderIds = (orders || []).map(function (o) { return o.id; });
+        const orders = ordersRes.data || [];
+        var orderIds = orders.map(function (o) { return o.id; });
         var payments = [];
-        if (orderIds.length) {
-          const payRes = await admin
-            .from('order_payments')
+        var messages = [];
+        if (!lite) {
+          const msgRes = await admin
+            .from('order_messages')
             .select('*')
-            .in('order_id', orderIds)
+            .eq('customer_id', id)
             .order('created_at', { ascending: false })
             .limit(50);
-          payments = payRes.data || [];
+          messages = msgRes.data || [];
+          if (orderIds.length) {
+            const payRes = await admin
+              .from('order_payments')
+              .select('*')
+              .in('order_id', orderIds)
+              .order('created_at', { ascending: false })
+              .limit(50);
+            payments = payRes.data || [];
+          }
         }
-        const { data: messages } = await admin
-          .from('order_messages')
-          .select('*')
-          .eq('customer_id', id)
-          .order('created_at', { ascending: false })
-          .limit(50);
         return json(res, 200, {
           customer: customer,
-          orders: orders || [],
-          payments: payments || [],
-          messages: messages || [],
+          orders: orders,
+          payments: payments,
+          messages: messages,
           display: { lifetime_spend: formatAud(customer.lifetime_spend_cents) }
         });
       }
 
-      // Opportunistic backfill so existing CRM rows become "Shaun Matthews".
-      try {
-        await backfillCustomerNames({ site_id: siteId, limit: 400 });
-      } catch (_e) {}
+      const liteList = req.query && req.query.lite === '1';
+      // Opportunistic backfill — skip on lite list requests (preload / warm cache).
+      if (!liteList) {
+        try {
+          await backfillCustomerNames({ site_id: siteId, limit: 400 });
+        } catch (_e) {}
+      }
 
       const q = (req.query && req.query.q) || '';
       let query = admin

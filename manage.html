@@ -3886,6 +3886,7 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
     if(manageMsgEmbed&&manageMsgEmbed.destroy){ try{ manageMsgEmbed.destroy(); }catch(_e){} manageMsgEmbed=null; }
     updateSupportNavBadge(0);
     currentSiteId=site.id; currentSiteSlug=site.slug; currentSiteTemplate=site.template||'broker-app'; currentIsPartnerHome=!!site.is_partner_home;
+    if(typeof ordEmbedWarmedSiteId!=='undefined'&&ordEmbedWarmedSiteId&&ordEmbedWarmedSiteId!==site.id) ordEmbedWarmedSiteId=null;
     currentSiteStatus=String(site.status||'').toLowerCase();
     currentReferringPartnerId=site.referring_partner_id||null;
     currentServicingPartnerId=site.servicing_partner_id||null;
@@ -3916,6 +3917,7 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
       applyRoleGating();
       ensureSiteBar();
       try{ renderSeoPages(); }catch(e){}
+      try{ prefetchOrdersEmbed(); }catch(_ordPf){}
       _reconcileSiteApps(currentSiteId, data).then(function(){
         applyRoleGating();
         try{ renderSeoPages(); }catch(e){}
@@ -10908,33 +10910,70 @@ function heroCtaCard(c){
     if(cents==null||isNaN(cents)) return '—';
     return '$'+(Math.round(cents)/100).toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2});
   }
-  function renderOrdersAdmin(){
-    var box=$('av-orders'); if(!box) return;
-    if(currentSiteTemplate!=='trade'){
-      box.innerHTML='<div class="card"><p class="lede">Orders are available on trade sites only.</p></div>';
-      return;
-    }
-    if(!currentSiteId){
-      box.innerHTML='<div class="card"><p class="lede">Select a site first.</p></div>';
-      return;
-    }
-    var src='/orders?embed=1&site_id='+encodeURIComponent(currentSiteId);
-    box.innerHTML=
-      '<div class="card" style="margin-bottom:14px;padding:14px 16px;">'
+  var ordEmbedWarmedSiteId=null;
+  function ordersEmbedSrc(){
+    return '/orders?embed=1&site_id='+encodeURIComponent(currentSiteId);
+  }
+  function ordersEmbedHeaderHtml(src){
+    return '<div class="card ord-admin-header" style="margin-bottom:14px;padding:14px 16px;">'
       +'<div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;">'
       +'<div><h2 style="margin:0 0 4px;font-size:18px;">Orders</h2>'
       +'<p class="lede" style="margin:0;">Products, staff orders, deposits, supply and settings for this site. Turn on the <strong>Order Storefront</strong> section in Page editor to show the catalogue on the live site.</p></div>'
       +'<div style="display:flex;flex-wrap:wrap;gap:8px;">'
       +'<button type="button" class="btn ghost" id="ord-goto-storefront">Page section</button>'
       +'<a class="btn ghost" href="'+src.replace('embed=1&','')+'" target="_blank" rel="noopener" style="text-decoration:none;">Open full screen ↗</a>'
-      +'</div></div></div>'
+      +'</div></div></div>';
+  }
+  function wireOrdersEmbedFrame(frame){
+    if(!frame||frame.getAttribute('data-ord-wired')==='1') return;
+    frame.setAttribute('data-ord-wired','1');
+    frame.addEventListener('load', function(){ pushThemeToOrdersEmbed(); setTimeout(pushThemeToOrdersEmbed, 400); });
+  }
+  function prefetchOrdersEmbed(){
+    if(currentSiteTemplate!=='trade'||!currentSiteId) return;
+    if(ordEmbedWarmedSiteId===currentSiteId&&$('ord-embed')) return;
+    var box=$('av-orders'); if(!box) return;
+    if(activeView==='orders') return;
+    renderOrdersAdmin();
+  }
+  function renderOrdersAdmin(){
+    var box=$('av-orders'); if(!box) return;
+    if(currentSiteTemplate!=='trade'){
+      ordEmbedWarmedSiteId=null;
+      box.innerHTML='<div class="card"><p class="lede">Orders are available on trade sites only.</p></div>';
+      return;
+    }
+    if(!currentSiteId){
+      ordEmbedWarmedSiteId=null;
+      box.innerHTML='<div class="card"><p class="lede">Select a site first.</p></div>';
+      return;
+    }
+    var src=ordersEmbedSrc();
+    var frame=$('ord-embed');
+    if(frame&&ordEmbedWarmedSiteId===currentSiteId){
+      if(!box.querySelector('.ord-admin-header')){
+        var wrap=frame.parentNode;
+        if(wrap&&wrap.parentNode===box){
+          var header=document.createElement('div');
+          header.innerHTML=ordersEmbedHeaderHtml(src);
+          box.insertBefore(header.firstChild, wrap);
+        }
+      }
+      wireOrdersEmbedFrame(frame);
+      var g=$('ord-goto-storefront');
+      if(g) g.addEventListener('click',function(){
+        landingSub='orderStorefront';
+        if(typeof showView==='function') showView('details');
+      });
+      return;
+    }
+    ordEmbedWarmedSiteId=currentSiteId;
+    box.innerHTML=ordersEmbedHeaderHtml(src)
       +'<div class="card" style="padding:0;overflow:hidden;min-height:72vh;">'
       +'<iframe id="ord-embed" title="Orders" src="'+esc(src)+'" style="display:block;width:100%;min-height:72vh;height:calc(100vh - 220px);border:0;background:var(--panel,#fff);"></iframe>'
       +'</div>';
-    var frame=$('ord-embed');
-    if(frame){
-      frame.addEventListener('load', function(){ pushThemeToOrdersEmbed(); setTimeout(pushThemeToOrdersEmbed, 400); });
-    }
+    frame=$('ord-embed');
+    wireOrdersEmbedFrame(frame);
     var g=$('ord-goto-storefront');
     if(g) g.addEventListener('click',function(){
       landingSub='orderStorefront';
