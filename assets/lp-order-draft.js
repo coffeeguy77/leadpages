@@ -113,7 +113,29 @@
         draft.customerName
           ? draft.customerName
           : 'Required',
-      payment: draft.payAction ? 'Selected' : 'Not selected'
+      payment: draft.payAction ? 'Selected' : 'Review'
+    };
+  }
+
+  /**
+   * Layout mode from Orders container width + fullscreen/embed state.
+   * Do not use window.innerWidth alone.
+   */
+  function resolveOrdersDisplayMode(opts) {
+    opts = opts || {};
+    var width = Number(opts.containerWidth) || 0;
+    if (opts.isFullScreenOrders && width >= 1100) return 'fullscreen';
+    if (width < 680) return 'mobile';
+    return 'embedded';
+  }
+
+  /** Mini-cart preview: first N items + remainder count */
+  function miniCartPreview(entries, limit) {
+    entries = entries || [];
+    limit = limit == null ? 3 : limit;
+    return {
+      visible: entries.slice(0, limit),
+      moreCount: Math.max(0, entries.length - limit)
     };
   }
 
@@ -125,6 +147,8 @@
     saveDraft: saveDraft,
     loadDraft: loadDraft,
     clearDraft: clearDraft,
-    stepCompleteness: stepCompleteness
+    stepCompleteness: stepCompleteness,
+    resolveOrdersDisplayMode: resolveOrdersDisplayMode,
+    miniCartPreview: miniCartPreview
   };
 });
