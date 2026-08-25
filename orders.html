@@ -35,7 +35,9 @@
 <script src="/assets/lp-hub-embed.js"></script>
 <script src="/assets/lp-order-admin-nav.js"></script>
 <link rel="stylesheet" href="/assets/lp-order-admin-nav.css">
+<link rel="stylesheet" href="/assets/lp-order-product-editor.css">
 <link rel="stylesheet" href="/assets/lp-logo.css">
+<script src="/assets/lp-order-product-editor.js"></script>
 <style>
 :root{
   --font-display:Georgia,'Times New Roman',serif;
@@ -681,161 +683,316 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
         </div>
       </section>
 
-      <!-- Products -->
+      <!-- Products — shared ProductEditor with responsive shells -->
       <section class="view" id="view-products" data-view="products">
         <div class="card">
           <div class="card-head">
             <div>
               <h3>Products</h3>
-              <p class="sub">Catalogue for this order system. Butcher names like <code>BEEF - Brisket</code> can be matched to categories automatically.</p>
+              <p class="sub">Manage products, pricing, availability and ordering rules.</p>
             </div>
-            <div class="actions-row" style="margin:0">
-              <button class="btn ghost" type="button" id="prod-auto-cat" title="Create Beef/Chicken/Ham… categories and assign from product names">Match categories</button>
-              <button class="btn ghost" type="button" id="prod-pies-extra" title="Create Pies category and also list every product with Pie/Pies in the name there (keeps current category)">Add Pies from titles</button>
-              <button class="btn ghost" type="button" id="prod-migrate-weight" title="Move kg from short descriptions to minimum kg; set whole turkeys/chickens to quantity with size guide">Apply weight &amp; turkey rules</button>
-              <button class="btn ghost" type="button" id="prod-deactivate-unsized-hams" title="Deactivate ham products without a size/weight (keeps e.g. HAM - HALF 3.5-4). Past orders and reorders are safe — inactive items are skipped.">Deactivate unsized hams</button>
-              <button class="btn ghost" type="button" id="prod-delete-unlock">Unlock delete</button>
+            <div class="prod-actions">
+              <button class="btn ghost btn-secondary-hide" type="button" id="prod-import" title="Import products">Import</button>
+              <div class="prod-more-menu" id="prod-more-wrap">
+                <button class="btn ghost" type="button" id="prod-more" aria-haspopup="true" aria-expanded="false">More actions</button>
+                <div class="prod-more-menu hide" id="prod-more-panel" hidden role="menu" style="position:absolute;right:0;top:100%;z-index:30;min-width:220px;padding:8px;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow)">
+                  <button class="btn ghost" type="button" id="prod-auto-cat" role="menuitem" style="width:100%;justify-content:flex-start">Match categories</button>
+                  <button class="btn ghost" type="button" id="prod-pies-extra" role="menuitem" style="width:100%;justify-content:flex-start">Add Pies from titles</button>
+                  <button class="btn ghost" type="button" id="prod-migrate-weight" role="menuitem" style="width:100%;justify-content:flex-start">Apply weight &amp; turkey rules</button>
+                  <button class="btn ghost" type="button" id="prod-deactivate-unsized-hams" role="menuitem" style="width:100%;justify-content:flex-start">Deactivate unsized hams</button>
+                  <button class="btn ghost" type="button" id="prod-delete-unlock" role="menuitem" style="width:100%;justify-content:flex-start">Unlock delete</button>
+                </div>
+              </div>
               <button class="btn ghost hide" type="button" id="prod-delete-selected">Delete selected</button>
-              <button class="btn solid" type="button" id="prod-new">New product</button>
+              <button class="btn solid" type="button" id="prod-new">+ New Product</button>
             </div>
           </div>
-          <div class="prod-cat-bar">
-            <label class="field" style="margin:0;min-width:200px;flex:1">
-              <span class="field-hint" style="margin:0 0 4px">Category filter</span>
-              <select id="prod-cat-filter" style="max-width:280px"><option value="">All categories</option></select>
-            </label>
-            <label class="field" style="margin:0;min-width:180px;flex:1">
-              <span class="field-hint" style="margin:0 0 4px">Search</span>
-              <input id="prod-q" placeholder="Find a product…" style="max-width:280px">
-            </label>
+          <div class="prod-workspace prod-mode-fullscreen" id="prod-workspace">
+            <div class="prod-catalogue" id="prod-catalogue">
+              <div class="prod-filters" id="prod-filters">
+                <label class="field"><span class="field-hint">Search</span>
+                  <input id="prod-q" type="search" placeholder="Search products…" autocomplete="off">
+                </label>
+                <label class="field"><span class="field-hint">Category</span>
+                  <select id="prod-cat-filter"><option value="">All categories</option></select>
+                </label>
+                <label class="field"><span class="field-hint">Status</span>
+                  <select id="prod-status-filter">
+                    <option value="">All status</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                  </select>
+                </label>
+                <label class="field prod-col-wide"><span class="field-hint">Pricing</span>
+                  <select id="prod-pricing-filter">
+                    <option value="">All pricing methods</option>
+                    <option value="fixed">Fixed</option>
+                    <option value="per_weight">Per kilogram</option>
+                    <option value="price_tbc">Price confirmed later</option>
+                  </select>
+                </label>
+                <label class="field prod-col-wide"><span class="field-hint">Stock</span>
+                  <select id="prod-stock-filter">
+                    <option value="">All stock methods</option>
+                    <option value="unlimited">Unlimited</option>
+                    <option value="made_to_order">Made to order</option>
+                    <option value="tracked">Track quantity</option>
+                    <option value="allocation">Seasonal / allocation</option>
+                  </select>
+                </label>
+                <button class="btn ghost" type="button" id="prod-clear-filters">Clear filters</button>
+              </div>
+              <div class="prod-delete-bar locked hide" id="prod-delete-bar">
+                <span class="notice" style="margin:0" id="prod-delete-hint">Unlock delete to select products. Deactivates products (past orders stay safe).</span>
+              </div>
+              <div class="table-wrap prod-table-wrap">
+                <table class="oe" id="prod-table"><thead><tr>
+                  <th class="prod-del-col hide" style="width:36px"></th>
+                  <th class="prod-col-product">Product</th>
+                  <th class="prod-col-wide">Category</th>
+                  <th>Pricing</th>
+                  <th class="prod-col-wide">Stock</th>
+                  <th class="prod-col-wide">Cutoff</th>
+                  <th>Status</th>
+                  <th style="width:48px"></th>
+                </tr></thead><tbody id="prod-tbody"></tbody></table>
+              </div>
+              <div class="prod-card-list" id="prod-card-list" hidden></div>
+              <div class="prod-pager" id="prod-pager"></div>
+              <p class="empty hide" id="prod-empty">No products yet — apply the butcher preset in Settings or create one.</p>
+            </div>
+            <aside class="prod-side-panel hide" id="prod-side-panel" aria-label="Product editor"></aside>
           </div>
-          <div class="prod-delete-bar locked hide" id="prod-delete-bar">
-            <span class="notice" style="margin:0" id="prod-delete-hint">Unlock delete to select products. Deactivates products (past orders stay safe).</span>
-          </div>
-          <div class="table-wrap">
-            <table class="oe"><thead><tr>
-              <th class="prod-del-col hide" style="width:36px"></th><th></th><th>Name</th><th>Category</th><th>Pricing</th><th>Stock</th><th>Active</th><th></th>
-            </tr></thead><tbody id="prod-tbody"></tbody></table>
-          </div>
-          <p class="empty hide" id="prod-empty">No products yet — apply the butcher preset in Settings or create one.</p>
         </div>
-        <div class="card hide" id="prod-form-card">
-          <h3 id="prod-form-title">Product</h3>
-          <form id="prod-form">
-            <input type="hidden" id="prod-id">
-            <input type="hidden" id="prod-image" value="">
-            <div class="grid2">
-              <div class="field"><label for="prod-name">Name *</label><input id="prod-name" required></div>
-              <div class="field"><label for="prod-category">Primary category</label>
-                <select id="prod-category"><option value="">Uncategorised</option></select>
-                <span class="field-hint">Main category for this product. <button type="button" class="btn ghost" id="prod-cat-add" style="padding:4px 8px;margin-left:4px">+ New category</button></span>
-              </div>
-              <div class="field full" style="grid-column:1/-1">
-                <label>Also show in</label>
-                <div id="prod-extra-cats" class="prod-extra-cats"></div>
-                <span class="field-hint">Optional extra categories (e.g. Lamb pie also listed under Pies). Primary is excluded automatically.</span>
-              </div>
-              <div class="field full" style="grid-column:1/-1"><label>Product image</label>
-                <div class="prod-img-row">
-                  <div class="prod-img-preview" id="prod-image-preview" aria-hidden="true"></div>
-                  <div>
-                    <div class="prod-img-actions">
-                      <button type="button" class="btn solid" id="prod-image-upload">Upload image</button>
-                      <button type="button" class="btn ghost" id="prod-image-clear">Clear</button>
-                      <input type="file" id="prod-image-file" accept="image/jpeg,image/png,image/webp" hidden>
-                    </div>
-                    <span class="field-hint">Recommended <strong>1200×1200 px</strong> (square). Max upload <strong>5&nbsp;MB</strong> — images are resized automatically before upload. Stored in Cloudinary under <code>orders/client/products/</code>.</span>
-                    <p class="notice" id="prod-image-msg" style="margin-top:8px"></p>
+
+        <!-- Single shared ProductEditor (relocated into side panel / inline row / card) -->
+        <div id="prod-editor-parking" class="prod-editor-parking">
+          <div class="lpe" id="prod-editor-shell" data-pricing="fixed" hidden>
+            <header class="lpe-head">
+              <div class="lpe-head-main">
+                <div class="lpe-head-thumb" id="prod-head-thumb" aria-hidden="true"></div>
+                <div>
+                  <h2 class="lpe-title" id="prod-form-title" tabindex="-1">Edit Product</h2>
+                  <div class="lpe-sub">
+                    <span id="prod-head-name"></span>
+                    <span class="badge ok" id="prod-head-active">Active</span>
                   </div>
                 </div>
               </div>
-              <div class="field full" style="grid-column:1/-1"><label>Pricing method</label>
-                <div class="radio-row" id="prod-pricing-radios" role="radiogroup" aria-label="Pricing method">
-                  <label><input type="radio" name="prod-pricing" value="fixed" checked> Fixed price</label>
-                  <label><input type="radio" name="prod-pricing" value="per_weight"> Per kg</label>
-                  <label><input type="radio" name="prod-pricing" value="price_tbc"> Price TBC</label>
+              <div class="lpe-head-actions">
+                <button class="btn ghost" type="button" id="prod-prev" title="Previous product">‹</button>
+                <button class="btn ghost" type="button" id="prod-next" title="Next product">›</button>
+                <button class="btn ghost" type="button" id="prod-expand-full" title="Expand full screen">Expand full screen</button>
+                <button class="btn ghost" type="button" id="prod-editor-more" title="More actions" aria-haspopup="true">⋯</button>
+                <button class="btn ghost" type="button" id="prod-editor-close" title="Close" aria-label="Close editor">✕</button>
+              </div>
+            </header>
+            <nav class="lpe-tabs" id="prod-section-tabs" aria-label="Editor sections"></nav>
+            <div class="lpe-mobile-nav" id="prod-mobile-nav">
+              <select id="prod-section-select" aria-label="Editor section"></select>
+              <button class="btn ghost" type="button" id="prod-section-prev">Previous</button>
+              <button class="btn ghost" type="button" id="prod-section-next">Next ›</button>
+            </div>
+            <form id="prod-form" class="lpe-body">
+              <input type="hidden" id="prod-id">
+              <input type="hidden" id="prod-image" value="">
+
+              <section class="lpe-section on" data-lpe-section="details" id="lpe-sec-details">
+                <h4>Details</h4>
+                <div class="field full"><label>Product image</label>
+                  <div class="prod-img-row">
+                    <div class="prod-img-preview" id="prod-image-preview" aria-hidden="true"></div>
+                    <div>
+                      <div class="prod-img-actions">
+                        <button type="button" class="btn ghost" id="prod-image-upload">Change image</button>
+                        <button type="button" class="btn ghost" id="prod-image-clear">Clear</button>
+                        <input type="file" id="prod-image-file" accept="image/jpeg,image/png,image/webp" hidden>
+                      </div>
+                      <span class="field-hint">Recommended 1200×1200 px. Max 5&nbsp;MB.</span>
+                      <p class="notice" id="prod-image-msg" style="margin-top:8px"></p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div class="field"><label for="prod-price">Price (dollars)</label>
-                <div class="money-input"><span class="prefix">$</span><input id="prod-price" type="number" min="0" step="0.01" placeholder="0.00"></div>
-                <span class="field-hint">Enter dollars and cents, e.g. 65.99</span>
-              </div>
-              <div class="field"><label for="prod-perkg">Price per kg (dollars)</label>
-                <div class="money-input"><span class="prefix">$</span><input id="prod-perkg" type="number" min="0" step="0.01" placeholder="0.00"></div>
-                <span class="field-hint">Used when pricing method is Per kg</span>
-              </div>
-              <div class="field"><label for="prod-stock">Stock method</label>
-                <select id="prod-stock">
-                  <option value="unlimited">Unlimited</option>
-                  <option value="made_to_order">Made to order</option>
-                  <option value="tracked">Tracked</option>
-                  <option value="allocation">Allocation</option>
-                </select>
-              </div>
-              <div class="field"><label for="prod-cutoff-mode">Cutoff mode</label>
-                <select id="prod-cutoff-mode">
-                  <option value="store_default">Store default</option>
-                  <option value="days_before">Days before</option>
-                  <option value="hours_before">Hours before</option>
-                  <option value="weekday_rule">Weekday + time</option>
-                  <option value="none">None</option>
-                </select>
-              </div>
-              <div class="field"><label for="prod-cutoff-value">Cutoff value</label><input id="prod-cutoff-value" type="number" min="0" step="1"></div>
-              <div class="field"><label for="prod-lead-mode">Lead time mode</label>
-                <select id="prod-lead-mode">
-                  <option value="none">None</option>
-                  <option value="hours">Hours</option>
-                  <option value="days">Days</option>
-                </select>
-              </div>
-              <div class="field"><label for="prod-lead-value">Lead time value</label><input id="prod-lead-value" type="number" min="0" step="1" value="0"></div>
-              <div class="field"><label for="prod-active">Active</label>
-                <select id="prod-active"><option value="1">Yes</option><option value="0">No</option></select>
-              </div>
-              <div class="field"><label for="prod-unit">Unit label</label><input id="prod-unit" placeholder="steak, kg, each…"></div>
-              <div class="field"><label for="prod-short">Short description</label>
-                <input id="prod-short" placeholder="Shown under the name on the shop (not for kg — use Minimum kg below)">
-              </div>
-              <div class="field" id="prod-min-kg-field"><label for="prod-min-kg">Minimum kg</label>
-                <input id="prod-min-kg" type="number" min="0.1" step="0.1" placeholder="e.g. 1.3">
-                <span class="field-hint">For variable-weight items. Shop starts at this kg (or 1 kg if blank). Example: seasoned lamb leg 1.3 kg minimum.</span>
-              </div>
-              <div class="field"><label for="prod-qty-prompt">Quantity prompt</label>
-                <input id="prod-qty-prompt" placeholder="How many turkeys would you like?">
-                <span class="field-hint">For individual / whole-bird items sold by quantity.</span>
-              </div>
-              <div class="field"><label for="prod-size-mode">Sold as</label>
-                <select id="prod-size-mode">
-                  <option value="each">Individual item (quantity only — whole turkeys, chickens)</option>
-                  <option value="variable">Variable weight (customer enters kg)</option>
-                  <option value="pack">Fixed pack size (qty only)</option>
-                </select>
-                <span class="field-hint">Whole turkeys with size 60–68 use Individual. Variable weight uses Minimum kg.</span>
-              </div>
-              <div class="field" id="prod-pack-fields">
-                <label for="prod-pack-kg">Pack weight (kg)</label>
-                <input id="prod-pack-kg" type="number" min="0.05" step="0.05" placeholder="0.8">
-                <span class="field-hint">e.g. 0.8 for an 800g pack</span>
-              </div>
-              <div class="field"><label for="prod-pack-label">Pack label</label>
-                <input id="prod-pack-label" placeholder="800g">
-              </div>
-            </div>
+                <div class="grid2">
+                  <div class="field"><label for="prod-name">Product name *</label><input id="prod-name" required></div>
+                  <div class="field"><label for="prod-sku">SKU</label><input id="prod-sku" placeholder="Optional SKU"></div>
+                  <div class="field" style="grid-column:1/-1"><label for="prod-short">Short description</label>
+                    <textarea id="prod-short" rows="2" maxlength="255" placeholder="Shown under the name on the shop"></textarea>
+                    <span class="field-hint"><span id="prod-short-count">0</span> / 255</span>
+                  </div>
+                  <div class="field" style="grid-column:1/-1"><label for="prod-description">Full description</label>
+                    <textarea id="prod-description" rows="3" placeholder="Optional longer description"></textarea>
+                  </div>
+                  <div class="field"><label for="prod-category">Primary category</label>
+                    <select id="prod-category"><option value="">Uncategorised</option></select>
+                    <span class="field-hint"><button type="button" class="btn ghost" id="prod-cat-add" style="padding:4px 8px">+ New category</button></span>
+                  </div>
+                  <div class="field"><label for="prod-active">Active</label>
+                    <select id="prod-active"><option value="1">Yes — visible to customers</option><option value="0">No — hidden</option></select>
+                  </div>
+                  <div class="field" style="grid-column:1/-1">
+                    <label for="prod-cat-search">Also show in</label>
+                    <div id="prod-extra-cats" class="prod-extra-cats lpe-cat-search">
+                      <input id="prod-cat-search" type="search" placeholder="Search categories…" autocomplete="off">
+                      <div class="lpe-chips" id="prod-extra-chips"></div>
+                      <div class="lpe-cat-list" id="prod-extra-list"></div>
+                    </div>
+                  </div>
+                  <div class="field" style="grid-column:1/-1"><label for="prod-tags">Tags</label>
+                    <input id="prod-tags" placeholder="Comma-separated tags">
+                  </div>
+                </div>
+              </section>
 
-            <h4 class="section-title">Product attribute sections</h4>
-            <p class="notice">Add sections customers choose when ordering — e.g. <strong>Stuffings</strong> (Apricot, Traditional) and <strong>Cooked?</strong> (Yes / No). Each section has its own title, single or multi-select, and optional extra price per choice.</p>
-            <div id="prod-options-list" class="prod-options-list"></div>
-            <div class="actions-row" style="margin-bottom:14px">
-              <button class="btn ghost" type="button" id="prod-option-add">+ Add section</button>
-            </div>
+              <section class="lpe-section" data-lpe-section="pricing" id="lpe-sec-pricing">
+                <h4>Pricing</h4>
+                <div class="lpe-pricing-cards" id="prod-pricing-radios" role="radiogroup" aria-label="Pricing method">
+                  <button type="button" class="lpe-price-card on" data-pricing="fixed"><strong>Fixed price</strong><span>One set price at checkout</span></button>
+                  <button type="button" class="lpe-price-card" data-pricing="per_weight"><strong>Per kilogram</strong><span>Priced by weight</span></button>
+                  <button type="button" class="lpe-price-card" data-pricing="price_tbc"><strong>Price confirmed later</strong><span>Deposit now, balance after prep</span></button>
+                </div>
+                <input type="hidden" name="prod-pricing" id="prod-pricing-value" value="fixed">
+                <div class="grid2">
+                  <div class="field lpe-field-show-fixed"><label for="prod-price">Price (dollars)</label>
+                    <div class="money-input"><span class="prefix">$</span><input id="prod-price" type="number" min="0" step="0.01" placeholder="0.00"></div>
+                  </div>
+                  <div class="field lpe-field-show-perkg"><label for="prod-perkg">Price per kg (dollars)</label>
+                    <div class="money-input"><span class="prefix">$</span><input id="prod-perkg" type="number" min="0" step="0.01" placeholder="0.00"></div>
+                  </div>
+                  <div class="field lpe-field-show-tbc"><label for="prod-est-price">Optional estimated price</label>
+                    <div class="money-input"><span class="prefix">$</span><input id="prod-est-price" type="number" min="0" step="0.01" placeholder="e.g. 25.00"></div>
+                  </div>
+                  <div class="field lpe-field-show-tbc"><label>Deposit requirement</label>
+                    <div class="radio-row" id="prod-deposit-mode">
+                      <label><input type="radio" name="prod-deposit" value="fixed" checked> Fixed deposit</label>
+                      <label><input type="radio" name="prod-deposit" value="percent"> Percentage</label>
+                      <label><input type="radio" name="prod-deposit" value="none"> No deposit</label>
+                    </div>
+                  </div>
+                  <div class="field lpe-field-show-tbc" id="prod-deposit-amount-field"><label for="prod-deposit-amount">Deposit amount</label>
+                    <div class="money-input"><span class="prefix">$</span><input id="prod-deposit-amount" type="number" min="0" step="0.01" placeholder="20.00"></div>
+                  </div>
+                  <div class="field lpe-field-show-tbc hide" id="prod-deposit-pct-field"><label for="prod-deposit-pct">Deposit percentage</label>
+                    <input id="prod-deposit-pct" type="number" min="0" max="100" step="1" placeholder="20">
+                  </div>
+                  <div class="field lpe-field-show-tbc" style="grid-column:1/-1"><label for="prod-price-explain">Customer explanation</label>
+                    <textarea id="prod-price-explain" rows="2" maxlength="255" placeholder="Final price is confirmed once your item is weighed and prepared."></textarea>
+                  </div>
+                </div>
+                <p class="lpe-summary" id="prod-pricing-summary" aria-live="polite"></p>
+              </section>
 
-            <div class="actions-row">
-              <button class="btn solid" type="submit" id="prod-save">Save product</button>
+              <section class="lpe-section" data-lpe-section="stock" id="lpe-sec-stock">
+                <h4>Stock</h4>
+                <div class="grid2">
+                  <div class="field"><label for="prod-stock">Stock method</label>
+                    <select id="prod-stock">
+                      <option value="unlimited">Unlimited</option>
+                      <option value="tracked">Track quantity</option>
+                      <option value="made_to_order">Made to order</option>
+                      <option value="allocation">Seasonal / allocation</option>
+                    </select>
+                  </div>
+                  <div class="field" id="prod-stock-qty-field"><label for="prod-stock-qty">Quantity on hand</label>
+                    <input id="prod-stock-qty" type="number" min="0" step="1" placeholder="Optional">
+                  </div>
+                  <div class="field"><label for="prod-size-mode">Sold as</label>
+                    <select id="prod-size-mode">
+                      <option value="each">Individual item (quantity only)</option>
+                      <option value="variable">Variable weight (customer enters kg)</option>
+                      <option value="pack">Fixed pack size (qty only)</option>
+                    </select>
+                  </div>
+                  <div class="field" id="prod-min-kg-field"><label for="prod-min-kg">Minimum kg</label>
+                    <input id="prod-min-kg" type="number" min="0.1" step="0.1" placeholder="e.g. 1.3">
+                  </div>
+                  <div class="field" id="prod-pack-fields"><label for="prod-pack-kg">Pack weight (kg)</label>
+                    <input id="prod-pack-kg" type="number" min="0.05" step="0.05" placeholder="0.8">
+                  </div>
+                  <div class="field"><label for="prod-pack-label">Pack label</label>
+                    <input id="prod-pack-label" placeholder="800g">
+                  </div>
+                  <div class="field"><label for="prod-qty-prompt">Quantity prompt</label>
+                    <input id="prod-qty-prompt" placeholder="How many would you like?">
+                  </div>
+                  <div class="field"><label for="prod-unit">Unit label</label>
+                    <input id="prod-unit" placeholder="steak, kg, each…">
+                  </div>
+                </div>
+              </section>
+
+              <section class="lpe-section" data-lpe-section="options" id="lpe-sec-options">
+                <h4>Options &amp; Variations</h4>
+                <p class="notice">Add option groups customers choose when ordering — e.g. Stuffings or Cooked? Each group supports single/multi choice and optional extra price.</p>
+                <div id="prod-options-list" class="prod-options-list"></div>
+                <div class="actions-row" style="margin-bottom:8px">
+                  <button class="btn ghost" type="button" id="prod-option-add">+ Add option group</button>
+                </div>
+              </section>
+
+              <section class="lpe-section" data-lpe-section="rules" id="lpe-sec-rules">
+                <h4>Rules</h4>
+                <div class="grid2">
+                  <div class="field"><label for="prod-cutoff-mode">Cutoff mode</label>
+                    <select id="prod-cutoff-mode">
+                      <option value="store_default">Store default</option>
+                      <option value="days_before">Days before</option>
+                      <option value="hours_before">Hours before</option>
+                      <option value="weekday_rule">Weekday + time</option>
+                      <option value="none">None</option>
+                    </select>
+                  </div>
+                  <div class="field"><label for="prod-cutoff-value">Cutoff value</label>
+                    <input id="prod-cutoff-value" type="number" min="0" step="1">
+                  </div>
+                  <div class="field"><label for="prod-lead-mode">Lead time mode</label>
+                    <select id="prod-lead-mode">
+                      <option value="none">None</option>
+                      <option value="hours">Hours</option>
+                      <option value="days">Days</option>
+                    </select>
+                  </div>
+                  <div class="field"><label for="prod-lead-value">Lead time value</label>
+                    <input id="prod-lead-value" type="number" min="0" step="1" value="0">
+                  </div>
+                  <div class="field" style="grid-column:1/-1"><label for="prod-rules-notice">Customer-facing notice</label>
+                    <textarea id="prod-rules-notice" rows="2" placeholder="Optional notice shown on the product"></textarea>
+                  </div>
+                </div>
+                <p class="lpe-summary" id="prod-rules-summary" aria-live="polite"></p>
+              </section>
+
+              <section class="lpe-section" data-lpe-section="display" id="lpe-sec-display">
+                <h4>Display</h4>
+                <div class="grid2">
+                  <div class="field"><label for="prod-featured">Featured</label>
+                    <select id="prod-featured"><option value="0">No</option><option value="1">Yes</option></select>
+                  </div>
+                  <div class="field"><label for="prod-sort">Display order</label>
+                    <input id="prod-sort" type="number" step="1" value="0">
+                  </div>
+                  <div class="field" style="grid-column:1/-1"><label for="prod-price-label">Customer-facing price badge</label>
+                    <input id="prod-price-label" placeholder="e.g. From $25 / Price on request">
+                  </div>
+                </div>
+                <div class="lpe-summary" id="prod-storefront-preview" aria-live="polite">
+                  <strong>Storefront preview</strong>
+                  <p class="notice" style="margin:8px 0 0" id="prod-preview-text">Save to refresh catalogue preview.</p>
+                </div>
+              </section>
+
+              <p class="notice" id="prod-msg" role="alert"></p>
+            </form>
+            <footer class="lpe-foot">
               <button class="btn ghost" type="button" id="prod-cancel">Cancel</button>
-            </div>
-            <p class="notice" id="prod-msg"></p>
-          </form>
+              <span class="lpe-foot-status" id="prod-save-status">All changes saved</span>
+              <div class="lpe-foot-actions">
+                <button class="btn ghost" type="button" id="prod-save-draft">Save as draft</button>
+                <button class="btn solid" type="button" id="prod-save">Save product</button>
+                <button class="btn ghost" type="button" id="prod-save-close">Save &amp; close</button>
+              </div>
+            </footer>
+          </div>
         </div>
       </section>
 
@@ -1677,7 +1834,24 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     dashDataCacheAt: 0,
     noCopyPrefill: null,
     pdFilter: 'all',
-    pdOrders: []
+    pdOrders: [],
+    prodDisplayMode: 'fullscreen',
+    prodSelectedId: null,
+    prodEditorOpen: false,
+    prodEditorSection: 'details',
+    prodForceFullscreenEditor: false,
+    prodDirty: false,
+    prodSnapshot: '',
+    prodDetailCache: {},
+    prodPage: 1,
+    prodPageSize: 20,
+    prodFilterStatus: '',
+    prodFilterPricing: '',
+    prodFilterStock: '',
+    prodSearchTimer: null,
+    prodOriginFocusId: null,
+    prodSaveClose: false,
+    prodLastSavedAt: null
   };
 
   var CATALOG_CACHE_TTL_MS = 5 * 60 * 1000;
@@ -4585,16 +4759,19 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
   }
 
   function renderExtraCategoryChecks(selectedIds){
-    var host = $('prod-extra-cats');
-    if (!host) return;
+    var list = $('prod-extra-list');
+    var chips = $('prod-extra-chips');
+    if (!list) return;
     var cats = state.categories || [];
     var primary = ($('prod-category') && $('prod-category').value) || '';
     var selected = Object.create(null);
     (selectedIds || []).forEach(function(id){ selected[String(id)] = true; });
+    var q = (($('prod-cat-search') && $('prod-cat-search').value) || '').trim().toLowerCase();
     var html = '';
     cats.forEach(function(c){
       if (!c || c.active === false) return;
       if (String(c.id) === String(primary)) return;
+      if (q && String(c.name || '').toLowerCase().indexOf(q) < 0) return;
       html +=
         '<label><input type="checkbox" data-extra-cat="' +
         esc(c.id) +
@@ -4604,16 +4781,61 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
         esc(c.name) +
         '</label>';
     });
-    host.innerHTML = html || '<span class="muted">No other categories yet — add one with + New category.</span>';
+    list.innerHTML = html || '<span class="muted">No matching categories.</span>';
+    if (chips) {
+      var chipHtml = '';
+      cats.forEach(function(c){
+        if (!selected[c.id] || String(c.id) === String(primary)) return;
+        chipHtml +=
+          '<span class="lpe-chip">' + esc(c.name) +
+          ' <button type="button" data-chip-remove="' + esc(c.id) + '" aria-label="Remove ' + esc(c.name) + '">×</button></span>';
+      });
+      chips.innerHTML = chipHtml;
+      chips.querySelectorAll('[data-chip-remove]').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          var id = btn.getAttribute('data-chip-remove');
+          var ids = readExtraCategoryIds().filter(function(x){ return String(x) !== String(id); });
+          renderExtraCategoryChecks(ids);
+          markProdDirty();
+        });
+      });
+    }
+    list.querySelectorAll('input[data-extra-cat]').forEach(function(cb){
+      cb.addEventListener('change', function(){
+        renderExtraCategoryChecks(readExtraCategoryIds());
+        markProdDirty();
+      });
+    });
   }
 
   function prodPricingValue(){
+    if ($('prod-pricing-value')) return $('prod-pricing-value').value || 'fixed';
     var el = document.querySelector('input[name="prod-pricing"]:checked');
     return el ? el.value : 'fixed';
   }
   function setProdPricingValue(v){
-    var el = document.querySelector('input[name="prod-pricing"][value="' + String(v || 'fixed') + '"]');
+    v = v || 'fixed';
+    if ($('prod-pricing-value')) $('prod-pricing-value').value = v;
+    var shell = $('prod-editor-shell');
+    if (shell) shell.setAttribute('data-pricing', v);
+    document.querySelectorAll('#prod-pricing-radios .lpe-price-card').forEach(function(card){
+      card.classList.toggle('on', card.getAttribute('data-pricing') === v);
+    });
+    syncPricingSummary();
+  }
+  function prodDepositMode(){
+    var el = document.querySelector('input[name="prod-deposit"]:checked');
+    return el ? el.value : 'none';
+  }
+  function setProdDepositMode(v){
+    v = v || 'none';
+    var el = document.querySelector('input[name="prod-deposit"][value="' + v + '"]');
     if (el) el.checked = true;
+    var amt = $('prod-deposit-amount-field');
+    var pct = $('prod-deposit-pct-field');
+    if (amt) amt.classList.toggle('hide', v !== 'fixed');
+    if (pct) pct.classList.toggle('hide', v !== 'percent');
+    syncPricingSummary();
   }
   function centsToDollarsInput(cents){
     if (cents == null || cents === '') return '';
@@ -4621,16 +4843,312 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
   }
   function setProdImagePreview(url){
     var box = $('prod-image-preview');
-    if (!box) return;
-    if (url) {
-      box.style.backgroundImage = 'url("' + String(url).replace(/"/g, '') + '")';
-      box.classList.remove('hide');
-      box.setAttribute('aria-hidden', 'false');
-    } else {
-      box.style.backgroundImage = '';
-      box.classList.add('hide');
-      box.setAttribute('aria-hidden', 'true');
+    var head = $('prod-head-thumb');
+    function apply(el){
+      if (!el) return;
+      if (url) {
+        el.style.backgroundImage = 'url("' + String(url).replace(/"/g, '') + '")';
+        el.classList.remove('hide');
+        el.setAttribute('aria-hidden', 'false');
+      } else {
+        el.style.backgroundImage = '';
+        el.classList.add('hide');
+        el.setAttribute('aria-hidden', 'true');
+      }
     }
+    apply(box);
+    apply(head);
+  }
+
+  function pe(){ return window.LpOrderProductEditor || {}; }
+
+  function isFullScreenOrdersApp(){
+    return !document.body.classList.contains('embed');
+  }
+
+  function measureProdWorkspaceWidth(){
+    var ws = $('prod-workspace');
+    if (ws && ws.getBoundingClientRect) {
+      var w = ws.getBoundingClientRect().width;
+      if (w > 0) return w;
+    }
+    return window.innerWidth || 1200;
+  }
+
+  function currentProdDisplayMode(){
+    return pe().resolveDisplayMode({
+      isFullScreenOrders: isFullScreenOrdersApp(),
+      containerWidth: measureProdWorkspaceWidth(),
+      forceFullscreenEditor: !!state.prodForceFullscreenEditor
+    });
+  }
+
+  function applyProdDisplayMode(mode){
+    mode = mode || currentProdDisplayMode();
+    state.prodDisplayMode = mode;
+    var ws = $('prod-workspace');
+    if (!ws) return mode;
+    ws.classList.remove('prod-mode-fullscreen', 'prod-mode-embedded', 'prod-mode-mobile');
+    ws.classList.add('prod-mode-' + mode);
+    ws.classList.toggle('prod-editor-open', !!state.prodEditorOpen && mode === 'fullscreen');
+    var side = $('prod-side-panel');
+    if (side) side.classList.toggle('hide', !(state.prodEditorOpen && mode === 'fullscreen'));
+    var cards = $('prod-card-list');
+    if (cards) {
+      if (mode === 'mobile') cards.removeAttribute('hidden');
+      else cards.setAttribute('hidden', 'hidden');
+    }
+    return mode;
+  }
+
+  function initProdSectionNav(){
+    var tabs = $('prod-section-tabs');
+    var sel = $('prod-section-select');
+    var sections = (pe().SECTIONS) || [];
+    if (tabs && !tabs.dataset.ready) {
+      tabs.innerHTML = sections.map(function(s, i){
+        return '<button type="button" class="lpe-tab' + (i === 0 ? ' on' : '') + '" data-lpe-tab="' + s.id + '">' + s.label + '</button>';
+      }).join('');
+      tabs.dataset.ready = '1';
+      tabs.addEventListener('click', function(ev){
+        var btn = ev.target && ev.target.closest && ev.target.closest('[data-lpe-tab]');
+        if (!btn) return;
+        setProdEditorSection(btn.getAttribute('data-lpe-tab'));
+      });
+    }
+    if (sel && !sel.dataset.ready) {
+      sel.innerHTML = sections.map(function(s, i){
+        return '<option value="' + s.id + '">' + s.label + ' — ' + (i + 1) + ' of ' + sections.length + '</option>';
+      }).join('');
+      sel.dataset.ready = '1';
+      sel.addEventListener('change', function(){ setProdEditorSection(sel.value); });
+    }
+  }
+
+  function setProdEditorSection(id){
+    var sections = (pe().SECTIONS) || [];
+    if (!sections.some(function(s){ return s.id === id; })) id = 'details';
+    state.prodEditorSection = id;
+    document.querySelectorAll('.lpe-section').forEach(function(sec){
+      sec.classList.toggle('on', sec.getAttribute('data-lpe-section') === id);
+    });
+    document.querySelectorAll('#prod-section-tabs .lpe-tab').forEach(function(tab){
+      tab.classList.toggle('on', tab.getAttribute('data-lpe-tab') === id);
+    });
+    if ($('prod-section-select')) $('prod-section-select').value = id;
+  }
+
+  function syncPricingSummary(){
+    var el = $('prod-pricing-summary');
+    if (!el || !pe().pricingSummary) return;
+    var depositMode = prodDepositMode();
+    el.textContent = pe().pricingSummary({
+      pricing_method: prodPricingValue(),
+      price_cents: $('prod-price') && $('prod-price').value !== '' ? dollarsToCents($('prod-price').value) : null,
+      price_per_kg_cents: $('prod-perkg') && $('prod-perkg').value !== '' ? dollarsToCents($('prod-perkg').value) : null,
+      deposit_mode: depositMode,
+      deposit_amount_cents: $('prod-deposit-amount') && $('prod-deposit-amount').value !== '' ? dollarsToCents($('prod-deposit-amount').value) : null,
+      deposit_percent: $('prod-deposit-pct') && $('prod-deposit-pct').value !== '' ? Number($('prod-deposit-pct').value) : null
+    });
+  }
+
+  function syncRulesSummary(){
+    var el = $('prod-rules-summary');
+    if (!el || !pe().rulesSummary) return;
+    el.textContent = pe().rulesSummary({
+      size_mode: $('prod-size-mode') ? $('prod-size-mode').value : 'variable',
+      minimum_kg: $('prod-min-kg') ? $('prod-min-kg').value : '',
+      pack_label: $('prod-pack-label') ? $('prod-pack-label').value : '',
+      pack_weight_kg: $('prod-pack-kg') ? $('prod-pack-kg').value : '',
+      cutoff_mode: $('prod-cutoff-mode') ? $('prod-cutoff-mode').value : 'store_default',
+      cutoff_value: $('prod-cutoff-value') ? $('prod-cutoff-value').value : '',
+      lead_time_mode: $('prod-lead-mode') ? $('prod-lead-mode').value : 'none',
+      lead_time_value: $('prod-lead-value') ? $('prod-lead-value').value : 0
+    });
+  }
+
+  function syncProdPreview(){
+    var el = $('prod-preview-text');
+    if (!el) return;
+    var name = ($('prod-name') && $('prod-name').value) || 'Product';
+    var price = pe().pricingLabel ? pe().pricingLabel({
+      pricing_method: prodPricingValue(),
+      price_cents: $('prod-price') && $('prod-price').value !== '' ? dollarsToCents($('prod-price').value) : null,
+      price_per_kg_cents: $('prod-perkg') && $('prod-perkg').value !== '' ? dollarsToCents($('prod-perkg').value) : null
+    }) : '';
+    el.textContent = name + ' · ' + price + ($('prod-active') && $('prod-active').value === '0' ? ' · hidden' : ' · visible');
+  }
+
+  function markProdDirty(){
+    if (!state.prodEditorOpen) return;
+    var snap = pe().snapshotForm ? pe().snapshotForm($('prod-form')) : '';
+    state.prodDirty = !!(state.prodSnapshot && snap !== state.prodSnapshot);
+    updateProdSaveStatus();
+    syncPricingSummary();
+    syncRulesSummary();
+    syncProdPreview();
+  }
+
+  function updateProdSaveStatus(){
+    var el = $('prod-save-status');
+    if (!el) return;
+    if (state.prodDirty) {
+      el.textContent = 'Unsaved changes';
+      el.className = 'lpe-foot-status warn';
+      return;
+    }
+    if (state.prodLastSavedAt) {
+      var mins = Math.max(0, Math.round((Date.now() - state.prodLastSavedAt) / 60000));
+      el.textContent = mins <= 0 ? 'All changes saved' : ('Last saved ' + mins + ' min' + (mins === 1 ? '' : 's') + ' ago');
+    } else {
+      el.textContent = 'All changes saved';
+    }
+    el.className = 'lpe-foot-status ok';
+  }
+
+  function captureProdSnapshot(){
+    state.prodSnapshot = pe().snapshotForm ? pe().snapshotForm($('prod-form')) : '';
+    state.prodDirty = false;
+    updateProdSaveStatus();
+  }
+
+  function getProdEditorShell(){
+    return $('prod-editor-shell');
+  }
+
+  function parkProdEditor(){
+    var shell = getProdEditorShell();
+    var parking = $('prod-editor-parking');
+    if (shell && parking && shell.parentNode !== parking) parking.appendChild(shell);
+    if (shell) shell.hidden = true;
+    document.querySelectorAll('tr.product-editor-row').forEach(function(tr){ tr.remove(); });
+    document.querySelectorAll('.prod-card-editor').forEach(function(el){ el.remove(); });
+  }
+
+  function mountProdEditor(mode, anchorEl){
+    var shell = getProdEditorShell();
+    if (!shell) return;
+    shell.hidden = false;
+    mode = mode || state.prodDisplayMode;
+    document.querySelectorAll('tr.product-editor-row').forEach(function(tr){ tr.remove(); });
+    document.querySelectorAll('.prod-card-editor').forEach(function(el){ el.remove(); });
+    if (mode === 'fullscreen') {
+      var side = $('prod-side-panel');
+      if (side) {
+        side.appendChild(shell);
+        side.classList.remove('hide');
+      }
+    } else if (mode === 'embedded' && anchorEl) {
+      var tr = document.createElement('tr');
+      tr.className = 'product-editor-row';
+      var td = document.createElement('td');
+      var cols = state.prodDeleteUnlocked ? 8 : 7;
+      td.colSpan = cols;
+      var host = document.createElement('div');
+      host.className = 'lpe-inline-host';
+      host.id = 'prod-inline-host';
+      td.appendChild(host);
+      tr.appendChild(td);
+      if (anchorEl.nextSibling) anchorEl.parentNode.insertBefore(tr, anchorEl.nextSibling);
+      else anchorEl.parentNode.appendChild(tr);
+      host.appendChild(shell);
+      try {
+        anchorEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      } catch (_e) {}
+    } else if (mode === 'mobile' && anchorEl) {
+      var wrap = document.createElement('div');
+      wrap.className = 'prod-card-editor';
+      wrap.id = 'prod-inline-host';
+      if (anchorEl.nextSibling) anchorEl.parentNode.insertBefore(wrap, anchorEl.nextSibling);
+      else anchorEl.parentNode.appendChild(wrap);
+      wrap.appendChild(shell);
+      try {
+        anchorEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      } catch (_e2) {}
+    } else {
+      parkProdEditor();
+      shell.hidden = false;
+      var side2 = $('prod-side-panel');
+      if (side2) { side2.appendChild(shell); side2.classList.remove('hide'); }
+    }
+    try {
+      if ($('prod-form-title')) $('prod-form-title').focus();
+    } catch (_e3) {}
+  }
+
+  function filteredProductsList(){
+    var products = state.products || [];
+    var cat = ($('prod-cat-filter') && $('prod-cat-filter').value) || '';
+    var q = (($('prod-q') && $('prod-q').value) || '').trim().toLowerCase();
+    var status = state.prodFilterStatus || (($('prod-status-filter') && $('prod-status-filter').value) || '');
+    var pricing = state.prodFilterPricing || (($('prod-pricing-filter') && $('prod-pricing-filter').value) || '');
+    var stock = state.prodFilterStock || (($('prod-stock-filter') && $('prod-stock-filter').value) || '');
+    return products.filter(function(p){
+      if (cat && !productInCategoryLocal(p, cat)) return false;
+      if (status === 'active' && p.active === false) return false;
+      if (status === 'inactive' && p.active !== false) return false;
+      if (pricing && p.pricing_method !== pricing) return false;
+      if (stock && (p.stock_method || 'unlimited') !== stock) return false;
+      if (q) {
+        var hay = (String(p.name || '') + ' ' + String(p.short_description || '') + ' ' + String(p.sku || '') + ' ' + String((p.options && p.options.pack_label) || '')).toLowerCase();
+        if (hay.indexOf(q) < 0) return false;
+      }
+      return true;
+    });
+  }
+
+  function pagedProducts(){
+    var all = filteredProductsList();
+    var size = state.prodPageSize || 20;
+    var pages = Math.max(1, Math.ceil(all.length / size));
+    if (state.prodPage > pages) state.prodPage = pages;
+    if (state.prodPage < 1) state.prodPage = 1;
+    var start = (state.prodPage - 1) * size;
+    return { all: all, pageItems: all.slice(start, start + size), pages: pages, start: start };
+  }
+
+  function renderProdPager(meta){
+    var el = $('prod-pager');
+    if (!el) return;
+    if (!meta.all.length) { el.innerHTML = ''; return; }
+    var from = meta.start + 1;
+    var to = Math.min(meta.all.length, meta.start + meta.pageItems.length);
+    var pagesHtml = '';
+    for (var i = 1; i <= meta.pages && i <= 8; i++) {
+      pagesHtml += '<button type="button" class="btn ghost' + (i === state.prodPage ? ' on' : '') + '" data-prod-page="' + i + '">' + i + '</button>';
+    }
+    el.innerHTML =
+      '<span>Showing ' + from + '–' + to + ' of ' + meta.all.length + ' products</span>' +
+      '<div class="prod-pager-pages">' +
+      '<button type="button" class="btn ghost" data-prod-page="prev" ' + (state.prodPage <= 1 ? 'disabled' : '') + '>‹</button>' +
+      pagesHtml +
+      '<button type="button" class="btn ghost" data-prod-page="next" ' + (state.prodPage >= meta.pages ? 'disabled' : '') + '>›</button>' +
+      '</div>' +
+      '<label>Per page <select id="prod-page-size">' +
+      [10,20,50].map(function(n){ return '<option value="' + n + '"' + (state.prodPageSize === n ? ' selected' : '') + '>' + n + '</option>'; }).join('') +
+      '</select></label>';
+    el.querySelectorAll('[data-prod-page]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var v = btn.getAttribute('data-prod-page');
+        if (v === 'prev') state.prodPage -= 1;
+        else if (v === 'next') state.prodPage += 1;
+        else state.prodPage = Number(v) || 1;
+        renderProductsTable();
+      });
+    });
+    if ($('prod-page-size')) $('prod-page-size').addEventListener('change', function(){
+      state.prodPageSize = Number($('prod-page-size').value) || 20;
+      state.prodPage = 1;
+      renderProductsTable();
+    });
+  }
+
+  function cutoffLabel(p){
+    if (!p) return '—';
+    if (p.cutoff_mode === 'days_before' && p.cutoff_value != null) return p.cutoff_value + 'd before';
+    if (p.cutoff_mode === 'hours_before' && p.cutoff_value != null) return p.cutoff_value + 'h before';
+    if (p.cutoff_mode === 'none') return 'None';
+    return 'Store default';
   }
 
   function setProdDeleteMode(unlocked){
@@ -4887,87 +5405,162 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     if (!requireSite()) return;
     var tbody = $('prod-tbody');
     var empty = $('prod-empty');
-    tbody.innerHTML = '<tr><td colspan="8">Loading…</td></tr>';
+    if (tbody) tbody.innerHTML = '<tr><td colspan="8">Loading…</td></tr>';
     try {
-      var data = await loadProductsCache();
+      await loadProductsCache();
       fillCategorySelects();
       refreshNewLineProductSelects();
+      initProdSectionNav();
+      applyProdDisplayMode();
       renderProductsTable();
+      ensureProdWorkspaceObserver();
     } catch (e) {
-      tbody.innerHTML = '<tr><td colspan="7">' + esc((e && e.message) || e) + '</td></tr>';
+      if (tbody) tbody.innerHTML = '<tr><td colspan="7">' + esc((e && e.message) || e) + '</td></tr>';
       toast((e && e.message) || String(e), 'err');
     }
   }
 
+  function ensureProdWorkspaceObserver(){
+    var ws = $('prod-workspace');
+    if (!ws || ws._prodRo) return;
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', function(){
+        if (state.currentView !== 'products') return;
+        var prev = state.prodDisplayMode;
+        var next = applyProdDisplayMode();
+        if (prev !== next) {
+          renderProductsTable();
+          if (state.prodEditorOpen) remountOpenProdEditor();
+        }
+      });
+      ws._prodRo = true;
+      return;
+    }
+    var ro = new ResizeObserver(function(){
+      if (state.currentView !== 'products') return;
+      var prev = state.prodDisplayMode;
+      var next = applyProdDisplayMode();
+      if (prev !== next) {
+        renderProductsTable();
+        if (state.prodEditorOpen) remountOpenProdEditor();
+      }
+    });
+    ro.observe(ws);
+    ws._prodRo = ro;
+  }
+
+  function remountOpenProdEditor(){
+    var mode = applyProdDisplayMode();
+    var id = state.prodSelectedId;
+    var anchor = null;
+    if (mode === 'embedded' && id) anchor = document.querySelector('tr.prod-row[data-edit="' + id + '"]');
+    if (mode === 'mobile' && id) anchor = document.querySelector('.prod-card[data-edit="' + id + '"]');
+    mountProdEditor(mode, anchor);
+  }
+
   function renderProductsTable(){
+    var mode = applyProdDisplayMode();
     var tbody = $('prod-tbody');
+    var cards = $('prod-card-list');
     var empty = $('prod-empty');
     var products = state.products || [];
-    var cat = ($('prod-cat-filter') && $('prod-cat-filter').value) || '';
-    var q = (($('prod-q') && $('prod-q').value) || '').trim().toLowerCase();
-    var filtered = products.filter(function(p){
-      if (cat && !productInCategoryLocal(p, cat)) return false;
-      if (q) {
-        var hay = (String(p.name || '') + ' ' + String(p.short_description || '') + ' ' + String((p.options && p.options.pack_label) || '')).toLowerCase();
-        if (hay.indexOf(q) < 0) return false;
-      }
-      return true;
-    });
+    var meta = pagedProducts();
+    renderProdPager(meta);
+
     if (!products.length) {
-      tbody.innerHTML = '';
+      if (tbody) tbody.innerHTML = '';
+      if (cards) cards.innerHTML = '';
       if (empty) empty.classList.remove('hide');
       return;
     }
     if (empty) empty.classList.add('hide');
-    if (!filtered.length) {
-      tbody.innerHTML = '<tr><td colspan="' + (state.prodDeleteUnlocked ? 8 : 7) + '">No products match this filter.</td></tr>';
+    if (!meta.all.length) {
+      if (tbody) tbody.innerHTML = '<tr><td colspan="8">No products match this filter.</td></tr>';
+      if (cards) cards.innerHTML = '<p class="empty">No products match this filter.</p>';
       return;
     }
+
     var delOn = state.prodDeleteUnlocked;
-    tbody.innerHTML = filtered.map(function(p){
-      var price = p.pricing_method === 'per_weight'
-        ? formatAud(p.price_per_kg_cents) + '/kg'
-        : p.pricing_method === 'price_tbc' ? 'TBC' : formatAud(p.price_cents);
+    var LPE = pe();
+
+    if (mode === 'mobile' && cards) {
+      if (tbody) tbody.innerHTML = '';
+      cards.innerHTML = meta.pageItems.map(function(p){
+        var selected = state.prodSelectedId === p.id && state.prodEditorOpen;
+        var thumb = p.image_url
+          ? '<div class="prod-thumb" style="background-image:url(\'' + esc(p.image_url) + '\')"></div>'
+          : '<div class="prod-thumb"></div>';
+        return '<button type="button" class="prod-card' + (selected ? ' is-selected' : '') + '" data-edit="' + esc(p.id) + '"' +
+          ' aria-expanded="' + (selected ? 'true' : 'false') + '"' +
+          (selected ? ' aria-controls="prod-inline-host"' : '') + '>' +
+          thumb +
+          '<span><strong>' + esc(p.name) + '</strong>' +
+          '<span class="prod-card-meta">' + esc(LPE.pricingLabel ? LPE.pricingLabel(p) : '') +
+          (p.active !== false ? ' <span class="badge ok">active</span>' : ' <span class="badge muted">off</span>') +
+          '</span></span>' +
+          '<span class="prod-expand-btn" aria-hidden="true">' + (selected ? '▾' : '›') + '</span>' +
+          '</button>';
+      }).join('');
+      cards.querySelectorAll('.prod-card').forEach(function(card){
+        card.addEventListener('click', function(){ requestOpenProduct(card.getAttribute('data-edit'), card); });
+        card.addEventListener('keydown', function(ev){
+          if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); requestOpenProduct(card.getAttribute('data-edit'), card); }
+        });
+      });
+      if (state.prodEditorOpen && state.prodSelectedId) {
+        var openCard = cards.querySelector('.prod-card[data-edit="' + state.prodSelectedId + '"]');
+        if (openCard) mountProdEditor('mobile', openCard);
+      }
+      return;
+    }
+
+    if (cards) cards.innerHTML = '';
+    if (!tbody) return;
+    tbody.innerHTML = meta.pageItems.map(function(p){
+      var selected = state.prodSelectedId === p.id && state.prodEditorOpen;
+      var price = LPE.pricingLabel ? LPE.pricingLabel(p) : '';
       var pack = (p.options && (p.options.pack_label || (p.options.size_mode === 'pack' && p.options.pack_weight_kg)))
         ? (p.options.pack_label || (Math.round(Number(p.options.pack_weight_kg) * 1000) + 'g'))
         : '';
       var extraIds = productCategoryIdsLocal(p).filter(function(id){ return id !== String(p.category_id || ''); });
       var catLabel = categoryName(p.category_id);
       if (extraIds.length) {
-        catLabel +=
-          ' + ' +
-          extraIds
-            .map(function(id){ return categoryName(id); })
-            .filter(function(n){ return n && n !== '—'; })
-            .join(', ');
+        catLabel += ' + ' + extraIds.map(function(id){ return categoryName(id); }).filter(Boolean).join(', ');
       }
       var thumb = p.image_url
         ? '<div class="prod-thumb" style="background-image:url(\'' + esc(p.image_url) + '\')"></div>'
         : '';
-      return '<tr class="clickable" data-edit="' + esc(p.id) + '">' +
+      return '<tr class="clickable prod-row' + (selected ? ' prod-row-selected' : '') + '" data-edit="' + esc(p.id) + '"' +
+        ' aria-expanded="' + (selected ? 'true' : 'false') + '"' +
+        (selected && mode === 'embedded' ? ' aria-controls="prod-inline-host"' : '') +
+        ' tabindex="0">' +
         (delOn ? '<td class="prod-del-col" onclick="event.stopPropagation()"><input type="checkbox" data-prod-del="' + esc(p.id) + '"' +
           (state.prodDeleteSelected[p.id] ? ' checked' : '') + ' aria-label="Select for delete"></td>' : '') +
-        '<td>' + thumb + '</td>' +
-        '<td><strong>' + esc(p.name) + '</strong>' +
+        '<td class="prod-col-product"><div style="display:flex;gap:10px;align-items:center">' + thumb +
+          '<div><strong>' + esc(p.name) + '</strong>' +
           (pack ? '<span class="prod-pack-badge">' + esc(pack) + '</span>' : '') +
           (p.short_description ? '<div class="muted" style="font-size:12px;margin-top:2px">' + esc(p.short_description) + '</div>' : '') +
-        '</td>' +
-        '<td>' + esc(catLabel) + '</td>' +
-        '<td>' + esc(p.pricing_method) + ' · ' + esc(price) + '</td>' +
-        '<td>' + esc(p.stock_method || '—') + '</td>' +
-        '<td>' + (p.active !== false
-          ? '<span class="badge ok">active</span>'
-          : '<span class="badge muted">off</span>') + '</td>' +
-        '<td><button class="btn ghost" type="button" data-edit-btn="' + esc(p.id) + '">Edit</button></td>' +
+          '</div></div></td>' +
+        '<td class="prod-col-wide">' + esc(catLabel) + '</td>' +
+        '<td>' + esc(price) + '</td>' +
+        '<td class="prod-col-wide">' + esc(LPE.stockLabel ? LPE.stockLabel(p) : (p.stock_method || '—')) + '</td>' +
+        '<td class="prod-col-wide">' + esc(cutoffLabel(p)) + '</td>' +
+        '<td>' + (p.active !== false ? '<span class="badge ok">active</span>' : '<span class="badge muted">off</span>') + '</td>' +
+        '<td><button class="prod-expand-btn" type="button" data-edit-btn="' + esc(p.id) + '" aria-label="Edit ' + esc(p.name) + '">' +
+          (selected ? '▾' : '›') + '</button></td>' +
       '</tr>';
     }).join('');
-    function openEdit(id){
-      openProductEditor(id);
-    }
-    tbody.querySelectorAll('tr[data-edit]').forEach(function(tr){
+
+    tbody.querySelectorAll('tr.prod-row').forEach(function(tr){
       tr.addEventListener('click', function(e){
-        if (e.target && e.target.closest && e.target.closest('button')) return;
-        openEdit(tr.getAttribute('data-edit'));
+        if (e.target && e.target.closest && e.target.closest('button,input,label')) return;
+        requestOpenProduct(tr.getAttribute('data-edit'), tr);
+      });
+      tr.addEventListener('keydown', function(ev){
+        if (ev.key === 'Enter' || ev.key === ' ') {
+          ev.preventDefault();
+          requestOpenProduct(tr.getAttribute('data-edit'), tr);
+        }
       });
     });
     tbody.querySelectorAll('[data-prod-del]').forEach(function(cb){
@@ -4979,9 +5572,48 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     tbody.querySelectorAll('[data-edit-btn]').forEach(function(btn){
       btn.addEventListener('click', function(e){
         e.stopPropagation();
-        openEdit(btn.getAttribute('data-edit-btn'));
+        var row = btn.closest('tr');
+        requestOpenProduct(btn.getAttribute('data-edit-btn'), row);
       });
     });
+
+    if (state.prodEditorOpen && state.prodSelectedId && mode === 'embedded') {
+      var openRow = tbody.querySelector('tr.prod-row[data-edit="' + state.prodSelectedId + '"]');
+      if (openRow) mountProdEditor('embedded', openRow);
+    } else if (state.prodEditorOpen && mode === 'fullscreen') {
+      mountProdEditor('fullscreen', null);
+    }
+  }
+
+  function confirmLeaveProdEditor(){
+    if (!state.prodDirty) return Promise.resolve('discard');
+    return new Promise(function(resolve){
+      if (window.confirm('You have unsaved product changes.\n\nOK = Save changes\nCancel = see discard options')) {
+        resolve('save');
+        return;
+      }
+      if (window.confirm('Discard unsaved changes?\n\nOK = Discard\nCancel = Keep editing')) {
+        resolve('discard');
+        return;
+      }
+      resolve('keep');
+    });
+  }
+
+  async function requestOpenProduct(id, anchorEl){
+    if (state.prodEditorOpen && String(state.prodSelectedId || '') === String(id || '') && id) {
+      return closeProdEditor({ restoreFocus: true });
+    }
+    if (state.prodEditorOpen && state.prodDirty) {
+      var action = await confirmLeaveProdEditor();
+      if (action === 'keep') return;
+      if (action === 'save') {
+        var ok = await saveProduct(null, { keepOpen: true });
+        if (!ok) return;
+      }
+    }
+    state.prodOriginFocusId = id || null;
+    await openProductEditor(id, anchorEl);
   }
 
   function syncPackFieldsVisibility(){
@@ -4997,6 +5629,9 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     if (minField) minField.style.display = !pack && !each ? '' : 'none';
     var qtyPromptField = $('prod-qty-prompt') && $('prod-qty-prompt').closest('.field');
     if (qtyPromptField) qtyPromptField.style.display = each || pack ? '' : 'none';
+    var stockQty = $('prod-stock-qty-field');
+    if (stockQty) stockQty.style.display = ($('prod-stock') && $('prod-stock').value === 'tracked') ? '' : 'none';
+    syncRulesSummary();
   }
 
   function renderProductOptionsEditor(questions){
@@ -5015,20 +5650,20 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     card.className = 'prod-opt-card';
     card.innerHTML =
       '<div class="prod-opt-head">' +
-        '<div class="field" style="margin:0;flex:1;min-width:160px"><label>Section title</label><input data-oq="label" value="' + esc(q.label || '') + '" placeholder="e.g. Stuffings"></div>' +
+        '<div class="field" style="margin:0;flex:1;min-width:160px"><label>Group name</label><input data-oq="label" value="' + esc(q.label || '') + '" placeholder="e.g. Stuffings"></div>' +
         '<div class="field" style="margin:0;min-width:150px"><label>Selection</label>' +
           '<select data-oq="field_type">' +
-            '<option value="radio"' + (ft !== 'checkboxes' && ft !== 'dropdown' && ft !== 'yes_no' ? ' selected' : '') + '>Select 1 only</option>' +
-            '<option value="checkboxes"' + (ft === 'checkboxes' ? ' selected' : '') + '>Select multiple</option>' +
+            '<option value="radio"' + (ft !== 'checkboxes' && ft !== 'dropdown' && ft !== 'yes_no' ? ' selected' : '') + '>Single choice</option>' +
+            '<option value="checkboxes"' + (ft === 'checkboxes' ? ' selected' : '') + '>Multiple choice</option>' +
             '<option value="yes_no"' + (ft === 'yes_no' ? ' selected' : '') + '>Yes / No</option>' +
             '<option value="dropdown"' + (ft === 'dropdown' ? ' selected' : '') + '>Dropdown</option>' +
           '</select></div>' +
         '<div class="field" style="margin:0;min-width:110px"><label>Required</label>' +
-          '<select data-oq="required"><option value="0"' + (!q.required ? ' selected' : '') + '>No</option><option value="1"' + (q.required ? ' selected' : '') + '>Yes</option></select></div>' +
-        '<button type="button" class="btn ghost" data-oq-remove>Remove section</button>' +
+          '<select data-oq="required"><option value="0"' + (!q.required ? ' selected' : '') + '>Optional</option><option value="1"' + (q.required ? ' selected' : '') + '>Required</option></select></div>' +
+        '<button type="button" class="btn ghost" data-oq-remove>Delete group</button>' +
       '</div>' +
       '<div class="prod-opt-choices" data-oq-choices></div>' +
-      '<button type="button" class="btn ghost" data-oq-add-choice style="margin-top:8px">+ Choice</button>';
+      '<button type="button" class="btn ghost" data-oq-add-choice style="margin-top:8px">+ Add choice</button>';
     host.appendChild(card);
     var choicesHost = card.querySelector('[data-oq-choices]');
     var opts = Array.isArray(q.options) && q.options.length ? q.options : (ft === 'yes_no' ? [{ label: 'Yes', price_cents: 0 }, { label: 'No', price_cents: 0 }] : [{ label: '', price_cents: 0 }]);
@@ -5043,11 +5678,17 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     if (typeSel) {
       typeSel.addEventListener('change', function(){
         if (typeSel.value === 'yes_no') syncYesNoChoices();
+        markProdDirty();
       });
     }
-    card.querySelector('[data-oq-remove]').addEventListener('click', function(){ card.remove(); });
+    card.querySelector('[data-oq-remove]').addEventListener('click', function(){ card.remove(); markProdDirty(); });
     card.querySelector('[data-oq-add-choice]').addEventListener('click', function(){
       appendProductOptionChoice(choicesHost, { label: '', price_cents: 0 });
+      markProdDirty();
+    });
+    card.querySelectorAll('input,select').forEach(function(el){
+      el.addEventListener('input', markProdDirty);
+      el.addEventListener('change', markProdDirty);
     });
   }
 
@@ -5059,10 +5700,13 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     var price = typeof o === 'object' && o.price_cents != null ? centsToDollarsInput(o.price_cents) : '';
     row.innerHTML =
       '<div class="field" style="margin:0"><label>Choice</label><input data-oc="label" value="' + esc(label) + '" placeholder="Apricot"></div>' +
-      '<div class="field" style="margin:0"><label>Extra $</label><input data-oc="price" type="number" min="0" step="0.01" value="' + esc(price) + '" placeholder="0.00"></div>' +
-      '<button type="button" class="btn ghost" data-oc-remove>✕</button>';
+      '<div class="field" style="margin:0"><label>Price adjustment $</label><input data-oc="price" type="number" min="0" step="0.01" value="' + esc(price) + '" placeholder="0.00"></div>' +
+      '<button type="button" class="btn ghost" data-oc-remove aria-label="Delete choice">✕</button>';
     host.appendChild(row);
-    row.querySelector('[data-oc-remove]').addEventListener('click', function(){ row.remove(); });
+    row.querySelector('[data-oc-remove]').addEventListener('click', function(){ row.remove(); markProdDirty(); });
+    row.querySelectorAll('input').forEach(function(el){
+      el.addEventListener('input', markProdDirty);
+    });
   }
 
   function readProductOptionsFromForm(){
@@ -5098,41 +5742,94 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     return out;
   }
 
-  async function openProductEditor(id){
+  async function openProductEditor(id, anchorEl){
+    initProdSectionNav();
+    var mode = applyProdDisplayMode();
+    state.prodEditorOpen = true;
+    state.prodSelectedId = id || null;
     if (!id) {
       fillProductForm(null);
       renderProductOptionsEditor([]);
       syncPackFieldsVisibility();
+      setProdEditorSection(state.prodEditorSection || 'details');
+      mountProdEditor(mode, anchorEl);
+      captureProdSnapshot();
+      renderProductsTable();
       return;
     }
     try {
-      var data = await api('/api/order/products?site_id=' + encodeURIComponent(state.siteId) + '&id=' + encodeURIComponent(id));
+      var cached = state.prodDetailCache[id];
+      var data = cached;
+      if (!data) {
+        data = await api('/api/order/products?site_id=' + encodeURIComponent(state.siteId) + '&id=' + encodeURIComponent(id));
+        state.prodDetailCache[id] = data;
+      }
       fillProductForm(data.product || null);
       renderProductOptionsEditor(data.questions || []);
       syncPackFieldsVisibility();
+      setProdEditorSection(state.prodEditorSection || 'details');
+      mountProdEditor(mode, anchorEl || document.querySelector('[data-edit="' + id + '"]'));
+      captureProdSnapshot();
+      renderProductsTable();
     } catch (e) {
       var p = (state.products || []).find(function(x){ return x.id === id; });
       fillProductForm(p || null);
       renderProductOptionsEditor([]);
       syncPackFieldsVisibility();
+      mountProdEditor(mode, anchorEl);
+      captureProdSnapshot();
       toast((e && e.message) || String(e), 'err');
+      renderProductsTable();
+    }
+  }
+
+  function closeProdEditor(opts){
+    opts = opts || {};
+    var focusId = state.prodOriginFocusId || state.prodSelectedId;
+    state.prodEditorOpen = false;
+    state.prodSelectedId = null;
+    state.prodForceFullscreenEditor = false;
+    state.prodDirty = false;
+    parkProdEditor();
+    var side = $('prod-side-panel');
+    if (side) side.classList.add('hide');
+    applyProdDisplayMode();
+    renderProductsTable();
+    if (opts.restoreFocus && focusId) {
+      var el = document.querySelector('[data-edit="' + focusId + '"]');
+      if (el && el.focus) try { el.focus(); } catch (_e) {}
     }
   }
 
   function fillProductForm(p){
-    $('prod-form-card').classList.remove('hide');
-    $('prod-form-title').textContent = p && p.id ? 'Edit product' : 'New product';
     fillCategorySelects();
     $('prod-id').value = (p && p.id) || '';
+    $('prod-form-title').textContent = p && p.id ? 'Edit Product' : 'New Product';
+    if ($('prod-head-name')) $('prod-head-name').textContent = (p && p.name) || 'New product';
+    if ($('prod-head-active')) {
+      $('prod-head-active').textContent = p && p.active === false ? 'Inactive' : 'Active';
+      $('prod-head-active').className = 'badge ' + (p && p.active === false ? 'muted' : 'ok');
+    }
     $('prod-name').value = (p && p.name) || '';
+    if ($('prod-sku')) $('prod-sku').value = (p && p.sku) || '';
     if ($('prod-short')) $('prod-short').value = (p && p.short_description) || '';
+    if ($('prod-description')) $('prod-description').value = (p && p.description) || '';
+    if ($('prod-short-count') && $('prod-short')) $('prod-short-count').textContent = String(($('prod-short').value || '').length);
     $('prod-image').value = (p && p.image_url) || '';
     setProdImagePreview((p && p.image_url) || '');
     if ($('prod-image-msg')) $('prod-image-msg').textContent = '';
     setProdPricingValue((p && p.pricing_method) || 'fixed');
     $('prod-price').value = p && p.price_cents != null ? centsToDollarsInput(p.price_cents) : '';
     $('prod-perkg').value = p && p.price_per_kg_cents != null ? centsToDollarsInput(p.price_per_kg_cents) : '';
+    if ($('prod-est-price')) $('prod-est-price').value = p && p.price_cents != null && p.pricing_method === 'price_tbc' ? centsToDollarsInput(p.price_cents) : '';
+    if (p && p.deposit_percent_bps != null) setProdDepositMode('percent');
+    else if (p && p.deposit_amount_cents != null) setProdDepositMode('fixed');
+    else setProdDepositMode(p && p.pricing_method === 'price_tbc' ? 'fixed' : 'none');
+    if ($('prod-deposit-amount')) $('prod-deposit-amount').value = p && p.deposit_amount_cents != null ? centsToDollarsInput(p.deposit_amount_cents) : '';
+    if ($('prod-deposit-pct')) $('prod-deposit-pct').value = p && p.deposit_percent_bps != null ? String(Math.round(Number(p.deposit_percent_bps) / 100)) : '';
+    if ($('prod-price-explain')) $('prod-price-explain').value = (p && p.price_label) || '';
     $('prod-stock').value = (p && p.stock_method) || 'made_to_order';
+    if ($('prod-stock-qty')) $('prod-stock-qty').value = p && p.stock_qty != null ? p.stock_qty : '';
     $('prod-cutoff-mode').value = (p && p.cutoff_mode) || 'store_default';
     $('prod-cutoff-value').value = p && p.cutoff_value != null ? p.cutoff_value : '';
     $('prod-lead-mode').value = (p && p.lead_time_mode) || 'none';
@@ -5140,6 +5837,11 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     $('prod-active').value = p && p.active === false ? '0' : '1';
     $('prod-unit').value = (p && p.unit_label) || '';
     if ($('prod-category')) $('prod-category').value = (p && p.category_id) || '';
+    if ($('prod-featured')) $('prod-featured').value = p && p.featured ? '1' : '0';
+    if ($('prod-sort')) $('prod-sort').value = p && p.sort_order != null ? p.sort_order : 0;
+    if ($('prod-price-label')) $('prod-price-label').value = (p && p.price_label) || '';
+    if ($('prod-tags')) $('prod-tags').value = Array.isArray(p && p.tags) ? p.tags.join(', ') : '';
+    if ($('prod-rules-notice')) $('prod-rules-notice').value = '';
     var opts = (p && p.options) || {};
     if ($('prod-size-mode')) {
       $('prod-size-mode').value =
@@ -5154,38 +5856,63 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     if ($('prod-min-kg')) $('prod-min-kg').value = opts.minimum_kg != null ? opts.minimum_kg : '';
     if ($('prod-qty-prompt')) $('prod-qty-prompt').value = opts.quantity_prompt || '';
     renderExtraCategoryChecks(opts.additional_category_ids || []);
-    $('prod-msg').textContent = '';
+    if ($('prod-msg')) $('prod-msg').textContent = '';
     syncPackFieldsVisibility();
-    $('prod-form-card').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    syncPricingSummary();
+    syncRulesSummary();
+    syncProdPreview();
   }
 
-  async function saveProduct(ev){
-    ev.preventDefault();
-    if (!requireSite()) return;
+  async function saveProduct(ev, opts){
+    if (ev && ev.preventDefault) ev.preventDefault();
+    opts = opts || {};
+    if (!requireSite()) return false;
     var btn = $('prod-save');
     var msg = $('prod-msg');
-    btn.disabled = true;
-    msg.textContent = '';
+    if (btn) btn.disabled = true;
+    if (msg) msg.textContent = '';
     var id = $('prod-id').value;
     var pricing = prodPricingValue();
     var sizeMode = $('prod-size-mode') ? $('prod-size-mode').value : 'variable';
+    var depositMode = prodDepositMode();
+    var tagsRaw = $('prod-tags') ? $('prod-tags').value : '';
+    var tags = String(tagsRaw || '').split(',').map(function(t){ return t.trim(); }).filter(Boolean);
     var body = {
       site_id: state.siteId,
       name: $('prod-name').value.trim(),
+      sku: $('prod-sku') ? ($('prod-sku').value.trim() || null) : null,
+      description: $('prod-description') ? ($('prod-description').value.trim() || null) : null,
       short_description: $('prod-short') ? ($('prod-short').value.trim() || null) : null,
       image_url: $('prod-image').value.trim() || null,
       category_id: ($('prod-category') && $('prod-category').value) || null,
       additional_category_ids: readExtraCategoryIds(),
       pricing_method: pricing,
-      price_cents: $('prod-price').value !== '' ? dollarsToCents($('prod-price').value) : null,
+      price_cents: pricing === 'fixed'
+        ? ($('prod-price').value !== '' ? dollarsToCents($('prod-price').value) : null)
+        : (pricing === 'price_tbc' && $('prod-est-price') && $('prod-est-price').value !== ''
+          ? dollarsToCents($('prod-est-price').value)
+          : ($('prod-price').value !== '' ? dollarsToCents($('prod-price').value) : null)),
       price_per_kg_cents: $('prod-perkg').value !== '' ? dollarsToCents($('prod-perkg').value) : null,
+      price_label: $('prod-price-explain') && $('prod-price-explain').value.trim()
+        ? $('prod-price-explain').value.trim()
+        : ($('prod-price-label') ? ($('prod-price-label').value.trim() || null) : null),
       stock_method: $('prod-stock').value,
+      stock_qty: $('prod-stock-qty') && $('prod-stock-qty').value !== '' ? Number($('prod-stock-qty').value) : null,
       cutoff_mode: $('prod-cutoff-mode').value,
       cutoff_value: $('prod-cutoff-value').value !== '' ? Number($('prod-cutoff-value').value) : null,
       lead_time_mode: $('prod-lead-mode').value,
       lead_time_value: Number($('prod-lead-value').value) || 0,
-      active: $('prod-active').value === '1',
+      active: opts.asDraft ? false : ($('prod-active').value === '1'),
+      featured: $('prod-featured') ? $('prod-featured').value === '1' : false,
+      sort_order: $('prod-sort') && $('prod-sort').value !== '' ? Number($('prod-sort').value) : 0,
+      tags: tags,
       unit_label: $('prod-unit').value.trim() || null,
+      deposit_amount_cents: pricing === 'price_tbc' && depositMode === 'fixed' && $('prod-deposit-amount') && $('prod-deposit-amount').value !== ''
+        ? dollarsToCents($('prod-deposit-amount').value)
+        : null,
+      deposit_percent_bps: pricing === 'price_tbc' && depositMode === 'percent' && $('prod-deposit-pct') && $('prod-deposit-pct').value !== ''
+        ? Math.round(Number($('prod-deposit-pct').value) * 100)
+        : null,
       weight_required:
         sizeMode === 'pack' || sizeMode === 'each'
           ? false
@@ -5197,22 +5924,48 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
       quantity_prompt: $('prod-qty-prompt') ? ($('prod-qty-prompt').value.trim() || null) : null,
       questions: readProductOptionsFromForm()
     };
+    if (!body.name) {
+      if (msg) msg.textContent = 'Product name is required.';
+      toast('Product name is required', 'err');
+      if (btn) btn.disabled = false;
+      setProdEditorSection('details');
+      return false;
+    }
     try {
+      var result;
       if (id) {
         body.id = id;
-        await api('/api/order/products', { method: 'PATCH', body: body });
-        toast('Product updated', 'ok');
+        result = await api('/api/order/products', { method: 'PATCH', body: body });
+        toast(opts.asDraft ? 'Saved as inactive draft' : 'Product updated', 'ok');
       } else {
-        await api('/api/order/products', { method: 'POST', body: body });
-        toast('Product created', 'ok');
+        result = await api('/api/order/products', { method: 'POST', body: body });
+        toast(opts.asDraft ? 'Draft created' : 'Product created', 'ok');
+        if (result && result.product && result.product.id) {
+          $('prod-id').value = result.product.id;
+          state.prodSelectedId = result.product.id;
+          id = result.product.id;
+        }
       }
-      $('prod-form-card').classList.add('hide');
-      await loadProductsView();
+      if (id) delete state.prodDetailCache[id];
+      state.prodLastSavedAt = Date.now();
+      captureProdSnapshot();
+      await loadProductsCache({ force: true });
+      fillCategorySelects();
+      if (opts.close || state.prodSaveClose) {
+        state.prodSaveClose = false;
+        closeProdEditor({ restoreFocus: true });
+      } else if (!opts.keepOpen) {
+        renderProductsTable();
+        remountOpenProdEditor();
+      }
+      if (btn) btn.disabled = false;
+      return true;
     } catch (e) {
-      msg.textContent = (e && e.message) || String(e);
-      toast(msg.textContent, 'err');
+      if (msg) msg.textContent = (e && e.message) || String(e);
+      toast((e && e.message) || String(e), 'err');
+      if (btn) btn.disabled = false;
+      return false;
     }
-    btn.disabled = false;
   }
 
   async function addProductCategory(){
@@ -6815,18 +7568,9 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
         $('pd-filters').querySelectorAll('[data-pd-filter]').forEach(function(btn){
           btn.classList.toggle('on', btn.getAttribute('data-pd-filter') === (state.pdFilter || 'all'));
         });
-        html += '</tbody></table></div></div>';
-        return html;
-      }).join('');
-
-      wireOrderOpen(groupsEl);
-      groupsEl.querySelectorAll('[data-pd-toggle]').forEach(function(btn){
-        btn.addEventListener('click', function(){
-          var body = btn.parentNode && btn.parentNode.querySelector('.pd-window-body');
-          if (body) body.classList.toggle('hide');
-        });
-      });
-      var snap = await loadPrintSnapshotStatus(date, ['day_run', 'label', 'pick_list']);
+      }
+      renderPickupDayGroups(orders);
+      var snap = await loadPrintSnapshotStatus(date, ['day_run', 'exceptions', 'label', 'pick_list']);
       renderPrintStatusBanner($('pd-print-status'), snap && snap.formats, ['day_run', 'exceptions', 'label']);
     } catch (e) {
       groupsEl.innerHTML = '<p class="notice">' + esc((e && e.message) || e) + '</p>';
@@ -7399,13 +8143,108 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     } catch (e) { toast((e && e.message) || String(e), 'err'); }
     btn.disabled = false;
   });
-  $('prod-new').addEventListener('click', function(){ openProductEditor(null); });
-  if ($('prod-option-add')) $('prod-option-add').addEventListener('click', function(){ appendProductOptionGroup(null); });
-  if ($('prod-size-mode')) $('prod-size-mode').addEventListener('change', syncPackFieldsVisibility);
-  $('prod-cancel').addEventListener('click', function(){ $('prod-form-card').classList.add('hide'); });
-  $('prod-form').addEventListener('submit', saveProduct);
-  if ($('prod-cat-filter')) $('prod-cat-filter').addEventListener('change', renderProductsTable);
-  if ($('prod-q')) $('prod-q').addEventListener('input', function(){ renderProductsTable(); });
+  $('prod-new').addEventListener('click', function(){ requestOpenProduct(null, null); });
+  if ($('prod-option-add')) $('prod-option-add').addEventListener('click', function(){ appendProductOptionGroup(null); markProdDirty(); });
+  if ($('prod-size-mode')) $('prod-size-mode').addEventListener('change', function(){ syncPackFieldsVisibility(); markProdDirty(); });
+  if ($('prod-stock')) $('prod-stock').addEventListener('change', function(){ syncPackFieldsVisibility(); markProdDirty(); });
+  if ($('prod-cancel')) $('prod-cancel').addEventListener('click', async function(){
+    if (state.prodDirty) {
+      var action = await confirmLeaveProdEditor();
+      if (action === 'keep') return;
+      if (action === 'save') {
+        var ok = await saveProduct(null, { close: true });
+        if (!ok) return;
+        return;
+      }
+    }
+    closeProdEditor({ restoreFocus: true });
+  });
+  if ($('prod-editor-close')) $('prod-editor-close').addEventListener('click', function(){ $('prod-cancel').click(); });
+  if ($('prod-save')) $('prod-save').addEventListener('click', function(){ saveProduct(null, {}); });
+  if ($('prod-save-draft')) $('prod-save-draft').addEventListener('click', function(){ saveProduct(null, { asDraft: true }); });
+  if ($('prod-save-close')) $('prod-save-close').addEventListener('click', function(){ saveProduct(null, { close: true }); });
+  if ($('prod-form')) $('prod-form').addEventListener('submit', function(ev){ saveProduct(ev, {}); });
+  if ($('prod-form')) {
+    $('prod-form').addEventListener('input', markProdDirty);
+    $('prod-form').addEventListener('change', markProdDirty);
+  }
+  if ($('prod-expand-full')) $('prod-expand-full').addEventListener('click', function(){
+    state.prodForceFullscreenEditor = !state.prodForceFullscreenEditor;
+    remountOpenProdEditor();
+    $('prod-expand-full').textContent = state.prodForceFullscreenEditor ? 'Exit full screen' : 'Expand full screen';
+  });
+  if ($('prod-section-prev')) $('prod-section-prev').addEventListener('click', function(){
+    setProdEditorSection(pe().prevSection(state.prodEditorSection || 'details'));
+  });
+  if ($('prod-section-next')) $('prod-section-next').addEventListener('click', function(){
+    setProdEditorSection(pe().nextSection(state.prodEditorSection || 'details'));
+  });
+  if ($('prod-prev') || $('prod-next')) {
+    function neighborProduct(dir){
+      var list = filteredProductsList();
+      var idx = list.findIndex(function(p){ return p.id === state.prodSelectedId; });
+      if (idx < 0) return null;
+      return list[idx + dir] || null;
+    }
+    if ($('prod-prev')) $('prod-prev').addEventListener('click', function(){
+      var p = neighborProduct(-1);
+      if (p) requestOpenProduct(p.id, document.querySelector('[data-edit="' + p.id + '"]'));
+    });
+    if ($('prod-next')) $('prod-next').addEventListener('click', function(){
+      var p = neighborProduct(1);
+      if (p) requestOpenProduct(p.id, document.querySelector('[data-edit="' + p.id + '"]'));
+    });
+  }
+  document.querySelectorAll('#prod-pricing-radios .lpe-price-card').forEach(function(card){
+    card.addEventListener('click', function(){
+      setProdPricingValue(card.getAttribute('data-pricing'));
+      markProdDirty();
+    });
+  });
+  document.querySelectorAll('input[name="prod-deposit"]').forEach(function(r){
+    r.addEventListener('change', function(){ setProdDepositMode(prodDepositMode()); markProdDirty(); });
+  });
+  if ($('prod-short')) $('prod-short').addEventListener('input', function(){
+    if ($('prod-short-count')) $('prod-short-count').textContent = String(($('prod-short').value || '').length);
+  });
+  if ($('prod-cat-search')) $('prod-cat-search').addEventListener('input', function(){
+    renderExtraCategoryChecks(readExtraCategoryIds());
+  });
+  if ($('prod-cat-filter')) $('prod-cat-filter').addEventListener('change', function(){ state.prodPage = 1; renderProductsTable(); });
+  if ($('prod-status-filter')) $('prod-status-filter').addEventListener('change', function(){
+    state.prodFilterStatus = $('prod-status-filter').value; state.prodPage = 1; renderProductsTable();
+  });
+  if ($('prod-pricing-filter')) $('prod-pricing-filter').addEventListener('change', function(){
+    state.prodFilterPricing = $('prod-pricing-filter').value; state.prodPage = 1; renderProductsTable();
+  });
+  if ($('prod-stock-filter')) $('prod-stock-filter').addEventListener('change', function(){
+    state.prodFilterStock = $('prod-stock-filter').value; state.prodPage = 1; renderProductsTable();
+  });
+  if ($('prod-q')) $('prod-q').addEventListener('input', function(){
+    clearTimeout(state.prodSearchTimer);
+    state.prodSearchTimer = setTimeout(function(){ state.prodPage = 1; renderProductsTable(); }, 180);
+  });
+  if ($('prod-clear-filters')) $('prod-clear-filters').addEventListener('click', function(){
+    if ($('prod-q')) $('prod-q').value = '';
+    if ($('prod-cat-filter')) $('prod-cat-filter').value = '';
+    if ($('prod-status-filter')) $('prod-status-filter').value = '';
+    if ($('prod-pricing-filter')) $('prod-pricing-filter').value = '';
+    if ($('prod-stock-filter')) $('prod-stock-filter').value = '';
+    state.prodFilterStatus = state.prodFilterPricing = state.prodFilterStock = '';
+    state.prodPage = 1;
+    renderProductsTable();
+  });
+  if ($('prod-more')) $('prod-more').addEventListener('click', function(){
+    var panel = $('prod-more-panel');
+    if (!panel) return;
+    var open = panel.hasAttribute('hidden');
+    if (open) { panel.removeAttribute('hidden'); panel.classList.remove('hide'); }
+    else { panel.setAttribute('hidden', 'hidden'); panel.classList.add('hide'); }
+    $('prod-more').setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  if ($('prod-import')) $('prod-import').addEventListener('click', function(){
+    openNavRoute('import');
+  });
   if ($('prod-cat-add')) $('prod-cat-add').addEventListener('click', addProductCategory);
   if ($('prod-auto-cat')) $('prod-auto-cat').addEventListener('click', autoCategoriseProducts);
   if ($('prod-pies-extra')) $('prod-pies-extra').addEventListener('click', assignPiesFromTitles);
@@ -7413,11 +8252,17 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
   if ($('prod-deactivate-unsized-hams')) $('prod-deactivate-unsized-hams').addEventListener('click', deactivateUnsizedHams);
   if ($('prod-category')) $('prod-category').addEventListener('change', function(){
     renderExtraCategoryChecks(readExtraCategoryIds());
+    markProdDirty();
   });
   if ($('prod-delete-unlock')) $('prod-delete-unlock').addEventListener('click', function(){
     setProdDeleteMode(!state.prodDeleteUnlocked);
   });
   if ($('prod-delete-selected')) $('prod-delete-selected').addEventListener('click', deleteSelectedProducts);
+  document.addEventListener('keydown', function(ev){
+    if (ev.key !== 'Escape' || !state.prodEditorOpen || state.currentView !== 'products') return;
+    ev.preventDefault();
+    if ($('prod-cancel')) $('prod-cancel').click();
+  });
   document.querySelectorAll('.settings-tab').forEach(function(btn){
     btn.addEventListener('click', function(){
       switchSettingsTab(btn.getAttribute('data-set-tab') || 'general');
