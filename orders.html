@@ -862,6 +862,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
             <button class="btn ghost" type="button" id="supply-goto-alloc">Open Product Allocation</button>
           </div>
           <div class="kpis" id="supply-kpis"></div>
+          <div class="notice hide" id="supply-print-status" style="margin:0 0 12px"></div>
           <div class="table-wrap">
             <table class="oe"><thead><tr>
               <th>Product</th><th>Orders</th><th>Qty</th><th>Req. kg</th><th>Actual kg</th>
@@ -882,6 +883,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
             <button class="btn ghost" type="button" id="alloc-goto-supply">Production Summary</button>
           </div>
           <p class="sub">Pack by product and variation — tick lines as they are packed. Totals stay on Production Summary; this view is the per-customer checklist.</p>
+          <div class="notice hide" id="alloc-print-status" style="margin:0 0 12px"></div>
           <div class="kpis" id="alloc-kpis"></div>
           <div id="alloc-groups"></div>
           <p class="empty hide" id="alloc-empty">No allocation lines for this date.</p>
@@ -897,6 +899,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
             <button class="btn ghost" type="button" id="lbl-print-items">Print item stickers</button>
           </div>
           <p class="sub">Two-up A4 stickers (~92×48mm) with customer, pickup window, and a QR code to the order portal. Important orders show an Important badge when enabled on the order.</p>
+          <div class="notice hide" id="lbl-print-status" style="margin:0 0 12px"></div>
           <div class="notice" id="lbl-hint">Choose a pickup date, then print order labels (one per order) or item stickers (one per line).</div>
         </div>
       </section>
@@ -1029,6 +1032,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
             <button class="btn ghost" type="button" id="pd-goto-prod">Production Summary</button>
           </div>
           <p class="sub" id="pd-heading">Operational dashboard for a single pickup day — group by time window, open orders, print run sheets.</p>
+          <div class="notice hide" id="pd-print-status" style="margin:0 0 12px"></div>
           <div class="kpis" id="pd-kpis"></div>
           <div id="pd-groups"></div>
           <p class="empty hide" id="pd-empty">No orders for this pickup date.</p>
@@ -5306,6 +5310,8 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
           '<td>' + (L.actual_weight_kg ? esc(Number(L.actual_weight_kg).toFixed(3)) : '—') + '</td>' +
         '</tr>';
       }).join('');
+      var snap = await loadPrintSnapshotStatus(date, ['prep', 'pick_list', 'day_run', 'allocation', 'label', 'item_labels']);
+      renderPrintStatusBanner($('supply-print-status'), snap && snap.formats, ['prep', 'day_run', 'allocation']);
     } catch (e) {
       tbody.innerHTML = '<tr><td colspan="5">' + esc((e && e.message) || e) + '</td></tr>';
       toast((e && e.message) || String(e), 'err');
@@ -5380,6 +5386,8 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
           toggleItemPacked(cb.getAttribute('data-item-id'), !!cb.checked, cb);
         });
       });
+      var snap = await loadPrintSnapshotStatus(date, ['allocation', 'label']);
+      renderPrintStatusBanner($('alloc-print-status'), snap && snap.formats, ['allocation']);
     } catch (e) {
       groupsEl.innerHTML = '<p class="notice">' + esc((e && e.message) || e) + '</p>';
       toast((e && e.message) || String(e), 'err');
@@ -6378,6 +6386,91 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
   function openPrint(extra, autoprint){
     if (!requireSite()) return;
     window.open(printUrl(extra, autoprint), '_blank', 'noopener');
+    try {
+      var params = new URLSearchParams(extra || '');
+      var fmt = params.get('format');
+      var date = params.get('pickup_date');
+      if (date && fmt) recordPrintSnapshot(date, fmt);
+    } catch (_e) {}
+  }
+
+  var PRINT_SNAPSHOT_FORMATS = ['day_run', 'prep', 'pick_list', 'allocation', 'label', 'item_labels'];
+
+  function formatPrintAgo(iso){
+    if (!iso) return '';
+    try {
+      var d = new Date(iso);
+      if (isNaN(d.getTime())) return '';
+      return d.toLocaleString('en-AU', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+    } catch (_e) { return ''; }
+  }
+
+  async function recordPrintSnapshot(pickupDate, format){
+    if (!state.siteId || !pickupDate || !format) return;
+    if (PRINT_SNAPSHOT_FORMATS.indexOf(format) < 0) return;
+    try {
+      await api('/api/order/print-snapshots', {
+        method: 'POST',
+        body: {
+          site_id: state.siteId,
+          pickup_date: pickupDate,
+          format: format,
+          action: 'record'
+        }
+      });
+    } catch (_e) {
+      /* migration may be pending — ignore */
+    }
+  }
+
+  function renderPrintStatusBanner(el, statusByFormat, primaryFormats){
+    if (!el) return;
+    primaryFormats = primaryFormats || [];
+    var parts = [];
+    var anyChanged = false;
+    var anyNever = false;
+    primaryFormats.forEach(function(fmt){
+      var s = statusByFormat && statusByFormat[fmt];
+      if (!s) return;
+      if (s.never_printed) {
+        anyNever = true;
+        parts.push(fmt.replace(/_/g, ' ') + ': not printed yet');
+      } else if (s.changed) {
+        anyChanged = true;
+        parts.push(fmt.replace(/_/g, ' ') + ': changed since ' + formatPrintAgo(s.last_printed_at));
+      }
+    });
+    if (!parts.length) {
+      var okFmt = primaryFormats[0];
+      var ok = statusByFormat && statusByFormat[okFmt];
+      if (ok && !ok.never_printed && !ok.changed) {
+        el.classList.remove('hide');
+        el.textContent = 'Reports match last print (' + formatPrintAgo(ok.last_printed_at) + ').';
+        el.style.borderColor = '';
+        return;
+      }
+      el.classList.add('hide');
+      el.textContent = '';
+      return;
+    }
+    el.classList.remove('hide');
+    el.textContent = (anyChanged ? 'Re-print recommended — ' : '') + parts.join(' · ');
+    if (anyChanged) el.style.borderColor = 'rgba(196,122,0,.45)';
+    else if (anyNever) el.style.borderColor = '';
+  }
+
+  async function loadPrintSnapshotStatus(pickupDate, formats){
+    if (!state.siteId || !pickupDate) return null;
+    try {
+      var q = 'pickup_date=' + encodeURIComponent(pickupDate) +
+        '&formats=' + encodeURIComponent((formats || PRINT_SNAPSHOT_FORMATS).join(','));
+      return await api('/api/order/print-snapshots?' + siteQuery(q));
+    } catch (e) {
+      if (/migration_required|order_print_snapshots|does not exist/i.test(String((e && e.message) || e))) {
+        return null;
+      }
+      return null;
+    }
   }
 
   // Export uses Bearer via download helper
@@ -6571,6 +6664,8 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
           if (body) body.classList.toggle('hide');
         });
       });
+      var snap = await loadPrintSnapshotStatus(date, ['day_run', 'label', 'pick_list']);
+      renderPrintStatusBanner($('pd-print-status'), snap && snap.formats, ['day_run', 'label']);
     } catch (e) {
       groupsEl.innerHTML = '<p class="notice">' + esc((e && e.message) || e) + '</p>';
     }
@@ -6956,6 +7051,11 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
         if ($('lbl-date') && !$('lbl-date').value) {
           $('lbl-date').value = isoDate(new Date());
         }
+        if ($('lbl-date') && $('lbl-date').value) {
+          loadPrintSnapshotStatus($('lbl-date').value, ['label', 'item_labels']).then(function(snap){
+            renderPrintStatusBanner($('lbl-print-status'), snap && snap.formats, ['label', 'item_labels']);
+          });
+        }
       }
       else if (v === 'supply') {
         if (!$('supply-date').value) {
@@ -7262,9 +7362,21 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     var date = $('lbl-date') && $('lbl-date').value;
     if (!date) { toast('Pick a date', 'err'); return; }
     openPrint('pickup_date=' + encodeURIComponent(date) + '&format=' + encodeURIComponent(format));
+    setTimeout(function(){
+      loadPrintSnapshotStatus(date, ['label', 'item_labels']).then(function(snap){
+        renderPrintStatusBanner($('lbl-print-status'), snap && snap.formats, ['label', 'item_labels']);
+      });
+    }, 800);
   }
   if ($('lbl-print-orders')) $('lbl-print-orders').addEventListener('click', function(){ labelsPrint('label'); });
   if ($('lbl-print-items')) $('lbl-print-items').addEventListener('click', function(){ labelsPrint('item_labels'); });
+  if ($('lbl-date')) $('lbl-date').addEventListener('change', function(){
+    var date = $('lbl-date').value;
+    if (!date) return;
+    loadPrintSnapshotStatus(date, ['label', 'item_labels']).then(function(snap){
+      renderPrintStatusBanner($('lbl-print-status'), snap && snap.formats, ['label', 'item_labels']);
+    });
+  });
   if ($('orders-export')) $('orders-export').addEventListener('click', function(e){ e.preventDefault(); downloadExport('orders'); });
   if ($('items-export')) $('items-export').addEventListener('click', function(e){ e.preventDefault(); downloadExport('order_items'); });
   if ($('cal-load')) $('cal-load').addEventListener('click', loadCalendar);

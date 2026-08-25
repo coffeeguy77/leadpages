@@ -608,6 +608,26 @@ create index if not exists order_audit_events_order_idx
 create index if not exists order_audit_events_site_idx
   on order_audit_events(site_id, created_at desc);
 
+-- ── Print snapshots (changes since last print) ───────────────────────────────
+
+create table if not exists order_print_snapshots (
+  id                uuid primary key default gen_random_uuid(),
+  order_system_id   uuid not null references order_systems(id) on delete cascade,
+  site_id           uuid not null references sites(id) on delete cascade,
+  pickup_date       date not null,
+  format            text not null
+    check (format in ('day_run', 'prep', 'pick_list', 'allocation', 'label', 'item_labels')),
+  fingerprint       text not null,
+  order_count       integer not null default 0,
+  line_count        integer not null default 0,
+  payload_summary   jsonb not null default '{}'::jsonb,
+  printed_by        uuid references profiles(id) on delete set null,
+  printed_at        timestamptz not null default now()
+);
+
+create index if not exists order_print_snapshots_lookup_idx
+  on order_print_snapshots(order_system_id, pickup_date, format, printed_at desc);
+
 -- FK for cart → converted order (added after order_orders exists)
 do $$ begin
   alter table order_carts
