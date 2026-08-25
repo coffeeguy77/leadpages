@@ -14,11 +14,11 @@ test('orders.html fast new order uses separate Notes and Options toggles', funct
   assert.doesNotMatch(html, /no-fast-notes-row"><span class="lbl">Notes:/);
 });
 
-test('orders.html product editor uses attribute sections copy', function () {
+test('orders.html product editor uses Options & Variations sections', function () {
   const html = fs.readFileSync(path.join(__dirname, '..', 'orders.html'), 'utf8');
-  assert.match(html, /Product attribute sections/);
-  assert.match(html, /\+ Add section/);
-  assert.match(html, /Section title/);
+  assert.match(html, /Options &amp; Variations|Options & Variations/);
+  assert.match(html, /\+ Add option group/);
+  assert.match(html, /Group name/);
   assert.match(html, /value="yes_no"/);
 });
 
