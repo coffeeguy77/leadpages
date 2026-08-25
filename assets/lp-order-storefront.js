@@ -907,7 +907,7 @@
     var html = '<div class="lp-oe-cutoff" id="oe-cutoff-banner">';
     if (rule) {
       html +=
-        '<p class="lp-oe-cutoff-rule"><strong>Order changes lock</strong> — ' + esc(rule) + '</p>';
+        '<p class="lp-oe-cutoff-rule"><strong>Final chance to change your order</strong> — ' + esc(rule) + '</p>';
     }
     if (prev && prev.effective_cutoff_at) {
       var ms = new Date(prev.effective_cutoff_at).getTime() - Date.now();
@@ -915,18 +915,28 @@
         '<p class="lp-oe-cutoff-timer' +
         (ms <= 0 ? ' is-locked' : ms <= 8 * 3600000 ? ' is-soon' : '') +
         '">';
-      if (ms <= 0) html += 'Changes are closed for this pickup date.';
-      else {
+      if (ms <= 0) {
         html +=
-          'Time left to pay deposit or change your order: <strong id="oe-cutoff-val">' +
+          prev.cutoff_source === 'master_lock'
+            ? 'The season cutoff has passed — no further changes.'
+            : 'Changes are closed for this pickup date.';
+      } else {
+        html +=
+          'Time left to change your order: <strong id="oe-cutoff-val">' +
           esc(this.formatCountdown(ms)) +
           '</strong>';
-        if (prev.display_at) html += ' (locks ' + esc(prev.display_at) + ')';
+        if (prev.display_at) {
+          html +=
+            ' (closes ' +
+            esc(prev.display_at) +
+            (prev.cutoff_source === 'master_lock' ? ' — season cutoff' : ' — pickup lock') +
+            ')';
+        }
       }
       html += '</p>';
     } else if (rule) {
       html +=
-        '<p class="lp-oe-cutoff-timer">Choose a pickup date to see your personal lock countdown.</p>';
+        '<p class="lp-oe-cutoff-timer">Choose a pickup date to see your personal deadline (season cutoff or pickup lock — whichever is sooner).</p>';
     }
     html += '</div>';
     return html;
@@ -1109,7 +1119,7 @@
     var dep = this.state.catalogue && this.state.catalogue.deposit;
     if (dep && dep.preview_cents > 0) {
       html +=
-        '<p class="lp-oe-note">Deposit today: <strong>' +
+        '<p class="lp-oe-note">Deposit due upon placement of order: <strong>' +
         esc(dep.preview_label) +
         '</strong>. Final order price will be confirmed after items are prepared/weighed where needed.</p>';
     }
@@ -1374,7 +1384,7 @@
     var dep = this.state.catalogue && this.state.catalogue.deposit;
     if (dep && dep.preview_cents > 0) {
       html +=
-        '<p class="lp-oe-note">Deposit today: <strong>' +
+        '<p class="lp-oe-note">Deposit due upon placement of order: <strong>' +
         esc(dep.preview_label) +
         '</strong>. Final order price will be confirmed after items are prepared/weighed where needed.</p>';
     }
@@ -1704,7 +1714,7 @@
     if (this.state.cart && this.state.cart.has_unknown_prices)
       html += '<div class="row"><span>Other items</span><strong>Price TBC</strong></div>';
     html +=
-      '<div class="row emph"><span>Deposit due today</span><strong>' +
+      '<div class="row emph"><span>Deposit due upon placement</span><strong>' +
       esc((this.state.display && this.state.display.deposit) || '—') +
       '</strong></div>';
     html +=
@@ -1749,13 +1759,23 @@
       html += '<option value="">Choose a pickup day…</option>';
       dateOrder.forEach(function (dk) {
         var g = byDate[dk];
+        var optionLabel = g.date_label;
+        if (g.windows.length === 1) {
+          var hours = g.windows[0].window_label || '';
+          if (!hours && g.windows[0].label && g.windows[0].label.indexOf('—') >= 0) {
+            hours = g.windows[0].label.split('—').slice(1).join('—').trim();
+          }
+          if (hours) optionLabel = g.date_label + ' (' + hours + ')';
+        } else if (g.windows.length > 1) {
+          optionLabel = g.date_label + ' (' + g.windows.length + ' times)';
+        }
         html +=
           '<option value="' +
           esc(g.date) +
           '"' +
           (selectedDate === g.date ? ' selected' : '') +
           '>' +
-          esc(g.date_label) +
+          esc(optionLabel) +
           '</option>';
       });
       html += '</select></label>';
@@ -1779,13 +1799,8 @@
           '<input type="hidden" id="oe-slot" value="' +
           esc(windows[0].id) +
           '">';
-        html +=
-          '<p class="lp-oe-pickup-hours" style="margin:0 0 10px;font-size:13px;opacity:.85">' +
-          esc(windows[0].window_label || windows[0].label) +
-          '</p>';
         if (!d.slotId) d.slotId = windows[0].id;
       } else {
-        html += '<p class="lp-oe-pickup-hours" style="margin:0 0 10px;font-size:13px;opacity:.85">Select a pickup day to see available times.</p>';
         html += '<input type="hidden" id="oe-slot" value="">';
       }
     } else {

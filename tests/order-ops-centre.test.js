@@ -82,4 +82,5 @@ test('storefront uses date-then-window selector without free calendar when slots
   const js = fs.readFileSync(path.join(__dirname, '..', 'assets/lp-order-storefront.js'), 'utf8');
   assert.match(js, /oe-pickup-date/);
   assert.match(js, /No pickup times are available/);
+  assert.match(js, /date_label \+ ' \(' \+ hours/);
 });
