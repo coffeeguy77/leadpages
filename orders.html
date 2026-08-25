@@ -6807,19 +6807,10 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
         $('pd-filters').querySelectorAll('[data-pd-filter]').forEach(function(btn){
           btn.classList.toggle('on', btn.getAttribute('data-pd-filter') === (state.pdFilter || 'all'));
         });
-        html += '</tbody></table></div></div>';
-        return html;
-      }).join('');
-
-      wireOrderOpen(groupsEl);
-      groupsEl.querySelectorAll('[data-pd-toggle]').forEach(function(btn){
-        btn.addEventListener('click', function(){
-          var body = btn.parentNode && btn.parentNode.querySelector('.pd-window-body');
-          if (body) body.classList.toggle('hide');
-        });
-      });
-      var snap = await loadPrintSnapshotStatus(date, ['day_run', 'label', 'pick_list']);
-      renderPrintStatusBanner($('pd-print-status'), snap && snap.formats, ['day_run', 'label']);
+      }
+      renderPickupDayGroups(orders);
+      var snap = await loadPrintSnapshotStatus(date, ['day_run', 'exceptions', 'label', 'pick_list']);
+      renderPrintStatusBanner($('pd-print-status'), snap && snap.formats, ['day_run', 'exceptions', 'label']);
     } catch (e) {
       groupsEl.innerHTML = '<p class="notice">' + esc((e && e.message) || e) + '</p>';
     }
