@@ -112,12 +112,12 @@ module.exports = async function (req, res) {
     const fmt = normaliseFormat(format, false);
     const business = access.site || {};
 
-    if (fmt === 'prep' || fmt === 'day_run' || fmt === 'pick_list') {
+    if (fmt === 'prep' || fmt === 'allocation' || fmt === 'day_run' || fmt === 'pick_list') {
       if (!pickupDate) {
         return sendHtml(res, 400, buildPrintDocument({ format: 'slip', business: business, order: { order_number: 'pickup_date required' }, items: [] }));
       }
       const orders = await loadOrdersForDate(admin, system.id, siteId, pickupDate);
-      if (fmt === 'prep') {
+      if (fmt === 'prep' || fmt === 'allocation') {
         const supply = await supplyForDate(system.id, siteId, pickupDate);
         let known = 0;
         let deposits = 0;
@@ -129,7 +129,7 @@ module.exports = async function (req, res) {
           res,
           200,
           buildPrintDocument({
-            format: 'prep',
+            format: fmt,
             business: business,
             pickup_date: pickupDate,
             supply: supply,

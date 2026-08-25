@@ -35,6 +35,7 @@
       children: [
         { id: 'pickup-day', label: 'Pickup Day View', route: 'pickup-day' },
         { id: 'supply', label: 'Production Summary', route: 'supply' },
+        { id: 'allocation', label: 'Product Allocation', route: 'allocation' },
         { id: 'calendar', label: 'Pickup Calendar', route: 'calendar' }
       ]
     },
@@ -75,6 +76,7 @@
     'pickup-day': { view: 'pickup-day', label: 'Pickup Day View', group: 'operations' },
     calendar: { view: 'calendar', label: 'Pickup Calendar', group: 'operations' },
     supply: { view: 'supply', label: 'Production Summary', group: 'operations' },
+    allocation: { view: 'allocation', label: 'Product Allocation', group: 'operations' },
     products: { view: 'products', label: 'Products', group: null },
     customers: { view: 'customers', label: 'Customers', group: null },
     payments: { view: 'payments', label: 'Payments', group: null },
@@ -100,6 +102,8 @@
       '<svg class="oanav-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.75"/><path d="M8 3v4M16 3v4M3 10h18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>',
     supply:
       '<svg class="oanav-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h10M4 17h7" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/><path d="m16 14 2 2 4-4" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    allocation:
+      '<svg class="oanav-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5h11M9 12h11M9 19h11" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/><rect x="3" y="3.5" width="4" height="4" rx="1" fill="none" stroke="currentColor" stroke-width="1.75"/><rect x="3" y="10.5" width="4" height="4" rx="1" fill="none" stroke="currentColor" stroke-width="1.75"/><path d="m4 20 1.2 1.2L7.5 19" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>',
     catalogue:
       '<svg class="oanav-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/><path d="M18 17h2v2h-2v-2Z" fill="currentColor"/></svg>',
     customers:

@@ -216,6 +216,20 @@ module.exports = async function (req, res) {
         return json(res, 200, out);
       }
 
+      if (action === 'set_item_packed') {
+        if (!body.order_item_id) return json(res, 400, { error: 'order_item_id_required' });
+        if (body.packed == null) return json(res, 400, { error: 'packed_required' });
+        const { setItemPacked } = require('../../lib/order/service');
+        const out = await setItemPacked({
+          order_item_id: body.order_item_id,
+          site_id: siteId,
+          system: system,
+          actor: actor,
+          packed: !!body.packed
+        });
+        return json(res, 200, out);
+      }
+
       if (action === 'recalculate') {
         if (!body.order_id) return json(res, 400, { error: 'order_id_required' });
         const out = await recalculateOrder(body.order_id);

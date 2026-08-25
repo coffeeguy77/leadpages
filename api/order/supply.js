@@ -50,7 +50,9 @@ module.exports = async function (req, res) {
       deposits_collected_label: formatAud(deposits),
       editing: dateLock ? 'locked' : 'open',
       date_lock: dateLock || null,
-      lines: supply.lines
+      lines: supply.lines,
+      allocations: supply.allocations || [],
+      allocation_totals: supply.allocation_totals || { lines: 0, packed: 0, quantity: 0 }
     });
   } catch (e) {
     console.error('order/supply', e);
