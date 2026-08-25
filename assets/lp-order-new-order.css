@@ -26,7 +26,7 @@
 .no-workflow-tab strong{font-size:13.5px;color:var(--ink)}
 .no-workflow-tab span{font-size:12px;color:var(--ink-soft)}
 .no-workflow-tab.on{
-  border-color:color-mix(in srgb,var(--accent,#b85c6e) 45%,var(--line));
+  border-color:var(--line-strong,var(--line));
   background:var(--surface,#fff);
   box-shadow:inset 3px 0 0 var(--accent,#b85c6e);
 }
@@ -161,12 +161,23 @@
 .no-mode-mobile .no-emb-cart-chip{display:none!important}
 .no-mode-mobile .no-cart-pay{grid-template-columns:1fr}
 
-/* Product rows: always stack controls; Add on its own row */
-.no-fast-main{display:block;min-width:0;max-width:100%}
-.no-fast-list,.no-fast-row,.no-products-col,.no-main,.no-card{min-width:0;max-width:100%}
+/* Product rows — compact head + toolbar (Add beside name, not full-width bar) */
+.no-fast-head,.no-fast-toolbar,.no-fast-list,.no-fast-row,.no-products-col,.no-main,.no-card{
+  min-width:0;max-width:100%;box-sizing:border-box;
+}
+#view-new,#view-new .card.no-card,#new-order-form,#no-workspace{width:100%;max-width:100%;min-width:0;box-sizing:border-box}
+
+body.embed #view-new,
 body.embed #view-new .card.no-card,
-body.embed #view-new .content-inner,
-body.embed .no-workspace{min-width:0;max-width:100%}
+body.embed #no-workspace,
+body.embed #new-order-form,
+body.embed .no-main,
+body.embed .no-products-col,
+body.embed #no-fast-wrap,
+body.embed .no-fast-list,
+body.embed .no-fast-row{
+  min-width:0;max-width:100%;width:100%;box-sizing:border-box;
+}
 
 .no-sheet{
   position:fixed;inset:0;z-index:80;background:color-mix(in srgb,#000 40%,transparent);

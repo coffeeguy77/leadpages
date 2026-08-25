@@ -113,8 +113,9 @@ test('orders.html layout: fullscreen left-nav steps, no permanent right panel', 
   assert.match(html, />CLIENT</);
   assert.match(html, /no-nav-client-prefix/);
   assert.match(html, /no-nav-client-phone/);
-  assert.match(html, /no-fast-actions/);
-  assert.match(html, /class="no-fast-actions"/);
+  assert.match(html, /no-fast-head/);
+  assert.match(html, /no-fast-toolbar/);
+  assert.doesNotMatch(html, /class="no-fast-actions"/);
 
   // Fullscreen hides top tabs; tabs lose pink fill
   assert.match(css, /\.no-mode-fullscreen \.no-workflow-tabs/);
