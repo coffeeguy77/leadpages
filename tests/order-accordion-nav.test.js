@@ -20,7 +20,7 @@ test('flattenVisibleTree hides payments when disabled', function () {
   assert.ok(shown.some(function (n) { return n.route === 'payments'; }));
 });
 
-test('operations group includes pickup day production allocation and calendar', function () {
+test('operations group includes pickup day production allocation labels and calendar', function () {
   const tree = nav.flattenVisibleTree({ paymentsEnabled: true, depositsEnabled: true, isSuper: false });
   const ops = tree.find(function (n) { return n.group === 'operations'; });
   assert.ok(ops);
@@ -28,10 +28,12 @@ test('operations group includes pickup day production allocation and calendar', 
   assert.ok(childRoutes.indexOf('pickup-day') >= 0);
   assert.ok(childRoutes.indexOf('supply') >= 0);
   assert.ok(childRoutes.indexOf('allocation') >= 0);
+  assert.ok(childRoutes.indexOf('labels') >= 0);
   assert.ok(childRoutes.indexOf('calendar') >= 0);
   assert.equal(nav.parentGroupForRoute('pickup-day'), 'operations');
   assert.equal(nav.parentGroupForRoute('supply'), 'operations');
   assert.equal(nav.parentGroupForRoute('allocation'), 'operations');
+  assert.equal(nav.parentGroupForRoute('labels'), 'operations');
 });
 
 test('top-level routes for products and customers', function () {
