@@ -47,14 +47,17 @@ test('applyAdditionalCategoriesToOptions clears when empty', function () {
   assert.equal(next.additional_category_ids, undefined);
 });
 
-test('orders UI exposes also-show-in and pies bulk action', function () {
+test('orders UI exposes additional categories and pies bulk action', function () {
   const fs = require('fs');
   const path = require('path');
   const html = fs.readFileSync(path.join(__dirname, '..', 'orders.html'), 'utf8');
   const api = fs.readFileSync(path.join(__dirname, '..', 'api/order/products.js'), 'utf8');
   const shop = fs.readFileSync(path.join(__dirname, '..', 'assets/lp-order-storefront.js'), 'utf8');
   assert.match(html, /prod-extra-cats/);
-  assert.match(html, /Also show in/);
+  assert.match(html, /Additional categories/);
+  assert.match(html, /lpe-cat-tile/);
+  assert.doesNotMatch(html, /id="prod-cat-search"/);
+  assert.doesNotMatch(html, /Also show in/);
   assert.match(html, /prod-pies-extra/);
   assert.match(html, /assign_additional_by_match/);
   assert.match(api, /assign_additional_by_match/);

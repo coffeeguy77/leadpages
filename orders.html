@@ -919,12 +919,13 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
                   <div class="field"><label for="prod-active">Active</label>
                     <select id="prod-active"><option value="1">Yes — visible to customers</option><option value="0">No — hidden</option></select>
                   </div>
-                  <div class="field" style="grid-column:1/-1">
-                    <label for="prod-cat-search">Also show in</label>
-                    <div id="prod-extra-cats" class="prod-extra-cats lpe-cat-search">
-                      <input id="prod-cat-search" type="search" placeholder="Search categories…" autocomplete="off">
-                      <div class="lpe-chips" id="prod-extra-chips"></div>
-                      <div class="lpe-cat-list" id="prod-extra-list"></div>
+                  <div class="field lpe-extra-cats-field" style="grid-column:1/-1">
+                    <span class="field-label-block" id="prod-extra-cats-label">Additional categories</span>
+                    <p class="field-hint lpe-extra-cats-intro">Optionally display this product in other storefront categories.</p>
+                    <div id="prod-extra-cats" class="lpe-extra-cats">
+                      <div class="lpe-chips lpe-extra-chips" id="prod-extra-chips" aria-live="polite"></div>
+                      <p class="lpe-extra-primary-note" id="prod-extra-primary-note">Primary category is included automatically.</p>
+                      <div class="lpe-cat-grid" id="prod-extra-list" role="group" aria-labelledby="prod-extra-cats-label"></div>
                     </div>
                   </div>
                   <div class="field" style="grid-column:1/-1"><label for="prod-tags">Tags</label>
@@ -5358,32 +5359,40 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     var cats = state.categories || [];
     var primary = ($('prod-category') && $('prod-category').value) || '';
     var selected = Object.create(null);
-    (selectedIds || []).forEach(function(id){ selected[String(id)] = true; });
-    var q = (($('prod-cat-search') && $('prod-cat-search').value) || '').trim().toLowerCase();
+    (selectedIds || []).forEach(function(id){
+      if (String(id) !== String(primary)) selected[String(id)] = true;
+    });
     var html = '';
+    var count = 0;
     cats.forEach(function(c){
       if (!c || c.active === false) return;
       if (String(c.id) === String(primary)) return;
-      if (q && String(c.name || '').toLowerCase().indexOf(q) < 0) return;
+      count++;
+      var on = selected[c.id];
       html +=
-        '<label><input type="checkbox" data-extra-cat="' +
-        esc(c.id) +
-        '"' +
-        (selected[c.id] ? ' checked' : '') +
-        '> ' +
-        esc(c.name) +
+        '<label class="lpe-cat-tile' + (on ? ' is-selected' : '') + '">' +
+        '<input type="checkbox" class="lpe-cat-tile-input" data-extra-cat="' + esc(c.id) + '"' +
+        (on ? ' checked' : '') + ' aria-label="' + esc(c.name) + '">' +
+        '<span class="lpe-cat-tile-check" aria-hidden="true"></span>' +
+        '<span class="lpe-cat-tile-label">' + esc(c.name) + '</span>' +
         '</label>';
     });
-    list.innerHTML = html || '<span class="muted">No matching categories.</span>';
+    list.innerHTML = count
+      ? html
+      : '<span class="lpe-extra-empty">No other categories available.</span>';
     if (chips) {
       var chipHtml = '';
+      var chipCount = 0;
       cats.forEach(function(c){
         if (!selected[c.id] || String(c.id) === String(primary)) return;
+        chipCount++;
         chipHtml +=
           '<span class="lpe-chip">' + esc(c.name) +
           ' <button type="button" data-chip-remove="' + esc(c.id) + '" aria-label="Remove ' + esc(c.name) + '">×</button></span>';
       });
-      chips.innerHTML = chipHtml;
+      chips.innerHTML = chipCount
+        ? chipHtml
+        : '<span class="lpe-extra-empty">No additional categories selected.</span>';
       chips.querySelectorAll('[data-chip-remove]').forEach(function(btn){
         btn.addEventListener('click', function(){
           var id = btn.getAttribute('data-chip-remove');
@@ -5395,6 +5404,8 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     }
     list.querySelectorAll('input[data-extra-cat]').forEach(function(cb){
       cb.addEventListener('change', function(){
+        var tile = cb.closest('.lpe-cat-tile');
+        if (tile) tile.classList.toggle('is-selected', cb.checked);
         renderExtraCategoryChecks(readExtraCategoryIds());
         markProdDirty();
       });
@@ -6141,7 +6152,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
         '<td class="prod-col-product"><div style="display:flex;gap:10px;align-items:center">' + thumb +
           '<div><strong>' + esc(p.name) + '</strong>' +
           (pack ? '<span class="prod-pack-badge">' + esc(pack) + '</span>' : '') +
-          (p.short_description ? '<div class="muted" style="font-size:12px;margin-top:2px">' + esc(p.short_description) + '</div>' : '') +
+          (p.short_description ? '<div class="muted prod-row-sub">' + esc(p.short_description) + '</div>' : '') +
           '</div></div></td>' +
         '<td class="prod-col-wide">' + esc(catLabel) + '</td>' +
         '<td>' + esc(price) + '</td>' +
@@ -8860,9 +8871,6 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
   });
   if ($('prod-short')) $('prod-short').addEventListener('input', function(){
     if ($('prod-short-count')) $('prod-short-count').textContent = String(($('prod-short').value || '').length);
-  });
-  if ($('prod-cat-search')) $('prod-cat-search').addEventListener('input', function(){
-    renderExtraCategoryChecks(readExtraCategoryIds());
   });
   if ($('prod-cat-filter')) $('prod-cat-filter').addEventListener('change', function(){ state.prodPage = 1; renderProductsTable(); });
   if ($('prod-status-filter')) $('prod-status-filter').addEventListener('change', function(){
