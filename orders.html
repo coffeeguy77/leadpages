@@ -281,13 +281,15 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
 .no-main-split{
   display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,38%);gap:20px;align-items:start;
 }
-.no-products-col{min-width:0;max-width:100%;max-height:calc(100vh - 200px);overflow-x:clip;overflow-y:auto;padding-right:0}
+.no-products-col{min-width:0;max-width:100%;overflow:visible;padding-right:0}
 .no-editor-col{
   min-width:0;align-self:stretch;
   padding:16px 18px;border-radius:14px;
-  background:var(--surface,#fff);
+  background:var(--surface,#fff)!important;
   border:1px solid var(--line);
 }
+#view-new .card.no-card,#view-new .no-workspace,#view-new .no-context-bar{background:var(--surface,#fff)}
+#view-new .no-step-customer .no-editor-col{background:var(--surface,#fff)!important}
 .side-order-cart{
   flex:0 0 auto;border:1px solid color-mix(in srgb,var(--accent) 40%,var(--line));
   margin:8px 8px 10px;padding:0;min-height:0;max-height:none;overflow:hidden;
@@ -345,8 +347,11 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
 .no-fast-info strong{display:block;font-size:var(--fs-md);line-height:1.25;margin:0 0 4px}
 .no-fast-info .meta{font-size:var(--fs-xs);color:var(--ink-soft);line-height:1.35}
 .no-fast-info .prompt{margin:4px 0 0;font-size:var(--fs-xs);color:var(--accent);font-weight:600}
-.no-fast-controls{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;justify-content:flex-start;width:100%;min-width:0}
+.no-fast-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,148px),1fr));gap:8px;align-items:end;width:100%;min-width:0}
+.no-fast-actions{display:flex;flex-wrap:wrap;gap:8px;width:100%;margin-top:4px}
+.no-fast-actions .no-fast-add-btn{flex:1 1 140px;min-width:0;width:100%;max-width:100%}
 .no-fast-field{display:grid;gap:4px;font-size:10px;font-weight:700;color:var(--ink-faint);letter-spacing:.03em;text-transform:uppercase;min-width:0}
+.no-fast-toggle-btn{min-height:44px}
 .no-fast-packchip{display:inline-flex;align-items:center;min-height:44px;padding:0 12px;border-radius:10px;border:1px dashed var(--line);color:var(--accent);font:700 11px/1 var(--font-ui)}
 .no-fast-row.is-added{border-color:color-mix(in srgb,#16a34a 40%,var(--line));background:color-mix(in srgb,#16a34a 4%,var(--surface))}
 .no-fast-add-btn{min-height:44px;padding:0 16px;font-weight:700}
@@ -427,11 +432,20 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
 .toast-host{position:fixed;right:16px;bottom:16px;z-index:120;display:flex;flex-direction:column;gap:8px;max-width:min(360px,calc(100vw - 32px))}
 .toast{
   padding:12px 14px;border-radius:12px;border:1px solid var(--line);
-  background:var(--surface);box-shadow:var(--shadow);font-size:var(--fs-sm);line-height:1.4;
+  background:var(--surface,#fff);color:var(--ink,#1b2430);
+  box-shadow:var(--shadow);font-size:var(--fs-sm);line-height:1.4;
   animation:toastIn .18s ease;
 }
-.toast.ok{border-color:color-mix(in srgb,#16a34a 40%,var(--line))}
-.toast.err{border-color:color-mix(in srgb,#dc2626 40%,var(--line))}
+.toast.ok{
+  color:#15803d;
+  background:color-mix(in srgb,#16a34a 10%,var(--surface,#fff));
+  border-color:color-mix(in srgb,#16a34a 40%,var(--line));
+}
+.toast.err{
+  color:#b91c1c;
+  background:color-mix(in srgb,#dc2626 10%,var(--surface,#fff));
+  border-color:color-mix(in srgb,#dc2626 40%,var(--line));
+}
 @keyframes toastIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .ai-opt{
   border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px;
@@ -490,7 +504,8 @@ body.embed .main{
   height:100%;overflow:hidden;display:flex;flex-direction:column;min-height:0;
 }
 body.embed .top{flex:0 0 auto;position:sticky;top:0;z-index:4}
-body.embed .content{flex:1;min-height:0;overflow:auto}
+body.embed .content{flex:1;min-height:0;overflow:auto;overflow-x:hidden}
+body.embed .content-inner{max-width:100%;min-width:0}
 @media (max-width:900px){
   body.embed .hub{flex-direction:row}
   body.embed .side{
@@ -4896,6 +4911,8 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
         html += '<button type="button" class="btn ghost no-fast-toggle-btn' + (optionsOpen ? ' on' : '') + '" data-fast-options-toggle>Options</button>';
       }
       html += '<button type="button" class="btn ghost no-fast-toggle-btn' + (notesOpen ? ' on' : '') + '" data-fast-notes-toggle>Notes</button>';
+      html += '</div>';
+      html += '<div class="no-fast-actions">';
       html += '<button type="button" class="btn solid no-fast-add-btn' +
         (isAdded ? ' on' : '') +
         (addLabel === 'Choose Options' ? ' needs-options' : '') +
