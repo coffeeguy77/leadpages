@@ -907,7 +907,7 @@
     var html = '<div class="lp-oe-cutoff" id="oe-cutoff-banner">';
     if (rule) {
       html +=
-        '<p class="lp-oe-cutoff-rule"><strong>Order changes lock</strong> — ' + esc(rule) + '</p>';
+        '<p class="lp-oe-cutoff-rule"><strong>Final chance to change your order</strong> — ' + esc(rule) + '</p>';
     }
     if (prev && prev.effective_cutoff_at) {
       var ms = new Date(prev.effective_cutoff_at).getTime() - Date.now();
@@ -915,18 +915,28 @@
         '<p class="lp-oe-cutoff-timer' +
         (ms <= 0 ? ' is-locked' : ms <= 8 * 3600000 ? ' is-soon' : '') +
         '">';
-      if (ms <= 0) html += 'Changes are closed for this pickup date.';
-      else {
+      if (ms <= 0) {
+        html +=
+          prev.cutoff_source === 'master_lock'
+            ? 'The season cutoff has passed — no further changes.'
+            : 'Changes are closed for this pickup date.';
+      } else {
         html +=
           'Time left to pay deposit or change your order: <strong id="oe-cutoff-val">' +
           esc(this.formatCountdown(ms)) +
           '</strong>';
-        if (prev.display_at) html += ' (locks ' + esc(prev.display_at) + ')';
+        if (prev.display_at) {
+          html +=
+            ' (closes ' +
+            esc(prev.display_at) +
+            (prev.cutoff_source === 'master_lock' ? ' — season cutoff' : ' — pickup lock') +
+            ')';
+        }
       }
       html += '</p>';
     } else if (rule) {
       html +=
-        '<p class="lp-oe-cutoff-timer">Choose a pickup date to see your personal lock countdown.</p>';
+        '<p class="lp-oe-cutoff-timer">Choose a pickup date to see your personal deadline (season cutoff or pickup lock — whichever is sooner).</p>';
     }
     html += '</div>';
     return html;

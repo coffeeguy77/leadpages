@@ -6,10 +6,10 @@ const { getAdmin } = require('../../lib/order/supabase');
 const { getOrderSystemForSite } = require('../../lib/order/auth');
 const { formatAud } = require('../../lib/order/money');
 const { earliestPickupDate, effectiveOrderCutoff } = require('../../lib/order/cutoff');
-const { storeCutoffRuleLabel, cutoffSummary, formatCutoffDateTime } = require('../../lib/order/cutoff-display');
+const { storeCutoffRuleLabel, combinedCutoffRuleLabel, cutoffSummary, formatCutoffDateTime } = require('../../lib/order/cutoff-display');
 const { resolvePaymentRule, computeDepositRequired } = require('../../lib/order/deposit');
 const { listWindows, buildPickupSlots, parsePickupSchedule } = require('../../lib/order/fulfilment-windows');
-const { isMasterLockActive, msUntilMasterLock } = require('../../lib/order/master-lock');
+const { isMasterLockActive, msUntilMasterLock, earlierChangeDeadline } = require('../../lib/order/master-lock');
 
 async function resolveSite(slug, siteId) {
   const admin = getAdmin();
@@ -169,16 +169,23 @@ module.exports = async function (req, res) {
     var cutoffPreview = null;
     if (pickupDatePreview) {
       var cutoffCalc = effectiveOrderCutoff(products || [], system, pickupDatePreview);
-      if (cutoffCalc.effective_cutoff_at) {
-        var sum = cutoffSummary(cutoffCalc.effective_cutoff_at);
+      var merged = earlierChangeDeadline(schedule, cutoffCalc.effective_cutoff_at, new Date());
+      if (merged.iso) {
+        var sum = cutoffSummary(merged.iso);
         cutoffPreview = {
           pickup_date: pickupDatePreview,
-          effective_cutoff_at: cutoffCalc.effective_cutoff_at,
-          cutoff_reason: cutoffCalc.cutoff_reason,
+          pickup_cutoff_at: cutoffCalc.effective_cutoff_at || null,
+          pickup_cutoff_reason: cutoffCalc.cutoff_reason || null,
+          effective_cutoff_at: merged.iso,
+          cutoff_source: merged.source,
+          cutoff_reason:
+            merged.source === 'master_lock'
+              ? 'Season cutoff (' + (schedule.master_lock_date || '') + ')'
+              : cutoffCalc.cutoff_reason,
           state: sum.state,
           countdown_label: sum.label,
           locked: sum.locked,
-          display_at: formatCutoffDateTime(cutoffCalc.effective_cutoff_at, system.timezone)
+          display_at: formatCutoffDateTime(merged.iso, system.timezone)
         };
       }
     }
@@ -225,7 +232,8 @@ module.exports = async function (req, res) {
       pickup_slots: pickup_slots,
       capacity: { ok: true },
       cutoff: {
-        rule_label: storeCutoffRuleLabel(system),
+        rule_label: combinedCutoffRuleLabel(system, schedule.master_lock_date),
+        pickup_rule_label: storeCutoffRuleLabel(system),
         preview: cutoffPreview
       },
       master_lock: {
