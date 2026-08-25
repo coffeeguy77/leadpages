@@ -855,7 +855,9 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
             <button class="btn ghost" type="button" id="supply-print-run">All orders (packing slips)</button>
             <button class="btn ghost" type="button" id="supply-print-pick">Pick list (one page)</button>
             <button class="btn ghost" type="button" id="supply-print-prep">Prep summary</button>
+            <button class="btn ghost" type="button" id="supply-print-alloc">Allocation checklist</button>
             <button class="btn ghost" type="button" id="supply-print-air" title="Opens print dialog — great on iPad AirPrint">AirPrint day run</button>
+            <button class="btn ghost" type="button" id="supply-goto-alloc">Open Product Allocation</button>
           </div>
           <div class="kpis" id="supply-kpis"></div>
           <div class="table-wrap">
@@ -864,6 +866,22 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
             </tr></thead><tbody id="supply-tbody"></tbody></table>
           </div>
           <p class="empty hide" id="supply-empty">No supply lines for this date.</p>
+        </div>
+      </section>
+
+      <section class="view" id="view-allocation" data-view="allocation">
+        <div class="card">
+          <div class="toolbar" style="flex-wrap:wrap;gap:10px">
+            <h3 style="margin:0;flex:1">Product Allocation</h3>
+            <input id="alloc-date" type="date">
+            <button class="btn solid" type="button" id="alloc-load">Load allocation</button>
+            <button class="btn ghost" type="button" id="alloc-print">Print checklist</button>
+            <button class="btn ghost" type="button" id="alloc-goto-supply">Production Summary</button>
+          </div>
+          <p class="sub">Pack by product and variation — tick lines as they are packed. Totals stay on Production Summary; this view is the per-customer checklist.</p>
+          <div class="kpis" id="alloc-kpis"></div>
+          <div id="alloc-groups"></div>
+          <p class="empty hide" id="alloc-empty">No allocation lines for this date.</p>
         </div>
       </section>
 
@@ -5232,6 +5250,102 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     }
   }
 
+  /* ---------- Product Allocation (packing checklist) ---------- */
+  async function loadAllocation(){
+    if (!requireSite()) return;
+    var dateEl = $('alloc-date');
+    var groupsEl = $('alloc-groups');
+    var empty = $('alloc-empty');
+    var kpis = $('alloc-kpis');
+    if (!dateEl.value) {
+      var today = new Date();
+      dateEl.value = isoDate(today);
+    }
+    var date = dateEl.value;
+    groupsEl.innerHTML = '<p class="notice">Loading…</p>';
+    empty.classList.add('hide');
+    kpis.innerHTML = '';
+    try {
+      var data = await api('/api/order/supply?' + siteQuery('pickup_date=' + encodeURIComponent(date)));
+      var groups = data.allocations || [];
+      var totals = data.allocation_totals || {};
+      kpis.innerHTML = [
+        { l: 'Orders', v: data.order_count },
+        { l: 'Lines', v: totals.lines || 0 },
+        { l: 'Packed', v: (totals.packed || 0) + ' / ' + (totals.lines || 0) },
+        { l: 'Qty', v: totals.quantity || 0 }
+      ].map(function(c){
+        return '<div class="kpi"><p class="l">' + esc(c.l) + '</p><p class="v">' + esc(c.v == null ? '—' : c.v) + '</p></div>';
+      }).join('');
+      if (!groups.length) {
+        groupsEl.innerHTML = '';
+        empty.classList.remove('hide');
+        return;
+      }
+      groupsEl.innerHTML = groups.map(function(g){
+        var title = esc(g.product_name) + (g.variation_label ? ' — ' + esc(g.variation_label) : '');
+        var html = '<div class="alloc-group" style="margin:16px 0" data-alloc-key="' + esc(g.key) + '">';
+        html += '<div class="toolbar" style="margin-bottom:8px;flex-wrap:wrap;gap:8px">';
+        html += '<strong style="flex:1">' + title + '</strong>';
+        html += '<span class="notice" style="margin:0">Qty ' + esc(g.quantity) +
+          (g.unit_label ? ' ' + esc(g.unit_label) : '') +
+          (g.has_weight ? ' · ' + esc(Number(g.requested_weight_kg || 0).toFixed(3)) + ' kg' : '') +
+          ' · ' + esc(g.packed_count) + '/' + esc(g.line_count) + ' packed</span>';
+        html += '</div>';
+        html += '<div class="table-wrap"><table class="oe"><thead><tr>';
+        html += '<th style="width:48px">Packed</th><th>Customer</th><th>Order</th><th>Qty</th><th>Weight</th><th>Notes</th><th></th>';
+        html += '</tr></thead><tbody>';
+        (g.lines || []).forEach(function(L){
+          var wt = L.requested_weight_kg != null ? Number(L.requested_weight_kg).toFixed(3) + ' kg' : '—';
+          var notes = [L.notes, L.customer_notes].filter(Boolean).join(' / ');
+          html += '<tr data-item-id="' + esc(L.order_item_id) + '"' + (L.packed ? ' style="opacity:.72"' : '') + '>';
+          html += '<td><input type="checkbox" class="alloc-pack-cb" data-item-id="' + esc(L.order_item_id) + '"' +
+            (L.packed ? ' checked' : '') + ' aria-label="Packed"></td>';
+          html += '<td>' + esc(L.customer_name || '—') + (L.is_important ? ' <span class="badge warn">Important</span>' : '') + '</td>';
+          html += '<td><strong>' + esc(L.order_number || '') + '</strong></td>';
+          html += '<td>' + esc(L.quantity) + '</td>';
+          html += '<td>' + esc(wt) + '</td>';
+          html += '<td>' + esc(notes || '—') + '</td>';
+          html += '<td><button class="btn ghost" type="button" data-open="' + esc(L.order_id) + '">Open</button></td>';
+          html += '</tr>';
+        });
+        html += '</tbody></table></div></div>';
+        return html;
+      }).join('');
+      wireOrderOpen(groupsEl);
+      groupsEl.querySelectorAll('.alloc-pack-cb').forEach(function(cb){
+        cb.addEventListener('change', function(){
+          toggleItemPacked(cb.getAttribute('data-item-id'), !!cb.checked, cb);
+        });
+      });
+    } catch (e) {
+      groupsEl.innerHTML = '<p class="notice">' + esc((e && e.message) || e) + '</p>';
+      toast((e && e.message) || String(e), 'err');
+    }
+  }
+
+  async function toggleItemPacked(itemId, packed, cb){
+    if (!itemId || !requireSite()) return;
+    if (cb) cb.disabled = true;
+    try {
+      await api('/api/order/orders', {
+        method: 'POST',
+        body: {
+          site_id: state.siteId,
+          action: 'set_item_packed',
+          order_item_id: itemId,
+          packed: packed
+        }
+      });
+      toast(packed ? 'Marked packed' : 'Unpacked', 'ok');
+      await loadAllocation();
+    } catch (e) {
+      if (cb) cb.checked = !packed;
+      toast((e && e.message) || String(e), 'err');
+    }
+    if (cb) cb.disabled = false;
+  }
+
   /* ---------- Import + SMS CRM ---------- */
   var importState = { csv_text: '', mapping: {}, preview: null, filename: '' };
 
@@ -6746,6 +6860,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
       else if (v === 'products') await loadProductsView();
       else if (v === 'calendar') await loadCalendar();
       else if (v === 'pickup-day') await loadPickupDay();
+      else if (v === 'allocation') await loadAllocation();
       else if (v === 'supply') {
         if (!$('supply-date').value) {
           var d = new Date();
@@ -7017,7 +7132,24 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
   if ($('supply-print-run')) $('supply-print-run').addEventListener('click', function(){ supplyPrint('day_run'); });
   if ($('supply-print-pick')) $('supply-print-pick').addEventListener('click', function(){ supplyPrint('pick_list'); });
   if ($('supply-print-prep')) $('supply-print-prep').addEventListener('click', function(){ supplyPrint('prep'); });
+  if ($('supply-print-alloc')) $('supply-print-alloc').addEventListener('click', function(){ supplyPrint('allocation'); });
   if ($('supply-print-air')) $('supply-print-air').addEventListener('click', function(){ supplyPrint('day_run', true); });
+  if ($('supply-goto-alloc')) $('supply-goto-alloc').addEventListener('click', function(){
+    var d = $('supply-date') && $('supply-date').value;
+    if (d && $('alloc-date')) $('alloc-date').value = d;
+    openNavRoute('allocation');
+  });
+  if ($('alloc-load')) $('alloc-load').addEventListener('click', loadAllocation);
+  if ($('alloc-print')) $('alloc-print').addEventListener('click', function(){
+    var date = $('alloc-date') && $('alloc-date').value;
+    if (!date) { toast('Pick a date', 'err'); return; }
+    openPrint('pickup_date=' + encodeURIComponent(date) + '&format=allocation');
+  });
+  if ($('alloc-goto-supply')) $('alloc-goto-supply').addEventListener('click', function(){
+    var d = $('alloc-date') && $('alloc-date').value;
+    if (d && $('supply-date')) $('supply-date').value = d;
+    openNavRoute('supply');
+  });
   if ($('orders-export')) $('orders-export').addEventListener('click', function(e){ e.preventDefault(); downloadExport('orders'); });
   if ($('items-export')) $('items-export').addEventListener('click', function(e){ e.preventDefault(); downloadExport('order_items'); });
   if ($('cal-load')) $('cal-load').addEventListener('click', loadCalendar);
