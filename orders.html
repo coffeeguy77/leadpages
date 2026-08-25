@@ -1557,8 +1557,19 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     settingsSection: 'menu-layouts',
     settingsTab: 'cart',
     paymentsTab: 'unpaid',
-    paymentsCache: null
+    paymentsCache: null,
+    productsCacheKey: '',
+    productsCacheAt: 0,
+    customersListCache: null,
+    customersListCacheAt: 0,
+    catalogWarmPromise: null,
+    dashDataCache: null,
+    dashDataCacheAt: 0,
+    noCopyPrefill: null
   };
+
+  var CATALOG_CACHE_TTL_MS = 5 * 60 * 1000;
+  var DASH_CACHE_TTL_MS = 90 * 1000;
 
   var $ = function(id){ return document.getElementById(id); };
 
@@ -1906,6 +1917,72 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     return j || {};
   }
 
+  function productsCacheKey(opts){
+    opts = opts || {};
+    var active = opts.activeOnly || opts.includeQuestions;
+    return String(state.siteId || '') + '|' + (opts.includeQuestions ? 'q' : 'p') + '|' + (active ? 'active' : 'all');
+  }
+
+  function clearCatalogCaches(){
+    state.products = [];
+    state.categories = [];
+    state.productQuestions = [];
+    state.productsCacheKey = '';
+    state.productsCacheAt = 0;
+    state.customersListCache = null;
+    state.customersListCacheAt = 0;
+    state.catalogWarmPromise = null;
+  }
+
+  function applyNavCountsFromDashboard(data){
+    var nc = (data && data.nav_counts) || {};
+    var k = (data && data.kpis) || {};
+    state.orderSystemMeta = data.system || null;
+    state.navCounts = {
+      customers: nc.customers != null ? nc.customers : null,
+      orders: nc.orders_active != null ? nc.orders_active : null,
+      new_orders: nc.orders_new != null ? nc.orders_new : null,
+      archived: nc.orders_archived != null ? nc.orders_archived : null
+    };
+    state.navBadges = {
+      orders_new: nc.orders_new != null ? nc.orders_new : null,
+      abandoned_carts: k.abandoned_carts != null ? k.abandoned_carts : null,
+      awaiting_deposit: k.awaiting_deposit != null ? k.awaiting_deposit : null,
+      price_tbc_open: k.price_tbc_open != null ? k.price_tbc_open : null,
+      ready_for_collection: k.ready_for_collection != null ? k.ready_for_collection : null,
+      locked_orders: k.locked_orders != null ? k.locked_orders : null
+    };
+    paintNav();
+  }
+
+  async function warmCatalogCache(opts){
+    opts = opts || {};
+    if (!state.siteId) return;
+    if (state.catalogWarmPromise && !opts.force) return state.catalogWarmPromise;
+    state.catalogWarmPromise = Promise.all([
+      loadProductsCache({ includeQuestions: true, activeOnly: true, force: opts.force }),
+      loadCustomersCache({ lite: true, force: opts.force })
+    ]).finally(function(){ state.catalogWarmPromise = null; });
+    return state.catalogWarmPromise;
+  }
+
+  async function loadCustomersCache(opts){
+    opts = opts || {};
+    if (!state.siteId) return { customers: [] };
+    var now = Date.now();
+    if (!opts.force && !opts.q && state.customersListCache && state.customersListCacheAt &&
+      (now - state.customersListCacheAt) < CATALOG_CACHE_TTL_MS) {
+      return state.customersListCache;
+    }
+    var qs = opts.lite ? 'lite=1' : '';
+    var data = await api('/api/order/customers?' + siteQuery(qs));
+    if (!opts.q) {
+      state.customersListCache = data;
+      state.customersListCacheAt = now;
+    }
+    return data;
+  }
+
   function siteQuery(extra){
     var q = 'site_id=' + encodeURIComponent(state.siteId);
     if (extra) q += '&' + extra;
@@ -2094,26 +2171,16 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
 
   async function refreshNavCounts(){
     if (!state.siteId) return;
+    var now = Date.now();
+    if (state.dashDataCache && state.dashDataCacheAt && (now - state.dashDataCacheAt) < DASH_CACHE_TTL_MS) {
+      applyNavCountsFromDashboard(state.dashDataCache);
+      return;
+    }
     try {
       var data = await api('/api/order/dashboard?' + siteQuery());
-      var nc = (data && data.nav_counts) || {};
-      var k = (data && data.kpis) || {};
-      state.orderSystemMeta = data.system || null;
-      state.navCounts = {
-        customers: nc.customers != null ? nc.customers : null,
-        orders: nc.orders_active != null ? nc.orders_active : null,
-        new_orders: nc.orders_new != null ? nc.orders_new : null,
-        archived: nc.orders_archived != null ? nc.orders_archived : null
-      };
-      state.navBadges = {
-        orders_new: nc.orders_new != null ? nc.orders_new : null,
-        abandoned_carts: k.abandoned_carts != null ? k.abandoned_carts : null,
-        awaiting_deposit: k.awaiting_deposit != null ? k.awaiting_deposit : null,
-        price_tbc_open: k.price_tbc_open != null ? k.price_tbc_open : null,
-        ready_for_collection: k.ready_for_collection != null ? k.ready_for_collection : null,
-        locked_orders: k.locked_orders != null ? k.locked_orders : null
-      };
-      paintNav();
+      state.dashDataCache = data;
+      state.dashDataCacheAt = now;
+      applyNavCountsFromDashboard(data);
     } catch (_e) { /* non-fatal */ }
   }
 
@@ -2239,6 +2306,9 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     updateSideOrderCartVisibility();
     if (meta.view === 'dashboard') startDashCutoffTimer();
     else stopDashCutoffTimer();
+    if (['customers', 'products', 'new', 'orders'].indexOf(meta.view) >= 0) {
+      warmCatalogCache().catch(function(){});
+    }
     loadCurrentView().then(function(){
       if (meta.view === 'orders' && meta.ordersPreset) loadOrders();
     });
@@ -2276,6 +2346,19 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
   }
 
   async function loadSitesForUser(user){
+    if (isEmbed && urlSite) {
+      var embedSite = await sb.from('sites')
+        .select('id,slug,business_name,owner_user_id,servicing_partner_id,referring_partner_id')
+        .eq('id', urlSite)
+        .maybeSingle();
+      if (!embedSite.error && embedSite.data) {
+        state.sites = [embedSite.data];
+        state.siteId = embedSite.data.id;
+        try { localStorage.setItem(SITE_KEY, state.siteId); } catch (_e) {}
+        paintSites();
+        return;
+      }
+    }
     var sites = [];
     if (state.isSuper) {
       var all = await sb.from('sites')
@@ -2346,7 +2429,8 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     } catch (_e) {}
     var hash = resolveRouteFromHash((location.hash || '#dashboard').replace(/^#/, ''));
     openNavRoute(hash, { skipHash: true });
-    refreshNavCounts();
+    if (state.currentView !== 'dashboard') refreshNavCounts();
+    if (state.siteId) warmCatalogCache().catch(function(){});
     return session;
   }
 
@@ -2474,6 +2558,9 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     tbody.innerHTML = '';
     try {
       var data = await api('/api/order/dashboard?' + siteQuery());
+      state.dashDataCache = data;
+      state.dashDataCacheAt = Date.now();
+      applyNavCountsFromDashboard(data);
       var k = data.kpis || {};
       notice.textContent = 'Today ' + (data.today || '') + ' · Tomorrow ' + (data.tomorrow || '') +
         (data.system && data.system.industry_preset ? ' · Preset: ' + data.system.industry_preset : '');
@@ -2606,8 +2693,11 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     body.innerHTML = '<p class="notice">Loading order…</p>';
     foot.innerHTML = '';
     try {
-      try { await loadProductsCache({ includeQuestions: true }); } catch (_pc) {}
-      var data = await api('/api/order/orders?' + siteQuery('id=' + encodeURIComponent(id)));
+      var results = await Promise.all([
+        api('/api/order/orders?' + siteQuery('id=' + encodeURIComponent(id))),
+        loadProductsCache({ includeQuestions: true, activeOnly: true }).catch(function(){ return null; })
+      ]);
+      var data = results[0];
       state.detail = data;
       renderOrderDetail(data);
     } catch (e) {
@@ -3035,6 +3125,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     });
 
     var foot = '';
+    foot += '<button class="btn solid" type="button" data-act="copy-new">Copy to new order</button>';
     foot += '<button class="btn ghost" type="button" data-print="slip">Print packing slip</button>';
     foot += '<button class="btn ghost" type="button" data-print="receipt">Print receipt</button>';
     foot += '<button class="btn ghost" type="button" data-act="deposit-link">Send deposit link</button>';
@@ -3052,7 +3143,14 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     $('om-foot').innerHTML = foot;
 
     $('om-foot').querySelectorAll('[data-act]').forEach(function(btn){
-      btn.addEventListener('click', function(){ runOrderAction(btn.getAttribute('data-act'), o, btn); });
+      btn.addEventListener('click', function(){
+        var act = btn.getAttribute('data-act');
+        if (act === 'copy-new') {
+          copyOrderToNewOrder(data);
+          return;
+        }
+        runOrderAction(act, o, btn);
+      });
     });
     $('om-foot').querySelectorAll('[data-print]').forEach(function(btn){
       btn.addEventListener('click', function(){
@@ -3136,6 +3234,95 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
   function closeOrderModal(){
     $('order-modal').classList.add('hide');
     state.detail = null;
+  }
+
+  function mapItemAnswersToDraft(itemId, itemAnswers){
+    var answers = {};
+    (itemAnswers || []).forEach(function(a){
+      if (a.order_item_id !== itemId) return;
+      var key = a.question_key || a.question_id;
+      if (!key) return;
+      var val = a.value;
+      if (val != null && typeof val === 'object') {
+        if (val.value != null) val = val.value;
+        else if (val.label != null) val = val.label;
+      }
+      if (val != null && val !== '') answers[key] = val;
+    });
+    return answers;
+  }
+
+  function buildCopyPrefillFromDetail(data){
+    var o = data.order || {};
+    var items = data.items || [];
+    var itemAnswers = data.item_answers || [];
+    var drafts = {};
+    var added = {};
+    var skipped = 0;
+    items.forEach(function(it){
+      if (!it.product_id) { skipped++; return; }
+      var p = (state.products || []).find(function(x){ return x.id === it.product_id; });
+      if (!p || p.active === false) { skipped++; return; }
+      drafts[it.product_id] = {
+        qty: it.quantity != null ? it.quantity : '',
+        kg: it.requested_weight_kg != null ? it.requested_weight_kg : '',
+        notes: it.notes || '',
+        touched: '1',
+        answers: mapItemAnswersToDraft(it.id, itemAnswers)
+      };
+      added[it.product_id] = true;
+    });
+    return {
+      customerId: o.customer_id || null,
+      name: o.customer_name || '',
+      phone: o.customer_phone || '',
+      email: o.customer_email || '',
+      notes: o.customer_notes || '',
+      drafts: drafts,
+      added: added,
+      skipped: skipped
+    };
+  }
+
+  function applyNoCopyPrefill(){
+    var pf = state.noCopyPrefill;
+    if (!pf) return;
+    state.noCopyPrefill = null;
+    state.noFastDrafts = pf.drafts || {};
+    state.noFastAdded = pf.added || {};
+    state.noFastPanelOpen = {};
+    if (pf.customerId) {
+      state.noSelectedCustomerId = pf.customerId;
+      state.noCustomerMode = 'existing';
+    } else {
+      state.noSelectedCustomerId = null;
+      state.noCustomerMode = 'new';
+    }
+    if ($('no-name')) $('no-name').value = pf.name || '';
+    if ($('no-phone')) $('no-phone').value = pf.phone || '';
+    if ($('no-email')) $('no-email').value = pf.email || '';
+    if ($('no-notes')) $('no-notes').value = pf.notes || '';
+    applyNoCustomerMode();
+    renderNoCatPills();
+    if (isNoFastMode()) renderNoFastList();
+    else renderNoProductGrid();
+    renderNoStaffCart();
+    updateNoSubmitEnabled();
+    var note = 'Previous order copied — adjust items then create.';
+    if (pf.skipped) note += ' ' + pf.skipped + ' line(s) skipped (inactive or unlinked).';
+    toast(note, 'ok');
+  }
+
+  async function copyOrderToNewOrder(data){
+    if (!data || !data.order) return;
+    try {
+      await warmCatalogCache();
+      state.noCopyPrefill = buildCopyPrefillFromDetail(data);
+      closeOrderModal();
+      openNavRoute('new');
+    } catch (e) {
+      toast((e && e.message) || String(e), 'err');
+    }
   }
 
   /* ---------- New order ---------- */
@@ -4082,11 +4269,22 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
   async function loadProductsCache(opts){
     opts = opts || {};
     if (!state.siteId) { state.products = []; state.categories = []; state.productQuestions = []; return { products: [], categories: [] }; }
-    var qs = opts.includeQuestions ? 'include_questions=1&active=1' : '';
+    var key = productsCacheKey(opts);
+    var now = Date.now();
+    if (!opts.force && state.productsCacheKey === key && state.productsCacheAt &&
+      (now - state.productsCacheAt) < CATALOG_CACHE_TTL_MS && state.products.length) {
+      return { products: state.products, categories: state.categories, questions: state.productQuestions };
+    }
+    var parts = [];
+    if (opts.includeQuestions) parts.push('include_questions=1');
+    if (opts.activeOnly || opts.includeQuestions) parts.push('active=1');
+    var qs = parts.join('&');
     var data = await api('/api/order/products?' + siteQuery(qs));
     state.products = data.products || [];
     state.categories = data.categories || [];
     if (data.questions) state.productQuestions = data.questions;
+    state.productsCacheKey = key;
+    state.productsCacheAt = now;
     return data;
   }
 
@@ -6024,7 +6222,12 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     tbody.innerHTML = '<tr><td colspan="6">Loading…</td></tr>';
     try {
       var q = ($('cust-q').value || '').trim();
-      var data = await api('/api/order/customers?' + siteQuery(q ? 'q=' + encodeURIComponent(q) : ''));
+      var data;
+      if (!q) {
+        data = await loadCustomersCache({ lite: true });
+      } else {
+        data = await api('/api/order/customers?' + siteQuery('q=' + encodeURIComponent(q)));
+      }
       var rows = data.customers || [];
       tbody.innerHTML = rows.map(function(c){
         return '<tr class="clickable" data-cust="' + esc(c.id) + '"><td><strong>' + esc(c.name) + '</strong></td><td>' + esc(c.phone || '—') + '</td><td>' + esc(c.email || '—') +
@@ -6068,10 +6271,11 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
       html += '<h4 style="margin:16px 0 8px">Orders</h4>';
       if (!orders.length) html += '<p class="notice">No orders yet.</p>';
       else {
-        html += '<div class="table-wrap"><table class="oe"><thead><tr><th>Order</th><th>Pickup</th><th>Status</th><th>Total</th></tr></thead><tbody>';
+        html += '<div class="table-wrap"><table class="oe"><thead><tr><th>Order</th><th>Pickup</th><th>Status</th><th>Total</th><th></th></tr></thead><tbody>';
         orders.forEach(function(o){
           html += '<tr class="clickable" data-open-order="' + esc(o.id) + '"><td>' + esc(o.order_number) + '</td><td>' + esc(o.pickup_date || '—') +
-            '</td><td>' + statusBadge(o.status) + '</td><td>' + formatAud(o.known_subtotal_cents) + '</td></tr>';
+            '</td><td>' + statusBadge(o.status) + '</td><td>' + formatAud(o.known_subtotal_cents) + '</td>' +
+            '<td><button class="btn ghost" type="button" data-copy-order="' + esc(o.id) + '">Copy to new</button></td></tr>';
         });
         html += '</tbody></table></div>';
       }
@@ -6092,9 +6296,22 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
       }
       body.innerHTML = html;
       body.querySelectorAll('[data-open-order]').forEach(function(tr){
-        tr.addEventListener('click', function(){
+        tr.addEventListener('click', function(ev){
+          if (ev.target && ev.target.closest && ev.target.closest('[data-copy-order]')) return;
           modal.classList.add('hide');
           openOrderDetail(tr.getAttribute('data-open-order'));
+        });
+      });
+      body.querySelectorAll('[data-copy-order]').forEach(function(btn){
+        btn.addEventListener('click', async function(ev){
+          ev.stopPropagation();
+          var oid = btn.getAttribute('data-copy-order');
+          btn.disabled = true;
+          try {
+            var od = await api('/api/order/orders?' + siteQuery('id=' + encodeURIComponent(oid)));
+            await copyOrderToNewOrder(od);
+          } catch (e) { toast((e && e.message) || String(e), 'err'); }
+          btn.disabled = false;
         });
       });
       foot.innerHTML = '<button class="btn solid" type="button" id="cd-save">Save customer</button> <button class="btn ghost" type="button" id="om-close-2">Close</button>';
@@ -6330,6 +6547,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
         renderNoStaffCart();
         updateSideOrderCartVisibility();
         await refreshPickupDateControl();
+        applyNoCopyPrefill();
       }
       else if (v === 'products') await loadProductsView();
       else if (v === 'calendar') await loadCalendar();
@@ -6398,10 +6616,18 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
       setNavDrawerOpen(false);
     }
   });
-  $('btn-refresh').addEventListener('click', function(){ loadCurrentView(); });
+  $('btn-refresh').addEventListener('click', function(){
+    clearCatalogCaches();
+    state.dashDataCache = null;
+    state.dashDataCacheAt = 0;
+    loadCurrentView();
+  });
   $('site-select').addEventListener('change', function(){
     state.siteId = $('site-select').value || '';
     try { localStorage.setItem(SITE_KEY, state.siteId); } catch (_e) {}
+    clearCatalogCaches();
+    state.dashDataCache = null;
+    state.dashDataCacheAt = 0;
     state.products = [];
     state.navCounts = { customers: null, orders: null, new_orders: null, archived: null };
     state.navBadges = {};
@@ -6409,6 +6635,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     paintNav();
     loadCurrentView();
     refreshNavCounts();
+    warmCatalogCache().catch(function(){});
   });
   $('orders-search').addEventListener('click', loadOrders);
   if ($('orders-remind-all')) $('orders-remind-all').addEventListener('click', async function(){
