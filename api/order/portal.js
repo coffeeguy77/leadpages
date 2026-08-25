@@ -39,7 +39,11 @@ module.exports = async function (req, res) {
     const editingState =
       order.editing_state === 'locked' || liveEdit === 'locked' ? 'locked' : liveEdit;
 
-    const masterLocked = isMasterLockActive(parsePickupSchedule(system));
+    const masterLocked = isMasterLockActive(
+      parsePickupSchedule(system),
+      new Date(),
+      system.timezone || 'Australia/Sydney'
+    );
 
     if (req.method === 'GET') {
       const gstSummary = orderGstSummary(items || []);

@@ -13,8 +13,8 @@ const {
   earliestPickupForCart
 } = require('../../lib/order/cart');
 const { packCartResponse } = require('../../lib/order/cart-pack');
-const { effectiveOrderCutoff } = require('../../lib/order/cutoff');
-const { isDateAvailable } = require('../../lib/order/capacity');
+const { earliestPickupDate, resolveChangeDeadline } = require('../../lib/order/cutoff');
+const { isDateAvailable, isSlotAvailable } = require('../../lib/order/capacity');
 const { createAccessToken } = require('../../lib/order/tokens');
 const { notifyEvent, portalUrl, PUBLIC_BASE } = require('../../lib/order/notify');
 const {
@@ -27,7 +27,7 @@ const { parseGstSettings } = require('../../lib/order/gst');
 const { isMasterLockActive } = require('../../lib/order/master-lock');
 
 function customerOrderingBlocked(system) {
-  return isMasterLockActive(parsePickupSchedule(system));
+  return isMasterLockActive(parsePickupSchedule(system), new Date(), system.timezone || 'Australia/Sydney');
 }
 
 async function siteBySlugOrId(slug, siteId) {
@@ -168,6 +168,19 @@ module.exports = async function (req, res) {
           pickup_window_end = slot.window_end;
           pickup_time = String(slot.window_start).slice(0, 5);
           body.pickup_date = slot.date;
+          const slotCap = await isSlotAvailable(
+            system,
+            slot.date,
+            slot.window_start,
+            slot.window_end,
+            slot.capacity
+          );
+          if (!slotCap.ok) {
+            return json(res, 400, {
+              error: slotCap.scope === 'window' ? 'window_at_capacity' : 'date_at_capacity',
+              capacity: slotCap
+            });
+          }
         }
 
         const created = await convertCartToOrder({
@@ -186,7 +199,7 @@ module.exports = async function (req, res) {
           actor: { label: 'customer_storefront' }
         });
 
-        // Recompute cutoff with live products for audit accuracy
+        // Recompute cutoff with live products + season lock merge
         const { data: liveProducts } = await admin
           .from('order_products')
           .select('*')
@@ -196,7 +209,7 @@ module.exports = async function (req, res) {
               return i.product_id;
             }).filter(Boolean)
           );
-        const cutoff = effectiveOrderCutoff(liveProducts || products, system, body.pickup_date);
+        const cutoff = resolveChangeDeadline(liveProducts || products, system, body.pickup_date, schedule);
         if (cutoff.effective_cutoff_at) {
           await admin
             .from('order_orders')

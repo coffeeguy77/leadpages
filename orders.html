@@ -1312,6 +1312,17 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
             </div>
             <p class="notice">Applying the butcher preset updates defaults and seeds sample products/templates when the catalogue is empty.</p>
             <div class="grid2">
+              <div class="field"><label for="set-timezone">Business timezone</label>
+                <select id="set-timezone">
+                  <option value="Australia/Sydney">Australia/Sydney (NSW, VIC, ACT, TAS)</option>
+                  <option value="Australia/Brisbane">Australia/Brisbane (QLD)</option>
+                  <option value="Australia/Adelaide">Australia/Adelaide (SA)</option>
+                  <option value="Australia/Darwin">Australia/Darwin (NT)</option>
+                  <option value="Australia/Perth">Australia/Perth (WA)</option>
+                  <option value="Pacific/Auckland">Pacific/Auckland</option>
+                </select>
+                <span class="field-hint">Used for cutoff times, season lock end-of-day, and displays.</span>
+              </div>
               <div class="field"><label for="set-cutoff-mode">Default cutoff mode</label>
                 <select id="set-cutoff-mode">
                   <option value="days_before">Days before</option>
@@ -1322,6 +1333,33 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
               </div>
               <div class="field"><label for="set-cutoff-value">Default cutoff value</label>
                 <input id="set-cutoff-value" type="number" min="0" step="1">
+                <span class="field-hint">Days or hours before pickup (depends on mode).</span>
+              </div>
+              <div class="field"><label for="set-cutoff-time">Cutoff time</label>
+                <input id="set-cutoff-time" type="time" value="17:00">
+                <span class="field-hint">Wall-clock time on the cutoff day (site timezone).</span>
+              </div>
+              <div class="field" id="set-cutoff-weekday-wrap"><label for="set-cutoff-weekday">Cutoff weekday</label>
+                <select id="set-cutoff-weekday">
+                  <option value="1">Monday</option>
+                  <option value="2">Tuesday</option>
+                  <option value="3">Wednesday</option>
+                  <option value="4">Thursday</option>
+                  <option value="5">Friday</option>
+                  <option value="6">Saturday</option>
+                  <option value="0">Sunday</option>
+                </select>
+                <span class="field-hint">Only used when mode is Weekday + time.</span>
+              </div>
+              <div class="field"><label for="set-capacity-enabled">Daily capacity limit</label>
+                <select id="set-capacity-enabled">
+                  <option value="0">Off</option>
+                  <option value="1">On</option>
+                </select>
+              </div>
+              <div class="field"><label for="set-capacity-per-day">Max orders per pickup day</label>
+                <input id="set-capacity-per-day" type="number" min="1" step="1" placeholder="e.g. 40">
+                <span class="field-hint">When On, customers cannot book a day that is full. Calendar shows used / max.</span>
               </div>
               <div class="field"><label for="set-editing">Customer editing</label>
                 <select id="set-editing"><option value="1">Enabled</option><option value="0">Disabled</option></select>
@@ -1465,13 +1503,17 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
             <div class="field"><label for="pw-end">Close</label>
               <input id="pw-end" type="time" value="12:00">
             </div>
+            <div class="field"><label for="pw-capacity">Window capacity (optional)</label>
+              <input id="pw-capacity" type="number" min="1" step="1" placeholder="e.g. 15">
+              <span class="field-hint">Max orders for this window. Leave blank for unlimited (day limit still applies if On).</span>
+            </div>
           </div>
           <div class="actions-row" style="margin-bottom:12px">
             <button class="btn solid" type="button" id="pw-add">Add date override</button>
           </div>
           <div class="table-wrap"><table class="data"><thead><tr>
-            <th>Date / rule</th><th>Hours</th><th>Status</th><th></th>
-          </tr></thead><tbody id="pw-tbody"><tr><td colspan="4" class="empty">Loading…</td></tr></tbody></table></div>
+            <th>Date / rule</th><th>Hours</th><th>Capacity</th><th>Status</th><th></th>
+          </tr></thead><tbody id="pw-tbody"><tr><td colspan="5" class="empty">Loading…</td></tr></tbody></table></div>
           <p class="notice" id="pw-msg"></p>
         </div>
         </div>
@@ -5756,6 +5798,16 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
       $('set-deposit').value = s.deposit_amount_cents != null ? (Number(s.deposit_amount_cents) / 100).toFixed(2) : '';
       $('set-cutoff-mode').value = s.default_cutoff_mode === 'weekday_rule' ? 'weekday_rule' : (s.default_cutoff_mode || 'days_before');
       $('set-cutoff-value').value = s.default_cutoff_value != null ? s.default_cutoff_value : '';
+      if ($('set-cutoff-time')) {
+        var ct = s.default_cutoff_time ? String(s.default_cutoff_time).slice(0, 5) : '17:00';
+        $('set-cutoff-time').value = ct;
+      }
+      if ($('set-cutoff-weekday')) {
+        $('set-cutoff-weekday').value = s.default_cutoff_weekday != null ? String(s.default_cutoff_weekday) : '3';
+      }
+      if ($('set-timezone')) $('set-timezone').value = s.timezone || 'Australia/Sydney';
+      if ($('set-capacity-enabled')) $('set-capacity-enabled').value = s.capacity_enabled ? '1' : '0';
+      if ($('set-capacity-per-day')) $('set-capacity-per-day').value = s.capacity_per_day != null ? s.capacity_per_day : '';
       $('set-editing').value = s.customer_editing_enabled === false ? '0' : '1';
       $('set-enabled').value = s.enabled === false ? '0' : '1';
       if ($('set-abd-enabled')) $('set-abd-enabled').value = s.abandoned_cart_enabled === true ? '1' : '0';
@@ -5936,6 +5988,17 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
           deposit_amount_cents: dollarsToCents($('set-deposit').value),
           default_cutoff_mode: cutoffMode,
           default_cutoff_value: $('set-cutoff-value').value !== '' ? Number($('set-cutoff-value').value) : null,
+          default_cutoff_time: $('set-cutoff-time') && $('set-cutoff-time').value
+            ? String($('set-cutoff-time').value).slice(0, 5) + ':00'
+            : '17:00:00',
+          default_cutoff_weekday: $('set-cutoff-weekday') && $('set-cutoff-weekday').value !== ''
+            ? Number($('set-cutoff-weekday').value)
+            : 3,
+          timezone: $('set-timezone') ? $('set-timezone').value || 'Australia/Sydney' : 'Australia/Sydney',
+          capacity_enabled: $('set-capacity-enabled') ? $('set-capacity-enabled').value === '1' : false,
+          capacity_per_day: $('set-capacity-per-day') && $('set-capacity-per-day').value !== ''
+            ? Math.max(1, Number($('set-capacity-per-day').value) || 1)
+            : null,
           customer_editing_enabled: $('set-editing').value === '1',
           enabled: $('set-enabled').value === '1',
           abandoned_cart_enabled: $('set-abd-enabled') ? $('set-abd-enabled').value === '1' : false,
@@ -6222,6 +6285,7 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
               esc(String(w.window_start || '').slice(0, 5)) +
               '–' +
               esc(String(w.window_end || '').slice(0, 5));
+            var capLbl = w.capacity != null && w.capacity !== '' ? esc(w.capacity) : '—';
             return (
               '<tr>' +
               '<td>' +
@@ -6229,6 +6293,9 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
               '</td>' +
               '<td>' +
               win +
+              '</td>' +
+              '<td>' +
+              capLbl +
               '</td>' +
               '<td>' +
               (w.active === false ? 'Off' : 'Active') +
@@ -6277,12 +6344,16 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
           specific_date: date,
           window_start: $('pw-start').value,
           window_end: $('pw-end').value,
+          capacity: $('pw-capacity') && $('pw-capacity').value !== ''
+            ? Math.max(1, Number($('pw-capacity').value) || 1)
+            : null,
           active: true
         }
       });
       if (msg) msg.textContent = 'Date override added.';
       toast('Date override added', 'ok');
       $('pw-date').value = '';
+      if ($('pw-capacity')) $('pw-capacity').value = '';
       await loadPickupWindows();
     } catch (e) {
       if (msg) msg.textContent = (e && e.message) || String(e);
