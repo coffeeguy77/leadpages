@@ -922,7 +922,7 @@
             : 'Changes are closed for this pickup date.';
       } else {
         html +=
-          'Time left to pay deposit or change your order: <strong id="oe-cutoff-val">' +
+          'Time left to change your order: <strong id="oe-cutoff-val">' +
           esc(this.formatCountdown(ms)) +
           '</strong>';
         if (prev.display_at) {
@@ -1119,7 +1119,7 @@
     var dep = this.state.catalogue && this.state.catalogue.deposit;
     if (dep && dep.preview_cents > 0) {
       html +=
-        '<p class="lp-oe-note">Deposit today: <strong>' +
+        '<p class="lp-oe-note">Deposit due upon placement of order: <strong>' +
         esc(dep.preview_label) +
         '</strong>. Final order price will be confirmed after items are prepared/weighed where needed.</p>';
     }
@@ -1384,7 +1384,7 @@
     var dep = this.state.catalogue && this.state.catalogue.deposit;
     if (dep && dep.preview_cents > 0) {
       html +=
-        '<p class="lp-oe-note">Deposit today: <strong>' +
+        '<p class="lp-oe-note">Deposit due upon placement of order: <strong>' +
         esc(dep.preview_label) +
         '</strong>. Final order price will be confirmed after items are prepared/weighed where needed.</p>';
     }
@@ -1714,7 +1714,7 @@
     if (this.state.cart && this.state.cart.has_unknown_prices)
       html += '<div class="row"><span>Other items</span><strong>Price TBC</strong></div>';
     html +=
-      '<div class="row emph"><span>Deposit due today</span><strong>' +
+      '<div class="row emph"><span>Deposit due upon placement</span><strong>' +
       esc((this.state.display && this.state.display.deposit) || '—') +
       '</strong></div>';
     html +=
