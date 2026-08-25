@@ -23,6 +23,7 @@ alter table order_abandoned_events enable row level security;
 alter table order_fulfilment_windows enable row level security;
 alter table order_date_locks enable row level security;
 alter table order_audit_events enable row level security;
+alter table order_print_snapshots enable row level security;
 
 -- Shared site-access expression (owner / super / active partner)
 -- Applied as SELECT policies; no INSERT/UPDATE/DELETE for anon/authenticated clients.
@@ -159,6 +160,11 @@ exception when duplicate_object then null; end $$;
 
 do $$ begin
   create policy order_audit_events_select on order_audit_events for select
+    using (order_engine_site_visible(site_id));
+exception when duplicate_object then null; end $$;
+
+do $$ begin
+  create policy order_print_snapshots_select on order_print_snapshots for select
     using (order_engine_site_visible(site_id));
 exception when duplicate_object then null; end $$;
 
