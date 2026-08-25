@@ -191,10 +191,12 @@
         step: 'phone',
         phone: '',
         code: '',
+        email: '',
         err: '',
         busy: false,
         info: ''
       },
+      emailPromptSkipped: false,
       checkoutDraft: {
         name: '',
         phone: '',
@@ -359,13 +361,38 @@
     return displayFullNameClient(pick);
   };
 
+  OrderStorefront.prototype.customerNeedsEmail = function () {
+    var c = this.state.customer;
+    if (!c) return false;
+    if (c.needs_email === true) return true;
+    return !String(c.email || '').trim();
+  };
+
+  OrderStorefront.prototype.maybePromptForEmail = function () {
+    if (!this.isLoggedIn() || !this.customerNeedsEmail()) return false;
+    if (this.state.emailPromptSkipped) return false;
+    this.state.authModal = {
+      open: true,
+      step: 'email',
+      phone: '',
+      code: '',
+      email: (this.state.checkoutDraft && this.state.checkoutDraft.email) || '',
+      err: '',
+      busy: false,
+      info: ''
+    };
+    return true;
+  };
+
   OrderStorefront.prototype.captureAuthDraft = function () {
     var m = this.state.authModal;
     if (!m || !m.open) return;
     var phone = $('#oe-auth-phone', this.root);
     var code = $('#oe-auth-code', this.root);
+    var email = $('#oe-auth-email', this.root);
     if (phone) m.phone = phone.value;
     if (code) m.code = code.value;
+    if (email) m.email = email.value;
   };
 
   OrderStorefront.prototype.restoreCustomerSession = async function () {
@@ -381,6 +408,7 @@
       this.state.customer = data.customer || null;
       this.state.orders = data.orders || [];
       this.prefillCheckoutFromCustomer();
+      this.maybePromptForEmail();
     } catch (_e) {
       this.state.customerToken = '';
       this.state.customer = null;
@@ -416,6 +444,7 @@
       step: 'phone',
       phone: (this.state.checkoutDraft && this.state.checkoutDraft.phone) || '',
       code: '',
+      email: '',
       err: '',
       busy: false,
       info: ''
@@ -435,6 +464,7 @@
   OrderStorefront.prototype.friendlyAuthError = function (msg) {
     var m = String(msg || '');
     if (m === 'bad_phone') return 'Enter a valid Australian mobile number.';
+    if (m === 'bad_email') return 'Enter a valid email address.';
     if (m === 'sms_not_configured')
       return 'SMS is not set up for this shop yet. Ask the shop for help, or use the link from your confirmation SMS.';
     if (m === 'sms_failed') return 'Could not send the SMS code. Please try again in a moment.';
@@ -1540,6 +1570,15 @@
       return html;
     }
 
+    if (this.customerNeedsEmail()) {
+      html += '<div class="lp-oe-email-nudge" role="region" aria-label="Add email">';
+      html +=
+        '<p><strong>Add your email</strong> so we can send order updates and reminders without SMS every time.</p>';
+      html +=
+        '<button type="button" class="lp-oe-primary" data-act="prompt-email">Add email</button>';
+      html += '</div>';
+    }
+
     var orders = this.state.orders || [];
     if (!orders.length) {
       html +=
@@ -1599,6 +1638,36 @@
       '<div class="lp-oe-modal" role="dialog" aria-modal="true" aria-labelledby="oe-auth-title" data-stop="1">';
     html +=
       '<button type="button" class="lp-oe-modal-close" data-act="close-auth" aria-label="Close">×</button>';
+
+    if (m.step === 'email') {
+      html += '<p class="lp-oe-account-ey">Stay in the loop</p>';
+      html += '<h2 id="oe-auth-title" class="lp-oe-modal-title">Add your email</h2>';
+      html +=
+        '<p class="lp-oe-modal-sub">We’ve got your mobile. Add an email so we can send order updates, pickup reminders, and occasional news without relying only on SMS.</p>';
+      html += '<div class="lp-oe-fields lp-oe-fields-app">';
+      html +=
+        '<label class="lp-oe-field">Email<input id="oe-auth-email" type="email" autocomplete="email" placeholder="you@example.com" value="' +
+        esc(m.email || '') +
+        '"' +
+        (m.busy ? ' disabled' : '') +
+        ' required></label>';
+      html += '</div>';
+      if (m.info) html += '<p class="lp-oe-auth-info">' + esc(m.info) + '</p>';
+      if (m.err) html += '<p class="lp-oe-auth-err">' + esc(m.err) + '</p>';
+      html += '<div class="lp-oe-modal-actions">';
+      html +=
+        '<button type="button" class="lp-oe-primary" data-act="auth-save-email"' +
+        (m.busy ? ' disabled' : '') +
+        '>Save email</button>';
+      html +=
+        '<button type="button" class="lp-oe-account-btn ghost" data-act="auth-skip-email"' +
+        (m.busy ? ' disabled' : '') +
+        '>Not now</button>';
+      html += '</div>';
+      html += '</div></div>';
+      return html;
+    }
+
     html += '<p class="lp-oe-account-ey">Secure sign-in</p>';
     html += '<h2 id="oe-auth-title" class="lp-oe-modal-title">Your orders</h2>';
     html +=
@@ -1893,7 +1962,7 @@
         ev.stopPropagation();
       });
     }
-    ['oe-auth-phone', 'oe-auth-code'].forEach(function (id) {
+    ['oe-auth-phone', 'oe-auth-code', 'oe-auth-email'].forEach(function (id) {
       var el = document.getElementById(id);
       if (!el) return;
       el.addEventListener('input', function () {
@@ -1903,6 +1972,7 @@
         if (ev.key !== 'Enter') return;
         ev.preventDefault();
         if (id === 'oe-auth-phone') self.onAct('auth-send', el);
+        else if (id === 'oe-auth-email') self.onAct('auth-save-email', el);
         else self.onAct('auth-verify', el);
       });
     });
@@ -1992,7 +2062,12 @@
     }
     if (this.state.authModal && this.state.authModal.open) {
       try {
-        var focusId = this.state.authModal.step === 'code' ? 'oe-auth-code' : 'oe-auth-phone';
+        var focusId =
+          this.state.authModal.step === 'code'
+            ? 'oe-auth-code'
+            : this.state.authModal.step === 'email'
+            ? 'oe-auth-email'
+            : 'oe-auth-phone';
         var focusEl = document.getElementById(focusId);
         if (focusEl) focusEl.focus();
       } catch (_e) {}
@@ -2062,7 +2137,10 @@
       'open-auth': 1,
       'close-auth': 1,
       'view-orders': 1,
-      'sign-out': 1
+      'sign-out': 1,
+      'auth-save-email': 1,
+      'auth-skip-email': 1,
+      'prompt-email': 1
     };
     if (self.state.busy && !freeActs[act]) return;
     try {
@@ -2073,7 +2151,16 @@
         self.openAuthModal();
         return;
       }
+      if (act === 'prompt-email') {
+        self.state.emailPromptSkipped = false;
+        self.maybePromptForEmail();
+        self.render();
+        return;
+      }
       if (act === 'close-auth') {
+        if (self.state.authModal && self.state.authModal.step === 'email') {
+          self.state.emailPromptSkipped = true;
+        }
         self.closeAuthModal();
         return;
       }
@@ -2157,18 +2244,79 @@
             localStorage.setItem(portalSessionKey(self.slug), out.token);
           } catch (_e) {}
           self.state.customerToken = out.token;
+          if (out.customer) self.state.customer = out.customer;
           await self.refreshOrders();
           self.prefillCheckoutFromCustomer();
-          am2.open = false;
           am2.busy = false;
           self.state.view = 'account';
           self.state.selected = null;
-          var greetMsg = firstName(self.customerDisplayName());
-          self.state.msg = greetMsg ? 'Welcome, ' + greetMsg + '.' : 'Signed in.';
+          if (out.needs_email || self.customerNeedsEmail()) {
+            am2.open = true;
+            am2.step = 'email';
+            am2.email = (self.state.checkoutDraft && self.state.checkoutDraft.email) || '';
+            am2.err = '';
+            am2.info = '';
+            self.state.msg = 'Signed in — add your email so we can reach you without SMS.';
+          } else {
+            am2.open = false;
+            var greetMsg = firstName(self.customerDisplayName());
+            self.state.msg = greetMsg ? 'Welcome, ' + greetMsg + '.' : 'Signed in.';
+          }
         } catch (e) {
           am2.err = self.friendlyAuthError((e && e.message) || e);
           am2.busy = false;
         }
+        self.render();
+        return;
+      }
+      if (act === 'auth-save-email') {
+        if (self.state.authModal && self.state.authModal.busy) return;
+        self.captureAuthDraft();
+        var amE = self.state.authModal;
+        amE.err = '';
+        amE.info = '';
+        var emailVal = String(amE.email || '').trim();
+        if (!emailVal || emailVal.indexOf('@') < 0) {
+          amE.err = 'Enter a valid email address.';
+          self.render();
+          return;
+        }
+        amE.busy = true;
+        self.render();
+        try {
+          var saved = await api('/api/order/portal-auth', {
+            method: 'POST',
+            body: {
+              action: 'save_email',
+              slug: self.slug,
+              token: self.state.customerToken,
+              email: emailVal
+            }
+          });
+          if (saved.customer) self.state.customer = saved.customer;
+          else if (self.state.customer) {
+            self.state.customer.email = emailVal;
+            self.state.customer.needs_email = false;
+          }
+          self.prefillCheckoutFromCustomer();
+          self.state.emailPromptSkipped = false;
+          amE.open = false;
+          amE.busy = false;
+          self.state.msg = 'Thanks — we’ll use your email for updates and reminders.';
+        } catch (e) {
+          amE.err = self.friendlyAuthError((e && e.message) || e);
+          amE.busy = false;
+        }
+        self.render();
+        return;
+      }
+      if (act === 'auth-skip-email') {
+        self.state.emailPromptSkipped = true;
+        if (self.state.authModal) {
+          self.state.authModal.open = false;
+          self.state.authModal.busy = false;
+        }
+        self.state.msg = 'You can add your email anytime from Your orders.';
         self.render();
         return;
       }
@@ -2720,6 +2868,9 @@
       '.lp-oe-summary .row{display:flex;justify-content:space-between;gap:10px;margin:0 0 8px;font-size:14px}',
       '.lp-oe-summary .row.emph{font-weight:700;padding-top:8px;border-top:1px dashed var(--oe-line)}',
       '.lp-oe-account{margin:0 0 16px;padding:14px;border:1px solid var(--oe-line);border-radius:14px;background:linear-gradient(165deg,color-mix(in srgb,var(--oe-accent) 10%,var(--oe-card)),var(--oe-card));box-shadow:0 8px 20px rgba(28,36,30,.04)}',
+      '.lp-oe-email-nudge{margin:0 0 14px;padding:12px 14px;border-radius:12px;border:1px dashed color-mix(in srgb,var(--oe-accent) 40%,var(--oe-line));background:color-mix(in srgb,var(--oe-accent) 8%,var(--oe-card))}',
+      '.lp-oe-email-nudge p{margin:0 0 10px;font-size:13px;line-height:1.45;color:var(--oe-ink)}',
+      '.lp-oe-email-nudge .lp-oe-primary{width:auto;padding:9px 14px;font-size:13px}',
       '.lp-oe-account-ey{margin:0 0 4px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--oe-accent)}',
       '.lp-oe-account-name{margin:0 0 4px;font-size:15px;font-weight:700;letter-spacing:-.01em;color:var(--oe-ink)}',
       '.lp-oe-account-meta{margin:0 0 10px;font-size:12.5px;line-height:1.4;color:var(--oe-muted)}',

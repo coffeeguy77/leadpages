@@ -24,6 +24,28 @@ function sixDigitCode() {
   return String(100000 + Math.floor(Math.random() * 900000));
 }
 
+function looksLikeEmail(v) {
+  var s = String(v || '').trim();
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+}
+
+function customerNeedsEmail(customer) {
+  if (!customer) return true;
+  return !String(customer.email || '').trim();
+}
+
+function packCustomerPublic(customer) {
+  if (!customer) return null;
+  return {
+    id: customer.id,
+    name: customer.name,
+    phone: customer.phone,
+    phone_e164: customer.phone_e164,
+    email: customer.email || null,
+    needs_email: customerNeedsEmail(customer)
+  };
+}
+
 async function siteBySlug(slug) {
   const admin = getAdmin();
   const { data } = await admin
@@ -189,7 +211,8 @@ module.exports = async function (req, res) {
 
       return json(res, 200, {
         ok: true,
-        customer: customer,
+        customer: packCustomerPublic(customer),
+        needs_email: customerNeedsEmail(customer),
         orders: packed,
         site_id: session.site_id
       });
@@ -327,11 +350,49 @@ module.exports = async function (req, res) {
         customer_id: customerId,
         meta: { phone_e164: phone }
       });
+      const { data: custRow } = await admin
+        .from('order_customers')
+        .select('id, name, phone, phone_e164, email')
+        .eq('id', customerId)
+        .maybeSingle();
       return json(res, 200, {
         ok: true,
         token: session.token,
         expires_at: session.record.expires_at,
-        customer_id: customerId
+        customer_id: customerId,
+        customer: packCustomerPublic(custRow),
+        needs_email: customerNeedsEmail(custRow)
+      });
+    }
+
+    if (action === 'save_email') {
+      const token = body.token || '';
+      const session = await resolveAccessToken(token);
+      if (!session || session.purpose !== 'portal_customer' || !session.customer_id) {
+        return json(res, 401, { error: 'auth' });
+      }
+      const email = String(body.email || '').trim().toLowerCase();
+      if (!looksLikeEmail(email)) return json(res, 400, { error: 'bad_email', message: 'Enter a valid email address.' });
+      const now = new Date().toISOString();
+      const { data: updated, error } = await admin
+        .from('order_customers')
+        .update({ email: email, updated_at: now })
+        .eq('id', session.customer_id)
+        .eq('site_id', session.site_id)
+        .select('id, name, phone, phone_e164, email')
+        .single();
+      if (error) throw error;
+      // Keep recent order snapshots in sync for staff CRM.
+      await admin
+        .from('order_orders')
+        .update({ customer_email: email, updated_at: now })
+        .eq('customer_id', session.customer_id)
+        .eq('site_id', session.site_id)
+        .or('customer_email.is.null,customer_email.eq.');
+      return json(res, 200, {
+        ok: true,
+        customer: packCustomerPublic(updated),
+        needs_email: false
       });
     }
 
