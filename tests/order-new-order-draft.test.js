@@ -109,6 +109,11 @@ test('orders.html layout: fullscreen left-nav steps, no permanent right panel', 
   assert.doesNotMatch(html, />Change customer</);
   assert.doesNotMatch(html, />Choose pickup</);
 
+  // Sidebar client card shows CLIENT label with name + phone
+  assert.match(html, />CLIENT</);
+  assert.match(html, /no-nav-client-prefix/);
+  assert.match(html, /no-nav-client-phone/);
+
   // Fullscreen hides top tabs; tabs lose pink fill
   assert.match(css, /\.no-mode-fullscreen \.no-workflow-tabs/);
   assert.match(css, /\.no-workflow-tab\.on/);
@@ -116,6 +121,7 @@ test('orders.html layout: fullscreen left-nav steps, no permanent right panel', 
   assert.match(css, /\.no-full-cart-rm/);
   // Nested left steps only in fullscreen
   assert.match(css, /body\[data-no-mode="fullscreen"\] \.oanav-new-steps/);
+  assert.match(css, /@container no-workspace/);
 });
 
 test('miniCartPreview helper still available for draft module', function () {
