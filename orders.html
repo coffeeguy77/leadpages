@@ -262,11 +262,11 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
   .line-row{grid-template-columns:1fr 1fr}
   .line-row .prod-combo{grid-column:1/-1}
 }
-.no-cat-pills{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 14px}
+.no-cat-pills{display:flex;flex-wrap:nowrap;gap:6px;margin:0 0 10px;overflow-x:auto;padding-bottom:6px;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
 .no-cat-pill{
-  appearance:none;border:2px solid var(--line-strong);background:var(--surface);color:var(--ink);
-  font:700 16px/1.25 var(--font-ui);padding:14px 24px;border-radius:999px;cursor:pointer;
-  min-height:48px;
+  flex:0 0 auto;appearance:none;border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);
+  font:600 12.5px/1.2 var(--font-ui);padding:6px 12px;border-radius:999px;cursor:pointer;
+  min-height:36px;white-space:nowrap;
 }
 .no-cat-pill.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--ink)}
 .no-cat-pill:hover{border-color:var(--accent)}
@@ -289,23 +289,23 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
   border:1px solid var(--line);
 }
 .side-order-cart{
-  flex:1 1 auto;border-top:1px solid var(--line);margin-top:8px;padding:10px 8px 8px;
-  min-height:72px;max-height:none;overflow:hidden;
+  flex:0 0 auto;border:1px solid color-mix(in srgb,var(--accent) 40%,var(--line));
+  margin:8px 8px 10px;padding:0;min-height:0;max-height:none;overflow:hidden;
   display:flex;flex-direction:column;
-  background:color-mix(in srgb,var(--accent) 4%,var(--surface));
-  border-radius:10px;
+  background:color-mix(in srgb,var(--accent) 14%,var(--surface));
+  border-radius:12px;
 }
 .side-order-cart.hide{display:none!important}
+.side-order-cart .no-current-order{padding:12px 14px;border-bottom:0;font-size:13.5px;line-height:1.35}
+.side-order-cart .no-current-order .label{
+  font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);margin:0 0 6px;
+}
+.side-order-cart .no-nav-customer-name{font-weight:700;color:var(--ink);margin:0}
+.side-order-cart .no-nav-customer-name.is-empty{font-weight:500;color:var(--ink-soft)}
 .side-order-cart h4{margin:0 0 8px;flex:0 0 auto;font-size:var(--fs-xs);font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
 .side-order-cart-empty{font-size:var(--fs-xs);color:var(--ink-faint);margin:0 0 8px;line-height:1.35;flex:0 0 auto}
-.side-order-cart-list{display:flex;flex-direction:column;gap:6px;margin:0;flex:1 1 auto;min-height:0;overflow-y:auto}
-.side-order-cart-item{
-  display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 8px;align-items:start;
-  padding:7px 8px;border-radius:8px;border:1px solid var(--line);background:var(--surface);
-}
-.side-order-cart-item strong{font-size:var(--fs-xs);line-height:1.25;display:block}
-.side-order-cart-item .meta{font-size:10px;color:var(--ink-soft);line-height:1.3}
-.side-order-cart-item .rm{align-self:center;padding:4px 8px;min-height:0;font-size:var(--fs-xs)}
+.side-order-cart-list{display:none}
+.side-order-cart-item{display:none}
 @media(max-width:1100px){
   .no-main-split{grid-template-columns:1fr}
   .no-products-col{max-height:none;padding-right:0;padding-bottom:14px}
@@ -479,10 +479,10 @@ body.embed .side.collapsed-rail{
 }
 body.embed .side-nav-wrap{flex:0 1 auto;min-height:0;overflow-y:auto}
 body.embed .side-order-cart{
-  flex:1 1 auto;min-height:72px;max-height:none;overflow:hidden;
+  flex:0 0 auto;min-height:0;max-height:none;overflow:hidden;
   display:flex;flex-direction:column;
 }
-body.embed .side-order-cart-list{flex:1 1 auto;min-height:0;overflow-y:auto}
+body.embed .side-order-cart-list{display:none}
 body.embed .main{
   flex:1 1 75%;min-width:0;width:auto;max-width:none;
   height:100%;overflow:hidden;display:flex;flex-direction:column;
@@ -532,20 +532,10 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     <div class="side-nav-wrap">
       <nav class="oanav" id="nav" aria-label="Order views"></nav>
     </div>
-    <div class="side-order-cart hide" id="side-order-cart" aria-label="Current order cart">
+    <div class="side-order-cart hide" id="side-order-cart" aria-label="Current order customer">
       <div class="no-current-order" id="no-nav-current" aria-live="polite">
         <p class="label">Current order</p>
-        <div id="no-nav-current-body"><span class="muted">No customer selected</span><br><span class="muted">0 items</span><br><span class="muted">Pickup not selected</span></div>
-      </div>
-      <div class="no-mini-cart-head">
-        <h4 id="no-mini-cart-title">Order cart · 0</h4>
-        <button type="button" class="btn ghost no-mini-collapse" id="no-mini-collapse" aria-expanded="true" aria-controls="no-mini-cart-body" hidden>View current order</button>
-      </div>
-      <div id="no-mini-cart-body">
-        <p class="side-order-cart-empty" id="no-staff-cart-empty">No items yet.</p>
-        <div class="side-order-cart-list" id="no-staff-cart-list"></div>
-        <p class="no-mini-more hide" id="no-mini-more"></p>
-        <button class="btn ghost no-mini-view-pay" type="button" id="no-mini-view-pay" data-no-goto="payment">View Cart &amp; Payment</button>
+        <div id="no-nav-current-body" class="no-nav-customer-name">No customer selected</div>
       </div>
     </div>
     <div class="side-foot">
@@ -635,14 +625,8 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
             <div class="no-context-bar" id="no-context-bar" aria-live="polite">
               <div class="no-context-main">
                 <strong id="no-context-customer">No customer selected</strong>
-                <span class="meta" id="no-context-pickup">Pickup not selected</span>
                 <span class="meta" id="no-context-items">0 items</span>
                 <span class="no-draft-status" id="no-draft-status">Draft ready</span>
-              </div>
-              <div class="no-context-actions actions-row">
-                <button class="btn ghost" type="button" id="no-find-customer">Select customer</button>
-                <button class="btn ghost" type="button" id="no-context-pickup-btn" data-no-goto="customer">Choose pickup</button>
-                <button class="btn solid" type="button" data-no-goto="payment">Cart &amp; Payment</button>
               </div>
             </div>
 
@@ -4211,48 +4195,29 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
   }
 
   function renderNoStaffCart(){
-    var list = $('no-staff-cart-list');
-    var empty = $('no-staff-cart-empty');
-    var more = $('no-mini-more');
-    var title = $('no-mini-cart-title');
     var entries = collectStaffCartEntries();
-    var preview = entries.slice(0, 3);
-    var rest = entries.length - preview.length;
-
-    if (title) title.textContent = 'Order cart · ' + entries.length;
-    if (!entries.length) {
-      if (list) list.innerHTML = '';
-      if (empty) { empty.classList.remove('hide'); empty.hidden = false; }
-      if (more) { more.classList.add('hide'); more.textContent = ''; }
-    } else {
-      if (empty) { empty.classList.add('hide'); empty.hidden = true; }
-      if (list) {
-        list.innerHTML = preview.map(function(ent){
-          var p = ent.product;
-          var meta = staffCartLineSummary(p, ent.line);
-          return '<div class="side-order-cart-item" data-cart-key="' + esc(ent.key) + '">' +
-            '<div><strong>' + esc(p.name || 'Item') + '</strong>' +
-            (meta ? '<div class="meta">' + esc(meta) + '</div>' : '') +
-            '</div>' +
-            '<button type="button" class="btn ghost rm" data-cart-rm="' + esc(ent.key) + '" aria-label="Remove ' + esc(p.name || 'item') + '">✕</button>' +
-            '</div>';
-        }).join('');
-        list.querySelectorAll('[data-cart-rm]').forEach(function(btn){
-          btn.addEventListener('click', function(){ removeCartEntryByKey(btn.getAttribute('data-cart-rm')); });
-        });
-      }
-      if (more) {
-        if (rest > 0) {
-          more.classList.remove('hide');
-          more.textContent = '+ ' + rest + ' more item' + (rest === 1 ? '' : 's');
-        } else {
-          more.classList.add('hide');
-          more.textContent = '';
-        }
-      }
-    }
     renderNoFullCart(entries);
     syncNoOrderSurfaces();
+  }
+
+  function applyCartDraftField(productId, patch){
+    if (!productId) return;
+    var d = state.noFastDrafts[productId] || { qty: 1, kg: '', notes: '', answers: {} };
+    Object.keys(patch || {}).forEach(function(k){ d[k] = patch[k]; });
+    state.noFastDrafts[productId] = d;
+    state.noFastAdded[productId] = true;
+    // Keep product-grid drafts in sync without rebuilding Cart & Payment (would steal focus).
+    var row = document.querySelector('#no-fast-list [data-fast-row="' + productId + '"]');
+    if (row) {
+      var kgEl = row.querySelector('[data-fast-kg]');
+      var qtyEl = row.querySelector('[data-fast-qty]');
+      var notesEl = row.querySelector('[data-fast-notes]');
+      if (kgEl && patch.kg != null) kgEl.value = patch.kg;
+      if (qtyEl && patch.qty != null) qtyEl.value = patch.qty;
+      if (notesEl && patch.notes != null) notesEl.value = patch.notes;
+    }
+    syncNoOrderSurfaces();
+    scheduleNoDraftPersist();
   }
 
   function renderNoFullCart(entries){
@@ -4269,61 +4234,63 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     list.innerHTML = entries.map(function(ent){
       var p = ent.product;
       var meta = staffCartLineSummary(p, ent.line);
-      var qty = ent.line.quantity != null ? ent.line.quantity : '';
+      var qty = ent.line.quantity != null ? ent.line.quantity : 1;
       var kg = ent.line.requested_weight_kg != null ? ent.line.requested_weight_kg : '';
       var note = ent.line.notes || '';
       var controls = '';
       if (ent.mode === 'fast') {
         if (productNeedsWeight(p)) {
-          controls += '<label class="field"><span class="field-hint">kg</span>' +
-            '<input type="number" min="0.01" step="0.01" value="' + esc(String(kg)) + '" data-no-cart-kg="' + esc(p.id) + '"></label>';
+          var minK = minimumKgForProduct(p);
+          var kgVal = kg !== '' && kg != null ? kg : (minK || 0.1);
+          controls += '<label class="no-full-cart-field"><span>kg</span>' +
+            noStepperHtml({ min: minK != null ? minK : 0.1, step: 0.1, value: kgVal, dataAttr: 'data-no-cart-kg="' + esc(p.id) + '"' }) +
+            '</label>';
         } else if (productShowsQuantity(p)) {
-          controls += '<label class="field"><span class="field-hint">Qty</span>' +
-            '<input type="number" min="1" step="1" value="' + esc(String(qty || 1)) + '" data-no-cart-qty="' + esc(p.id) + '"></label>';
+          controls += '<label class="no-full-cart-field"><span>Qty</span>' +
+            noStepperHtml({ min: 1, step: 1, value: qty || 1, dataAttr: 'data-no-cart-qty="' + esc(p.id) + '"' }) +
+            '</label>';
         }
-        controls += '<label class="field" style="flex:1 1 140px"><span class="field-hint">Note</span>' +
+        controls += '<label class="no-full-cart-field no-full-cart-note"><span>Note</span>' +
           '<input type="text" value="' + esc(note) + '" data-no-cart-note="' + esc(p.id) + '" placeholder="Optional"></label>';
       }
       return '<div class="no-full-cart-item" data-cart-key="' + esc(ent.key) + '">' +
-        '<div><strong>' + esc(p.name || 'Item') + '</strong>' +
+        '<div class="no-full-cart-body"><strong>' + esc(p.name || 'Item') + '</strong>' +
         (meta ? '<div class="meta">' + esc(meta) + '</div>' : '') +
         '<div class="no-full-cart-controls">' + controls + '</div></div>' +
-        '<button type="button" class="btn ghost" data-cart-rm="' + esc(ent.key) + '" aria-label="Remove">Remove</button></div>';
+        '<button type="button" class="btn ghost no-full-cart-rm" data-cart-rm="' + esc(ent.key) + '" aria-label="Remove ' + esc(p.name || 'item') + '">✕</button></div>';
     }).join('');
+    wireNoSteppers(list);
     list.querySelectorAll('[data-cart-rm]').forEach(function(btn){
       btn.addEventListener('click', function(){ removeCartEntryByKey(btn.getAttribute('data-cart-rm')); });
     });
     list.querySelectorAll('[data-no-cart-qty]').forEach(function(inp){
-      inp.addEventListener('change', function(){
-        var id = inp.getAttribute('data-no-cart-qty');
-        var d = state.noFastDrafts[id] || { qty: 1, kg: '', notes: '', answers: {} };
-        d.qty = String(Math.max(1, Number(inp.value) || 1));
-        state.noFastDrafts[id] = d;
-        state.noFastAdded[id] = true;
-        renderNoFastList();
-        scheduleNoDraftPersist();
-      });
+      function commit(){
+        applyCartDraftField(inp.getAttribute('data-no-cart-qty'), {
+          qty: String(Math.max(1, Number(inp.value) || 1))
+        });
+      }
+      inp.addEventListener('input', commit);
+      inp.addEventListener('change', commit);
     });
     list.querySelectorAll('[data-no-cart-kg]').forEach(function(inp){
+      inp.addEventListener('input', function(){
+        var n = Number(inp.value);
+        if (!isFinite(n) || n <= 0) return;
+        applyCartDraftField(inp.getAttribute('data-no-cart-kg'), { kg: String(n) });
+      });
       inp.addEventListener('change', function(){
-        var id = inp.getAttribute('data-no-cart-kg');
-        var d = state.noFastDrafts[id] || { qty: 1, kg: '', notes: '', answers: {} };
-        d.kg = String(inp.value || '');
-        state.noFastDrafts[id] = d;
-        state.noFastAdded[id] = true;
-        renderNoFastList();
-        scheduleNoDraftPersist();
+        var n = Number(inp.value);
+        if (!isFinite(n) || n <= 0) n = 0.1;
+        n = Math.round(n * 10) / 10;
+        inp.value = String(n);
+        applyCartDraftField(inp.getAttribute('data-no-cart-kg'), { kg: String(n) });
       });
     });
     list.querySelectorAll('[data-no-cart-note]').forEach(function(inp){
       inp.addEventListener('change', function(){
-        var id = inp.getAttribute('data-no-cart-note');
-        var d = state.noFastDrafts[id] || { qty: 1, kg: '', notes: '', answers: {} };
-        d.notes = String(inp.value || '').trim();
-        state.noFastDrafts[id] = d;
-        state.noFastAdded[id] = true;
-        scheduleNoDraftPersist();
-        renderNoStaffCart();
+        applyCartDraftField(inp.getAttribute('data-no-cart-note'), {
+          notes: String(inp.value || '').trim()
+        });
       });
     });
   }
@@ -4476,24 +4443,16 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     if ($('no-tab-payment-meta')) $('no-tab-payment-meta').textContent = hints.payment;
 
     if ($('no-context-customer')) $('no-context-customer').textContent = name || 'No customer selected';
-    if ($('no-context-pickup')) $('no-context-pickup').textContent = pickupLabel ? ('Pickup: ' + pickupLabel) : 'Pickup not selected';
     if ($('no-context-items')) $('no-context-items').textContent = entries.length + ' item' + (entries.length === 1 ? '' : 's');
-    var findBtn = $('no-find-customer');
-    if (findBtn) findBtn.textContent = name ? 'Change customer' : 'Select customer';
-    var pickBtn = $('no-context-pickup-btn');
-    if (pickBtn) pickBtn.textContent = pickupLabel ? 'Edit pickup' : 'Choose pickup';
 
     var navBody = $('no-nav-current-body');
     if (navBody) {
-      navBody.innerHTML = '<strong>' + esc(name || 'No customer selected') + '</strong><br>' +
-        esc(entries.length + ' item' + (entries.length === 1 ? '' : 's')) + '<br>' +
-        esc(pickupLabel || 'Pickup not selected');
+      navBody.textContent = name || 'No customer selected';
+      navBody.classList.toggle('is-empty', !name);
     }
 
     if ($('no-mobile-customer')) {
-      $('no-mobile-customer').textContent = name
-        ? (name + (pickupLabel ? ' · ' + pickupLabel : ''))
-        : (entries.length ? 'Customer and pickup required' : 'No customer selected');
+      $('no-mobile-customer').textContent = name || (entries.length ? 'Customer required' : 'No customer selected');
     }
     if ($('no-mobile-meta')) $('no-mobile-meta').textContent = entries.length + ' item' + (entries.length === 1 ? '' : 's');
     if ($('no-emb-cart-count')) $('no-emb-cart-count').textContent = entries.length + ' item' + (entries.length === 1 ? '' : 's');
@@ -4635,14 +4594,6 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
         }
       });
     });
-    if ($('no-find-customer')) {
-      $('no-find-customer').addEventListener('click', function(){
-        state.noCustomerMode = 'existing';
-        applyNoCustomerMode();
-        showNoStep('customer');
-        if ($('no-cust-search')) $('no-cust-search').focus();
-      });
-    }
     if ($('no-new-customer')) {
       $('no-new-customer').addEventListener('click', function(){
         state.noCustomerMode = 'new';
@@ -4669,14 +4620,6 @@ body.embed .content{flex:1;min-height:0;overflow:auto}
     if ($('no-mobile-sheet')) {
       $('no-mobile-sheet').addEventListener('click', function(ev){
         if (ev.target === $('no-mobile-sheet')) closeNoMobileSheet();
-      });
-    }
-    if ($('no-mini-collapse')) {
-      $('no-mini-collapse').addEventListener('click', function(){
-        var cart = $('side-order-cart');
-        if (!cart) return;
-        var collapsed = cart.classList.toggle('is-collapsed');
-        $('no-mini-collapse').setAttribute('aria-expanded', collapsed ? 'false' : 'true');
       });
     }
     ['no-name', 'no-phone', 'no-email', 'no-notes'].forEach(function(id){

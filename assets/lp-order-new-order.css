@@ -23,8 +23,8 @@
 .no-workflow-tab strong{font-size:13.5px}
 .no-workflow-tab span{font-size:12px;color:var(--ink-soft)}
 .no-workflow-tab.on{
-  border-color:color-mix(in srgb,var(--accent,#b85c6e) 55%,var(--line));
-  background:color-mix(in srgb,var(--accent,#b85c6e) 8%,transparent);
+  border-color:var(--line-strong,var(--line));
+  background:var(--surface,#fff);
   box-shadow:inset 3px 0 0 var(--accent,#b85c6e);
 }
 .no-workflow-tab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -37,7 +37,6 @@
 .no-context-main{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;min-width:0}
 .no-context-main strong{font-size:14px}
 .no-context-main .meta{font-size:12.5px;color:var(--ink-soft)}
-.no-context-actions{margin:0}
 
 .no-main{min-width:0;width:100%}
 .no-step{display:none}
@@ -49,7 +48,6 @@
 .no-prod-search-field{flex:1 1 220px;min-width:0}
 .no-emb-cart-chip{flex:0 0 auto}
 
-/* Compact category strip — single row, horizontal scroll */
 .no-cat-pills{
   display:flex;flex-wrap:nowrap;gap:6px;overflow-x:auto;overflow-y:hidden;
   padding:2px 0 10px;margin:0 0 8px;-webkit-overflow-scrolling:touch;
@@ -82,14 +80,37 @@
 .no-review-summary{font-size:13.5px;line-height:1.45}
 .no-totals{display:grid;gap:6px;font-size:13.5px}
 .no-totals > div{display:flex;justify-content:space-between;gap:10px}
-.no-full-cart-list{display:grid;gap:10px}
+
+.no-full-cart-list{display:grid;gap:8px}
 .no-full-cart-item{
-  display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;
-  padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--surface,#fff);
+  display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 10px;align-items:center;
+  padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface,#fff);
 }
-.no-full-cart-item .meta{font-size:12.5px;color:var(--ink-soft);margin-top:2px}
-.no-full-cart-controls{display:flex;flex-wrap:wrap;gap:8px;align-items:end;margin-top:8px}
-.no-full-cart-controls .field{margin:0;min-width:88px}
+.no-full-cart-body{min-width:0}
+.no-full-cart-item strong{font-size:13.5px;line-height:1.25}
+.no-full-cart-item .meta{font-size:12px;color:var(--ink-soft);margin-top:2px}
+.no-full-cart-controls{
+  display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px;
+}
+.no-full-cart-field{
+  display:inline-flex;flex-direction:column;gap:3px;margin:0;font-size:11px;font-weight:600;
+  color:var(--ink-faint);letter-spacing:.04em;text-transform:uppercase;
+}
+.no-full-cart-field .no-stepper{min-height:40px}
+.no-full-cart-field .no-stepper button{width:36px;font-size:18px}
+.no-full-cart-field .no-stepper input[type="number"]{
+  width:4.2rem;min-width:4.2rem;min-height:40px;padding:6px 4px;
+}
+.no-full-cart-note{flex:1 1 140px;min-width:120px}
+.no-full-cart-note input{
+  width:100%;min-height:40px;padding:8px 10px;border:1px solid var(--line-strong);
+  border-radius:10px;font:inherit;text-transform:none;letter-spacing:normal;font-weight:500;
+  color:var(--ink);background:var(--input-bg,transparent);
+}
+.no-full-cart-rm{
+  align-self:center;padding:6px 10px!important;min-height:36px!important;
+  font-size:16px!important;line-height:1;width:auto;
+}
 
 .no-mobile-bar{
   display:none;position:sticky;bottom:0;z-index:5;
@@ -101,33 +122,28 @@
 .no-mobile-bar strong{display:block}
 .no-mobile-bar .meta{font-size:12.5px;color:var(--ink-soft)}
 
-/* Fullscreen: no top tabs; full width main; context bar stays */
 .no-mode-fullscreen .no-workflow-tabs{display:none!important}
 .no-mode-fullscreen .no-emb-cart-chip{display:none!important}
 .no-mode-fullscreen .no-mobile-bar{display:none!important}
 .no-mode-fullscreen .no-cart-pay{grid-template-columns:minmax(0,1.4fr) minmax(300px,380px)}
 
-/* Embedded: show tabs; no permanent right panels on products */
 .no-mode-embedded .no-workflow-tabs{display:flex}
 .no-mode-embedded .no-workflow-tabs[hidden]{display:flex!important}
 .no-mode-embedded .no-emb-cart-chip{display:inline-flex}
 .no-mode-embedded .no-emb-cart-chip[hidden]{display:inline-flex!important}
 .no-mode-embedded .no-mobile-bar{display:none!important}
-.no-mode-embedded .no-context-actions .btn.solid{display:none}
 .no-mode-embedded .no-cart-pay{grid-template-columns:minmax(0,1fr) minmax(260px,340px)}
 
 @container no-workspace (max-width: 900px){
   .no-mode-embedded .no-cart-pay{grid-template-columns:1fr}
 }
 
-/* Mobile */
 .no-mode-mobile .no-workflow-tabs{display:flex;flex-direction:row;flex-wrap:nowrap;overflow-x:auto}
 .no-mode-mobile .no-workflow-tabs[hidden]{display:flex!important}
 .no-mode-mobile .no-workflow-tab{flex:1 1 auto;min-width:96px;padding:8px 10px;min-height:44px}
 .no-mode-mobile .no-workflow-tab strong{font-size:12.5px}
 .no-mode-mobile .no-workflow-tab span{display:none}
 .no-mode-mobile .no-context-bar{padding:8px 10px}
-.no-mode-mobile .no-context-actions{display:none}
 .no-mode-mobile .no-mobile-bar{display:flex}
 .no-mode-mobile .no-emb-cart-chip{display:none!important}
 .no-mode-mobile .no-cart-pay{grid-template-columns:1fr}
@@ -143,25 +159,6 @@
 }
 .no-sheet-handle{width:40px;height:4px;border-radius:999px;background:var(--line);margin:4px auto 12px}
 
-/* Left mini cart */
-.side-order-cart .no-current-order{
-  padding:10px 12px;border-bottom:1px solid var(--line);font-size:12.5px;line-height:1.35;
-}
-.side-order-cart .no-current-order .label{
-  font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);margin:0 0 4px;
-}
-.no-mini-cart-head{
-  display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px 0;
-}
-.no-mini-cart-head h4{margin:0;font-size:var(--fs-xs);font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
-.no-mini-collapse{padding:4px 8px;min-height:0;font-size:11px}
-#no-mini-cart-body{padding:0 12px 10px;display:flex;flex-direction:column;gap:6px;min-height:0}
-.no-mini-more{font-size:11.5px;color:var(--ink-soft);margin:0}
-.no-mini-view-pay{width:100%;justify-content:center;font-size:12px;padding:8px;min-height:40px}
-.side-order-cart.is-collapsed #no-mini-cart-body{display:none}
-.side-order-cart.is-collapsed .no-mini-collapse{display:inline-flex!important}
-
-/* Nested New Order steps in left nav — fullscreen only */
 .oanav-new-steps{
   list-style:none;margin:4px 0 8px 18px;padding:0;display:none;flex-direction:column;gap:2px;
 }

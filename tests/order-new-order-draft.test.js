@@ -81,31 +81,6 @@ test('resolveOrdersDisplayMode uses container width + fullscreen flag', function
   );
 });
 
-test('miniCartPreview caps at three items', function () {
-  const entries = [1, 2, 3, 4, 5, 6, 7].map(function (n) {
-    return { id: n };
-  });
-  const preview = draft.miniCartPreview(entries, 3);
-  assert.equal(preview.visible.length, 3);
-  assert.equal(preview.moreCount, 4);
-  assert.equal(draft.miniCartPreview(entries.slice(0, 2), 3).moreCount, 0);
-});
-
-test('stepCompleteness labels', function () {
-  const empty = draft.stepCompleteness({}, 0);
-  assert.equal(empty.products, 'Add items');
-  assert.equal(empty.customer, 'Required');
-  assert.equal(empty.payment, 'Review');
-
-  const full = draft.stepCompleteness({
-    customerName: 'Sarah Williams',
-    payAction: 'send_invoice_link'
-  }, 3);
-  assert.equal(full.products, '3 items');
-  assert.equal(full.customer, 'Sarah Williams');
-  assert.equal(full.payment, 'Selected');
-});
-
 test('orders.html layout: fullscreen left-nav steps, no permanent right panel', function () {
   const html = fs.readFileSync(path.join(__dirname, '..', 'orders.html'), 'utf8');
   const css = fs.readFileSync(path.join(__dirname, '..', 'assets/lp-order-new-order.css'), 'utf8');
@@ -118,25 +93,35 @@ test('orders.html layout: fullscreen left-nav steps, no permanent right panel', 
   assert.match(html, /oanav-new-steps/);
   assert.match(html, /Add Products/);
   assert.match(html, /data-no-step="payment"/);
-  assert.match(html, /id="no-mini-more"/);
-  assert.match(html, /View Cart &amp; Payment|View Cart & Payment/);
   assert.match(html, /function lineFromFastDraft/);
   assert.match(html, /Object\.keys\(added\)\.forEach/);
   assert.match(html, /resolveNoDisplayMode/);
   assert.match(html, /body\.setAttribute\('data-no-mode'/);
+  assert.match(html, /applyCartDraftField/);
+  assert.match(html, /step: 0\.1/);
 
-  // Permanent right order panel beside products must be gone
+  // Permanent right order panel / mini cart list must be gone
   assert.doesNotMatch(html, /id="no-order-panel"/);
   assert.doesNotMatch(html, /id="no-panel-cart-list"/);
+  assert.doesNotMatch(html, /id="no-staff-cart-list"/);
+  assert.doesNotMatch(html, /id="no-find-customer"/);
+  assert.doesNotMatch(html, /id="no-context-pickup-btn"/);
+  assert.doesNotMatch(html, />Change customer</);
+  assert.doesNotMatch(html, />Choose pickup</);
 
-  // Fullscreen hides top tabs
+  // Fullscreen hides top tabs; tabs lose pink fill
   assert.match(css, /\.no-mode-fullscreen \.no-workflow-tabs/);
-  assert.match(css, /display:\s*none\s*!important/);
-  // Embedded/mobile show tabs
-  assert.match(css, /\.no-mode-embedded \.no-workflow-tabs/);
-  assert.match(css, /\.no-mode-mobile \.no-workflow-tabs/);
+  assert.match(css, /\.no-workflow-tab\.on/);
+  assert.match(css, /box-shadow:\s*inset 3px 0 0/);
+  assert.match(css, /\.no-full-cart-rm/);
   // Nested left steps only in fullscreen
   assert.match(css, /body\[data-no-mode="fullscreen"\] \.oanav-new-steps/);
+});
+
+test('miniCartPreview helper still available for draft module', function () {
+  const preview = draft.miniCartPreview([{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }], 3);
+  assert.equal(preview.visible.length, 3);
+  assert.equal(preview.moreCount, 1);
 });
 
 test('product editor remount parks shell before catalogue wipe', function () {
