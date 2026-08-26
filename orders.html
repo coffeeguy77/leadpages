@@ -291,21 +291,25 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
 #view-new .card.no-card,#view-new .no-workspace,#view-new .no-context-bar{background:var(--surface,#fff)}
 #view-new .no-step-customer .no-editor-col{background:var(--surface,#fff)!important}
 .side-order-cart{
-  flex:0 0 auto;border:1px solid color-mix(in srgb,var(--accent) 40%,var(--line));
+  flex:0 0 auto;border:1px solid var(--line);
   margin:8px 8px 10px;padding:0;min-height:0;max-height:none;overflow:hidden;
   display:flex;flex-direction:column;
-  background:color-mix(in srgb,var(--accent) 14%,var(--surface));
+  background:var(--surface,#fff);
   border-radius:12px;
 }
 .side-order-cart.hide{display:none!important}
-.side-order-cart .no-current-order{padding:12px 14px;border-bottom:0;font-size:13.5px;line-height:1.35}
+.side-order-cart .no-current-order{padding:12px 14px;border-bottom:0;font-size:13.5px;line-height:1.35;display:grid;gap:6px}
 .side-order-cart .no-current-order .label{
-  font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);margin:0 0 6px;
+  font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);margin:0;
 }
-.side-order-cart .no-nav-customer-name{font-weight:700;color:var(--ink);margin:0;line-height:1.35}
+.side-order-cart .no-nav-customer-name{font-weight:700;color:var(--ink);margin:0;line-height:1.35;word-break:normal;overflow-wrap:anywhere}
 .side-order-cart .no-nav-customer-name.is-empty{font-weight:500;color:var(--ink-soft)}
-.side-order-cart .no-nav-client-prefix{font-weight:800;letter-spacing:.04em}
-.side-order-cart .no-nav-client-phone{font-weight:600;color:var(--ink-soft)}
+.side-order-cart .no-nav-client-phone{font-weight:600;font-size:12.5px;color:var(--ink-soft);line-height:1.3}
+.side-order-cart .no-nav-client-meta{font-size:12.5px;color:var(--ink-soft);line-height:1.3}
+.side-order-cart .no-nav-cart-btn{
+  width:100%;justify-content:center;margin-top:4px;min-height:40px;padding:0 12px;
+}
+.side.collapsed-rail .side-order-cart{display:none!important}
 .side-order-cart h4{margin:0 0 8px;flex:0 0 auto;font-size:var(--fs-xs);font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
 .side-order-cart-empty{font-size:var(--fs-xs);color:var(--ink-faint);margin:0 0 8px;line-height:1.35;flex:0 0 auto}
 .side-order-cart-list{display:none}
@@ -572,10 +576,13 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     <div class="side-nav-wrap">
       <nav class="oanav" id="nav" aria-label="Order views"></nav>
     </div>
-    <div class="side-order-cart hide" id="side-order-cart" aria-label="Current order customer">
+    <div class="side-order-cart hide" id="side-order-cart" aria-label="Current order client">
       <div class="no-current-order" id="no-nav-current" aria-live="polite">
-        <p class="label">CLIENT</p>
-        <div id="no-nav-current-body" class="no-nav-customer-name">No customer selected</div>
+        <p class="label" id="no-nav-client-label">CLIENT</p>
+        <div id="no-nav-current-body" class="no-nav-customer-name is-empty">No customer selected</div>
+        <div id="no-nav-client-phone" class="no-nav-client-phone hide"></div>
+        <div id="no-nav-client-meta" class="no-nav-client-meta">0 items</div>
+        <button class="btn solid no-nav-cart-btn" type="button" id="no-nav-cart-btn" data-no-goto="payment">Cart &amp; Pay</button>
       </div>
     </div>
     <div class="side-foot">
@@ -4487,15 +4494,28 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     if ($('no-context-items')) $('no-context-items').textContent = entries.length + ' item' + (entries.length === 1 ? '' : 's');
 
     var navBody = $('no-nav-current-body');
+    var navPhone = $('no-nav-client-phone');
+    var navMeta = $('no-nav-client-meta');
     if (navBody) {
       if (name) {
-        navBody.innerHTML = '<span class="no-nav-client-prefix">CLIENT:</span> ' + esc(name) +
-          (phone ? ' <span class="no-nav-client-phone">' + esc(phone) + '</span>' : '');
+        navBody.textContent = name;
         navBody.classList.remove('is-empty');
       } else {
         navBody.textContent = 'No customer selected';
         navBody.classList.add('is-empty');
       }
+    }
+    if (navPhone) {
+      if (phone) {
+        navPhone.textContent = phone;
+        navPhone.classList.remove('hide');
+      } else {
+        navPhone.textContent = '';
+        navPhone.classList.add('hide');
+      }
+    }
+    if (navMeta) {
+      navMeta.textContent = entries.length + ' item' + (entries.length === 1 ? '' : 's');
     }
 
     if ($('no-mobile-customer')) {
