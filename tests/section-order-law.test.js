@@ -218,3 +218,19 @@ test('live applyCfg merges all data-sec nodes after Position list', function() {
   assert.match(tradeTpl, /__kids\.forEach\(__pushNode\)/);
   assert.match(render, /resolveSectionOrder/);
 });
+
+test('injectSectionOrderCss gives promotions-inline its own flex slot after hero', function() {
+  const { injectSectionOrderCss } = require('../lib/trade-render-guard');
+  const html = injectSectionOrderCss('<html><head></head><body></body></html>', {
+    sectionOrder: ['hero', 'scrollingSponsorBanner', 'promotions', 'services'],
+    sections: {
+      hero: {},
+      scrollingSponsorBanner: { on: true },
+      promotions: { on: true },
+      services: {}
+    }
+  });
+  assert.match(html, /promotions-hero"\]\{order:4!important\}/);
+  assert.match(html, /promotions-inline"\]\{order:5!important\}/);
+  assert.match(html, /services"\]\{order:6!important\}/);
+});

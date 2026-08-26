@@ -501,8 +501,8 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
 .lp-prev-actions{margin-left:auto;display:flex;gap:5px;}
 .lp-prev-actions button{appearance:none;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);color:#fff;width:30px;height:30px;border-radius:7px;cursor:pointer;font-size:14px;line-height:1;}
 .lp-prev-actions button:hover{background:rgba(255,255,255,.18);}
-.lp-prev-body{flex:1;min-height:0;background:#e9edf2;overflow:hidden;position:relative;}
-.lp-prev-body iframe{display:block;border:0;background:#fff;}
+.lp-prev-body{flex:1;min-height:0;background:#e9edf2;overflow:hidden;position:relative;box-shadow:inset 0 0 0 1px rgba(15,23,42,.14);}
+.lp-prev-body iframe{display:block;border:0;background:#fff;box-shadow:inset 0 0 0 1px rgba(15,23,42,.2);}
 @media(max-width:560px){ .lp-dev{display:none;} }
 
 /* Icon picker */
@@ -4306,22 +4306,30 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
       +'<div style="padding:5px 8px;font:600 11.5px var(--font-ui);color:'+(sel?'var(--accent)':'var(--ink)')+';">'+(sel?'\u2713 ':'')+label+'</div></button>';
   }
   function _lpfSaveLogo(url){ try{ var a=JSON.parse(localStorage.getItem('lp_footer_logos')||'[]'); if(a.indexOf(url)<0){ a.unshift(url); a=a.slice(0,8); localStorage.setItem('lp_footer_logos',JSON.stringify(a)); } }catch(e){} }
+  function _lpfHex(v){ v=String(v||'').trim(); if(v&&v[0]!=='#')v='#'+v; return /^#[0-9a-fA-F]{6}$/.test(v)?v:''; }
+  function _lpfLightBg(bg,op){ op=(op!=null?+op:100); if(isNaN(op))op=100; op=Math.max(0,Math.min(100,op))/100; var h=_lpfHex(bg)||'#0e1217'; var r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16); var bgL=(0.2126*r+0.7152*g+0.0722*b)/255; return (bgL*op+0.96*(1-op))>0.62; }
+  function _lpfDefInk(bg,op,explicit){ if(_lpfHex(explicit)) return explicit; return _lpfLightBg(bg,op)?'#13161b':'#ffffff'; }
+  function _lpfRgba(bg,op){ var h=_lpfHex(bg)||'#0e1217'; op=(op!=null?+op:100); if(isNaN(op))op=100; op=Math.max(0,Math.min(100,op))/100; var r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16); return 'rgba('+r+','+g+','+b+','+op+')'; }
   function lpFooterCard(c){
     var F=(c.sections&&c.sections.lpFooter)||{};
     if(!c.sections) c.sections={}; if(!c.sections.lpFooter) c.sections.lpFooter={}; c.sections.lpFooter.on=true;
     var size=(F.size!=null?F.size:30), op=(F.bgOpacity!=null?F.bgOpacity:100);
     var bg=(/^#[0-9a-fA-F]{6}$/.test(F.bg||''))?F.bg:'#0e1217';
+    var bgSet=(/^#[0-9a-fA-F]{6}$/.test(F.bg||''));
     var themeFeat=((c.theme&&(c.theme.hivis||c.theme.pipe))||'#ff6a1f');
     var feat=(/^#[0-9a-fA-F]{6}$/.test(F.accent||''))?F.accent:themeFeat;
     var featSet=(/^#[0-9a-fA-F]{6}$/.test(F.accent||''));
-    var ink=(/^#[0-9a-fA-F]{6}$/.test(F.ink||''))?F.ink:'#ffffff';
+    var ink=(/^#[0-9a-fA-F]{6}$/.test(F.ink||''))?F.ink:_lpfDefInk(bgSet?bg:'#0e1217',op,'');
     var inkSet=(/^#[0-9a-fA-F]{6}$/.test(F.ink||''));
+    var previewBg=_lpfRgba(bgSet?bg:'#0e1217',op);
+    var previewInk=_lpfDefInk(bgSet?bg:'#0e1217',op,inkSet?F.ink:'');
     var h='<div class="card" style="margin-bottom:22px;"><div class="card-head" style="display:flex;justify-content:space-between;align-items:center;gap:12px;"><h2 style="margin:0;">LeadPages footer</h2><span style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;">Always on</span></div>';
-    h+='<p class="hint" style="margin:8px 0 14px;">A branded LeadPages strip at the bottom of every page. The logo cannot be deleted. Feature colour tints \u201cMore leads\u201d; logo text colour tints the arrow, LeadPages wordmark and Smart sites line.</p>';
-    h+='<div style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:10px;background:#0e1217;margin-bottom:16px;">';
-    var inkAttr=inkSet?'custom':'light';
-    h+='<span id="lpf-preview-logo" class="lp-foot-logo" style="display:inline-block;height:28px;width:auto;line-height:0;--lp-logo-ink:'+ink+';--lp-logo-accent:'+feat+';" data-lp-logo="auto" data-lp-logo-ink="'+inkAttr+'" data-lp-logo-pulse data-lp-logo-accent="'+feat+'"></span>';
-    h+='<div style="font-size:12.5px;color:#fff;line-height:1.4;">Coloured LeadPages logo<br><span style="opacity:.75;">Feature <code id="lpf-feat-swatch" style="color:'+feat+';">'+feat+'</code> · Text <code id="lpf-ink-swatch" style="color:'+ink+';">'+ink+'</code></span></div></div>';
+    h+='<p class="hint" style="margin:8px 0 14px;">A branded LeadPages strip at the bottom of every page. The logo cannot be deleted. On light backgrounds, logo text defaults to dark unless you set Logo text colour.</p>';
+    h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;"><span style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;">Editor preview</span><button type="button" class="btn ghost sm lpf-prev-mode" data-mode="live">Your colours</button><button type="button" class="btn ghost sm lpf-prev-mode" data-mode="light">Light page</button><button type="button" class="btn ghost sm lpf-prev-mode" data-mode="dark">Dark page</button></div>';
+    h+='<div id="lpf-preview-wrap" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:10px;margin-bottom:16px;border:1px solid rgba(15,23,42,.16);background:'+previewBg+';">';
+    var inkAttr=inkSet?'custom':(_lpfLightBg(bgSet?bg:'#0e1217',op)?'dark':'light');
+    h+='<span id="lpf-preview-logo" class="lp-foot-logo" style="display:inline-block;height:28px;width:auto;line-height:0;--lp-logo-ink:'+previewInk+';--lp-logo-accent:'+feat+';" data-lp-logo="auto" data-lp-logo-ink="'+inkAttr+'" data-lp-logo-pulse data-lp-logo-accent="'+feat+'"></span>';
+    h+='<div id="lpf-preview-meta" style="font-size:12.5px;color:'+previewInk+';line-height:1.4;">Coloured LeadPages logo<br><span style="opacity:.75;">Feature <code id="lpf-feat-swatch" style="color:'+feat+';">'+feat+'</code> · Text <code id="lpf-ink-swatch" style="color:'+previewInk+';">'+previewInk+'</code></span></div></div>';
     h+='<div style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:4px;">';
     h+='<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:220px;"><label>Feature colour</label><p class="hint" style="margin:2px 0 6px;font-size:12px;">\u201cMore leads\u201d highlights. Default follows your site feature colour.</p><div style="display:flex;align-items:center;gap:8px;"><input type="color" id="lpf-feat-clr" value="'+feat+'" style="width:46px;height:34px;padding:0;border:1px solid var(--line);border-radius:8px;cursor:pointer;flex:0 0 auto;"><input type="text" id="lpf-feat-tx" value="'+(featSet?F.accent:'')+'" placeholder="'+themeFeat+' (theme)" style="flex:1;min-width:0;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;"><button type="button" class="btn ghost" id="lpf-feat-def" style="padding:6px 10px;">Default</button></div></div>';
     h+='<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:220px;"><label>Logo text colour</label><p class="hint" style="margin:2px 0 6px;font-size:12px;">Arrow, LeadPages wordmark and Smart sites text.</p><div style="display:flex;align-items:center;gap:8px;"><input type="color" id="lpf-ink-clr" value="'+ink+'" style="width:46px;height:34px;padding:0;border:1px solid var(--line);border-radius:8px;cursor:pointer;flex:0 0 auto;"><input type="text" id="lpf-ink-tx" value="'+(inkSet?F.ink:'')+'" placeholder="#ffffff (white)" style="flex:1;min-width:0;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;"><button type="button" class="btn ghost" id="lpf-ink-def" style="padding:6px 10px;">Default</button></div></div>';
@@ -4330,15 +4338,34 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
     h+='<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:220px;"><label>Background opacity <span id="lpf-op-v" style="font-weight:700;color:var(--accent);">'+op+'%</span></label><input type="range" id="lpf-op" min="0" max="100" value="'+op+'" style="width:100%;"></div></div>';
     h+='<div style="display:flex;flex-wrap:wrap;gap:14px;margin-top:12px;"><div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:220px;"><label>Position</label><select id="lpf-align" class="tin" style="width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#fff;"><option value="left"'+(F.align==='left'?' selected':'')+'>Left</option><option value="center"'+(F.align!=='left'&&F.align!=='right'?' selected':'')+'>Centre</option><option value="right"'+(F.align==='right'?' selected':'')+'>Right</option></select></div>';
     h+='<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:220px;"><label>Background colour</label><div style="display:flex;align-items:center;gap:8px;"><input type="color" id="lpf-bg-clr" value="'+bg+'" style="width:46px;height:34px;padding:0;border:1px solid var(--line);border-radius:8px;cursor:pointer;flex:0 0 auto;"><input type="text" id="lpf-bg-tx" value="'+(/^#[0-9a-fA-F]{6}$/.test(F.bg||'')?F.bg:'')+'" placeholder="'+bg+'" style="flex:1;min-width:0;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;"></div></div></div>';
-    h+='<div class="f" style="margin:12px 0 0;"><label>Footer text (optional)</label><input type="text" id="lpf-text" value="'+esc(F.text||'')+'" placeholder="e.g. Built with LeadPages" style="width:100%;"><p class="hint" style="margin:6px 0 0;">Optional caption beside the logo. Caption text stays white.</p></div>';
+    h+='<div class="f" style="margin:12px 0 0;"><label>Footer text (optional)</label><input type="text" id="lpf-text" value="'+esc(F.text||'')+'" placeholder="e.g. Built with LeadPages" style="width:100%;"><p class="hint" style="margin:6px 0 0;">Optional caption beside the logo. Uses logo text colour.</p></div>';
     return h+'</div>';
   }
   function wireLpFooter(c){
     function F(){ if(!c.sections)c.sections={}; if(!c.sections.lpFooter)c.sections.lpFooter={}; c.sections.lpFooter.on=true; return c.sections.lpFooter; }
     function themeFeat(){ return ((c.theme&&(c.theme.hivis||c.theme.pipe))||'#ff6a1f'); }
     function activeFeat(){ var a=F().accent; return (/^#[0-9a-fA-F]{6}$/.test(a||''))?a:themeFeat(); }
-    function activeInk(){ var a=F().ink; return (/^#[0-9a-fA-F]{6}$/.test(a||''))?a:'#ffffff'; }
-    function inkAttrFor(col){ return (/^#[0-9a-fA-F]{6}$/.test((F().ink||'')))?'custom':'light'; }
+    function activeInk(){ var a=F().ink; if(/^#[0-9a-fA-F]{6}$/.test(a||'')) return a; var bg=(/^#[0-9a-fA-F]{6}$/.test(F().bg||''))?F().bg:'#0e1217'; var op=(F().bgOpacity!=null?F().bgOpacity:100); return _lpfDefInk(bg,op,''); }
+    function inkAttrFor(col){ return (/^#[0-9a-fA-F]{6}$/.test((F().ink||'')))?'custom':(_lpfLightBg((/^#[0-9a-fA-F]{6}$/.test(F().bg||''))?F().bg:'#0e1217',F().bgOpacity!=null?F().bgOpacity:100)?'dark':'light'); }
+    var _lpfPrevMode='live';
+    function refreshPreviewWrap(){
+      var wrap=$('lpf-preview-wrap'); if(!wrap) return;
+      var bg, op;
+      if(_lpfPrevMode==='light'){ bg='#ffffff'; op=100; }
+      else if(_lpfPrevMode==='dark'){ bg='#0e1217'; op=100; }
+      else { bg=(/^#[0-9a-fA-F]{6}$/.test(F().bg||''))?F().bg:'#0e1217'; op=(F().bgOpacity!=null?F().bgOpacity:100); }
+      wrap.style.background=_lpfRgba(bg,op);
+      var inkCol=(_lpfPrevMode==='live')?activeInk():_lpfDefInk(bg,op,(/^#[0-9a-fA-F]{6}$/.test(F().ink||''))?F().ink:'');
+      var meta=$('lpf-preview-meta'); if(meta) meta.style.color=inkCol;
+      var iw=$('lpf-ink-swatch'); if(iw){ iw.textContent=inkCol; iw.style.color=inkCol; }
+      previewFeat(activeFeat(), inkCol);
+      document.querySelectorAll('.lpf-prev-mode').forEach(function(btn){
+        var on=btn.getAttribute('data-mode')===_lpfPrevMode;
+        btn.setAttribute('aria-pressed',on?'true':'false');
+        btn.style.fontWeight=on?'700':'600';
+        btn.style.borderColor=on?'var(--accent)':'var(--line)';
+      });
+    }
     function previewFeat(col, inkCol){
       col=col||activeFeat(); inkCol=inkCol||activeInk();
       var sw=$('lpf-feat-swatch'); if(sw){ sw.textContent=col; sw.style.color=col; }
@@ -4367,20 +4394,24 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
     }
     F();
     var sz=$('lpf-size'),szv=$('lpf-size-v'); if(sz) sz.addEventListener('input',function(){ F().size=+sz.value; if(szv)szv.textContent=sz.value+'px'; persist(); previewApply(); });
-    var op=$('lpf-op'),opv=$('lpf-op-v'); if(op) op.addEventListener('input',function(){ F().bgOpacity=+op.value; if(opv)opv.textContent=op.value+'%'; persist(); previewApply(); });
+    var op=$('lpf-op'),opv=$('lpf-op-v'); if(op) op.addEventListener('input',function(){ F().bgOpacity=+op.value; if(opv)opv.textContent=op.value+'%'; refreshPreviewWrap(); persist(); previewApply(); });
     var al=$('lpf-align'); if(al) al.addEventListener('change',function(){ F().align=al.value; persist(); previewApply(); });
     var bgc=$('lpf-bg-clr'),bgt=$('lpf-bg-tx');
-    if(bgc) bgc.addEventListener('input',function(){ F().bg=bgc.value; if(bgt)bgt.value=bgc.value; persist(); previewApply(); });
-    if(bgt) bgt.addEventListener('input',function(){ var v=bgt.value.trim(); if(v===''){F().bg='';} else { if(v[0]!=='#')v='#'+v; if(/^#[0-9a-fA-F]{6}$/.test(v)){F().bg=v; if(bgc)bgc.value=v;} } persist(); previewApply(); });
+    if(bgc) bgc.addEventListener('input',function(){ F().bg=bgc.value; if(bgt)bgt.value=bgc.value; refreshPreviewWrap(); persist(); previewApply(); });
+    if(bgt) bgt.addEventListener('input',function(){ var v=bgt.value.trim(); if(v===''){F().bg='';} else { if(v[0]!=='#')v='#'+v; if(/^#[0-9a-fA-F]{6}$/.test(v)){F().bg=v; if(bgc)bgc.value=v;} } refreshPreviewWrap(); persist(); previewApply(); });
     var fclr=$('lpf-feat-clr'),ftx=$('lpf-feat-tx'),fdef=$('lpf-feat-def');
     if(fclr) fclr.addEventListener('input',function(){ F().accent=fclr.value; if(ftx)ftx.value=fclr.value; previewFeat(fclr.value, activeInk()); persist(); previewApply(); });
     if(ftx) ftx.addEventListener('input',function(){ var v=ftx.value.trim(); if(v===''){ F().accent=''; previewFeat(themeFeat(), activeInk()); if(fclr)fclr.value=themeFeat(); } else { if(v[0]!=='#')v='#'+v; if(/^#[0-9a-fA-F]{6}$/.test(v)){ F().accent=v; if(fclr)fclr.value=v; previewFeat(v, activeInk()); } } persist(); previewApply(); });
     if(fdef) fdef.addEventListener('click',function(){ F().accent=''; if(ftx)ftx.value=''; if(fclr)fclr.value=themeFeat(); previewFeat(themeFeat(), activeInk()); persist(); previewApply(); });
     var iclr=$('lpf-ink-clr'),itx=$('lpf-ink-tx'),idef=$('lpf-ink-def');
     if(iclr) iclr.addEventListener('input',function(){ F().ink=iclr.value; if(itx)itx.value=iclr.value; previewFeat(activeFeat(), iclr.value); persist(); previewApply(); });
-    if(itx) itx.addEventListener('input',function(){ var v=itx.value.trim(); if(v===''){ F().ink=''; previewFeat(activeFeat(), '#ffffff'); if(iclr)iclr.value='#ffffff'; } else { if(v[0]!=='#')v='#'+v; if(/^#[0-9a-fA-F]{6}$/.test(v)){ F().ink=v; if(iclr)iclr.value=v; previewFeat(activeFeat(), v); } } persist(); previewApply(); });
-    if(idef) idef.addEventListener('click',function(){ F().ink=''; if(itx)itx.value=''; if(iclr)iclr.value='#ffffff'; previewFeat(activeFeat(), '#ffffff'); persist(); previewApply(); });
+    if(itx) itx.addEventListener('input',function(){ var v=itx.value.trim(); if(v===''){ F().ink=''; var bg=(/^#[0-9a-fA-F]{6}$/.test(F().bg||''))?F().bg:'#0e1217'; var def=_lpfDefInk(bg,F().bgOpacity!=null?F().bgOpacity:100,''); previewFeat(activeFeat(), def); if(iclr)iclr.value=def; refreshPreviewWrap(); } else { if(v[0]!=='#')v='#'+v; if(/^#[0-9a-fA-F]{6}$/.test(v)){ F().ink=v; if(iclr)iclr.value=v; previewFeat(activeFeat(), v); refreshPreviewWrap(); } } persist(); previewApply(); });
+    if(idef) idef.addEventListener('click',function(){ F().ink=''; var bg=(/^#[0-9a-fA-F]{6}$/.test(F().bg||''))?F().bg:'#0e1217'; var def=_lpfDefInk(bg,F().bgOpacity!=null?F().bgOpacity:100,''); if(itx)itx.value=''; if(iclr)iclr.value=def; previewFeat(activeFeat(), def); refreshPreviewWrap(); persist(); previewApply(); });
+    document.querySelectorAll('.lpf-prev-mode').forEach(function(btn){
+      btn.addEventListener('click',function(){ _lpfPrevMode=btn.getAttribute('data-mode')||'live'; refreshPreviewWrap(); });
+    });
     var tx=$('lpf-text'); if(tx) tx.addEventListener('input',function(){ F().text=tx.value; persist(); previewApply(); });
+    refreshPreviewWrap();
     previewFeat(activeFeat(), activeInk());
   }
   
@@ -7776,6 +7807,23 @@ function heroCtaCard(c){
       var _PRH=$('pr-list');
       var _PRis='width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#fff;';
       var _PRdays=[['1','Monday'],['2','Tuesday'],['3','Wednesday'],['4','Thursday'],['5','Friday'],['6','Saturday'],['0','Sunday']];
+      function _prThemeColors(style){
+        var th=(c&&c.theme)||{};
+        var hivis=(/^#[0-9a-fA-F]{6}$/.test(th.hivis||''))?th.hivis:'#ff7a00';
+        if(style==='card') return {bg:'#ffffff',heading:'#1a2230',text:'#5b6878',btnBg:hivis,btnText:'#ffffff',timeText:'#1a2230',timeBg:'#f3f1ec'};
+        return {bg:'#1a2230',heading:'#ffffff',text:'#ffffff',btnBg:hivis,btnText:'#ffffff',timeText:'#ffffff',timeBg:'#2a3545'};
+      }
+      function _prColorBlock(p,i){
+        var st=p.style||'banner';
+        var d=_prThemeColors(st);
+        var keys=[['bg','Background'],['heading','Heading'],['text','Text'],['btnBg','Button background'],['btnText','Button text'],['timeText','Time text'],['timeBg','Time cell background']];
+        var h='<details style="margin-top:12px;border-top:1px solid var(--line);padding-top:12px;" open><summary style="cursor:pointer;font-weight:700;font-size:14px;">Colours</summary><p class="hint" style="margin:8px 0 10px;">Pickers show the current theme defaults. Clear a field with Default to fall back.</p><div style="display:flex;flex-wrap:wrap;gap:12px;">';
+        keys.forEach(function(pair){
+          var k=pair[0], lab=pair[1], cur=(p.colors&&p.colors[k])||'';
+          h+=secHexField('pr-'+i+'-c-'+k,lab,d[k]);
+        });
+        return h+'</div></details>';
+      }
       function _prItems(){ if(!c.sections.promotions) c.sections.promotions={}; if(!Array.isArray(c.sections.promotions.items)) c.sections.promotions.items=[]; return c.sections.promotions.items; }
       function _prTxF(i,k,lab,v){ return '<div class="f"><label>'+lab+'</label><input type="text" id="pr-'+i+'-'+k+'" value="'+esc(v!=null?v:'')+'" style="'+_PRis+'"></div>'; }
       function _prNumF(i,k,lab,v){ return '<div class="f"><label>'+lab+'</label><input type="number" id="pr-'+i+'-'+k+'" value="'+(v!=null?v:'')+'" style="'+_PRis+'"></div>'; }
@@ -7804,6 +7852,7 @@ function heroCtaCard(c){
           +_prTypeFields(p,i)
           +'<div class="row3">'+lpFld('Button text','pr-'+i+'-ctatext','Book now')+lpSel('Button action','pr-'+i+'-ctaaction',[['quote','Quote form'],['call','Call'],['scroll','Scroll to form'],['url','External URL (new tab)'],['none','No button']],(p.cta&&p.cta.action)||'quote')+(((p.cta&&p.cta.action)==='url')?lpFld('Button URL',('pr-'+i+'-ctaurl'),'https://booking.example.com/\u2026'):'<div></div>')+'</div>'
           +(((p.cta&&p.cta.action)==='url')?'<p class="hint" style="margin:6px 0 0;">Opens in a new tab (\u201c_blank\u201d). Use for event booking sites, ticket links, or any external page.</p>':'')
+          +_prColorBlock(p,i)
           +'</div>';
       }
       function _prDraw(){ var its=_prItems(); _PRH.innerHTML=its.length?its.map(_prCardEd).join(''):'<p class="lede" style="opacity:.7;margin:0;">No promotions yet \u2014 add one to get started.</p>'; _prWire(); }
@@ -7823,6 +7872,18 @@ function heroCtaCard(c){
           ['amount','disclaimer','discountText','suburbs','revealText','number','cut'].forEach(function(k){ var el=E(k); if(el) el.addEventListener('input',function(){ if(el.value===''){ delete p[(k==='cut')?'weeklyCutoff':k]; } else { p[(k==='cut')?'weeklyCutoff':k]=el.value; } persist(); previewApply(); }); });
           ['spotsTotal','spotsRemaining'].forEach(function(k){ var el=E(k); if(el) el.addEventListener('input',function(){ var v=parseInt(el.value,10); p[k]=isNaN(v)?null:v; persist(); previewApply(); }); });
           ['expiry','startDate','endDate'].forEach(function(k){ var el=E(k); if(el) el.addEventListener('change',function(){ if(el.value==='')delete p[k]; else p[k]=el.value; persist(); previewApply(); }); });
+          var _prCols=_prThemeColors(p.style||'banner');
+          ['bg','heading','text','btnBg','btnText','timeText','timeBg'].forEach(function(k){
+            var tx=E('c-'+k), cl=E('c-'+k+'-clr'), df=E('c-'+k+'-def');
+            if(!p.colors) p.colors={};
+            var cur=p.colors[k]||'';
+            if(tx){ tx.value=cur; tx.placeholder=_prCols[k]; }
+            if(cl) cl.value=cur||_prCols[k];
+            function _prSetCol(v){ if(!p.colors) p.colors={}; if(!v){ delete p.colors[k]; if(tx)tx.value=''; if(cl)cl.value=_prCols[k]; } else { p.colors[k]=v; if(tx)tx.value=v; if(cl)cl.value=v; } persist(); previewApply(); }
+            if(cl) cl.addEventListener('input',function(){ _prSetCol(cl.value); });
+            if(tx) tx.addEventListener('input',function(){ var v=tx.value.trim(); if(v===''){ _prSetCol(''); return; } if(v[0]!=='#')v='#'+v; if(/^#[0-9a-fA-F]{6}$/.test(v)) _prSetCol(v); });
+            if(df) df.addEventListener('click',function(){ _prSetCol(''); });
+          });
         });
         _PRH.querySelectorAll('[data-pr-up]').forEach(function(b){ b.addEventListener('click',function(){ var i=parseInt(b.getAttribute('data-pr-up'),10); var a=_prItems(); if(i>0){ var x=a[i-1];a[i-1]=a[i];a[i]=x; persist(); previewApply(); _prDraw(); } }); });
         _PRH.querySelectorAll('[data-pr-dn]').forEach(function(b){ b.addEventListener('click',function(){ var i=parseInt(b.getAttribute('data-pr-dn'),10); var a=_prItems(); if(i<a.length-1){ var x=a[i+1];a[i+1]=a[i];a[i]=x; persist(); previewApply(); _prDraw(); } }); });

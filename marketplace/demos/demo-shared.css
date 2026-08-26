@@ -1015,12 +1015,20 @@ section[data-sec="serviceProcess"]:not(.sp-sec-stroke-on){border-top:0}
 }
 
 /* Promotions Engine — reusable (below-hero + inline), Phase 1 */
-section[data-sec="promotions-hero"],section[data-sec="promotions-inline"]{padding:0}
+section[data-sec="scrollingSponsorBanner"],
+section[data-sec="scrollingSponsorBanner"].section,
+[data-sec="scrollingSponsorBanner"].ssb-section{padding:0!important;margin:0!important;border:none!important}
+section[data-sec="promotions-hero"],section[data-sec="promotions-inline"]{padding:0;margin:0}
+section[data-sec="promotions-inline"]:not(:has(.promo)){display:none!important}
 .promo-host:empty{display:none}
 section[data-sec="promotions-hero"] .promo,section[data-sec="promotions-inline"] .promo{margin:20px 0}
 [data-sec="scrollingSponsorBanner"] ~ [data-sec="promotions-hero"] .promo:first-child,[data-sec="scrollingSponsorBanner"] ~ [data-sec="promotions-inline"] .promo:first-child{margin-top:0}
+[data-sec="scrollingSponsorBanner"] ~ [data-sec="promotions-hero"],[data-sec="scrollingSponsorBanner"] ~ [data-sec="promotions-inline"]{padding-top:0!important;margin-top:0!important}
 @media(max-width:820px){
-  section[data-sec="promotions-hero"] .promo,section[data-sec="promotions-inline"] .promo{margin:12px 0}
+  section[data-sec="scrollingSponsorBanner"] .ssb-instance{padding-bottom:0!important}
+  section[data-sec="scrollingSponsorBanner"] .ssb-instance:last-child{padding-bottom:0!important}
+  [data-sec="scrollingSponsorBanner"] ~ [data-sec="promotions-hero"] .promo,[data-sec="scrollingSponsorBanner"] ~ [data-sec="promotions-inline"] .promo{margin-top:0!important;margin-bottom:10px!important}
+  section[data-sec="promotions-hero"] .promo,section[data-sec="promotions-inline"] .promo{margin:10px 0}
   section[data-sec="promotions-hero"] .promo-inner,section[data-sec="promotions-inline"] .promo-inner{padding:18px 16px;gap:12px 16px}
   section[data-sec="promotions-hero"] .promo-title,section[data-sec="promotions-inline"] .promo-title{font-size:22px}
 }
