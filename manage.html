@@ -3632,7 +3632,46 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     if(qi>=0){ base.splice(qi,0,id); return; }
     base.push(id);
   }
+  var STALE_PROMOTIONS_ORDER_KEYS=['promotions-hero','promotions-inline'];
+  function _normalizeOrderKey(k){
+    if(STALE_PROMOTIONS_ORDER_KEYS.indexOf(k)>=0) return 'promotions';
+    return k;
+  }
+  function _normalizeOrderKeys(arr){
+    var out=[], seen={};
+    (arr||[]).forEach(function(x){
+      if(typeof x!=='string'||!x) return;
+      var k=_normalizeOrderKey(x);
+      if(seen[k]) return;
+      seen[k]=1;
+      out.push(k);
+    });
+    return out;
+  }
+  function _optionalInstalled(c,id){
+    var sec=(c&&c.sections)||{};
+    if(sec[id]) return true;
+    if(id==='promotions') return !!(sec['promotions-hero']||sec['promotions-inline']);
+    return false;
+  }
+  function _migrateLegacyPromotionsSections(c){
+    if(!c||!c.sections) return;
+    if(!c.sections.promotions) c.sections.promotions={};
+    STALE_PROMOTIONS_ORDER_KEYS.forEach(function(legacy){
+      var leg=c.sections[legacy];
+      if(!leg) return;
+      if(Array.isArray(leg.items)&&leg.items.length){
+        if(!Array.isArray(c.sections.promotions.items)) c.sections.promotions.items=[];
+        leg.items.forEach(function(it){
+          if(c.sections.promotions.items.indexOf(it)<0) c.sections.promotions.items.push(it);
+        });
+      }
+      if(leg.on===false) c.sections.promotions.on=false;
+      delete c.sections[legacy];
+    });
+  }
   function _orderList(c){
+    _migrateLegacyPromotionsSections(c);
     var base=getLayout(c.layout).sections.slice();
     if(base.indexOf('trustBar')<0){
       var _thi=base.indexOf('hero');
@@ -3647,7 +3686,10 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     _orderEnsure(base,'crew',['why','serviceProcess','services']);
     var sec=(c&&c.sections)||{};
     OPTIONAL_COMPONENTS.concat(['navMenu']).forEach(function(id){
-      if(sec[id]&&sec[id].on===true&&base.indexOf(id)<0){
+      if(!_secOn(c,id)||base.indexOf(id)>=0) return;
+      if(OFF_BY_DEFAULT_SECTIONS.indexOf(id)>=0){
+        if(!sec[id]||sec[id].on!==true) return;
+      } else if(!_optionalInstalled(c,id)) return;
         if(id==='textBox'){
           var hi=base.indexOf('hero');
           if(hi>=0){ base.splice(hi+1,0,id); return; }
@@ -3671,16 +3713,20 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
           if(sri>=0){ base.splice(sri,0,id); return; }
         }
         base.push(id);
-      }
     });
     // If both are on but order was never set, keep SEO Text above FAQ.
     if(base.indexOf('seoText')>=0 && base.indexOf('faq')>=0 && base.indexOf('seoText')>base.indexOf('faq') && !(Array.isArray(c.sectionOrder)&&c.sectionOrder.length)){
       var _sx=base.indexOf('seoText'); base.splice(_sx,1);
       var _sf=base.indexOf('faq'); base.splice(_sf,0,'seoText');
     }
-    var saved=Array.isArray(c.sectionOrder)?c.sectionOrder.filter(function(x){return base.indexOf(x)>=0;}):[];
+    var saved=Array.isArray(c.sectionOrder)?_normalizeOrderKeys(c.sectionOrder).filter(function(x){return base.indexOf(x)>=0;}):[];
     base.forEach(function(x){ if(saved.indexOf(x)<0) saved.push(x); });
-    var out=saved.filter(function(x){ return _secOn(c,x); });
+    var out=saved.filter(function(x){
+      if(!_secOn(c,x)) return false;
+      if(OFF_BY_DEFAULT_SECTIONS.indexOf(x)>=0) return !!(sec[x]&&sec[x].on===true);
+      if(OPTIONAL_COMPONENTS.indexOf(x)>=0) return _optionalInstalled(c,x);
+      return true;
+    });
     // Trust Bar always sits under the first hero-like section.
     if(out.indexOf('trustBar')>=0 || _secOn(c,'trustBar')){
       if(out.indexOf('trustBar')<0) out.push('trustBar');
@@ -11438,6 +11484,7 @@ function heroCtaCard(c){
       _siteApps.forEach(function(row){
         var reg=row.app_registry; if(!reg) return;
         var key=reg.section_key;
+        if(key==='promotions-hero'||key==='promotions-inline') key='promotions';
         var enabled=row.enabled;
         var tier=reg.tier;
         var sub=row.site_app_subscriptions&&row.site_app_subscriptions[0];
@@ -11490,6 +11537,7 @@ function heroCtaCard(c){
         }
       }
       if(typeof _syncSectionOrder==='function') _syncSectionOrder(cfg);
+      _migrateLegacyPromotionsSections(cfg);
     }catch(e){
       console.warn('[LeadPages] site_apps reconciliation failed:',e);
     }

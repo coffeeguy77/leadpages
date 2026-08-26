@@ -138,6 +138,57 @@ test('applySectionOrderToDom clears order:0 trap', function() {
   assert.equal(portfolio.style.order, '3');
 });
 
+test('resolveSectionOrder remaps legacy promotions-hero to promotions', function() {
+  const cfg = {
+    sectionOrder: ['hero', 'promotions-hero', 'services', 'promotions-inline', 'quote', 'footer'],
+    sections: {
+      hero: {},
+      services: {},
+      quote: {},
+      footer: {},
+      promotions: { items: [{ title: 'Summer sale' }] },
+      trustBar: { on: false }
+    }
+  };
+  const ord = resolveSectionOrder(cfg);
+  assert.ok(ord.indexOf('promotions') >= 0, 'promotions must appear after legacy key remap');
+  assert.equal(ord.indexOf('promotions-hero'), -1);
+  assert.equal(ord.indexOf('promotions-inline'), -1);
+  assert.ok(ord.indexOf('promotions') < ord.indexOf('quote'));
+});
+
+test('resolveSectionOrder includes installed promotions with default on', function() {
+  const cfg = {
+    sectionOrder: ['hero', 'services', 'quote', 'footer'],
+    sections: {
+      hero: {},
+      services: {},
+      quote: {},
+      footer: {},
+      promotions: { items: [] },
+      trustBar: { on: false }
+    }
+  };
+  const ord = resolveSectionOrder(cfg);
+  assert.ok(ord.indexOf('promotions') >= 0, 'installed promotions must be appendable to Position');
+});
+
+test('normalizeSectionOrder dedupes hero and inline into one promotions key', function() {
+  const { normalizeSectionOrder } = require('../lib/section-order');
+  assert.deepEqual(
+    normalizeSectionOrder(['hero', 'promotions-hero', 'promotions-inline', 'quote']),
+    ['hero', 'promotions', 'quote']
+  );
+});
+
+test('manage Position list normalizes legacy promotions keys', function() {
+  assert.match(manage, /STALE_PROMOTIONS_ORDER_KEYS/);
+  assert.match(manage, /function _normalizeOrderKeys/);
+  assert.match(manage, /function _optionalInstalled/);
+  assert.match(manage, /function _migrateLegacyPromotionsSections/);
+  assert.match(manage, /promotions-hero.*promotions-inline.*key='promotions'/s);
+});
+
 test('manage never overwrites Position from marketplace when sectionOrder exists', function() {
   assert.match(manage, /Position \(Page editor sectionOrder\) is the layout law/);
   assert.match(manage, /Only seed sectionOrder from marketplace slots when the site has none yet/);
