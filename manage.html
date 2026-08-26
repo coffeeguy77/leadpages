@@ -3473,12 +3473,12 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   function themeFromPreset(tradeKey){ var p=getTradeColourPreset(tradeKey); return { pipe:p.brand, hivis:p.cta, steel:p.dark, safety:p.highlight, accent:p.accent, lightBg:p.lightBg, presetName:p.presetName, presetKey:tradeKey }; }
   const LAYOUTS = { classic: { id: "classic", name: "Classic Conversion", description: "Current tradie landing page.", sections: ["emerg","hero","services","serviceProcess","featureStrip","why","crew","area","reviews","quote","faq","footer"], features: [] }, "quote-first": { id: "quote-first", name: "Quote First", description: "Hero and quote form appear together above the fold for paid traffic.", sections: ["emerg","hero","quote","services","serviceProcess","featureStrip","why","crew","reviews","area","faq","footer"], features: ["heroQuote"] }, "photo-proof": { id: "photo-proof", name: "Photo Proof", description: "Shows project proof early with a before and after gallery.", sections: ["emerg","hero","services","serviceProcess","featureStrip","beforeAfter","reviews","why","crew","area","quote","faq","footer"], features: ["beforeAfter"] }, "emergency-response": { id: "emergency-response", name: "Emergency Response", description: "Urgency-first page: trust badges and quote form pushed high for emergency trades.", sections: ["emerg","hero","responseCards","quote","services","serviceProcess","featureStrip","reviews","why","crew","faq","area","footer"], features: ["responseCards"] }, "authority-builder": { id: "authority-builder", name: "Authority Builder", description: "Leads with big credibility numbers to establish an experienced, established business.", sections: ["emerg","hero","projectStats","services","serviceProcess","featureStrip","why","crew","area","reviews","quote","faq","footer"], features: ["projectStats"] }, "service-area-dominator": { id: "service-area-dominator", name: "Service Area Dominator", description: "Leads with a large suburb coverage grid under the hero to dominate local SEO and paid search.", sections: ["emerg","hero","serviceAreas","services","serviceProcess","featureStrip","why","crew","reviews","area","quote","faq","footer"], features: ["serviceAreas"] }, "reviews-first": { id: "reviews-first", name: "Reviews First", description: "Leads with star-rated review highlights under the hero so visitors hit social proof first.", sections: ["emerg","hero","reviewHighlights","quote","services","serviceProcess","featureStrip","reviews","faq","why","crew","area","footer"], features: ["reviewHighlights"] }, "premium-showcase": { id: "premium-showcase", name: "Premium Showcase", description: "A mini portfolio of large project image cards under the hero \u2014 for high-end visual trades.", sections: ["emerg","hero","featuredProjects","services","serviceProcess","featureStrip","reviews","why","crew","area","quote","faq","footer"], features: ["featuredProjects"] }, "offer-funnel": { id: "offer-funnel", name: "Offer Funnel", description: "AdWords lead-gen layout: a bold special-offer banner under the hero, straight into the quote form.", sections: ["emerg","hero","specialOffer","quote","services","serviceProcess","featureStrip","reviews","faq","why","crew","area","footer"], features: ["specialOffer"] }, "ba-hero-slider": { id: "ba-hero-slider", name: "Before / After Hero Slider", description: "A large interactive before/after wipe slider near the top of the page.", sections: ["emerg","hero","heroBeforeAfter","services","serviceProcess","featureStrip","reviews","why","crew","area","quote","faq","footer"], features: ["heroBeforeAfter"] }, "hero-image-slider": { id: "hero-image-slider", name: "Hero Image Slider", description: "Large image hero with editable slides, overlay text, CTA buttons and transitions.", sections: ["emerg","heroSlider","services","serviceProcess","featureStrip","why","crew","reviews","area","quote","faq","footer"], features: ["heroSlider"] }, "social-proof-feed": { id: "social-proof-feed", name: "Social Proof Feed", description: "A live, modern \u201cproof feed\u201d of jobs, reviews, videos and before/afters \u2014 every card links to a CTA.", sections: ["emerg","splitHero","activityCounter","activityTimeline","proofStream","projectFeed","jobsFeed","beforeAfterFeed","videoReels","services","serviceProcess","featureStrip","reviews","customerReactions","why","crew","area","quote","faq","footer"], features: ["proofStream","splitHero","activityCounter","crew","jobsFeed","beforeAfterFeed","videoReels","activityTimeline","customerReactions","projectFeed"] } };
   function getLayout(layoutId){ return (layoutId && LAYOUTS[layoutId]) ? LAYOUTS[layoutId] : LAYOUTS.classic; }
-  const OFF_BY_DEFAULT_SECTIONS=['searchCanvas','featureStrip','instaGallery','igProjectFeed','lpAccessibility','navMenu','mobileBar','emergencyAvailability','onlineQuote','orderStorefront','customHtml','estimateBuilder','finance','serviceAreaMap','beforeAfter','responseCards','projectStats','serviceAreas','reviewHighlights','featuredProjects','premiumGallery','specialOffer','heroBeforeAfter','heroSlider','splitHero','activityCounter','proofStream','projectFeed','jobsFeed','beforeAfterFeed','videoReels','activityTimeline','customerReactions','textBox','seoText'];
-  const OPTIONAL_COMPONENTS=['searchCanvas','featureStrip','instaGallery','igProjectFeed','beforeAfter','responseCards','projectStats','serviceAreas','reviewHighlights','featuredProjects','premiumGallery','specialOffer','heroBeforeAfter','heroSlider','splitHero','activityCounter','proofStream','projectFeed','jobsFeed','beforeAfterFeed','videoReels','activityTimeline','customerReactions','textBox','seoText','onlineQuote','orderStorefront','customHtml','estimateBuilder','finance','serviceAreaMap','emergencyAvailability','certifications','promotions'];
+  const OFF_BY_DEFAULT_SECTIONS=['searchCanvas','featureStrip','instaGallery','igProjectFeed','lpAccessibility','navMenu','mobileBar','emergencyAvailability','onlineQuote','orderStorefront','customHtml','estimateBuilder','finance','serviceAreaMap','beforeAfter','responseCards','projectStats','serviceAreas','reviewHighlights','featuredProjects','premiumGallery','specialOffer','heroBeforeAfter','heroSlider','splitHero','activityCounter','proofStream','projectFeed','jobsFeed','beforeAfterFeed','videoReels','activityTimeline','customerReactions','textBox','seoText','scrollingSponsorBanner'];
+  const OPTIONAL_COMPONENTS=['searchCanvas','featureStrip','instaGallery','igProjectFeed','beforeAfter','responseCards','projectStats','serviceAreas','reviewHighlights','featuredProjects','premiumGallery','specialOffer','heroBeforeAfter','heroSlider','splitHero','activityCounter','proofStream','projectFeed','jobsFeed','beforeAfterFeed','videoReels','activityTimeline','customerReactions','textBox','seoText','onlineQuote','orderStorefront','customHtml','estimateBuilder','finance','serviceAreaMap','emergencyAvailability','certifications','promotions','scrollingSponsorBanner'];
   const PAGE_CONTENT_EDITONLY=['details','seoTokens','branding','logo','sectionOrder','lpFooter'];
   function layoutHasFeature(c,feat){ try{ var f=getLayout((c&&c.layout)||"classic").features||[]; return f.indexOf(feat)>=0; }catch(e){ return false; } }
   function wireLayout(c){ var el=$('layout-pick'); if(!el) return; el.value=getLayout(c.layout).id; el.onchange=function(){ c.layout=getLayout(el.value).id; persist(); previewApply(); renderDetails(); }; }
-  var HERO_CTA_SCROLL_TARGETS=[['quote','Quote form'],['onlineQuote','Online Quote'],['orderStorefront','Order Storefront'],['customHtml','Custom HTML'],['estimateBuilder','Estimate Builder'],['finance','Finance Options'],['specialOffer','Special Offer'],['promotions','Promotions'],['emergencyAvailability','Emergency Availability'],['services','Services'],['serviceProcess','How It Works'],['why','Why us'],['reviews','Reviews'],['faq','FAQ'],['area','Where we work'],['crew','Team'],['beforeAfter','Before & After'],['featuredProjects','Project Portfolio'],['premiumGallery','Premium Gallery'],['serviceAreaMap','Service Area Map'],['projectFeed','Project Feed'],['jobsFeed','Jobs Feed']];
+  var HERO_CTA_SCROLL_TARGETS=[['quote','Quote form'],['onlineQuote','Online Quote'],['orderStorefront','Order Storefront'],['customHtml','Custom HTML'],['estimateBuilder','Estimate Builder'],['finance','Finance Options'],['specialOffer','Special Offer'],['promotions','Promotions'],['scrollingSponsorBanner','Scrolling Sponsor Banner'],['emergencyAvailability','Emergency Availability'],['services','Services'],['serviceProcess','How It Works'],['why','Why us'],['reviews','Reviews'],['faq','FAQ'],['area','Where we work'],['crew','Team'],['beforeAfter','Before & After'],['featuredProjects','Project Portfolio'],['premiumGallery','Premium Gallery'],['serviceAreaMap','Service Area Map'],['projectFeed','Project Feed'],['jobsFeed','Jobs Feed']];
   function heroCtaScrollOptsHtml(sel){ return HERO_CTA_SCROLL_TARGETS.map(function(o){ return '<option value="'+o[0]+'"'+(sel===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join(''); }
   function _secLabel(id){ for(var i=0;i<TRADE_SUBTABS.length;i++){ if(TRADE_SUBTABS[i][0]===id) return TRADE_SUBTABS[i][1]; } return id; }
   function _secOn(c,id){ if(id==='lpFooter') return true; var s=(c&&c.sections&&c.sections[id])||{}; return (OFF_BY_DEFAULT_SECTIONS.indexOf(id)>=0)?(s.on===true):(s.on!==false); }
@@ -3502,6 +3502,28 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   function lpSeedComponent(c,id){
     if(!c.sections) c.sections={}; if(!c.sections[id]) c.sections[id]={};
     var o=c.sections[id], def=DEFAULT_TRADE_SECTIONS[id]||{};
+    if(id==='scrollingSponsorBanner'){
+      if(window.LpSsbManage && typeof LpSsbManage.ens==='function'){
+        LpSsbManage.ens(c);
+        c.sections.scrollingSponsorBanner.on=true;
+      } else {
+        o.on=true;
+        if(!Array.isArray(o.instances)||!o.instances.length){
+          o.instances=[{
+            id:'inst-'+Date.now().toString(36),
+            adminName:'Major Sponsors',
+            enabled:true,
+            bannerLinksEnabled:true,
+            heading:{eyebrow:'',title:'',intro:'',align:'center',maxWidth:720,gap:16,eyebrowColor:'',titleColor:'',introColor:''},
+            tiles:[],
+            motion:{scrolling:true,direction:'left',speedPxPerSec:40,pauseOnHover:true,showPauseControl:true,staticGrid:false},
+            layout:{imageHeightDesktop:120,imageHeightMobile:88,tileWidthDesktop:200,tileWidthMobile:150,gapDesktop:24,gapMobile:16,tilePadding:16,imageFit:'contain',imagePos:'center'},
+            appearance:{sectionBg:'',tileBg:'',borderColor:'',borderWidth:0,radius:0,shadow:false,greyscaleHover:false,edgeFade:false,edgeFadeWidth:48,fullWidth:true,padTop:24,padBottom:24}
+          }];
+        }
+      }
+      return;
+    }
     if(id==='searchCanvas'){
       var seeded=JSON.parse(JSON.stringify(def&&Object.keys(def).length?def:{
         on:true,version:1,
@@ -3631,6 +3653,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
           if(hi>=0){ base.splice(hi+1,0,id); return; }
         }
         if(id==='searchCanvas'){ _orderEnsure(base,'searchCanvas',['serviceProcess','services','hero','heroSlider','splitHero']); return; }
+        if(id==='scrollingSponsorBanner'){ _orderEnsure(base,'scrollingSponsorBanner',['trustBar','hero','heroSlider','splitHero']); return; }
         if(id==='navMenu'){ base.unshift(id); return; }
         if(id==='onlineQuote'||id==='orderStorefront'||id==='customHtml'){
           var qi=base.indexOf('quote');
@@ -3706,7 +3729,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     var rb=$('ord-reset'); if(rb) rb.onclick=function(){ var prev=rects(); delete c.sectionOrder; persist(); previewApply(); draw(false); flip(prev); };
   }
   function presetKeyForSite(c){ var t=(c&&c.trade)||'Plumber'; if(TRADE_COLOUR_PRESETS[t]) return t; for(var k in TRADE_PACKS){ if(TRADE_PACKS[k].tradeType===t && TRADE_COLOUR_PRESETS[TRADE_PACKS[k].label]) return TRADE_PACKS[k].label; } return 'Plumber'; }
-  const TRADE_SUBTABS=[['details','Details'],['emerg','Top bar'],['hero','Hero'],['trustBar','Trust Bar'],['services','Services'],['serviceProcess','How It Works Steps'],['featureStrip','Feature Strip'],['why','Why us'],['area','Where'],['reviews','Reviews'],['promotions','Promotions'],['certifications','Certifications'],['finance','Finance Options'],['estimateBuilder','Estimate Builder'],['serviceAreaMap','Service Area Map'],['emergencyAvailability','Emergency Availability'],['seoTokens','Local tokens'],['beforeAfter','Before & After'],['responseCards','Response Cards'],['projectStats','Project Stats'],['serviceAreas','Service Areas'],['reviewHighlights','Review Highlights'],['featuredProjects','Project Portfolio'],['premiumGallery','Premium Gallery'],['specialOffer','Special Offer'],['heroBeforeAfter','Hero B/A Slider'],['heroSlider','Hero Slider'],['splitHero','Split Hero'],['activityCounter','Activity Counter'],['proofStream','Proof Stream'],['projectFeed','Project Feed'],['jobsFeed','Jobs Feed'],['beforeAfterFeed','Before/After Feed'],['videoReels','Video Reels'],['activityTimeline','Activity Timeline'],['customerReactions','Customer Reactions'],['searchCanvas','SearchCanvas'],['seoText','SEO Text'],['textBox','Text Box'],['crew','Team Members'],['onlineQuote','Online Quote'],['orderStorefront','Order Storefront'],['customHtml','Custom HTML'],['quote','Quote'],['faq','FAQ'],['mobileBar','Mobile'],['footer','Footer'],['branding','Branding'],['logo','Logo'],['navMenu','Menu'],['sectionOrder','Position'],['instaGallery','Instagram Gallery'],['igProjectFeed','Instagram Feed'],['lpFooter','LeadPages footer']];
+  const TRADE_SUBTABS=[['details','Details'],['emerg','Top bar'],['hero','Hero'],['trustBar','Trust Bar'],['scrollingSponsorBanner','Scrolling Sponsor Banner'],['services','Services'],['serviceProcess','How It Works Steps'],['featureStrip','Feature Strip'],['why','Why us'],['area','Where'],['reviews','Reviews'],['promotions','Promotions'],['certifications','Certifications'],['finance','Finance Options'],['estimateBuilder','Estimate Builder'],['serviceAreaMap','Service Area Map'],['emergencyAvailability','Emergency Availability'],['seoTokens','Local tokens'],['beforeAfter','Before & After'],['responseCards','Response Cards'],['projectStats','Project Stats'],['serviceAreas','Service Areas'],['reviewHighlights','Review Highlights'],['featuredProjects','Project Portfolio'],['premiumGallery','Premium Gallery'],['specialOffer','Special Offer'],['heroBeforeAfter','Hero B/A Slider'],['heroSlider','Hero Slider'],['splitHero','Split Hero'],['activityCounter','Activity Counter'],['proofStream','Proof Stream'],['projectFeed','Project Feed'],['jobsFeed','Jobs Feed'],['beforeAfterFeed','Before/After Feed'],['videoReels','Video Reels'],['activityTimeline','Activity Timeline'],['customerReactions','Customer Reactions'],['searchCanvas','SearchCanvas'],['seoText','SEO Text'],['textBox','Text Box'],['crew','Team Members'],['onlineQuote','Online Quote'],['orderStorefront','Order Storefront'],['customHtml','Custom HTML'],['quote','Quote'],['faq','FAQ'],['mobileBar','Mobile'],['footer','Footer'],['branding','Branding'],['logo','Logo'],['navMenu','Menu'],['sectionOrder','Position'],['instaGallery','Instagram Gallery'],['igProjectFeed','Instagram Feed'],['lpFooter','LeadPages footer']];
   let landingSub='hero';
   const DEFAULT_TRADE_LISTS={'estimateBuilder.options':[
     {on:true,step:'What do you need?',label:'Tap or mixer repair',min:'150',max:'300'},
@@ -4089,7 +4112,7 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
       ['Business Identity & Hero Area',['branding','logo','details','hero','splitHero','heroBeforeAfter','heroSlider','emerg','mobileBar','sectionOrder']],
       ['Services & Selling Content',['services','serviceProcess','featureStrip','serviceAreas','serviceAreaMap','seoTokens','finance','searchCanvas','seoText','textBox','videoReels']],
       ['Lead Capture & Conversion',['quote','onlineQuote','orderStorefront','customHtml','promotions','faq','estimateBuilder','jobsFeed','emergencyAvailability','specialOffer','responseCards']],
-      ['Trust, Proof & Authority',['trustBar','certifications','reviews','reviewHighlights','customerReactions','proofStream','activityCounter','activityTimeline']],
+      ['Trust, Proof & Authority',['trustBar','scrollingSponsorBanner','certifications','reviews','reviewHighlights','customerReactions','proofStream','activityCounter','activityTimeline']],
       ['Projects, Gallery & Before/After',['projectFeed','igProjectFeed','instaGallery','featuredProjects','premiumGallery','projectStats','beforeAfter','beforeAfterFeed']],
       ['Company & Location Details',['crew','area','why','navMenu','footer','lpFooter']]
     ];
@@ -6524,6 +6547,20 @@ function heroCtaCard(c){
         sort_order:85
       },
       {
+        name:'Scrolling Sponsor Banner',
+        slug:'scrolling-sponsor-banner',
+        section_key:'scrollingSponsorBanner',
+        tier:'free',
+        tagline:'Sponsors and partners, always in motion',
+        description:'Display sponsors, partners and brands in a seamless scrolling banner with optional links, text overlays and custom styling.',
+        default_position:'upper',
+        marketplace_status:'live',
+        builder_visible:true,
+        can_reposition:true,
+        hero_exclusive:false,
+        sort_order:78
+      },
+      {
         name:'Order Storefront',
         slug:'order-storefront',
         section_key:'orderStorefront',
@@ -6554,6 +6591,14 @@ function heroCtaCard(c){
         if(existing.section_key!=='promotions') existing.section_key='promotions';
         if(existing.slug!=='promotions') existing.slug='promotions';
         if(existing.marketplace_status!=='live') existing.marketplace_status='live';
+      }
+      if(b.section_key==='scrollingSponsorBanner'){
+        if(existing.name!==b.name) existing.name=b.name;
+        if(existing.section_key!=='scrollingSponsorBanner') existing.section_key='scrollingSponsorBanner';
+        if(existing.slug!=='scrolling-sponsor-banner') existing.slug='scrolling-sponsor-banner';
+        if(existing.marketplace_status!=='live') existing.marketplace_status='live';
+        if(existing.builder_visible===false) existing.builder_visible=true;
+        if(existing.default_position!=='upper') existing.default_position='upper';
       }
       if(b.section_key==='orderStorefront'){
         if(existing.marketplace_status!=='live') existing.marketplace_status='live';
@@ -7594,6 +7639,42 @@ function heroCtaCard(c){
         +heroCtaCard(c)
         +listCard('badges','Trust badges','The small badges under the hero buttons. Edit, hide or remove each.');
       wireHero(c); wireHeroCta(c); listEditor($('le-badges'),c,'badges');
+    } else if(sub==='scrollingSponsorBanner'){
+      if(!c.sections) c.sections={};
+      if(!c.sections.scrollingSponsorBanner) c.sections.scrollingSponsorBanner={on:true,instances:[]};
+      c.sections.scrollingSponsorBanner.on=true;
+      if(window.LpSsbManage && typeof LpSsbManage.render==='function'){
+        LpSsbManage.render(body, c, {
+          persist:persist,
+          previewApply:previewApply,
+          cwUpload:cwUpload,
+          esc:esc,
+          secCard:secCard,
+          wireSec:wireSec,
+          siteThemeColors:(typeof siteThemeColors==='function'?siteThemeColors():null),
+          currentSiteId:currentSiteId||(data&&data.id)||null,
+          fetchReport:async function(days){
+            days=days||30;
+            try{
+              if(typeof anaStats==='function' && currentSiteId){
+                var j=await anaStats({siteId:currentSiteId,days:days,includeProps:1});
+                if(j&&Array.isArray(j.events)) return j.events;
+              }
+            }catch(_e){}
+            try{
+              if(typeof sb!=='undefined' && currentSiteId){
+                var since=new Date(Date.now()-days*864e5).toISOString();
+                var ev=await sb.from('events').select('event,created_at,props').eq('site_id',currentSiteId).eq('event','cta_click').gte('created_at',since).limit(5000);
+                return (ev&&ev.data)||[];
+              }
+            }catch(_e2){}
+            return [];
+          }
+        });
+      } else {
+        body.innerHTML=secCard(c,'scrollingSponsorBanner','Scrolling Sponsor Banner',true,[])+'<p class="hint">Editor script failed to load. Refresh and try again.</p>';
+        wireSec(c,'scrollingSponsorBanner',true,[]);
+      }
     } else if(sub==='trustBar'){
       var _tb=(c.sections&&c.sections.trustBar)||{};
       var _tbMode=(_tb.mode==='images')?'images':'badges';
@@ -11497,7 +11578,7 @@ function heroCtaCard(c){
       'projectFeed':'layers','projectStats':'bar-chart-2','activityCounter':'trending-up',
       'activityTimeline':'clock','videoReels':'play-circle','jobsFeed':'rss',
       'customerReactions':'smile','responseCards':'zap','specialOffer':'tag',
-      'promotions':'megaphone','promotions-hero':'megaphone','promotions-inline':'percent','finance':'credit-card',
+      'promotions':'megaphone','promotions-hero':'megaphone','promotions-inline':'percent','scrollingSponsorBanner':'layers','finance':'credit-card',
       'onlineQuote':'calculator','orderStorefront':'shopping-bag','estimateBuilder':'calculator','emergencyAvailability':'alert-circle',
       'emerg':'phone-call','instaGallery':'instagram','igProjectFeed':'instagram',
       'navMenu':'menu','footer':'minus-square','lpAccessibility':'palette',
@@ -16648,5 +16729,8 @@ function heroCtaCard(c){
 (function(){try{var p=new URLSearchParams(location.search);var st=p.get('ig');if(!st)return;var detail=p.get('ig_detail')||'';var msg=st==='connected'?'\u2713 Instagram connected':(st==='denied'?'Instagram connection was cancelled':'Instagram connection failed'+(detail?' \u2014 '+detail:''));var el=document.createElement('div');el.textContent=msg;el.style.cssText='position:fixed;top:18px;left:50%;transform:translateX(-50%);z-index:99999;background:'+(st==='connected'?'#1a7f37':'#8a5a00')+';color:#fff;font-weight:700;padding:12px 22px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.25);font-family:inherit;font-size:15px;opacity:0;transition:opacity .25s;';document.body.appendChild(el);requestAnimationFrame(function(){el.style.opacity='1';});setTimeout(function(){el.style.opacity='0';setTimeout(function(){el.remove();},400);},4200);p.delete('ig');var qs=p.toString();history.replaceState(null,'',location.pathname+(qs?('?'+qs):''));}catch(e){}})();
 </script>
 <script src="/assets/js/search-canvas-editor.js"></script>
+<link rel="stylesheet" href="/assets/lp-scrolling-sponsor-banner.css">
+<script src="/assets/lp-scrolling-sponsor-banner.js"></script>
+<script src="/assets/js/marketplace/scrolling-sponsor-banner-manage.js"></script>
 </body>
 </html>

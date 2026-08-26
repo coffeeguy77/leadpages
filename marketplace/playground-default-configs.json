@@ -2265,5 +2265,102 @@
         "generationId": null
       }
     }
+  },
+  "scrollingSponsorBanner": {
+    "theme": {
+      "pipe": "#1f7a63"
+    },
+    "business": "Harbour Club",
+    "sections": {
+      "scrollingSponsorBanner": {
+        "on": true,
+        "instances": [
+          {
+            "id": "demo-inst-1",
+            "adminName": "Major Sponsors",
+            "enabled": true,
+            "bannerLinksEnabled": true,
+            "heading": {
+              "eyebrow": "Partners",
+              "title": "Proudly supported by",
+              "intro": "Local brands that back our community.",
+              "align": "center",
+              "maxWidth": 720,
+              "gap": 16
+            },
+            "tiles": [
+              {
+                "id": "t1",
+                "name": "Northside",
+                "enabled": true,
+                "image": "https://res.cloudinary.com/demo/image/upload/w_200,h_80,c_pad,b_white/sample",
+                "alt": "Northside",
+                "contentMode": "image",
+                "linkEnabled": false
+              },
+              {
+                "id": "t2",
+                "name": "Coastal Co",
+                "enabled": true,
+                "image": "https://res.cloudinary.com/demo/image/upload/w_200,h_80,c_pad,b_white/docs/models",
+                "alt": "Coastal Co",
+                "contentMode": "image",
+                "linkEnabled": false
+              },
+              {
+                "id": "t3",
+                "name": "Metro Tools",
+                "enabled": true,
+                "image": "https://res.cloudinary.com/demo/image/upload/w_200,h_80,c_pad,b_white/docs/models",
+                "alt": "Metro Tools",
+                "contentMode": "image",
+                "linkEnabled": false
+              },
+              {
+                "id": "t4",
+                "name": "Greenline",
+                "enabled": true,
+                "image": "https://res.cloudinary.com/demo/image/upload/w_200,h_80,c_pad,b_white/sample",
+                "alt": "Greenline",
+                "contentMode": "image",
+                "linkEnabled": false
+              }
+            ],
+            "motion": {
+              "scrolling": true,
+              "direction": "left",
+              "speedPxPerSec": 40,
+              "pauseOnHover": true,
+              "showPauseControl": true,
+              "staticGrid": false
+            },
+            "layout": {
+              "imageHeightDesktop": 88,
+              "imageHeightMobile": 64,
+              "tileWidthDesktop": 180,
+              "tileWidthMobile": 140,
+              "gapDesktop": 24,
+              "gapMobile": 16,
+              "tilePadding": 12,
+              "imageFit": "contain",
+              "imagePos": "center"
+            },
+            "appearance": {
+              "sectionBg": "",
+              "tileBg": "",
+              "borderWidth": 0,
+              "radius": 8,
+              "shadow": false,
+              "greyscaleHover": false,
+              "edgeFade": true,
+              "edgeFadeWidth": 40,
+              "fullWidth": true,
+              "padTop": 20,
+              "padBottom": 20
+            }
+          }
+        ]
+      }
+    }
   }
 }
