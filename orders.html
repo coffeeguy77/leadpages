@@ -337,24 +337,30 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
   background:color-mix(in srgb,var(--surface) 55%,transparent);
 }
 .no-editor-col .actions-row{margin-top:16px}
-.no-fast-list{display:flex;flex-direction:column;gap:12px;margin:0 0 18px;min-width:0;max-width:100%}
+.no-fast-list{display:flex;flex-direction:column;gap:10px;margin:0 0 18px;min-width:0;max-width:100%;width:100%}
 .no-fast-row{
-  border:1px solid var(--line);border-radius:14px;padding:14px 16px;background:var(--surface);
-  box-shadow:0 6px 18px rgba(28,36,30,.03);min-width:0;max-width:100%;
+  border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:var(--surface);
+  box-shadow:0 6px 18px rgba(28,36,30,.03);min-width:0;max-width:100%;width:100%;box-sizing:border-box;
 }
-.no-fast-main{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;align-items:start}
-.no-fast-info{min-width:0}
-.no-fast-info strong{display:block;font-size:var(--fs-md);line-height:1.25;margin:0 0 4px}
+.no-fast-head{
+  display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:start;
+  min-width:0;width:100%;
+}
+.no-fast-info{min-width:0;flex:1 1 auto}
+.no-fast-info strong{display:block;font-size:var(--fs-md);line-height:1.3;margin:0 0 4px;overflow-wrap:normal;word-break:normal}
 .no-fast-info .meta{font-size:var(--fs-xs);color:var(--ink-soft);line-height:1.35}
 .no-fast-info .prompt{margin:4px 0 0;font-size:var(--fs-xs);color:var(--accent);font-weight:600}
-.no-fast-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,148px),1fr));gap:8px;align-items:end;width:100%;min-width:0}
-.no-fast-actions{display:flex;flex-wrap:wrap;gap:8px;width:100%;margin-top:4px}
-.no-fast-actions .no-fast-add-btn{flex:1 1 140px;min-width:0;width:100%;max-width:100%}
-.no-fast-field{display:grid;gap:4px;font-size:10px;font-weight:700;color:var(--ink-faint);letter-spacing:.03em;text-transform:uppercase;min-width:0}
-.no-fast-toggle-btn{min-height:44px}
-.no-fast-packchip{display:inline-flex;align-items:center;min-height:44px;padding:0 12px;border-radius:10px;border:1px dashed var(--line);color:var(--accent);font:700 11px/1 var(--font-ui)}
+.no-fast-toolbar{
+  display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;margin-top:10px;min-width:0;width:100%;
+}
+.no-fast-field{display:grid;gap:4px;font-size:10px;font-weight:700;color:var(--ink-faint);letter-spacing:.03em;text-transform:uppercase;min-width:0;flex:0 1 auto}
+.no-fast-toggle-btn{min-height:44px;flex:0 0 auto}
+.no-fast-packchip{display:inline-flex;align-items:center;min-height:44px;padding:0 12px;border-radius:10px;border:1px dashed var(--line);color:var(--accent);font:700 11px/1 var(--font-ui);flex:0 0 auto}
 .no-fast-row.is-added{border-color:color-mix(in srgb,#16a34a 40%,var(--line));background:color-mix(in srgb,#16a34a 4%,var(--surface))}
-.no-fast-add-btn{min-height:44px;padding:0 16px;font-weight:700}
+.no-fast-add-btn{
+  flex:0 0 auto;min-height:44px;padding:0 14px;font-weight:700;white-space:nowrap;
+  max-width:100%;justify-content:center;
+}
 .no-fast-add-btn.needs-options{background:transparent;color:var(--accent);border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
 .no-cust-mode{display:flex;flex-wrap:wrap;gap:14px 20px;margin:0 0 12px}
 .no-cust-mode label{display:inline-flex;align-items:center;gap:8px;font-weight:600;cursor:pointer;margin:0}
@@ -391,9 +397,8 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
 .no-opt-chip.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--ink)}
 .no-opt-chip:hover{border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
 @media(max-width:720px){
-  .no-fast-main{grid-template-columns:1fr}
-  .no-fast-controls{justify-content:flex-start}
-  .no-fast-notes-row{grid-template-columns:1fr}
+  .no-fast-head{align-items:center}
+  .no-fast-toolbar{justify-content:flex-start}
 }
 .line-opt{margin:0;padding:0;border-top:0}
 .line-opt .field{margin:0 0 8px}
@@ -504,8 +509,20 @@ body.embed .main{
   height:100%;overflow:hidden;display:flex;flex-direction:column;min-height:0;
 }
 body.embed .top{flex:0 0 auto;position:sticky;top:0;z-index:4}
-body.embed .content{flex:1;min-height:0;overflow:auto;overflow-x:hidden}
-body.embed .content-inner{max-width:100%;min-width:0}
+body.embed .content{flex:1;min-height:0;overflow:auto;overflow-x:clip}
+body.embed .content-inner{max-width:100%;min-width:0;width:100%}
+body.embed #view-new,
+body.embed #view-new .card.no-card,
+body.embed #no-workspace,
+body.embed #new-order-form,
+body.embed .no-main,
+body.embed .no-products-col,
+body.embed #no-fast-wrap,
+body.embed .no-fast-list,
+body.embed .no-fast-row{min-width:0;max-width:100%;box-sizing:border-box}
+body.embed .no-workflow-tab{flex:1 1 0;min-width:0}
+body.embed .no-stepper button{width:34px}
+body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
 @media (max-width:900px){
   body.embed .hub{flex-direction:row}
   body.embed .side{
@@ -4893,13 +4910,18 @@ body.embed .content-inner{max-width:100%;min-width:0}
       if (notesOpen) rowCls += ' is-notes-open';
       if (isAdded) rowCls += ' is-added';
       var html = '<article class="' + rowCls + '"' + touched + ' data-fast-row="' + esc(p.id) + '">';
-      html += '<div class="no-fast-main">';
+      html += '<div class="no-fast-head">';
       html += '<div class="no-fast-info"><strong>' + esc(p.name) + '</strong>';
       if (pack) html += '<span class="meta"> · ' + esc(pack) + ' pack</span>';
       html += '<div class="meta">' + esc(meta) + '</div>';
       if (prompt) html += '<p class="prompt">' + esc(prompt) + '</p>';
       html += '</div>';
-      html += '<div class="no-fast-controls">';
+      html += '<button type="button" class="btn solid no-fast-add-btn' +
+        (isAdded ? ' on' : '') +
+        (addLabel === 'Choose Options' ? ' needs-options' : '') +
+        '" data-fast-add>' + esc(addLabel) + '</button>';
+      html += '</div>';
+      html += '<div class="no-fast-toolbar">';
       if (showQty) {
         html += '<label class="no-fast-field">Qty' + noStepperHtml({ min: 0, step: 1, value: qtyVal, dataAttr: 'data-fast-qty' }) + '</label>';
         if (pack) html += '<span class="no-fast-packchip" title="Fixed pack size">' + esc(pack) + '</span>';
@@ -4913,12 +4935,6 @@ body.embed .content-inner{max-width:100%;min-width:0}
       }
       html += '<button type="button" class="btn ghost no-fast-toggle-btn' + (notesOpen ? ' on' : '') + '" data-fast-notes-toggle>Notes</button>';
       html += '</div>';
-      html += '<div class="no-fast-actions">';
-      html += '<button type="button" class="btn solid no-fast-add-btn' +
-        (isAdded ? ' on' : '') +
-        (addLabel === 'Choose Options' ? ' needs-options' : '') +
-        '" data-fast-add>' + esc(addLabel) + '</button>';
-      html += '</div></div>';
       if (optionsOpen && hasQs) {
         html += '<div class="no-fast-panel no-fast-options-panel"><div class="line-opt" data-fast-opt></div></div>';
       }
