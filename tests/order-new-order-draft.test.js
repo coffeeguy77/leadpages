@@ -109,14 +109,19 @@ test('orders.html layout: fullscreen left-nav steps, no permanent right panel', 
   assert.doesNotMatch(html, />Change customer</);
   assert.doesNotMatch(html, />Choose pickup</);
 
-  // Sidebar client card shows CLIENT label with name + phone
+  // Sidebar CLIENT card: single title, name/phone/items + Cart & Pay (no floating mobile bar)
   assert.match(html, />CLIENT</);
-  assert.match(html, /no-nav-client-prefix/);
-  assert.match(html, /no-nav-client-phone/);
+  assert.match(html, /id="no-nav-cart-btn"/);
+  assert.match(html, /id="no-nav-client-meta"/);
+  assert.match(html, /id="no-nav-client-phone"/);
+  assert.doesNotMatch(html, /no-nav-client-prefix/);
+  assert.match(html, /no-nav-cart-btn/);
+  assert.match(html, /aria-hidden="true">QTY</);
+  assert.match(html, /aria-hidden="true">kg</);
+  assert.match(css, /\.no-mobile-bar\{[\s\S]*display:\s*none\s*!important/);
   assert.match(html, /no-fast-line/);
   assert.match(css, /flex-wrap:\s*wrap/);
   assert.doesNotMatch(html, /class="no-fast-actions"/);
-  assert.doesNotMatch(css, /overflow-x:\s*auto[\s\S]*\.no-cat-pills|\.no-cat-pills\{[^}]*overflow-x:\s*auto/);
 
   // Fullscreen hides top tabs; tabs lose pink fill
   assert.match(css, /\.no-mode-fullscreen \.no-workflow-tabs/);
