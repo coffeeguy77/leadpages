@@ -80,8 +80,11 @@ test('promotions hero spacing is tight on mobile/tablet', function () {
   assert.match(css, /scrollingSponsorBanner.*promotions-hero.*margin-top:0/s);
   assert.match(css, /@media\(max-width:820px\)[\s\S]*ssb-instance\{padding-bottom:0!important\}/);
   assert.match(css, /@media\(max-width:820px\)[\s\S]*promotions-hero[\s\S]*margin-top:0!important/);
-  assert.match(css, /@media\(max-width:820px\)[\s\S]*promo-text\{flex:0 0 auto/);
-  assert.match(css, /@media\(max-width:640px\)[\s\S]*\.promo-text\{flex:0 0 auto/);
+  assert.match(css, /@media\(max-width:820px\)[\s\S]*promo-text\{flex:0 0 auto!important/);
+  assert.match(css, /\.promo-actions\{display:flex/);
+  assert.match(css, /justify-content:flex-start!important/);
+  const tplJs = JSON.parse(fs.readFileSync(path.join(root, 'trade.template.json'), 'utf8')).html;
+  assert.match(tplJs, /promo-actions/);
   assert.match(ssbCss, /scrollingSponsorBanner.*padding:0!important/);
   assert.match(tpl, /scrollingSponsorBanner.*padding:0!important/);
   assert.match(tpl, /ssb-instance\{padding-bottom:0!important\}/);
