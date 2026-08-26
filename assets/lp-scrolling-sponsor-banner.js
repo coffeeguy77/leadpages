@@ -444,9 +444,15 @@
     if (appearance.sectionBg) sectionStyle += 'background:' + appearance.sectionBg + ';';
     var padTopDefault = 24;
     var padBottomDefault = 24;
+    var mobileStackPromo = false;
     if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(max-width:820px)').matches) {
-      padTopDefault = 16;
-      padBottomDefault = 12;
+      padTopDefault = 12;
+      padBottomDefault = 0;
+      try {
+        var promoHero = document.querySelector('[data-sec="promotions-hero"]');
+        mobileStackPromo = !!(promoHero && promoHero.style.display !== 'none');
+      } catch (_mp) {}
+      if (mobileStackPromo) padBottomDefault = 0;
     }
     sectionStyle +=
       'padding-top:' + (appearance.padTop != null ? appearance.padTop : padTopDefault) + 'px;' +

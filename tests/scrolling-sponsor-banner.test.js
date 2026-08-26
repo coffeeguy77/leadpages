@@ -76,10 +76,13 @@ test('promotions hero spacing is tight on mobile/tablet', function () {
   const css = fs.readFileSync(path.join(root, 'marketplace/demos/demo-shared.css'), 'utf8');
   const ssbCss = fs.readFileSync(path.join(root, 'assets/lp-scrolling-sponsor-banner.css'), 'utf8');
   const tpl = fs.readFileSync(path.join(root, 'trade.template.json'), 'utf8');
+  assert.match(css, /scrollingSponsorBanner.*padding:0!important/s);
   assert.match(css, /scrollingSponsorBanner.*promotions-hero.*margin-top:0/s);
-  assert.match(css, /@media\(max-width:820px\)[^\{]*\{[^\}]*promotions-hero[^\}]*margin:12px/s);
-  assert.match(ssbCss, /scrollingSponsorBanner.*padding:0/);
-  assert.match(tpl, /scrollingSponsorBanner.*promotions-hero.*margin-top:0/);
+  assert.match(css, /@media\(max-width:820px\)[\s\S]*ssb-instance\{padding-bottom:0!important\}/);
+  assert.match(css, /@media\(max-width:820px\)[\s\S]*promotions-hero[\s\S]*margin-top:0!important/);
+  assert.match(ssbCss, /scrollingSponsorBanner.*padding:0!important/);
+  assert.match(tpl, /scrollingSponsorBanner.*padding:0!important/);
+  assert.match(tpl, /ssb-instance\{padding-bottom:0!important\}/);
 });
 
 test('public marketplace + sell template use scrollingSponsorBanner', function () {
