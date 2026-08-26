@@ -80,6 +80,8 @@ test('promotions hero spacing is tight on mobile/tablet', function () {
   assert.match(css, /scrollingSponsorBanner.*promotions-hero.*margin-top:0/s);
   assert.match(css, /@media\(max-width:820px\)[\s\S]*ssb-instance\{padding-bottom:0!important\}/);
   assert.match(css, /@media\(max-width:820px\)[\s\S]*promotions-hero[\s\S]*margin-top:0!important/);
+  assert.match(css, /@media\(max-width:820px\)[\s\S]*promo-text\{flex:0 0 auto/);
+  assert.match(css, /@media\(max-width:640px\)[\s\S]*\.promo-text\{flex:0 0 auto/);
   assert.match(ssbCss, /scrollingSponsorBanner.*padding:0!important/);
   assert.match(tpl, /scrollingSponsorBanner.*padding:0!important/);
   assert.match(tpl, /ssb-instance\{padding-bottom:0!important\}/);

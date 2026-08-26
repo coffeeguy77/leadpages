@@ -1029,7 +1029,10 @@ section[data-sec="promotions-hero"] .promo,section[data-sec="promotions-inline"]
   section[data-sec="scrollingSponsorBanner"] .ssb-instance:last-child{padding-bottom:0!important}
   [data-sec="scrollingSponsorBanner"] ~ [data-sec="promotions-hero"] .promo,[data-sec="scrollingSponsorBanner"] ~ [data-sec="promotions-inline"] .promo{margin-top:0!important;margin-bottom:10px!important}
   section[data-sec="promotions-hero"] .promo,section[data-sec="promotions-inline"] .promo{margin:10px 0}
-  section[data-sec="promotions-hero"] .promo-inner,section[data-sec="promotions-inline"] .promo-inner{padding:18px 16px;gap:12px 16px}
+  section[data-sec="promotions-hero"] .promo-inner,section[data-sec="promotions-inline"] .promo-inner{padding:18px 16px;gap:12px 16px;flex-direction:column;align-items:stretch;text-align:center}
+  section[data-sec="promotions-hero"] .promo-text,section[data-sec="promotions-inline"] .promo-text{flex:0 0 auto;min-width:0;width:100%}
+  section[data-sec="promotions-hero"] .promo-cd,section[data-sec="promotions-inline"] .promo-cd{justify-content:center}
+  section[data-sec="promotions-hero"] .promo-cta,section[data-sec="promotions-inline"] .promo-cta{width:100%;text-align:center;box-sizing:border-box}
   section[data-sec="promotions-hero"] .promo-title,section[data-sec="promotions-inline"] .promo-title{font-size:22px}
 }
 .promo-inner{display:flex;flex-wrap:wrap;align-items:center;gap:16px 26px;border-radius:16px;padding:22px 26px}
@@ -1048,7 +1051,7 @@ section[data-sec="promotions-hero"] .promo,section[data-sec="promotions-inline"]
 .promo-card .cd-seg b{color:var(--ink,#1a2230)}
 .cd-seg i{font-style:normal;font-size:10px;letter-spacing:.07em;text-transform:uppercase;opacity:.7;margin-top:3px}
 .promo-cta{flex:0 0 auto;display:inline-block;font-family:"Barlow Condensed",sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.04em;font-size:17px;padding:13px 24px;border-radius:10px;text-decoration:none;background:var(--hivis,#ff7a00);color:#fff;white-space:nowrap}
-@media(max-width:640px){.promo-inner{flex-direction:column;text-align:center;align-items:stretch}.promo-cd{justify-content:center}.promo-cta{width:100%;text-align:center}}
+@media(max-width:640px){.promo-inner{flex-direction:column;text-align:center;align-items:stretch}.promo-text{flex:0 0 auto;min-width:0;width:100%}.promo-cd{justify-content:center}.promo-cta{width:100%;text-align:center;box-sizing:border-box}}
 
 /* Promotions Engine \u2014 Phase 2 fixed placements */
 .promo-fixed{display:none;position:fixed;left:0;right:0;background:linear-gradient(135deg,var(--steel-900,#1a2230),var(--steel-950,#0e131c));color:#fff;box-shadow:0 6px 24px rgba(0,0,0,.28)}
