@@ -116,6 +116,8 @@ test('orders.html layout: fullscreen left-nav steps, no permanent right panel', 
   assert.match(html, /id="no-nav-client-phone"/);
   assert.doesNotMatch(html, /no-nav-client-prefix/);
   assert.match(html, /no-nav-cart-btn/);
+  assert.match(html, /aria-hidden="true">QTY</);
+  assert.match(html, /aria-hidden="true">kg</);
   assert.match(css, /\.no-mobile-bar\{[\s\S]*display:\s*none\s*!important/);
   assert.match(html, /no-fast-line/);
   assert.match(css, /flex-wrap:\s*wrap/);

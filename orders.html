@@ -361,6 +361,10 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
   display:flex;align-items:center;gap:6px;margin:0;min-width:0;flex:0 0 auto;
   font-size:11px;font-weight:700;color:var(--ink-faint);letter-spacing:.02em;text-transform:uppercase;
 }
+.no-fast-field > span[aria-hidden="true"]{
+  font-size:11px;font-weight:700;letter-spacing:.04em;color:var(--ink-soft);text-transform:uppercase;
+  flex:0 0 auto;line-height:1;
+}
 .no-fast-field .no-stepper{flex:0 0 auto}
 .no-fast-toggle-btn{min-height:40px;padding:0 10px;flex:0 0 auto}
 .no-fast-packchip{display:inline-flex;align-items:center;min-height:40px;padding:0 10px;border-radius:10px;border:1px dashed var(--line);color:var(--accent);font:700 11px/1 var(--font-ui);flex:0 0 auto}
@@ -4941,8 +4945,9 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       if (pack) html += ' · ' + esc(pack);
       html += '</div></div>';
       if (showQty) {
-        html += '<label class="no-fast-field" title="Quantity"><span class="sr-only">Qty</span>' +
-          noStepperHtml({ min: 0, step: 1, value: qtyVal, dataAttr: 'data-fast-qty' }) + '</label>';
+        html += '<label class="no-fast-field" title="Quantity"><span class="sr-only">Quantity</span>' +
+          noStepperHtml({ min: 0, step: 1, value: qtyVal, dataAttr: 'data-fast-qty' }) +
+          '<span aria-hidden="true">QTY</span></label>';
         if (pack) html += '<span class="no-fast-packchip" title="Fixed pack size">' + esc(pack) + '</span>';
       }
       if (needsW) {
