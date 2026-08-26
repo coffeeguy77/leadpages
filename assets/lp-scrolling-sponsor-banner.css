@@ -1,5 +1,5 @@
 /* Scrolling Sponsor Banner */
-[data-sec="scrollingSponsorBanner"]{overflow:hidden}
+[data-sec="scrollingSponsorBanner"]{overflow:hidden;padding:0}
 .ssb-instance{width:100%;box-sizing:border-box}
 .ssb-full{width:100%;max-width:none;padding-left:0;padding-right:0}
 .ssb-heading{margin-left:auto;margin-right:auto}
