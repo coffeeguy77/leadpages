@@ -54,9 +54,7 @@ section[data-sec="scrollingSponsorBanner"].section{overflow:hidden;padding:0!imp
 .ssb-tile--grey:hover .ssb-img,.ssb-tile--grey:focus-visible .ssb-img{filter:none}
 .ssb-pause-btn{
   position:absolute;right:10px;bottom:10px;z-index:3;
-  appearance:none;border:1px solid var(--line,#ddd);background:var(--surface,#fff);
-  color:var(--ink,#222);font:600 12px/1 var(--font-ui,system-ui,sans-serif);
-  padding:8px 12px;border-radius:999px;cursor:pointer;min-height:36px;
+  font-size:14px;padding:10px 16px;min-height:0;box-shadow:0 4px 14px rgba(20,26,36,.12);
 }
 .ssb-pause-btn:focus-visible{outline:2px solid var(--pipe,#1f7a63);outline-offset:2px}
 .ssb-pause-btn--sr{

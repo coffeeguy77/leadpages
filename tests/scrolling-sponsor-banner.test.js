@@ -146,6 +146,25 @@ test('trade template inline script parses (no broken OPTV splice)', function () 
   }
 });
 
+test('SSB pause control uses shared btn styling', function () {
+  const js = fs.readFileSync(path.join(root, 'assets/lp-scrolling-sponsor-banner.js'), 'utf8');
+  const css = fs.readFileSync(path.join(root, 'assets/lp-scrolling-sponsor-banner.css'), 'utf8');
+  assert.match(js, /class="btn btn-quote ssb-pause-btn"/);
+  assert.match(css, /\.ssb-pause-btn\{/);
+  assert.ok(!css.includes('border-radius:999px'), 'pause btn should not use pill styling');
+});
+
+test('live preview fits iframe to footer (no trailing gap)', function () {
+  const manage = fs.readFileSync(path.join(root, 'manage.html'), 'utf8');
+  const ds = fs.readFileSync(path.join(root, 'marketplace/demos/demo-shared.js'), 'utf8');
+  assert.match(manage, /lpPreviewMeasureContentHeight/);
+  assert.match(manage, /getElementById\('lpFooter'\)/);
+  assert.match(manage, /fr\.style\.maxHeight=availH/);
+  assert.match(ds, /lp-preview-fit-css/);
+  assert.match(ds, /lpPreviewFitFrameHeight/);
+  assert.match(ds, /padding-top:0!important;padding-bottom:0!important/);
+});
+
 test('demo-shared hydrates SSB inside applyCfg only', function () {
   const ds = fs.readFileSync(path.join(root, 'marketplace/demos/demo-shared.js'), 'utf8');
   const applyStart = ds.indexOf('function applyCfg(C){');

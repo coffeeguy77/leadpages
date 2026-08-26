@@ -1696,17 +1696,43 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   window.lpSetPreviewLayout=lpSetPreviewLayout;
   window.lpPreviewLayoutSync=lpPreviewLayoutSync;
   function lpFrame(){ return document.getElementById('lp-prev-frame'); }
+  function lpPreviewMeasureContentHeight(doc, win){
+    if(!doc||!doc.body) return 0;
+    win=win||(doc.defaultView||null);
+    if(!win) return Math.max(doc.documentElement.scrollHeight||0, doc.body.scrollHeight||0);
+    function vis(el){
+      if(!el) return false;
+      try{ var cs=win.getComputedStyle(el); return cs.display!=='none'&&cs.visibility!=='hidden'; }catch(_v){ return false; }
+    }
+    function bottom(el){
+      var r=el.getBoundingClientRect();
+      var sy=win.pageYOffset||doc.documentElement.scrollTop||doc.body.scrollTop||0;
+      return Math.ceil(r.bottom+sy);
+    }
+    var lpFoot=doc.getElementById('lpFooter');
+    if(vis(lpFoot)) return bottom(lpFoot);
+    var siteFoot=doc.querySelector('footer.site,[data-sec="footer"]');
+    if(vis(siteFoot)) return bottom(siteFoot);
+    var main=doc.getElementById('top');
+    if(vis(main)) return bottom(main);
+    return Math.max(doc.documentElement.scrollHeight||0, doc.body.scrollHeight||0, doc.documentElement.offsetHeight||0, doc.body.offsetHeight||0);
+  }
   function lpPreviewFitFrameHeight(){
     var fr=lpFrame(), panel=document.querySelector('.lp-prev-body');
     if(!fr||!panel||!lpPrevReady) return;
     try{
-      var doc=fr.contentDocument||fr.contentWindow.document;
+      var win=fr.contentWindow;
+      var doc=fr.contentDocument||(win&&win.document);
       if(!doc||!doc.body) return;
-      var contentH=Math.max(doc.documentElement.scrollHeight||0, doc.body.scrollHeight||0, doc.documentElement.offsetHeight||0, doc.body.offsetHeight||0);
+      var contentH=lpPreviewMeasureContentHeight(doc, win);
       var maxH=panel.clientHeight||600;
-      if(contentH>0) fr.style.height=Math.min(contentH, maxH)+'px';
+      if(contentH>0){
+        fr.style.height=Math.min(contentH, maxH)+'px';
+        fr.style.overflowY=contentH>maxH?'auto':'hidden';
+      }
     }catch(_e){}
   }
+  window.lpPreviewFitFrameHeight=lpPreviewFitFrameHeight;
   function previewTarget(){ return currentSiteSlug || 'demo'; }
   function previewPageQuery(){
     // Only append &page= while editing a landing page. Stale lpCur from a prior
@@ -1793,7 +1819,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     if(!body||!fr) return;
     var availW=body.clientWidth, availH=body.clientHeight;
     if(availW<40) return;
-    fr.style.transform='none'; fr.style.transformOrigin='top left'; fr.style.height=availH+'px';
+    fr.style.transform='none'; fr.style.transformOrigin='top left'; fr.style.maxHeight=availH+'px';
     if(lpMode==='mobile'){
       var mw=Math.min(412, availW-20);
       fr.style.width=mw+'px'; fr.style.marginLeft=Math.max(0,(availW-mw)/2)+'px';
