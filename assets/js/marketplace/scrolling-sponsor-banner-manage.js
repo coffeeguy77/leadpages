@@ -170,8 +170,33 @@
       return '<label class="field" style="display:block;margin:0 0 10px"><span class="field-hint" style="display:block;margin:0 0 4px">' + esc(label) + '</span>' + html + '</label>';
     }
 
+    function modeSeg(items, activeVal, dataAttr, extraStyle) {
+      return (
+        '<div class="sec-modeseg"' + (extraStyle ? ' style="' + extraStyle + '"' : '') + '>' +
+        items
+          .map(function (it) {
+            var val = it[0];
+            var label = it[1];
+            return (
+              '<button type="button" ' +
+              dataAttr +
+              '="' +
+              esc(val) +
+              '" class="' +
+              (String(activeVal) === String(val) ? 'on' : '') +
+              '">' +
+              esc(label) +
+              '</button>'
+            );
+          })
+          .join('') +
+        '</div>'
+      );
+    }
+
     function draw() {
       var inst = selected();
+      if (S._prevMode == null) S._prevMode = 'desktop';
       var tabs = [
         ['content', 'Content'],
         ['tiles', 'Tiles'],
@@ -179,26 +204,12 @@
         ['appearance', 'Appearance'],
         ['reporting', 'Reporting']
       ];
-      var tabBtns = tabs
-        .map(function (t) {
-          return (
-            '<button type="button" class="btn ' + (S._tab === t[0] ? 'solid' : 'ghost') + '" data-ssb-tab="' + t[0] + '" style="min-height:36px">' +
-            t[1] +
-            '</button>'
-          );
-        })
-        .join('');
+      var tabBtns = modeSeg(tabs, S._tab, 'data-ssb-tab', 'margin:0 0 12px;flex-wrap:wrap');
 
-      var instList = S.instances
-        .map(function (instRow, i) {
-          return (
-            '<button type="button" class="btn ' + (i === S._selInst ? 'solid' : 'ghost') + '" data-ssb-inst="' + i + '" style="min-height:36px;margin:0 6px 6px 0">' +
-            esc(instRow.adminName || 'Banner') +
-            (instRow.enabled === false ? ' (off)' : '') +
-            '</button>'
-          );
-        })
-        .join('');
+      var instItems = S.instances.map(function (instRow, i) {
+        return [String(i), (instRow.adminName || 'Banner') + (instRow.enabled === false ? ' (off)' : '')];
+      });
+      var instList = modeSeg(instItems, String(S._selInst), 'data-ssb-inst', 'margin:0 0 10px;flex-wrap:wrap');
 
       var panel = '';
       if (S._tab === 'content') {
@@ -225,11 +236,11 @@
       } else if (S._tab === 'tiles') {
         var tiles = inst.tiles || [];
         panel =
-          '<div style="display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px">' +
-          '<button type="button" class="btn solid" id="ssb-add-tile">+ Add Image</button>' +
-          '<button type="button" class="btn ghost" id="ssb-bulk-upload">Bulk upload</button>' +
+          '<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px">' +
+          '<button type="button" class="btn ghost" id="ssb-add-tile" style="margin-top:2px">+ Add Image</button>' +
+          '<button type="button" class="btn ghost sm" id="ssb-bulk-upload">Bulk upload</button>' +
           '<input type="file" id="ssb-bulk-file" accept="image/*" multiple hidden>' +
-          '<label style="display:inline-flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="ssb-show-all"' + (S._showAll ? ' checked' : '') + '> Preview all tiles (ignore schedule)</label>' +
+          '<label style="display:inline-flex;gap:6px;align-items:center;font-size:13px;font-weight:500"><input type="checkbox" id="ssb-show-all"' + (S._showAll ? ' checked' : '') + '> Preview all tiles (ignore schedule)</label>' +
           '</div>' +
           '<div id="ssb-tile-list">' +
           (tiles.length
@@ -248,11 +259,11 @@
                     '<input data-k="name" value="' + esc(t.name || '') + '" placeholder="Internal name">' +
                     '<input data-k="alt" value="' + esc(t.alt || '') + '" placeholder="Alt text">' +
                     '<div style="display:flex;flex-wrap:wrap;gap:6px">' +
-                    '<button type="button" class="btn ghost" data-ssb-up>↑</button>' +
-                    '<button type="button" class="btn ghost" data-ssb-down>↓</button>' +
-                    '<button type="button" class="btn ghost" data-ssb-dup>Duplicate</button>' +
-                    '<button type="button" class="btn ghost" data-ssb-replace>Replace image</button>' +
-                    '<button type="button" class="btn danger ghost" data-ssb-del>Remove</button>' +
+                    '<button type="button" class="btn ghost" data-ssb-up style="padding:4px 8px;font-size:13px" title="Move up" aria-label="Move up">↑</button>' +
+                    '<button type="button" class="btn ghost" data-ssb-down style="padding:4px 8px;font-size:13px" title="Move down" aria-label="Move down">↓</button>' +
+                    '<button type="button" class="btn ghost sm" data-ssb-dup>Duplicate</button>' +
+                    '<button type="button" class="btn ghost sm" data-ssb-replace>Replace image</button>' +
+                    '<button type="button" class="btn ghost danger" data-ssb-del style="padding:4px 9px;font-size:13px">Remove</button>' +
                     '<input type="file" accept="image/*" data-ssb-file hidden>' +
                     '</div>' +
                     '<details><summary>Link, text &amp; schedule</summary>' +
@@ -331,7 +342,7 @@
             'Date range',
             '<select id="ssb-report-days"><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="90">Last 90 days</option><option value="365">Last year</option></select>'
           ) +
-          '<button type="button" class="btn ghost" id="ssb-report-refresh" style="align-self:flex-end;min-height:38px">Refresh</button>' +
+          '<button type="button" class="btn ghost sm" id="ssb-report-refresh" style="align-self:flex-end">Refresh</button>' +
           '</div>' +
           '<div id="ssb-report-box" class="card" style="padding:12px"><p class="lede" style="margin:0">Loading…</p></div>';
       }
@@ -344,17 +355,21 @@
         '<p class="lede" style="margin:0 0 10px">Independent banners (e.g. Major Sponsors, Community Partners). Place the section with <strong>Position</strong>.</p>' +
         '<div>' +
         instList +
-        '<button type="button" class="btn ghost" id="ssb-add-inst" style="min-height:36px">+ New banner</button></div>' +
-        '<div style="display:flex;flex-wrap:wrap;gap:6px;margin:12px 0">' +
+        '<button type="button" class="btn ghost" id="ssb-add-inst" style="margin-top:2px">+ New banner</button></div>' +
         tabBtns +
-        '</div>' +
         '<div id="ssb-panel">' +
         panel +
         '</div></div>' +
         '<div class="card" style="margin-top:12px"><h3 style="margin:0 0 8px">Live preview</h3>' +
-        '<div style="display:flex;gap:8px;margin:0 0 10px">' +
-        '<button type="button" class="btn ghost" data-ssb-prev="desktop">Desktop</button>' +
-        '<button type="button" class="btn ghost" data-ssb-prev="mobile">Mobile</button></div>' +
+        modeSeg(
+          [
+            ['desktop', 'Desktop'],
+            ['mobile', 'Mobile']
+          ],
+          S._prevMode,
+          'data-ssb-prev',
+          'margin:0 0 10px'
+        ) +
         '<div id="ssb-live-preview" class="ssb-section" style="border:1px solid var(--line,#e6e2da);border-radius:12px;overflow:hidden;min-height:120px;background:var(--bg,#f6f4ef)"></div></div>';
 
       body.innerHTML = head;
@@ -737,10 +752,15 @@
 
       body.querySelectorAll('[data-ssb-prev]').forEach(function (btn) {
         btn.addEventListener('click', function () {
+          var mode = btn.getAttribute('data-ssb-prev') === 'mobile' ? 'mobile' : 'desktop';
+          S._prevMode = mode;
+          body.querySelectorAll('[data-ssb-prev]').forEach(function (b) {
+            b.classList.toggle('on', b.getAttribute('data-ssb-prev') === mode);
+          });
           var host = body.querySelector('#ssb-live-preview');
           if (!host) return;
-          host.style.maxWidth = btn.getAttribute('data-ssb-prev') === 'mobile' ? '390px' : '100%';
-          host.style.margin = btn.getAttribute('data-ssb-prev') === 'mobile' ? '0 auto' : '';
+          host.style.maxWidth = mode === 'mobile' ? '390px' : '100%';
+          host.style.margin = mode === 'mobile' ? '0 auto' : '';
           paintPreview();
         });
       });
