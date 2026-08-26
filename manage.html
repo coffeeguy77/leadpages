@@ -1696,6 +1696,17 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   window.lpSetPreviewLayout=lpSetPreviewLayout;
   window.lpPreviewLayoutSync=lpPreviewLayoutSync;
   function lpFrame(){ return document.getElementById('lp-prev-frame'); }
+  function lpPreviewFitFrameHeight(){
+    var fr=lpFrame(), panel=document.querySelector('.lp-prev-body');
+    if(!fr||!panel||!lpPrevReady) return;
+    try{
+      var doc=fr.contentDocument||fr.contentWindow.document;
+      if(!doc||!doc.body) return;
+      var contentH=Math.max(doc.documentElement.scrollHeight||0, doc.body.scrollHeight||0, doc.documentElement.offsetHeight||0, doc.body.offsetHeight||0);
+      var maxH=panel.clientHeight||600;
+      if(contentH>0) fr.style.height=Math.min(contentH, maxH)+'px';
+    }catch(_e){}
+  }
   function previewTarget(){ return currentSiteSlug || 'demo'; }
   function previewPageQuery(){
     // Only append &page= while editing a landing page. Stale lpCur from a prior
@@ -1714,13 +1725,15 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       else if(currentSiteTemplate==='broker-app'){ if(w.__applyBrokerAppConfig) w.__applyBrokerAppConfig(data); else if(w.__applyAppearance) w.__applyAppearance(a||curAppr()); }
       else if(w.__applyAppearance){ w.__applyAppearance(a||curAppr()); }
       lpPreviewApplyChromeHide();
+      setTimeout(lpPreviewFitFrameHeight, 0);
+      setTimeout(lpPreviewFitFrameHeight, 350);
     }catch(e){}
   }
   window.previewApply = previewApply;
   function previewLoad(){
     var fr=lpFrame(); if(!fr) return;
     lpPrevReady=false; lpPrevSlug=previewTarget();
-    fr.onload=function(){ lpPrevReady=true; previewLayout(); previewApply(curAppr()); lpPreviewApplyChromeHide(); };
+    fr.onload=function(){ lpPrevReady=true; previewLayout(); previewApply(curAppr()); lpPreviewApplyChromeHide(); setTimeout(lpPreviewFitFrameHeight, 0); setTimeout(lpPreviewFitFrameHeight, 350); };
     fr.src='/'+lpPrevSlug+'?preview='+Date.now()+previewPageQuery();
   }
   function previewDock(){
@@ -1791,6 +1804,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       var capW=Math.min(availW, window.innerWidth>=1920?1440:(window.innerWidth>=1440?1200:1040));
       fr.style.width=capW+'px'; fr.style.marginLeft=Math.max(0,(availW-capW)/2)+'px';
     }
+    lpPreviewFitFrameHeight();
   }
   function previewSetMode(m){
     lpMode=m;
