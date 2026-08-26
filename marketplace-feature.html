@@ -622,8 +622,8 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
 
   if(__mpV2 && slug === 'trust-bar'){
     /* V2 sell-first Trust Bar page owns rendering (marketplace-feature-v2.js) */
-  } else if(__mpV2 && slug === 'scrolling-sponsor-banner'){
-    /* V2 Scrolling Sponsor Banner page (marketplace-feature-ssb-v2.js) */
+  } else if(slug === 'scrolling-sponsor-banner'){
+    /* Scrolling Sponsor Banner always uses marketplace-feature-ssb-v2.js */
   } else {
     loadFeature().then(render).catch(notFound);
   }
@@ -1759,6 +1759,22 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
             liveSiteCfg = cfg;
             if (liveSiteCfg.sections && liveSiteCfg.sections.specialOffer) {
               liveSiteCfg.sections.specialOffer.on = true;
+            }
+            applyLiveConfig();
+          },
+          onAnnounce: function() {}
+        });
+        return;
+      }
+      if (secKey === 'scrollingSponsorBanner' && window.LPScrollingSponsorBannerEditor) {
+        host.classList.add('tb-ed-root', 'tb-ed-compact');
+        host.__ssbEditor = window.LPScrollingSponsorBannerEditor.mount(host, {
+          mode: 'marketplace-playground',
+          value: liveSiteCfg,
+          onChange: function(cfg) {
+            liveSiteCfg = cfg;
+            if (liveSiteCfg.sections && liveSiteCfg.sections.scrollingSponsorBanner) {
+              liveSiteCfg.sections.scrollingSponsorBanner.on = true;
             }
             applyLiveConfig();
           },
