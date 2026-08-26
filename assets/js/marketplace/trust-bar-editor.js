@@ -15,8 +15,29 @@
     image: '',
     imageFit: 'cover',
     imagePos: 'center',
-    icon: 'circle-check'
+    icon: 'circle-check',
+    linkAction: 'none',
+    linkTarget: 'quote',
+    linkPage: '',
+    linkUrl: ''
   };
+
+  var TB_LINK_ACTIONS = [
+    ['none', 'None (not clickable)'],
+    ['scroll', 'Scroll to section'],
+    ['page', 'Landing page on this site'],
+    ['url', 'External URL (new tab)']
+  ];
+
+  var TB_SCROLL_TARGETS = [
+    ['quote', 'Quote form'],
+    ['onlineQuote', 'Online Quote'],
+    ['services', 'Services'],
+    ['reviews', 'Reviews'],
+    ['faq', 'FAQ'],
+    ['featuredProjects', 'Project Portfolio'],
+    ['customHtml', 'Custom HTML']
+  ];
 
   var DEFAULT_FOUR = [
     { on: true, label: 'Garden Design', icon: 'flower-2', image: '', imageFit: 'cover', imagePos: 'center' },
@@ -260,7 +281,32 @@
           : '<input type="text" data-k="icon" value="' + esc(it.icon || '') + '" placeholder="e.g. shield-check">')
         + '</div>'
         + '<div class="f tb-ed-text-f"><label>Text</label><textarea data-k="label" rows="2">' + esc(it.label || '') + '</textarea></div>'
+        + '</div>'
+        + '<div class="tb-ed-link-row">'
+        + '<div class="f"><label>When clicked</label><select data-k="linkAction">'
+        + TB_LINK_ACTIONS.map(function (o) {
+          return '<option value="' + o[0] + '"' + ((it.linkAction || 'none') === o[0] ? ' selected' : '') + '>' + esc(o[1]) + '</option>';
+        }).join('')
+        + '</select></div>'
+        + '<div class="f tb-ed-link-scroll"' + ((it.linkAction || 'none') === 'scroll' ? '' : ' hidden') + '><label>Scroll to section</label><select data-k="linkTarget">'
+        + TB_SCROLL_TARGETS.map(function (o) {
+          return '<option value="' + o[0] + '"' + ((it.linkTarget || 'quote') === o[0] ? ' selected' : '') + '>' + esc(o[1]) + '</option>';
+        }).join('')
+        + '</select></div>'
+        + '<div class="f tb-ed-link-page"' + ((it.linkAction || 'none') === 'page' ? '' : ' hidden') + '><label>Landing page slug</label><input type="text" data-k="linkPage" value="' + esc(it.linkPage || '') + '" placeholder="e.g. home-loans-canberra"></div>'
+        + '<div class="f tb-ed-link-url"' + ((it.linkAction || 'none') === 'url' ? '' : ' hidden') + '><label>External URL</label><input type="url" data-k="linkUrl" value="' + esc(it.linkUrl || '') + '" placeholder="https://instagram.com/…"></div>'
         + '</div></div>';
+    }
+
+    function syncLinkFields(row) {
+      if (!row) return;
+      var act = (row.querySelector('[data-k="linkAction"]') || {}).value || 'none';
+      var scroll = row.querySelector('.tb-ed-link-scroll');
+      var page = row.querySelector('.tb-ed-link-page');
+      var url = row.querySelector('.tb-ed-link-url');
+      if (scroll) scroll.hidden = act !== 'scroll';
+      if (page) page.hidden = act !== 'page';
+      if (url) url.hidden = act !== 'url';
     }
 
     function drawItems() {
@@ -294,6 +340,7 @@
         if (ctl) window.LPLocalImage.applyValues(ctl, (it && it.image) || '', sample);
         else window.LPLocalImage.refresh(box);
       }
+      syncLinkFields(box.querySelector('.tb-ed-item-panel'));
     }
 
     function syncModeUi() {
@@ -481,6 +528,7 @@
           if (!k || !tb().badges[i]) return;
           if (k === 'on') tb().badges[i].on = e.target.checked;
           else tb().badges[i][k] = e.target.value;
+          if (k === 'linkAction') syncLinkFields(row);
           if (k === 'label' || k === 'on') {
             var tab = box.querySelector('.tb-ed-tab[data-tab="' + i + '"]');
             if (tab) {
@@ -500,6 +548,7 @@
           if (!k || !tb().badges[i]) return;
           if (k === 'on') tb().badges[i].on = e.target.checked;
           else tb().badges[i][k] = e.target.value;
+          if (k === 'linkAction') syncLinkFields(row);
           if (k === 'on') {
             var tab = box.querySelector('.tb-ed-tab[data-tab="' + i + '"]');
             if (tab) tab.classList.toggle('off', tb().badges[i].on === false);
