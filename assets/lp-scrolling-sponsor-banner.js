@@ -442,9 +442,15 @@
 
     var sectionStyle = '';
     if (appearance.sectionBg) sectionStyle += 'background:' + appearance.sectionBg + ';';
+    var padTopDefault = 24;
+    var padBottomDefault = 24;
+    if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(max-width:820px)').matches) {
+      padTopDefault = 16;
+      padBottomDefault = 12;
+    }
     sectionStyle +=
-      'padding-top:' + (appearance.padTop != null ? appearance.padTop : 24) + 'px;' +
-      'padding-bottom:' + (appearance.padBottom != null ? appearance.padBottom : 24) + 'px;';
+      'padding-top:' + (appearance.padTop != null ? appearance.padTop : padTopDefault) + 'px;' +
+      'padding-bottom:' + (appearance.padBottom != null ? appearance.padBottom : padBottomDefault) + 'px;';
 
     var tileOpts = { allowLinks: !opts.preview };
     var originals = tiles
