@@ -552,20 +552,6 @@ function _pgOpenLightbox(idx, PG){
 }
 
 
-      try{
-        var __SSB=SEC.scrollingSponsorBanner||{};
-        var __ssbNode=document.querySelector('[data-sec="scrollingSponsorBanner"]');
-        if(__ssbNode){
-          if(__SSB.on===true && window.LpScrollingSponsorBanner){
-            window.LpScrollingSponsorBanner.mount(__ssbNode, __SSB, {preview:false});
-          } else {
-            if(window.LpScrollingSponsorBanner) window.LpScrollingSponsorBanner.destroy(__ssbNode);
-            __ssbNode.style.display='none';
-            __ssbNode.innerHTML='';
-          }
-        }
-      }catch(__ssbErr){}
-
 function applyCfg(C){
     C=C||{}; var th=C.theme||{};
     var __lay=(C.layout&&typeof C.layout==='string')?C.layout:'classic'; if(__lay!=='classic'&&__lay!=='quote-first'&&__lay!=='photo-proof'&&__lay!=='emergency-response'&&__lay!=='authority-builder'&&__lay!=='service-area-dominator'&&__lay!=='reviews-first'&&__lay!=='premium-showcase'&&__lay!=='offer-funnel'&&__lay!=='ba-hero-slider'&&__lay!=='hero-image-slider'&&__lay!=='social-proof-feed') __lay='classic'; try{ var __de=document.documentElement; var __cl=(__de.className||'').split(' ').filter(function(x){return x && x.indexOf('layout-')!==0;}); __cl.push('layout-'+__lay); __de.className=__cl.join(' '); }catch(e){}
@@ -1399,6 +1385,19 @@ function applyCfg(C){
         }
         tbNode.style.display=(TB.on===false)?'none':'';
       }
+      try{
+        var __SSB=SEC.scrollingSponsorBanner||{};
+        var __ssbNode=document.querySelector('[data-sec="scrollingSponsorBanner"]');
+        if(__ssbNode){
+          if(__SSB.on===true && window.LpScrollingSponsorBanner){
+            window.LpScrollingSponsorBanner.mount(__ssbNode, __SSB, {preview:false});
+          } else {
+            if(window.LpScrollingSponsorBanner) window.LpScrollingSponsorBanner.destroy(__ssbNode);
+            __ssbNode.style.display='none';
+            __ssbNode.innerHTML='';
+          }
+        }
+      }catch(__ssbErr){}
       var SP=SEC.serviceProcess||{}; var spNode=document.querySelector('[data-sec="serviceProcess"]');
       if(spNode){
         var _spe=spNode.querySelector('.eyebrow'); if(_spe) _spe.textContent=(SP.eyebrow!=null?SP.eyebrow:'How it works');

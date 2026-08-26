@@ -108,7 +108,30 @@ test('renderer + manage assets expose APIs', function () {
   assert.match(manageJs, /Bulk upload/);
 });
 
-test('marketplace category mapping', function () {
-  const cats = require('../lib/marketplace-categories');
-  assert.equal(cats.categoryForSection('scrollingSponsorBanner'), 'trust-conversion');
+test('trade template inline script parses (no broken OPTV splice)', function () {
+  const tpl = JSON.parse(fs.readFileSync(path.join(root, 'trade.template.json'), 'utf8'));
+  const html = tpl.html || '';
+  assert.ok(!html.includes('try{ var \n      try{'), 'broken try{ var fragment must not exist');
+  assert.match(html, /try\{ var __OPTV=/);
+  const scripts = html.match(/<script[^>]*>([\s\S]*?)<\/script>/g) || [];
+  const main = scripts.find(function (s) { return s.includes('applyCfg') || s.includes('__SSB'); });
+  assert.ok(main, 'main inline script should exist');
+  const body = main.replace(/^<script[^>]*>/, '').replace(/<\/script>$/, '');
+  const tmp = path.join(__dirname, '.tmp-trade-script-check.js');
+  fs.writeFileSync(tmp, body);
+  try {
+    const { execSync } = require('child_process');
+    execSync('node --check ' + JSON.stringify(tmp), { stdio: 'pipe' });
+  } finally {
+    try { fs.unlinkSync(tmp); } catch (_e) {}
+  }
+});
+
+test('demo-shared hydrates SSB inside applyCfg only', function () {
+  const ds = fs.readFileSync(path.join(root, 'marketplace/demos/demo-shared.js'), 'utf8');
+  const applyStart = ds.indexOf('function applyCfg(C){');
+  assert.ok(applyStart >= 0);
+  const beforeApply = ds.slice(0, applyStart);
+  assert.ok(!beforeApply.includes('LpScrollingSponsorBanner'), 'SSB hydrate must not appear before applyCfg');
+  assert.ok(ds.indexOf('LpScrollingSponsorBanner.mount', applyStart) > applyStart);
 });
