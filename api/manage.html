@@ -1313,6 +1313,43 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   /* ---- live preview: the real calculator, driven live (same-origin) ---- */
   let lpPrevReady=false, lpPrevSlug=null, lpMode='desktop', lpRsz=null, lpPw=640;
   function lpFrame(){ return document.getElementById('lp-prev-frame'); }
+  function lpPreviewMeasureContentHeight(doc, win){
+    if(!doc||!doc.body) return 0;
+    win=win||(doc.defaultView||null);
+    if(!win) return Math.max(doc.documentElement.scrollHeight||0, doc.body.scrollHeight||0);
+    function vis(el){
+      if(!el) return false;
+      try{ var cs=win.getComputedStyle(el); return cs.display!=='none'&&cs.visibility!=='hidden'; }catch(_v){ return false; }
+    }
+    function bottom(el){
+      var r=el.getBoundingClientRect();
+      var sy=win.pageYOffset||doc.documentElement.scrollTop||doc.body.scrollTop||0;
+      return Math.ceil(r.bottom+sy);
+    }
+    var lpFoot=doc.getElementById('lpFooter');
+    if(vis(lpFoot)) return bottom(lpFoot);
+    var siteFoot=doc.querySelector('footer.site,[data-sec="footer"]');
+    if(vis(siteFoot)) return bottom(siteFoot);
+    var main=doc.getElementById('top');
+    if(vis(main)) return bottom(main);
+    return Math.max(doc.documentElement.scrollHeight||0, doc.body.scrollHeight||0, doc.documentElement.offsetHeight||0, doc.body.offsetHeight||0);
+  }
+  function lpPreviewFitFrameHeight(){
+    var fr=lpFrame(), panel=document.querySelector('.lp-prev-body');
+    if(!fr||!panel||!lpPrevReady) return;
+    try{
+      var win=fr.contentWindow;
+      var doc=fr.contentDocument||(win&&win.document);
+      if(!doc||!doc.body) return;
+      var contentH=lpPreviewMeasureContentHeight(doc, win);
+      var maxH=panel.clientHeight||600;
+      if(contentH>0){
+        fr.style.height=Math.min(contentH, maxH)+'px';
+        fr.style.overflowY=contentH>maxH?'auto':'hidden';
+      }
+    }catch(_e){}
+  }
+  window.lpPreviewFitFrameHeight=lpPreviewFitFrameHeight;
   function previewTarget(){ return currentSiteSlug || 'demo'; }
   function previewApply(a){
     var fr=lpFrame(); if(!fr||!lpPrevReady) return;
@@ -1320,12 +1357,14 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       if(currentIsPartnerHome){ if(w.__applyAgencyConfig) w.__applyAgencyConfig(Object.assign({business:currentBusinessName},data)); }
       else if(currentSiteTemplate==='trade'){ if(w.__applyTradeConfig) w.__applyTradeConfig(data); }
       else if(w.__applyAppearance){ w.__applyAppearance(a||curAppr()); }
+      setTimeout(lpPreviewFitFrameHeight, 0);
+      setTimeout(lpPreviewFitFrameHeight, 350);
     }catch(e){}
   }
   function previewLoad(){
     var fr=lpFrame(); if(!fr) return;
     lpPrevReady=false; lpPrevSlug=previewTarget();
-    fr.onload=function(){ lpPrevReady=true; previewLayout(); previewApply(curAppr()); };
+    fr.onload=function(){ lpPrevReady=true; previewLayout(); previewApply(curAppr()); setTimeout(lpPreviewFitFrameHeight, 0); setTimeout(lpPreviewFitFrameHeight, 350); };
     fr.src='/'+lpPrevSlug+'?preview='+Date.now();
   }
   function previewDock(){
@@ -1349,7 +1388,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     if(!body||!fr) return;
     var availW=body.clientWidth, availH=body.clientHeight;
     if(availW<40) return;
-    fr.style.transform='none'; fr.style.transformOrigin='top left'; fr.style.height=availH+'px';
+    fr.style.transform='none'; fr.style.transformOrigin='top left'; fr.style.maxHeight=availH+'px';
     if(lpMode==='mobile'){
       var mw=Math.min(412, availW-20);
       fr.style.width=mw+'px'; fr.style.marginLeft=Math.max(0,(availW-mw)/2)+'px';
@@ -1360,6 +1399,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       var capW=Math.min(availW, 1040); // 1040 = command-centre card width (.wrap 1080 minus its 20px side padding)
       fr.style.width=capW+'px'; fr.style.marginLeft=Math.max(0,(availW-capW)/2)+'px';
     }
+    lpPreviewFitFrameHeight();
   }
   function previewSetMode(m){
     lpMode=m;

@@ -486,8 +486,8 @@
 
     var pauseBtn =
       !reduced && motion.showPauseControl !== false
-        ? '<button type="button" class="ssb-pause-btn" aria-pressed="false">Pause</button>'
-        : '<button type="button" class="ssb-pause-btn ssb-pause-btn--sr" aria-pressed="false">Pause</button>';
+        ? '<button type="button" class="btn btn-quote ssb-pause-btn" aria-pressed="false">Pause</button>'
+        : '<button type="button" class="btn btn-quote ssb-pause-btn ssb-pause-btn--sr" aria-pressed="false">Pause</button>';
 
     var wrapClass = appearance.fullWidth === false ? 'wrap' : 'ssb-full';
 
