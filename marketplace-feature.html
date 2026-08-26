@@ -278,6 +278,11 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
 <script src="/assets/js/marketplace/promotions-editor.js"></script>
 <script src="/assets/js/marketplace/marketplace-compact-editor.js"></script>
 <script src="/assets/js/marketplace/marketplace-feature-v2.js"></script>
+<link rel="stylesheet" href="/assets/lp-scrolling-sponsor-banner.css">
+<script src="/assets/lp-scrolling-sponsor-banner.js"></script>
+<script src="/assets/js/marketplace/scrolling-sponsor-banner-manage.js"></script>
+<script src="/assets/js/marketplace/scrolling-sponsor-banner-editor.js"></script>
+<script src="/assets/js/marketplace/marketplace-feature-ssb-v2.js"></script>
 <style>
 .so-ed-appearance{margin-top:14px;border-top:1px solid var(--theme-border,var(--line,#e6ddd6));padding-top:12px}
 .so-ed-appearance>summary{cursor:pointer;font-weight:700;font-size:14px;list-style:none}
@@ -617,6 +622,8 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
 
   if(__mpV2 && slug === 'trust-bar'){
     /* V2 sell-first Trust Bar page owns rendering (marketplace-feature-v2.js) */
+  } else if(__mpV2 && slug === 'scrolling-sponsor-banner'){
+    /* V2 Scrolling Sponsor Banner page (marketplace-feature-ssb-v2.js) */
   } else {
     loadFeature().then(render).catch(notFound);
   }

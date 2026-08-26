@@ -27,33 +27,43 @@ html.mp-demo-embed .lp-visitor-a11y { display: none !important; }
 </main>
 <script>
 var SITE_CONFIG = {
-  theme: { pipe: "#1f7a63" },
-  business: "Harbour Club",
+  theme: { pipe: "#006633" },
+  business: "Veterans Cycling",
   sections: {
     scrollingSponsorBanner: {
       on: true,
       instances: [{
-        id: "demo-inst-1",
+        id: "inst-veterans-demo",
         adminName: "Major Sponsors",
         enabled: true,
         bannerLinksEnabled: true,
         heading: {
-          eyebrow: "Partners",
-          title: "Proudly supported by",
-          intro: "Local brands that back our community.",
+          eyebrow: "support our event",
+          title: "Sponsors",
+          intro: "",
           align: "center",
           maxWidth: 720,
-          gap: 16
+          gap: 16,
+          eyebrowColor: "",
+          titleColor: "",
+          introColor: ""
         },
         tiles: [
-          { id: "t1", name: "Northside", enabled: true, image: "https://res.cloudinary.com/demo/image/upload/w_200,h_80,c_pad,b_white/sample", alt: "Northside", contentMode: "image" },
-          { id: "t2", name: "Coastal Co", enabled: true, image: "https://res.cloudinary.com/demo/image/upload/w_200,h_80,c_pad,b_white/docs/models", alt: "Coastal Co", contentMode: "image" },
-          { id: "t3", name: "Metro Tools", enabled: true, image: "https://res.cloudinary.com/demo/image/upload/w_200,h_80,c_pad,b_white/sample", alt: "Metro Tools", contentMode: "image" },
-          { id: "t4", name: "Greenline", enabled: true, image: "https://res.cloudinary.com/demo/image/upload/w_200,h_80,c_pad,b_white/docs/models", alt: "Greenline", contentMode: "image" }
+          { id: "t1", name: "raklox", enabled: true, alt: "raklox", contentMode: "image", linkEnabled: false, image: "https://res.cloudinary.com/dzx6x1hou/image/upload/v1787749310/leadpages/c731b307-6c36-4dab-8642-fef77153b23c/scrolling-banner/image/mta3s2kdn21e3.png" },
+          { id: "t2", name: "Westpac", enabled: true, alt: "Westpac", contentMode: "image", linkEnabled: false, image: "https://res.cloudinary.com/dzx6x1hou/image/upload/v1787749312/leadpages/c731b307-6c36-4dab-8642-fef77153b23c/scrolling-banner/image/mta3s4kb4nzwp.png" },
+          { id: "t3", name: "duncans", enabled: true, alt: "duncans", contentMode: "image", linkEnabled: false, image: "https://res.cloudinary.com/dzx6x1hou/image/upload/v1787749313/leadpages/c731b307-6c36-4dab-8642-fef77153b23c/scrolling-banner/image/mta3s5z74c4l1.png" },
+          { id: "t4", name: "BEAN CULTURE", enabled: true, alt: "BEAN CULTURE", contentMode: "image", linkEnabled: false, image: "https://res.cloudinary.com/dzx6x1hou/image/upload/v1787752911/leadpages/c731b307-6c36-4dab-8642-fef77153b23c/scrolling-banner/image/mta5x9vjal2e2.png" },
+          { id: "t5", name: "Ride-Technics", enabled: true, alt: "Ride-Technics", contentMode: "image", linkEnabled: false, image: "https://res.cloudinary.com/dzx6x1hou/image/upload/v1787749314/leadpages/c731b307-6c36-4dab-8642-fef77153b23c/scrolling-banner/image/mta3s6ws12v79.png" },
+          { id: "t6", name: "the-district", enabled: true, alt: "the-district", contentMode: "image", linkEnabled: false, image: "https://res.cloudinary.com/dzx6x1hou/image/upload/v1787749815/leadpages/c731b307-6c36-4dab-8642-fef77153b23c/scrolling-banner/image/mta42wrp4h220.png" },
+          { id: "t7", name: "Belconnen-Way", enabled: true, alt: "Belconnen-Way", contentMode: "image", linkEnabled: false, image: "https://res.cloudinary.com/dzx6x1hou/image/upload/v1787750075/leadpages/c731b307-6c36-4dab-8642-fef77153b23c/scrolling-banner/image/mta48hveap129.png" },
+          { id: "t8", name: "Tradelink", enabled: true, alt: "Tradelink", contentMode: "image", linkEnabled: false, image: "https://res.cloudinary.com/dzx6x1hou/image/upload/v1787751484/leadpages/c731b307-6c36-4dab-8642-fef77153b23c/scrolling-banner/image/mta52o7qg1q97.png" },
+          { id: "t9", name: "bike-culture", enabled: true, alt: "bike-culture", contentMode: "image", linkEnabled: false, image: "https://res.cloudinary.com/dzx6x1hou/image/upload/v1787750896/leadpages/c731b307-6c36-4dab-8642-fef77153b23c/scrolling-banner/image/mta4q3ej5z35t.png" },
+          { id: "t10", name: "KEMBLA", enabled: true, alt: "KEMBLA", contentMode: "image", linkEnabled: false, image: "https://res.cloudinary.com/dzx6x1hou/image/upload/v1787751697/leadpages/c731b307-6c36-4dab-8642-fef77153b23c/scrolling-banner/image/mta57931k8hpg.png" },
+          { id: "t11", name: "KJR_Logo", enabled: true, alt: "KJR_Logo", contentMode: "image", linkEnabled: false, image: "https://res.cloudinary.com/dzx6x1hou/image/upload/v1787762408/leadpages/c731b307-6c36-4dab-8642-fef77153b23c/scrolling-banner/image/mtabktjiyh0zm.png" }
         ],
-        motion: { scrolling: true, direction: "left", speedPxPerSec: 40, pauseOnHover: true, showPauseControl: true, staticGrid: false },
-        layout: { imageHeightDesktop: 88, imageHeightMobile: 64, tileWidthDesktop: 180, tileWidthMobile: 140, gapDesktop: 24, gapMobile: 16, tilePadding: 12, imageFit: "contain", imagePos: "center" },
-        appearance: { edgeFade: true, edgeFadeWidth: 40, fullWidth: true, padTop: 16, padBottom: 16, radius: 8 }
+        motion: { scrolling: true, direction: "left", speedPxPerSec: 77, pauseOnHover: false, showPauseControl: false, staticGrid: false },
+        layout: { imageHeightDesktop: 161, imageHeightMobile: 100, tileWidthDesktop: 444, tileWidthMobile: 222, gapDesktop: 24, gapMobile: 16, tilePadding: 16, imageFit: "contain", imagePos: "center" },
+        appearance: { sectionBg: "", tileBg: "", borderColor: "", borderWidth: 0, radius: 0, shadow: false, greyscaleHover: false, edgeFade: false, edgeFadeWidth: 48, fullWidth: true, padTop: 24, padBottom: 24 }
       }]
     }
   }

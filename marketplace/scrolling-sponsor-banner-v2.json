@@ -1,0 +1,73 @@
+{
+  "appKey": "scrollingSponsorBanner",
+  "slug": "scrolling-sponsor-banner",
+  "category": "Content & Media",
+  "categoryEyebrow": "Sponsors and partners",
+  "publicHeading": "Keep sponsors visible without cluttering your page.",
+  "shortDescription": "A seamless scrolling strip for event sponsors, community partners and brand logos — with optional links, scheduling and click reporting.",
+  "longDescription": "Show sponsors, partners and accreditations in a polished horizontal banner that scrolls continuously or sits in a static grid. Start from a real event example, then tune headings, motion, tile sizes and colours with the same controls you use inside LeadPages.",
+  "heroImage": {
+    "url": "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=1400&h=560&fit=crop&q=80",
+    "alt": "Event sponsors displayed in a scrolling banner"
+  },
+  "accessType": "included",
+  "featureLabels": [
+    "Included with LeadPages",
+    "Mobile responsive",
+    "Multiple banners per site"
+  ],
+  "modes": [
+    {
+      "id": "scroll",
+      "name": "Continuous scroll",
+      "description": "Logos loop smoothly left or right — ideal for events, clubs and partner walls."
+    },
+    {
+      "id": "grid",
+      "name": "Static grid",
+      "description": "Wrap logos in a responsive grid when you prefer a fixed layout."
+    }
+  ],
+  "benefits": [
+    {
+      "title": "Named banner instances",
+      "text": "Run Major Sponsors, Community Partners and brand strips independently on one site."
+    },
+    {
+      "title": "Real event example",
+      "text": "Start from the Veterans Cycling sponsor wall — eleven logos, tuned motion and heading copy."
+    },
+    {
+      "title": "Same editor as your website",
+      "text": "Heading colours, tile sizes, speed and appearance use the real page editor controls — nothing here is saved."
+    }
+  ],
+  "examples": [
+    {
+      "id": "veterans-cycling",
+      "businessName": "Veterans Cycling — Event Sponsors",
+      "industry": "Cycling event",
+      "title": "Eleven sponsors, one polished strip",
+      "description": "The live banner from veteranscycling.com.au — fast scroll, large logos and a centred heading.",
+      "mode": "scroll",
+      "presetSlug": "ssb-veterans-cycling",
+      "isFeatured": true,
+      "visibleItems": [
+        "raklox",
+        "Westpac",
+        "Bean Culture",
+        "Ride-Technics",
+        "Tradelink"
+      ]
+    }
+  ],
+  "collections": [
+    "Perfect for Events and Clubs",
+    "Build Trust Quickly",
+    "Easy Wins for Existing Websites"
+  ],
+  "defaultPlaygroundPreset": "ssb-veterans-cycling",
+  "presetOrder": [
+    "ssb-veterans-cycling"
+  ]
+}
