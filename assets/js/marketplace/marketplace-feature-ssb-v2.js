@@ -502,7 +502,7 @@
   }
 
   function bootFeatureV2(feature) {
-    if (!v2On() || !isSsb(feature)) return false;
+    if (!isSsb(feature)) return false;
     var page = document.getElementById('page');
     if (!page) return false;
     addStyles();
@@ -545,7 +545,7 @@
 
   function autoBoot() {
     var slug = (location.pathname.split('/').filter(Boolean)[1] || '').toLowerCase();
-    if (!v2On() || slug !== 'scrolling-sponsor-banner') return;
+    if (slug !== 'scrolling-sponsor-banner') return;
     var page = document.getElementById('page');
     if (!page) return;
     page.innerHTML = '<div class="status">Loading Scrolling Sponsor Banner…</div>';

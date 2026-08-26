@@ -52,12 +52,12 @@ describe('SSB marketplace assets', () => {
     assert.match(demo, /KJR_Logo/);
   });
 
-  it('marketplace feature loads SSB v2 scripts', () => {
+  it('marketplace feature defers scrolling-sponsor-banner to SSB v2', () => {
     const feat = fs.readFileSync(path.join(root, 'marketplace-feature.html'), 'utf8');
-    assert.match(feat, /scrolling-sponsor-banner-editor\.js/);
-    assert.match(feat, /marketplace-feature-ssb-v2\.js/);
-    assert.match(feat, /scrolling-sponsor-banner-manage\.js/);
-    assert.match(feat, /scrolling-sponsor-banner/);
+    assert.match(feat, /slug === 'scrolling-sponsor-banner'/);
+    assert.doesNotMatch(feat, /__mpV2 && slug === 'scrolling-sponsor-banner'/);
+    assert.match(feat, /LPScrollingSponsorBannerEditor/);
+    assert.match(feat, /secKey === 'scrollingSponsorBanner'/);
   });
 
   it('playground editor exposes mount API and heading colours', () => {
@@ -78,11 +78,10 @@ describe('SSB marketplace assets', () => {
     assert.doesNotMatch(manage, /<summary>Heading colours/);
   });
 
-  it('SSB v2 page boots scrolling-sponsor-banner slug', () => {
+  it('SSB v2 page boots without marketplace V2 flag', () => {
     const v2 = fs.readFileSync(path.join(root, 'assets/js/marketplace/marketplace-feature-ssb-v2.js'), 'utf8');
-    assert.match(v2, /scrolling-sponsor-banner/);
-    assert.match(v2, /demo-scrollingSponsorBanner\.html/);
-    assert.match(v2, /LPScrollingSponsorBannerEditor/);
-    assert.match(v2, /mp-ssb-editor/);
+    assert.doesNotMatch(v2, /if \(!v2On\(\) \|\| slug !== 'scrolling-sponsor-banner'/);
+    assert.doesNotMatch(v2, /if \(!v2On\(\) \|\| !isSsb/);
+    assert.match(v2, /slug !== 'scrolling-sponsor-banner'/);
   });
 });
