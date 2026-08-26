@@ -1513,9 +1513,13 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     try{
       if(lpCur&&(!(data&&data.pages)||!data.pages.some(function(p){return p&&p.id===lpCur.id;}))){ lpResetLandingEditor(); }
       var sref=(typeof allSites!=='undefined'&&allSites)?allSites.find(function(x){return x.id===currentSiteId;}):null;
+      // Always save the live editor state (data), not a stale allSites cache snapshot.
       var cfg;
-      if(sref&&sref.config&&typeof sref.config==='object'){ cfg=JSON.parse(JSON.stringify(sref.config)); }
-      else { cfg=JSON.parse(JSON.stringify(data||{})); delete cfg.savedThemes; delete cfg.users; }
+      if(typeof siteConfigForSave==='function'){ cfg=siteConfigForSave(); }
+      else {
+        cfg=JSON.parse(JSON.stringify(data||{}));
+        delete cfg.savedThemes; delete cfg.users; delete cfg.states;
+      }
       cfg.pages=JSON.parse(JSON.stringify((data&&data.pages)||[]));
       if(gen!==_lpSaveGen) return { ok:false, superseded:true };
       var up=await sb.from('sites').update({ config:cfg, updated_at:new Date().toISOString() }).eq('id', currentSiteId);
@@ -4028,6 +4032,8 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
       try{ renderSeoPages(); }catch(e){}
       try{ prefetchOrdersEmbed(); }catch(_ordPf){}
       _reconcileSiteApps(currentSiteId, data).then(function(){
+        var sref=(typeof allSites!=='undefined'&&allSites)?allSites.find(function(x){return x.id===currentSiteId;}):null;
+        if(sref) sref.config=JSON.parse(JSON.stringify(data||{}));
         applyRoleGating();
         try{ renderSeoPages(); }catch(e){}
         try{ renderSiteAnalytics(); }catch(e){}
@@ -11590,6 +11596,36 @@ function heroCtaCard(c){
     }catch(e){ alert('Error applying template: '+e.message); }
   }
 
+  function _secHasUserContent(cfg, key){
+    var s=(cfg&&cfg.sections&&cfg.sections[key])||{};
+    if(key==='trustBar'){
+      var badges=s.badges;
+      if(!Array.isArray(badges)||!badges.length) return false;
+      var defaults=['Licensed','Insured','Fixed Pricing','Work Guaranteed','5 Star Rated','Local Business'];
+      return badges.some(function(b){
+        if(!b||b.on===false) return false;
+        var lab=(b.label!=null?String(b.label).trim():'');
+        if(lab&&defaults.indexOf(lab)<0) return true;
+        if(b.linkAction&&b.linkAction!=='none') return true;
+        if(b.image&&String(b.image).trim()) return true;
+        return false;
+      });
+    }
+    if(key==='scrollingSponsorBanner'){
+      var inst=s.instances;
+      if(!Array.isArray(inst)||!inst.length) return false;
+      return inst.some(function(row){
+        if(!row||row.enabled===false) return false;
+        var tiles=row.tiles;
+        if(!Array.isArray(tiles)||!tiles.length) return false;
+        return tiles.some(function(t){
+          return t&&t.enabled!==false&&((t.image&&String(t.image).trim())||(t.name&&String(t.name).trim()));
+        });
+      });
+    }
+    return false;
+  }
+
   async function _reconcileSiteApps(siteId, cfg){
     if(!siteId) return;
     try{
@@ -11630,8 +11666,8 @@ function heroCtaCard(c){
           cfg.sections[key].__ghost=true;
           if(cfg.sections[key].on===false) delete cfg.sections[key].on;
         } else {
-          // explicitly disabled
-          cfg.sections[key].on=false;
+          // explicitly disabled in marketplace — never silently hide sections the client already built
+          if(!_secHasUserContent(cfg, key)) cfg.sections[key].on=false;
         }
 
         // Merge app config defaults (don't overwrite existing values)
