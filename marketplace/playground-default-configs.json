@@ -9,7 +9,7 @@
     "activityCounter": {
       "on": true,
       "eyebrow": "Today's activity",
-      "heading": "We don’t slow down",
+      "heading": "We don\u2019t slow down",
       "intro": "",
       "stats": [
         {
@@ -49,7 +49,7 @@
     "activityTimeline": {
       "on": true,
       "eyebrow": "Live",
-      "heading": "What we’re working on",
+      "heading": "What we\u2019re working on",
       "intro": "",
       "events": [
         {
@@ -193,7 +193,7 @@
       "on": true,
       "eyebrow": "Accredited & insured",
       "heading": "Licensed, insured & accredited",
-      "intro": "Fully qualified and backed by recognised industry accreditations — so you know the job is done right.",
+      "intro": "Fully qualified and backed by recognised industry accreditations \u2014 so you know the job is done right.",
       "items": [
         {
           "on": true,
@@ -239,7 +239,7 @@
           "on": true,
           "name": "Steve Mitchell",
           "role": "Owner & Master Plumber",
-          "detail": "15 years across Canberra — bathrooms, hot water and emergency callouts.",
+          "detail": "15 years across Canberra \u2014 bathrooms, hot water and emergency callouts.",
           "photo": "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&h=400&fit=crop&crop=faces"
         },
         {
@@ -253,7 +253,7 @@
           "on": true,
           "name": "Matt Nguyen",
           "role": "Apprentice Plumber",
-          "detail": "Third-year apprentice — quality workmanship on every job.",
+          "detail": "Third-year apprentice \u2014 quality workmanship on every job.",
           "photo": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&h=400&fit=crop&crop=faces"
         }
       ]
@@ -276,7 +276,7 @@
           "on": true,
           "style": "google",
           "name": "Sarah M.",
-          "message": "Turned up on time, fixed the problem fast and left everything spotless. Couldn’t ask for more.",
+          "message": "Turned up on time, fixed the problem fast and left everything spotless. Couldn\u2019t ask for more.",
           "time": "2 days ago",
           "rating": "5",
           "image": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=800&fit=crop"
@@ -285,7 +285,7 @@
           "on": true,
           "style": "sms",
           "name": "Dave",
-          "message": "Mate that’s sorted now, water pressure’s perfect. Thanks heaps — will be calling you again!",
+          "message": "Mate that\u2019s sorted now, water pressure\u2019s perfect. Thanks heaps \u2014 will be calling you again!",
           "time": "9:42 am",
           "rating": "",
           "image": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=800&fit=crop"
@@ -321,7 +321,7 @@
     },
     "emerg": {
       "on": true,
-      "text": "24/7 emergency plumber — call now",
+      "text": "24/7 emergency plumber \u2014 call now",
       "callOn": true,
       "sticky": true,
       "bgTransparent": false,
@@ -339,7 +339,7 @@
     "emergencyAvailability": {
       "on": true,
       "heading": "After-hours & emergencies",
-      "intro": "We keep the phone on outside business hours for genuine emergencies — leave your details and we’ll call you straight back.",
+      "intro": "We keep the phone on outside business hours for genuine emergencies \u2014 leave your details and we\u2019ll call you straight back.",
       "mode": "schedule",
       "available": true,
       "weekdayOpen": "07:00",
@@ -349,10 +349,10 @@
       "sunOpen": "",
       "sunClose": "",
       "availableLabel": "Available now",
-      "responseText": "Fast response — usually within the hour",
+      "responseText": "Fast response \u2014 usually within the hour",
       "afterHoursLabel": "After hours",
-      "afterHoursText": "Leave your details and we’ll call you first thing.",
-      "emergencyText": "Genuine emergency? Call anyway — we run after-hours callouts.",
+      "afterHoursText": "Leave your details and we\u2019ll call you first thing.",
+      "emergencyText": "Genuine emergency? Call anyway \u2014 we run after-hours callouts.",
       "cta": {
         "text": "",
         "action": "call"
@@ -370,9 +370,9 @@
       "on": true,
       "eyebrow": "Instant estimate",
       "heading": "Get a ballpark price in 30 seconds",
-      "intro": "Answer a few quick questions for an indicative range. For an exact price, send the details through and we’ll confirm.",
+      "intro": "Answer a few quick questions for an indicative range. For an exact price, send the details through and we\u2019ll confirm.",
       "currency": "$",
-      "disclaimer": "This is a guide only — your final price is confirmed after a quick on-site inspection.",
+      "disclaimer": "This is a guide only \u2014 your final price is confirmed after a quick on-site inspection.",
       "ctaText": "Get my exact quote",
       "options": [
         {
@@ -459,7 +459,7 @@
         },
         {
           "q": "Are you licensed and insured?",
-          "a": "Yes — fully licensed ACT plumbers and fully insured. Our licence number is on every invoice and we're happy to show it before any work begins."
+          "a": "Yes \u2014 fully licensed ACT plumbers and fully insured. Our licence number is on every invoice and we're happy to show it before any work begins."
         }
       ]
     }
@@ -482,8 +482,8 @@
           "image": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=800&fit=crop",
           "title": "Coastal-style backyard",
           "tag": "Landscaping",
-          "location": "O’Connor, ACT",
-          "description": "Full transformation — new turf, hardwood deck, retaining walls and garden lighting."
+          "location": "O\u2019Connor, ACT",
+          "description": "Full transformation \u2014 new turf, hardwood deck, retaining walls and garden lighting."
         },
         {
           "on": true,
@@ -517,7 +517,7 @@
       "heading": "Finance options available",
       "amount": "38",
       "period": "week",
-      "description": "Spread the cost of larger jobs with approved finance — get the work done now and pay it off over time.",
+      "description": "Spread the cost of larger jobs with approved finance \u2014 get the work done now and pay it off over time.",
       "disclaimer": "Finance is subject to approval. Terms and conditions apply."
     }
   },
@@ -530,17 +530,17 @@
     },
     "hero": {
       "on": true,
-      "eyebrow": "Licensed Canberra plumber · Same-day",
+      "eyebrow": "Licensed Canberra plumber \u00b7 Same-day",
       "title": "Blocked drain?",
       "titleHl": "We'll clear it today.",
-      "sub": "Fast, fixed-price plumbing across the ACT — blocked drains, burst pipes, hot water and leaks. You'll know the price before we start.",
+      "sub": "Fast, fixed-price plumbing across the ACT \u2014 blocked drains, burst pipes, hot water and leaks. You'll know the price before we start.",
       "badges": [
         {
-          "icon": "✓",
+          "icon": "\u2713",
           "text": "Licensed & insured"
         },
         {
-          "icon": "★",
+          "icon": "\u2605",
           "text": "4.9 from 212 reviews"
         },
         {
@@ -548,7 +548,7 @@
           "text": "Upfront fixed pricing"
         },
         {
-          "icon": "⚡",
+          "icon": "\u26a1",
           "text": "Same-day service"
         }
       ]
@@ -599,7 +599,7 @@
           "eyebrow": "Canberra solar specialists",
           "heading": "Solar that pays for itself",
           "highlightText": "pays for itself",
-          "subText": "Government rebates available now — fixed pricing and a clean install from a local crew.",
+          "subText": "Government rebates available now \u2014 fixed pricing and a clean install from a local crew.",
           "primaryCtaText": "Call Now",
           "primaryCtaAction": "call",
           "secondaryCtaText": "Get A Fast Quote",
@@ -649,7 +649,7 @@
       "on": true,
       "eyebrow": "Instagram",
       "heading": "From the grid",
-      "intro": "Live project cards from Bean Culture’s connected Instagram — same connection as beanculture.com.au.",
+      "intro": "Live project cards from Bean Culture\u2019s connected Instagram \u2014 same connection as beanculture.com.au.",
       "count": 9,
       "columns": 3,
       "titleSource": "caption",
@@ -681,7 +681,7 @@
       "on": true,
       "eyebrow": "Instagram",
       "heading": "Follow us on Instagram",
-      "intro": "Live grid from Bean Culture’s connected Instagram — same connection used on beanculture.com.au.",
+      "intro": "Live grid from Bean Culture\u2019s connected Instagram \u2014 same connection used on beanculture.com.au.",
       "count": 8,
       "columns": 4,
       "openInstagram": true
@@ -780,7 +780,7 @@
       "on": true,
       "eyebrow": "Latest work",
       "heading": "Latest Work",
-      "intro": "Recent jobs with photos — tap a card for details, call or quote.",
+      "intro": "Recent jobs with photos \u2014 tap a card for details, call or quote.",
       "source": "manual",
       "postsToShow": 12,
       "sortOrder": "newest",
@@ -807,7 +807,7 @@
           "location": "Gungahlin, ACT",
           "service": "Deck building",
           "date": "2 days ago",
-          "caption": "Installed a new Merbau deck in Gungahlin — ready for summer.",
+          "caption": "Installed a new Merbau deck in Gungahlin \u2014 ready for summer.",
           "image": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&h=1200&fit=crop&q=80",
           "permalink": ""
         },
@@ -891,7 +891,7 @@
       "on": true,
       "eyebrow": "Proof Stream",
       "heading": "Proof we're working, every day",
-      "intro": "Real jobs, real reviews, real results — straight from the team.",
+      "intro": "Real jobs, real reviews, real results \u2014 straight from the team.",
       "items": [
         {
           "on": true,
@@ -906,9 +906,9 @@
         {
           "on": true,
           "type": "review",
-          "rating": "★★★★★",
-          "text": "Fast, fair and tidy — sorted our burst pipe the same day we called.",
-          "who": "Sarah — Gungahlin",
+          "rating": "\u2605\u2605\u2605\u2605\u2605",
+          "text": "Fast, fair and tidy \u2014 sorted our burst pipe the same day we called.",
+          "who": "Sarah \u2014 Gungahlin",
           "time": "Yesterday",
           "ctaText": "Call the team",
           "ctaAction": "call"
@@ -936,16 +936,16 @@
           "title": "Roof leak found and sealed",
           "location": "Queanbeyan",
           "time": "Last week",
-          "text": "Tracked down the leak and sealed it — no more drips.",
+          "text": "Tracked down the leak and sealed it \u2014 no more drips.",
           "ctaText": "Call now",
           "ctaAction": "call"
         },
         {
           "on": true,
           "type": "review",
-          "rating": "★★★★★",
+          "rating": "\u2605\u2605\u2605\u2605\u2605",
           "text": "On time, upfront price, great work. Would use again.",
-          "who": "Mark — Belconnen",
+          "who": "Mark \u2014 Belconnen",
           "time": "Last week",
           "ctaText": "Get a quote",
           "ctaAction": "quote"
@@ -965,7 +965,7 @@
       "on": true,
       "eyebrow": "Fast quote",
       "heading": "Tell us the problem. We'll call you straight back.",
-      "sub": "Two minutes now saves you a flooded weekend. Send the details and a team member calls you — usually within the hour during the day.",
+      "sub": "Two minutes now saves you a flooded weekend. Send the details and a team member calls you \u2014 usually within the hour during the day.",
       "button": "Send & get my call back",
       "formTitle": "Get my quote",
       "formStyle": "default",
@@ -976,10 +976,10 @@
       "lblDetail": "Anything else? (optional)",
       "suburbPh": "e.g. Gungahlin",
       "detailPh": "A quick description helps us bring the right gear.",
-      "fineText": "Genuine emergency? Don't wait —",
+      "fineText": "Genuine emergency? Don't wait \u2014",
       "callText": "call us now",
       "callOn": true,
-      "successTitle": "Got it — sit tight. ✓",
+      "successTitle": "Got it \u2014 sit tight. \u2713",
       "successSub": "A team member from {{businessName}} will call you on the number you gave us. If it's an emergency, please call {{phoneText}} so we can get moving now.",
       "points": [
         {
@@ -1030,14 +1030,14 @@
     "responseCards": {
       "on": true,
       "eyebrow": "When it can't wait",
-      "heading": "Call us now — we solve this today",
+      "heading": "Call us now \u2014 we solve this today",
       "intro": "Real help, fast. Here's what you get the moment you call.",
       "cards": [
         {
           "on": true,
           "icon": "clock",
           "title": "24/7 Emergency",
-          "text": "Call any hour, day or night — someone answers."
+          "text": "Call any hour, day or night \u2014 someone answers."
         },
         {
           "on": true,
@@ -1055,7 +1055,7 @@
           "on": true,
           "icon": "shield-check",
           "title": "Fully Licensed",
-          "text": "Licensed and insured — details on every invoice."
+          "text": "Licensed and insured \u2014 details on every invoice."
         },
         {
           "on": true,
@@ -1087,21 +1087,21 @@
       "items": [
         {
           "on": true,
-          "stars": "★★★★★",
-          "text": "Called at 8am. Drain fixed by 10am. Couldn’t fault them.",
-          "who": "Sarah — Canberra"
+          "stars": "\u2605\u2605\u2605\u2605\u2605",
+          "text": "Called at 8am. Drain fixed by 10am. Couldn\u2019t fault them.",
+          "who": "Sarah \u2014 Canberra"
         },
         {
           "on": true,
-          "stars": "★★★★★",
+          "stars": "\u2605\u2605\u2605\u2605\u2605",
           "text": "Upfront price, turned up on time, cleaned up after. Rare these days.",
-          "who": "Mark — Belconnen"
+          "who": "Mark \u2014 Belconnen"
         },
         {
           "on": true,
-          "stars": "★★★★★",
-          "text": "Quoted three places — these guys were the clearest and fairest by far.",
-          "who": "Priya — Gungahlin"
+          "stars": "\u2605\u2605\u2605\u2605\u2605",
+          "text": "Quoted three places \u2014 these guys were the clearest and fairest by far.",
+          "who": "Priya \u2014 Gungahlin"
         }
       ]
     }
@@ -1119,15 +1119,15 @@
       "heading": "212 five-star reviews and counting.",
       "items": [
         {
-          "who": "Marcus T. — Belconnen",
+          "who": "Marcus T. \u2014 Belconnen",
           "text": "\"Blocked sewer on a Sunday, total panic. {{businessName}} had someone out within the hour and jetted it clear. Fixed price, no fuss.\""
         },
         {
-          "who": "Jenny K. — Woden",
+          "who": "Jenny K. \u2014 Woden",
           "text": "\"Hot water died the morning we had guests. New system in and running by lunch. Couldn't fault them.\""
         },
         {
-          "who": "Dave R. — Gungahlin",
+          "who": "Dave R. \u2014 Gungahlin",
           "text": "\"Used the drain camera to show me the tree root problem instead of just guessing. Honest and proper work.\""
         }
       ]
@@ -1144,7 +1144,7 @@
       "on": true,
       "eyebrow": "Service area",
       "heading": "Suburbs we cover across the ACT",
-      "intro": "Local, Canberra-wide coverage. Here’s where we work — if you’re nearby, get in touch."
+      "intro": "Local, Canberra-wide coverage. Here\u2019s where we work \u2014 if you\u2019re nearby, get in touch."
     },
     "serviceAreas": {
       "on": true,
@@ -1240,7 +1240,7 @@
         {
           "on": true,
           "title": "Call Us",
-          "text": "Tell us what’s going on. We’ll book a time that suits you.",
+          "text": "Tell us what\u2019s going on. We\u2019ll book a time that suits you.",
           "icon": "phone-call"
         },
         {
@@ -1264,7 +1264,7 @@
         {
           "on": true,
           "title": "Satisfaction Guaranteed",
-          "text": "We’re not happy until you are.",
+          "text": "We\u2019re not happy until you are.",
           "icon": "shield"
         }
       ]
@@ -1282,7 +1282,7 @@
       "on": true,
       "eyebrow": "What we fix",
       "heading": "One call sorts the lot.",
-      "intro": "From a slow kitchen sink to a flooded laundry at 2am — we handle the everyday and the emergencies."
+      "intro": "From a slow kitchen sink to a flooded laundry at 2am \u2014 we handle the everyday and the emergencies."
     },
     "services": [
       {
@@ -1301,7 +1301,7 @@
         "on": true,
         "icon": "wrench",
         "title": "Leak Repairs",
-        "body": "Fast leak detection and repair — no damage, no mess."
+        "body": "Fast leak detection and repair \u2014 no damage, no mess."
       },
       {
         "on": true,
@@ -1351,7 +1351,7 @@
       "eyebrow": "Active across the ACT today",
       "heading": "Canberra's most active drain cleaning team",
       "highlightText": "most active",
-      "subText": "Real jobs, all day, every day — you'll know the price before we start.",
+      "subText": "Real jobs, all day, every day \u2014 you'll know the price before we start.",
       "primaryCtaText": "Call Now",
       "primaryCtaAction": "call",
       "secondaryCtaText": "Get A Fast Quote",
@@ -1393,7 +1393,7 @@
       "eyebrow": "About us",
       "heading": "Built for {{businessName}}",
       "intro": "A short introduction that sets the scene for what follows.",
-      "content": "Use this space for a longer paragraph of text — your story, your approach, what makes you different. Add an image to the side, or leave it text-only for a clean full-width block.",
+      "content": "Use this space for a longer paragraph of text \u2014 your story, your approach, what makes you different. Add an image to the side, or leave it text-only for a clean full-width block.",
       "image": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=800&fit=crop",
       "imageLayout": "beside",
       "imageSide": "right",
@@ -1451,7 +1451,7 @@
       "on": true,
       "eyebrow": "Watch",
       "heading": "Reels from the job",
-      "intro": "Short clips from real jobs — tap a card to watch.",
+      "intro": "Short clips from real jobs \u2014 tap a card to watch.",
       "reels": [
         {
           "on": true,
@@ -1510,14 +1510,14 @@
         {
           "on": true,
           "icon": "shield-check",
-          "n": "★",
+          "n": "\u2605",
           "title": "Properly licensed",
           "body": "Fully licensed ACT plumbers, fully insured. Licence details on every invoice."
         },
         {
           "on": true,
           "icon": "home",
-          "n": "⌂",
+          "n": "\u2302",
           "title": "Local & trusted",
           "body": "Canberra-based, Canberra-owned. We know the suburbs, the soil and the old pipework."
         }
@@ -1536,7 +1536,7 @@
       "structureMode": "simple",
       "eyebrow": "Our work",
       "heading": "A gallery of completed projects",
-      "intro": "Browse a selection of recent work — mixed portrait and landscape photography arranged for a premium finish.",
+      "intro": "Browse a selection of recent work \u2014 mixed portrait and landscape photography arranged for a premium finish.",
       "supporting": "",
       "badge": "",
       "headerLayout": "centred",
@@ -1990,7 +1990,7 @@
           "on": true,
           "icon": "wallet",
           "title": "Fixed-price quotes",
-          "text": "Know the number before we start — no surprise extras."
+          "text": "Know the number before we start \u2014 no surprise extras."
         }
       ]
     }
@@ -2007,7 +2007,7 @@
       "on": true,
       "eyebrow": "Online quote",
       "heading": "Get your verified quote",
-      "intro": "Answer a few questions — verify your email to see your total, then SMS for the full breakdown.",
+      "intro": "Answer a few questions \u2014 verify your email to see your total, then SMS for the full breakdown.",
       "bg": "",
       "eyebrowColor": "",
       "headingColor": "",
@@ -2032,7 +2032,7 @@
           "placement": "belowHero",
           "style": "banner",
           "title": "Winter hot water special",
-          "description": "Book a system replacement this season — free call-out for Canberra homeowners.",
+          "description": "Book a system replacement this season \u2014 free call-out for Canberra homeowners.",
           "startDate": "2026-06-01",
           "endDate": "2026-08-31",
           "cta": {
@@ -2067,7 +2067,7 @@
       "on": true,
       "eyebrow": "Bookings",
       "heading": "Ready to book your appointment?",
-      "intro": "Pick a time that suits you — we will confirm by email or phone within one business day.",
+      "intro": "Pick a time that suits you \u2014 we will confirm by email or phone within one business day.",
       "ctaLabel": "Book now",
       "ctaHref": "#quote",
       "finePrint": "No payment required to request a time."
@@ -2093,7 +2093,7 @@
       "header": {
         "eyebrow": "Our expertise",
         "heading": "Solutions designed around your business",
-        "intro": "Explore the services, experience and practical support our team provides — structured so visitors can find what they need quickly.",
+        "intro": "Explore the services, experience and practical support our team provides \u2014 structured so visitors can find what they need quickly.",
         "colours": {
           "eyebrow": null,
           "heading": null,
@@ -2268,96 +2268,361 @@
   },
   "scrollingSponsorBanner": {
     "theme": {
-      "pipe": "#1f7a63"
+      "pipe": "#006633"
     },
-    "business": "Harbour Club",
+    "business": "Veterans Cycling",
     "sections": {
       "scrollingSponsorBanner": {
         "on": true,
         "instances": [
           {
-            "id": "demo-inst-1",
-            "adminName": "Major Sponsors",
-            "enabled": true,
-            "bannerLinksEnabled": true,
-            "heading": {
-              "eyebrow": "Partners",
-              "title": "Proudly supported by",
-              "intro": "Local brands that back our community.",
-              "align": "center",
-              "maxWidth": 720,
-              "gap": 16
-            },
+            "id": "inst-mt9y59ac2c95e",
             "tiles": [
               {
-                "id": "t1",
-                "name": "Northside",
+                "id": "tile-mta3s4k8tyiko",
+                "alt": "raklox",
+                "name": "raklox",
+                "text": "",
+                "endAt": null,
+                "image": "https://res.cloudinary.com/dzx6x1hou/image/upload/v1787749310/leadpages/c731b307-6c36-4dab-8642-fef77153b23c/scrolling-banner/image/mta3s2kdn21e3.png",
+                "textBg": "",
                 "enabled": true,
-                "image": "https://res.cloudinary.com/demo/image/upload/w_200,h_80,c_pad,b_white/sample",
-                "alt": "Northside",
+                "linkUrl": "",
+                "startAt": null,
+                "textPad": 8,
+                "imageFit": "",
+                "imagePid": "leadpages/c731b307-6c36-4dab-8642-fef77153b23c/scrolling-banner/image/mta3s2kdn21e3",
+                "imagePos": "",
+                "overlayH": "center",
+                "overlayV": "bottom",
+                "textSize": 14,
+                "linkLabel": "",
+                "textAlign": "center",
+                "textColor": "",
                 "contentMode": "image",
-                "linkEnabled": false
+                "linkEnabled": false,
+                "overlayTint": "#000000",
+                "widthOverride": null,
+                "overlayOpacity": 0.35
               },
               {
-                "id": "t2",
-                "name": "Coastal Co",
+                "id": "tile-mta3s5z6wjv9s",
+                "alt": "Westpac",
+                "name": "Westpac",
+                "text": "",
+                "endAt": null,
+                "image": "https://res.cloudinary.com/dzx6x1hou/image/upload/v1787749312/leadpages/c731b307-6c36-4dab-8642-fef77153b23c/scrolling-banner/image/mta3s4kb4nzwp.png",
+                "textBg": "",
                 "enabled": true,
-                "image": "https://res.cloudinary.com/demo/image/upload/w_200,h_80,c_pad,b_white/docs/models",
-                "alt": "Coastal Co",
+                "linkUrl": "",
+                "startAt": null,
+                "textPad": 8,
+                "imageFit": "",
+                "imagePid": "leadpages/c731b307-6c36-4dab-8642-fef77153b23c/scrolling-banner/image/mta3s4kb4nzwp",
+                "imagePos": "",
+                "overlayH": "center",
+                "overlayV": "bottom",
+                "textSize": 14,
+                "linkLabel": "",
+                "textAlign": "center",
+                "textColor": "",
                 "contentMode": "image",
-                "linkEnabled": false
+                "linkEnabled": false,
+                "overlayTint": "#000000",
+                "widthOverride": null,
+                "overlayOpacity": 0.35
               },
               {
-                "id": "t3",
-                "name": "Metro Tools",
+                "id": "tile-mta3s6wq87011",
+                "alt": "duncans",
+                "name": "duncans",
+                "text": "",
+                "endAt": null,
+                "image": "https://res.cloudinary.com/dzx6x1hou/image/upload/v1787749313/leadpages/c731b307-6c36-4dab-8642-fef77153b23c/scrolling-banner/image/mta3s5z74c4l1.png",
+                "textBg": "",
                 "enabled": true,
-                "image": "https://res.cloudinary.com/demo/image/upload/w_200,h_80,c_pad,b_white/docs/models",
-                "alt": "Metro Tools",
+                "linkUrl": "",
+                "startAt": null,
+                "textPad": 8,
+                "imageFit": "",
+                "imagePid": "leadpages/c731b307-6c36-4dab-8642-fef77153b23c/scrolling-banner/image/mta3s5z74c4l1",
+                "imagePos": "",
+                "overlayH": "center",
+                "overlayV": "bottom",
+                "textSize": 14,
+                "linkLabel": "",
+                "textAlign": "center",
+                "textColor": "",
                 "contentMode": "image",
-                "linkEnabled": false
+                "linkEnabled": false,
+                "overlayTint": "#000000",
+                "widthOverride": null,
+                "overlayOpacity": 0.35
               },
               {
-                "id": "t4",
-                "name": "Greenline",
+                "id": "tile-mta5safnrm7r6",
+                "alt": "BEAN CULTURE",
+                "name": "BEAN CULTURE",
+                "text": "",
+                "endAt": null,
+                "image": "https://res.cloudinary.com/dzx6x1hou/image/upload/v1787752911/leadpages/c731b307-6c36-4dab-8642-fef77153b23c/scrolling-banner/image/mta5x9vjal2e2.png",
+                "textBg": "",
                 "enabled": true,
-                "image": "https://res.cloudinary.com/demo/image/upload/w_200,h_80,c_pad,b_white/sample",
-                "alt": "Greenline",
+                "linkUrl": "",
+                "startAt": null,
+                "textPad": 8,
+                "imageFit": "",
+                "imagePid": "leadpages/c731b307-6c36-4dab-8642-fef77153b23c/scrolling-banner/image/mta5x9vjal2e2",
+                "imagePos": "",
+                "overlayH": "center",
+                "overlayV": "bottom",
+                "textSize": 14,
+                "linkLabel": "",
+                "textAlign": "center",
+                "textColor": "",
                 "contentMode": "image",
-                "linkEnabled": false
+                "linkEnabled": false,
+                "overlayTint": "#000000",
+                "widthOverride": null,
+                "overlayOpacity": 0.35
+              },
+              {
+                "id": "tile-mta3s815gxj3s",
+                "alt": "Ride-Technics",
+                "name": "Ride-Technics",
+                "text": "",
+                "endAt": null,
+                "image": "https://res.cloudinary.com/dzx6x1hou/image/upload/v1787749314/leadpages/c731b307-6c36-4dab-8642-fef77153b23c/scrolling-banner/image/mta3s6ws12v79.png",
+                "textBg": "",
+                "enabled": true,
+                "linkUrl": "",
+                "startAt": null,
+                "textPad": 8,
+                "imageFit": "",
+                "imagePid": "leadpages/c731b307-6c36-4dab-8642-fef77153b23c/scrolling-banner/image/mta3s6ws12v79",
+                "imagePos": "",
+                "overlayH": "center",
+                "overlayV": "bottom",
+                "textSize": 14,
+                "linkLabel": "",
+                "textAlign": "center",
+                "textColor": "",
+                "contentMode": "image",
+                "linkEnabled": false,
+                "overlayTint": "#000000",
+                "widthOverride": null,
+                "overlayOpacity": 0.35
+              },
+              {
+                "id": "tile-mta42z6tju9j9",
+                "alt": "the-district",
+                "name": "the-district",
+                "text": "",
+                "endAt": null,
+                "image": "https://res.cloudinary.com/dzx6x1hou/image/upload/v1787749815/leadpages/c731b307-6c36-4dab-8642-fef77153b23c/scrolling-banner/image/mta42wrp4h220.png",
+                "textBg": "",
+                "enabled": true,
+                "linkUrl": "",
+                "startAt": null,
+                "textPad": 8,
+                "imageFit": "",
+                "imagePid": "leadpages/c731b307-6c36-4dab-8642-fef77153b23c/scrolling-banner/image/mta42wrp4h220",
+                "imagePos": "",
+                "overlayH": "center",
+                "overlayV": "bottom",
+                "textSize": 14,
+                "linkLabel": "",
+                "textAlign": "center",
+                "textColor": "",
+                "contentMode": "image",
+                "linkEnabled": false,
+                "overlayTint": "#000000",
+                "widthOverride": null,
+                "overlayOpacity": 0.35
+              },
+              {
+                "id": "tile-mta48j2rbrq7z",
+                "alt": "Belconnen-Way",
+                "name": "Belconnen-Way",
+                "text": "",
+                "endAt": null,
+                "image": "https://res.cloudinary.com/dzx6x1hou/image/upload/v1787750075/leadpages/c731b307-6c36-4dab-8642-fef77153b23c/scrolling-banner/image/mta48hveap129.png",
+                "textBg": "",
+                "enabled": true,
+                "linkUrl": "",
+                "startAt": null,
+                "textPad": 8,
+                "imageFit": "",
+                "imagePid": "leadpages/c731b307-6c36-4dab-8642-fef77153b23c/scrolling-banner/image/mta48hveap129",
+                "imagePos": "",
+                "overlayH": "center",
+                "overlayV": "bottom",
+                "textSize": 14,
+                "linkLabel": "",
+                "textAlign": "center",
+                "textColor": "",
+                "contentMode": "image",
+                "linkEnabled": false,
+                "overlayTint": "#000000",
+                "widthOverride": null,
+                "overlayOpacity": 0.35
+              },
+              {
+                "id": "tile-mta52q2jeau2f",
+                "alt": "Tradelink",
+                "name": "Tradelink",
+                "text": "",
+                "endAt": null,
+                "image": "https://res.cloudinary.com/dzx6x1hou/image/upload/v1787751484/leadpages/c731b307-6c36-4dab-8642-fef77153b23c/scrolling-banner/image/mta52o7qg1q97.png",
+                "textBg": "",
+                "enabled": true,
+                "linkUrl": "",
+                "startAt": null,
+                "textPad": 8,
+                "imageFit": "",
+                "imagePid": "leadpages/c731b307-6c36-4dab-8642-fef77153b23c/scrolling-banner/image/mta52o7qg1q97",
+                "imagePos": "",
+                "overlayH": "center",
+                "overlayV": "bottom",
+                "textSize": 14,
+                "linkLabel": "",
+                "textAlign": "center",
+                "textColor": "",
+                "contentMode": "image",
+                "linkEnabled": false,
+                "overlayTint": "#000000",
+                "widthOverride": null,
+                "overlayOpacity": 0.35
+              },
+              {
+                "id": "tile-mta4n98hdkgyi",
+                "alt": "bike-culture",
+                "name": "bike-culture",
+                "text": "",
+                "endAt": null,
+                "image": "https://res.cloudinary.com/dzx6x1hou/image/upload/v1787750896/leadpages/c731b307-6c36-4dab-8642-fef77153b23c/scrolling-banner/image/mta4q3ej5z35t.png",
+                "textBg": "",
+                "enabled": true,
+                "linkUrl": "",
+                "startAt": null,
+                "textPad": 8,
+                "imageFit": "",
+                "imagePid": "leadpages/c731b307-6c36-4dab-8642-fef77153b23c/scrolling-banner/image/mta4q3ej5z35t",
+                "imagePos": "",
+                "overlayH": "center",
+                "overlayV": "bottom",
+                "textSize": 14,
+                "linkLabel": "",
+                "textAlign": "center",
+                "textColor": "",
+                "contentMode": "image",
+                "linkEnabled": false,
+                "overlayTint": "#000000",
+                "widthOverride": null,
+                "overlayOpacity": 0.35
+              },
+              {
+                "id": "tile-mta57arfrh37f",
+                "alt": "KEMBLA",
+                "name": "KEMBLA",
+                "text": "",
+                "endAt": null,
+                "image": "https://res.cloudinary.com/dzx6x1hou/image/upload/v1787751697/leadpages/c731b307-6c36-4dab-8642-fef77153b23c/scrolling-banner/image/mta57931k8hpg.png",
+                "textBg": "",
+                "enabled": true,
+                "linkUrl": "",
+                "startAt": null,
+                "textPad": 8,
+                "imageFit": "",
+                "imagePid": "leadpages/c731b307-6c36-4dab-8642-fef77153b23c/scrolling-banner/image/mta57931k8hpg",
+                "imagePos": "",
+                "overlayH": "center",
+                "overlayV": "bottom",
+                "textSize": 14,
+                "linkLabel": "",
+                "textAlign": "center",
+                "textColor": "",
+                "contentMode": "image",
+                "linkEnabled": false,
+                "overlayTint": "#000000",
+                "widthOverride": null,
+                "overlayOpacity": 0.35
+              },
+              {
+                "id": "tile-mtabkvh44ness",
+                "alt": "KJR_Logo",
+                "name": "KJR_Logo",
+                "text": "",
+                "endAt": null,
+                "image": "https://res.cloudinary.com/dzx6x1hou/image/upload/v1787762408/leadpages/c731b307-6c36-4dab-8642-fef77153b23c/scrolling-banner/image/mtabktjiyh0zm.png",
+                "textBg": "",
+                "enabled": true,
+                "linkUrl": "",
+                "startAt": null,
+                "textPad": 8,
+                "imageFit": "",
+                "imagePid": "leadpages/c731b307-6c36-4dab-8642-fef77153b23c/scrolling-banner/image/mtabktjiyh0zm",
+                "imagePos": "",
+                "overlayH": "center",
+                "overlayV": "bottom",
+                "textSize": 14,
+                "linkLabel": "",
+                "textAlign": "center",
+                "textColor": "",
+                "contentMode": "image",
+                "linkEnabled": false,
+                "overlayTint": "#000000",
+                "widthOverride": null,
+                "overlayOpacity": 0.35
               }
             ],
-            "motion": {
-              "scrolling": true,
-              "direction": "left",
-              "speedPxPerSec": 40,
-              "pauseOnHover": true,
-              "showPauseControl": true,
-              "staticGrid": false
-            },
             "layout": {
-              "imageHeightDesktop": 88,
-              "imageHeightMobile": 64,
-              "tileWidthDesktop": 180,
-              "tileWidthMobile": 140,
-              "gapDesktop": 24,
-              "gapMobile": 16,
-              "tilePadding": 12,
               "imageFit": "contain",
-              "imagePos": "center"
+              "imagePos": "center",
+              "gapMobile": 16,
+              "gapDesktop": 24,
+              "tilePadding": 16,
+              "tileWidthMobile": 222,
+              "tileWidthDesktop": 444,
+              "imageHeightMobile": 100,
+              "imageHeightDesktop": 161
             },
+            "motion": {
+              "direction": "left",
+              "scrolling": true,
+              "staticGrid": false,
+              "pauseOnHover": false,
+              "speedPxPerSec": 77,
+              "showPauseControl": false
+            },
+            "enabled": true,
+            "heading": {
+              "gap": 16,
+              "align": "center",
+              "intro": "",
+              "title": "Sponsors",
+              "eyebrow": "support our event",
+              "maxWidth": 720,
+              "introColor": "",
+              "titleColor": "",
+              "eyebrowColor": ""
+            },
+            "adminName": "Major Sponsors",
             "appearance": {
-              "sectionBg": "",
-              "tileBg": "",
-              "borderWidth": 0,
-              "radius": 8,
+              "padTop": 24,
+              "radius": 0,
               "shadow": false,
-              "greyscaleHover": false,
-              "edgeFade": true,
-              "edgeFadeWidth": 40,
+              "tileBg": "",
+              "edgeFade": false,
               "fullWidth": true,
-              "padTop": 20,
-              "padBottom": 20
-            }
+              "padBottom": 24,
+              "sectionBg": "",
+              "borderColor": "",
+              "borderWidth": 0,
+              "edgeFadeWidth": 48,
+              "greyscaleHover": false
+            },
+            "bannerLinksEnabled": true
           }
         ]
       }

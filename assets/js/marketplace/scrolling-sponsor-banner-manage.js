@@ -129,6 +129,43 @@
     return 'Active';
   }
 
+  function hexOk(v) {
+    v = String(v || '').trim();
+    return /^#?[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/.test(v)
+      ? (v.charAt(0) === '#' ? v : '#' + v)
+      : '';
+  }
+
+  function colorRow(id, label, value, placeholder) {
+    var v = value || '';
+    var pick = hexOk(v) || '#cccccc';
+    return (
+      '<div class="field" style="margin:0 0 12px">' +
+      '<span class="field-hint" style="display:block;margin:0 0 6px">' +
+      esc(label) +
+      '</span>' +
+      '<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">' +
+      '<input type="color" id="' +
+      id +
+      '" value="' +
+      esc(pick) +
+      '" aria-label="' +
+      esc(label) +
+      '" style="width:44px;height:38px;padding:2px;border:1px solid var(--line,#ddd);border-radius:8px;background:#fff;cursor:pointer">' +
+      '<input type="text" id="' +
+      id +
+      't" placeholder="' +
+      esc(placeholder || '#… or blank') +
+      '" value="' +
+      esc(v) +
+      '" style="flex:1;min-width:120px;max-width:220px">' +
+      '<button type="button" class="btn ghost sm" data-ssb-clr="' +
+      id +
+      '" title="Clear to theme default">↺</button>' +
+      '</div></div>'
+    );
+  }
+
   function render(body, c, api) {
     api = api || {};
     var persist = api.persist || function () {};
@@ -204,12 +241,12 @@
         ['appearance', 'Appearance'],
         ['reporting', 'Reporting']
       ];
-      var tabBtns = modeSeg(tabs, S._tab, 'data-ssb-tab', 'margin:0 0 12px;flex-wrap:wrap');
+      var tabBtns = modeSeg(tabs, S._tab, 'data-ssb-tab', 'margin:16px 0 18px;flex-wrap:wrap');
 
       var instItems = S.instances.map(function (instRow, i) {
         return [String(i), (instRow.adminName || 'Banner') + (instRow.enabled === false ? ' (off)' : '')];
       });
-      var instList = modeSeg(instItems, String(S._selInst), 'data-ssb-inst', 'margin:0 0 10px;flex-wrap:wrap');
+      var instList = modeSeg(instItems, String(S._selInst), 'data-ssb-inst', 'margin:0 0 16px;flex-wrap:wrap');
 
       var panel = '';
       if (S._tab === 'content') {
@@ -228,11 +265,11 @@
           ) +
           field('Heading max width (px)', '<input id="ssb-h-max" type="number" min="280" max="1200" value="' + esc(h.maxWidth || 720) + '">') +
           field('Heading → banner gap (px)', '<input id="ssb-h-gap" type="number" min="0" max="80" value="' + esc(h.gap != null ? h.gap : 16) + '">') +
-          '<details style="margin-top:8px"><summary>Heading colours (blank = theme)</summary>' +
-          field('Eyebrow colour', '<input id="ssb-eyebrow-c" type="text" placeholder="#…" value="' + esc(h.eyebrowColor || '') + '">') +
-          field('Title colour', '<input id="ssb-title-c" type="text" placeholder="#…" value="' + esc(h.titleColor || '') + '">') +
-          field('Intro colour', '<input id="ssb-intro-c" type="text" placeholder="#…" value="' + esc(h.introColor || '') + '">') +
-          '</details>';
+          '<h3 style="margin:18px 0 6px;font-size:1rem">Heading colours</h3>' +
+          '<p class="lede" style="margin:0 0 10px;font-size:12px">Leave blank to inherit theme text colours.</p>' +
+          colorRow('ssb-eyebrow-c', 'Eyebrow colour', h.eyebrowColor, 'Theme default') +
+          colorRow('ssb-title-c', 'Title colour', h.titleColor, 'Theme default') +
+          colorRow('ssb-intro-c', 'Intro colour', h.introColor, 'Theme default');
       } else if (S._tab === 'tiles') {
         var tiles = inst.tiles || [];
         panel =
@@ -353,9 +390,9 @@
           : '<div class="card"><h2>Scrolling Sponsor Banner</h2></div>') +
         '<div class="card" style="margin-top:12px">' +
         '<p class="lede" style="margin:0 0 10px">Independent banners (e.g. Major Sponsors, Community Partners). Place the section with <strong>Position</strong>.</p>' +
-        '<div>' +
+        '<div style="margin:0 0 6px">' +
         instList +
-        '<button type="button" class="btn ghost" id="ssb-add-inst" style="margin-top:2px">+ New banner</button></div>' +
+        '<button type="button" class="btn ghost" id="ssb-add-inst" style="margin:10px 0 4px">+ New banner</button></div>' +
         tabBtns +
         '<div id="ssb-panel">' +
         panel +
@@ -434,6 +471,40 @@
         el.addEventListener('input', fn);
       }
 
+      function wireColorField(id, key) {
+        var pick = body.querySelector('#' + id);
+        var text = body.querySelector('#' + id + 't');
+        if (!inst.heading) inst.heading = {};
+        function syncFromText() {
+          if (!text) return;
+          var v = String(text.value || '').trim();
+          inst.heading[key] = v;
+          if (pick && hexOk(v)) pick.value = hexOk(v);
+          save();
+        }
+        function syncFromPick() {
+          if (!pick || !text) return;
+          text.value = pick.value;
+          inst.heading[key] = pick.value;
+          save();
+        }
+        if (text) {
+          text.addEventListener('change', syncFromText);
+          text.addEventListener('input', syncFromText);
+        }
+        if (pick) {
+          pick.addEventListener('input', syncFromPick);
+          pick.addEventListener('change', syncFromPick);
+        }
+        body.querySelectorAll('[data-ssb-clr="' + id + '"]').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            inst.heading[key] = '';
+            if (text) text.value = '';
+            save();
+          });
+        });
+      }
+
       if (S._tab === 'content') {
         bind('ssb-admin-name', function () {
           inst.adminName = body.querySelector('#ssb-admin-name').value;
@@ -467,18 +538,9 @@
           inst.heading.gap = Number(body.querySelector('#ssb-h-gap').value) || 0;
           save();
         });
-        bind('ssb-eyebrow-c', function () {
-          inst.heading.eyebrowColor = body.querySelector('#ssb-eyebrow-c').value;
-          save();
-        });
-        bind('ssb-title-c', function () {
-          inst.heading.titleColor = body.querySelector('#ssb-title-c').value;
-          save();
-        });
-        bind('ssb-intro-c', function () {
-          inst.heading.introColor = body.querySelector('#ssb-intro-c').value;
-          save();
-        });
+        wireColorField('ssb-eyebrow-c', 'eyebrowColor');
+        wireColorField('ssb-title-c', 'titleColor');
+        wireColorField('ssb-intro-c', 'introColor');
       }
 
       if (S._tab === 'tiles') {
