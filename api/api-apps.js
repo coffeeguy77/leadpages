@@ -98,6 +98,26 @@ const PROMOTIONS_APP = {
   updated_at: new Date().toISOString()
 };
 
+const SCROLLING_SPONSOR_BANNER_APP = {
+  name: 'Scrolling Sponsor Banner',
+  slug: 'scrolling-sponsor-banner',
+  section_key: 'scrollingSponsorBanner',
+  tier: 'free',
+  price_monthly_aud: 0,
+  price_annual_aud: 0,
+  tagline: 'Sponsors and partners, always in motion',
+  description:
+    'Display sponsors, partners and brands in a seamless scrolling banner with optional '
+    + 'links, text overlays and custom styling. Multiple named banners per site.',
+  default_position: 'upper',
+  marketplace_status: 'live',
+  builder_visible: true,
+  can_reposition: true,
+  hero_exclusive: false,
+  sort_order: 78,
+  updated_at: new Date().toISOString()
+};
+
 const STALE_PROMOTIONS_SECTION_KEYS = ['promotions-hero', 'promotions-inline'];
 
 async function ensureLpAccessibilityApp() {
@@ -201,6 +221,39 @@ async function ensureCustomHtmlApp() {
       tier: row.tier,
       price_monthly_aud: row.price_monthly_aud,
       price_annual_aud: row.price_annual_aud,
+      default_position: row.default_position,
+      marketplace_status: 'live',
+      builder_visible: true,
+      can_reposition: true,
+      hero_exclusive: false,
+      sort_order: row.sort_order,
+      updated_at: row.updated_at
+    }).eq('id', existing.id);
+  }
+}
+
+async function ensureScrollingSponsorBannerApp() {
+  const row = Object.assign({}, SCROLLING_SPONSOR_BANNER_APP, { updated_at: new Date().toISOString() });
+  const { data: existing } = await sb.from('app_registry')
+    .select('id,marketplace_status,builder_visible,default_position,name')
+    .eq('section_key', 'scrollingSponsorBanner')
+    .maybeSingle();
+  if (!existing) {
+    await sb.from('app_registry').upsert(row, { onConflict: 'slug' });
+    return;
+  }
+  if (
+    existing.marketplace_status !== 'live' ||
+    existing.builder_visible !== true ||
+    existing.default_position !== row.default_position ||
+    existing.name !== row.name
+  ) {
+    await sb.from('app_registry').update({
+      name: row.name,
+      slug: row.slug,
+      tagline: row.tagline,
+      description: row.description,
+      tier: row.tier,
       default_position: row.default_position,
       marketplace_status: 'live',
       builder_visible: true,
@@ -320,12 +373,14 @@ module.exports = async (req, res) => {
       await ensureSearchCanvasApp();
       await ensureCustomHtmlApp();
       await ensurePromotionsApp();
+      await ensureScrollingSponsorBannerApp();
     }
     // Public marketplace list should also auto-register SearchCanvas / Custom HTML / Promotions once.
     if (!all && !slug) {
       try { await ensureSearchCanvasApp(); } catch (_e) { /* non-fatal */ }
       try { await ensureCustomHtmlApp(); } catch (_e) { /* non-fatal */ }
       try { await ensurePromotionsApp(); } catch (_e) { /* non-fatal */ }
+      try { await ensureScrollingSponsorBannerApp(); } catch (_e) { /* non-fatal */ }
     }
     const {data:apps,error:ae} = await q;
     if (ae) return res.status(500).json({error:ae.message});

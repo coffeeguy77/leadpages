@@ -3272,5 +3272,50 @@
         }
       }
     ]
+  },
+  "scrollingSponsorBanner": {
+    "name": "Scrolling Sponsor Banner",
+    "tagline": "Sponsors and partners, always in motion",
+    "summary": "Display sponsors, partners and brands in a seamless scrolling banner with optional links, text overlays and custom styling.",
+    "hero_image_url": "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=1400&h=560&fit=crop&q=80",
+    "badge": null,
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Scrolling Sponsor Banner",
+          "text": "Show sponsors, partners, accreditations and brands in a seamless horizontal loop — or a static wrapping grid. Multiple named banners per site (Major Sponsors, Community Partners, Brands We Stock)."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "Key features",
+          "items": [
+            {
+              "title": "Named instances",
+              "text": "Add several independent banners on one site without reinstalling."
+            },
+            {
+              "title": "Scheduling",
+              "text": "Optional start and end times per tile with Active / Scheduled / Expired status."
+            },
+            {
+              "title": "Click reporting",
+              "text": "Sponsor link activations record through the existing events pipeline."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "section_key": "scrollingSponsorBanner",
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
   }
 }

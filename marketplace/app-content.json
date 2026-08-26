@@ -1732,5 +1732,38 @@
       "four-service-tabs",
       "blank"
     ]
+  },
+  "scrollingSponsorBanner": {
+    "name": "Scrolling Sponsor Banner",
+    "tagline": "Sponsors and partners, always in motion",
+    "summary": "Display sponsors, partners and brands in a seamless scrolling banner with optional links, text overlays and custom styling.",
+    "pitch": "Keep partner logos moving without hacking a custom carousel into every client site.",
+    "features": [
+      {
+        "title": "Seamless loop",
+        "text": "Measured travel distance keeps speed consistent as tiles change."
+      },
+      {
+        "title": "Heading + tiles",
+        "text": "Optional eyebrow, title and intro above logo or promo tiles."
+      },
+      {
+        "title": "Accessibility",
+        "text": "Pause control, reduced-motion grid and clone-safe keyboard focus."
+      }
+    ],
+    "partnerBenefits": [
+      {
+        "title": "Reusable",
+        "text": "Works for trades, clubs, retailers and agencies alike."
+      },
+      {
+        "title": "Multi-banner",
+        "text": "Major Sponsors and Community Partners as separate instances."
+      }
+    ],
+    "presets": [
+      "default"
+    ]
   }
 }

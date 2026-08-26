@@ -551,6 +551,21 @@ function _pgOpenLightbox(idx, PG){
   }
 }
 
+
+      try{
+        var __SSB=SEC.scrollingSponsorBanner||{};
+        var __ssbNode=document.querySelector('[data-sec="scrollingSponsorBanner"]');
+        if(__ssbNode){
+          if(__SSB.on===true && window.LpScrollingSponsorBanner){
+            window.LpScrollingSponsorBanner.mount(__ssbNode, __SSB, {preview:false});
+          } else {
+            if(window.LpScrollingSponsorBanner) window.LpScrollingSponsorBanner.destroy(__ssbNode);
+            __ssbNode.style.display='none';
+            __ssbNode.innerHTML='';
+          }
+        }
+      }catch(__ssbErr){}
+
 function applyCfg(C){
     C=C||{}; var th=C.theme||{};
     var __lay=(C.layout&&typeof C.layout==='string')?C.layout:'classic'; if(__lay!=='classic'&&__lay!=='quote-first'&&__lay!=='photo-proof'&&__lay!=='emergency-response'&&__lay!=='authority-builder'&&__lay!=='service-area-dominator'&&__lay!=='reviews-first'&&__lay!=='premium-showcase'&&__lay!=='offer-funnel'&&__lay!=='ba-hero-slider'&&__lay!=='hero-image-slider'&&__lay!=='social-proof-feed') __lay='classic'; try{ var __de=document.documentElement; var __cl=(__de.className||'').split(' ').filter(function(x){return x && x.indexOf('layout-')!==0;}); __cl.push('layout-'+__lay); __de.className=__cl.join(' '); }catch(e){}
@@ -1716,7 +1731,7 @@ function applyCfg(C){
     /* preview-only section name labels (backend preview iframe carries ?preview=; never the live site) */
     try{
       var __PV=false; try{ __PV=/[?&]preview=/.test(location.search); }catch(_p){}
-      var __LB={emerg:'Top Bar',hero:'Hero',heroSlider:'Hero Slider',heroBeforeAfter:'Hero Before/After Slider',trustBar:'Trust Bar',services:'Services',serviceProcess:'How It Works Steps',featureStrip:'Feature Strip',why:'Why Us',area:'Service Area',reviews:'Reviews',promotions:'Promotions',certifications:'Certifications',finance:'Finance Options',estimateBuilder:'Estimate Builder',onlineQuote:'Online Quote',customHtml:'Custom HTML',searchCanvas:'SearchCanvas',serviceAreaMap:'Service Area Map',emergencyAvailability:'Emergency Availability',crew:'Team Members',quote:'Quote Form',faq:'FAQ',footer:'Footer',beforeAfter:'Before & After',responseCards:'Response Cards',projectStats:'Project Stats',serviceAreas:'Service Areas',reviewHighlights:'Review Highlights',featuredProjects:'Project Portfolio',premiumGallery:'Premium Gallery',specialOffer:'Special Offer',splitHero:'Split Hero',activityCounter:'Activity Counter',proofStream:'Proof Stream',projectFeed:'Project Feed',jobsFeed:'Jobs Feed',beforeAfterFeed:'Before/After Feed',videoReels:'Video Reels',activityTimeline:'Activity Timeline',customerReactions:'Customer Reactions',textBox:'Text Box'};
+      var __LB={emerg:'Top Bar',hero:'Hero',heroSlider:'Hero Slider',heroBeforeAfter:'Hero Before/After Slider',trustBar:'Trust Bar',scrollingSponsorBanner:'Scrolling Sponsor Banner',services:'Services',serviceProcess:'How It Works Steps',featureStrip:'Feature Strip',why:'Why Us',area:'Service Area',reviews:'Reviews',promotions:'Promotions',certifications:'Certifications',finance:'Finance Options',estimateBuilder:'Estimate Builder',onlineQuote:'Online Quote',customHtml:'Custom HTML',searchCanvas:'SearchCanvas',serviceAreaMap:'Service Area Map',emergencyAvailability:'Emergency Availability',crew:'Team Members',quote:'Quote Form',faq:'FAQ',footer:'Footer',beforeAfter:'Before & After',responseCards:'Response Cards',projectStats:'Project Stats',serviceAreas:'Service Areas',reviewHighlights:'Review Highlights',featuredProjects:'Project Portfolio',premiumGallery:'Premium Gallery',specialOffer:'Special Offer',splitHero:'Split Hero',activityCounter:'Activity Counter',proofStream:'Proof Stream',projectFeed:'Project Feed',jobsFeed:'Jobs Feed',beforeAfterFeed:'Before/After Feed',videoReels:'Video Reels',activityTimeline:'Activity Timeline',customerReactions:'Customer Reactions',textBox:'Text Box'};
       if(!__PV){ document.querySelectorAll('.lp-seclabel').forEach(function(__x){ __x.remove(); }); }
       else{
         if(!document.getElementById('lp-seclabel-css')){ var __st=document.createElement('style'); __st.id='lp-seclabel-css'; __st.textContent='.lp-seclabel{position:absolute;top:0;left:0;z-index:99999;background:#111;color:#fff;font:700 11px/1.2 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;letter-spacing:.04em;text-transform:uppercase;padding:4px 9px;border-radius:0 0 9px 0;pointer-events:none;opacity:.94;box-shadow:0 2px 8px rgba(0,0,0,.35);max-width:92%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'; document.head.appendChild(__st); }
