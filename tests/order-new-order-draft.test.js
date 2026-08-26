@@ -113,9 +113,10 @@ test('orders.html layout: fullscreen left-nav steps, no permanent right panel', 
   assert.match(html, />CLIENT</);
   assert.match(html, /no-nav-client-prefix/);
   assert.match(html, /no-nav-client-phone/);
-  assert.match(html, /no-fast-head/);
-  assert.match(html, /no-fast-toolbar/);
+  assert.match(html, /no-fast-line/);
+  assert.match(css, /flex-wrap:\s*wrap/);
   assert.doesNotMatch(html, /class="no-fast-actions"/);
+  assert.doesNotMatch(css, /overflow-x:\s*auto[\s\S]*\.no-cat-pills|\.no-cat-pills\{[^}]*overflow-x:\s*auto/);
 
   // Fullscreen hides top tabs; tabs lose pink fill
   assert.match(css, /\.no-mode-fullscreen \.no-workflow-tabs/);
