@@ -52,9 +52,8 @@
 .no-emb-cart-chip{flex:0 0 auto}
 
 .no-cat-pills{
-  display:flex;flex-wrap:nowrap;gap:6px;overflow-x:auto;overflow-y:hidden;
-  padding:2px 0 10px;margin:0 0 8px;-webkit-overflow-scrolling:touch;
-  scrollbar-width:thin;
+  display:flex;flex-wrap:wrap;gap:6px;overflow:visible;
+  padding:2px 0 8px;margin:0 0 8px;
 }
 .no-cat-pills .no-cat-pill{
   flex:0 0 auto;white-space:nowrap;padding:6px 12px;min-height:36px;
@@ -161,8 +160,8 @@
 .no-mode-mobile .no-emb-cart-chip{display:none!important}
 .no-mode-mobile .no-cart-pay{grid-template-columns:1fr}
 
-/* Product rows — compact head + toolbar (Add beside name, not full-width bar) */
-.no-fast-head,.no-fast-toolbar,.no-fast-list,.no-fast-row,.no-products-col,.no-main,.no-card{
+/* Product rows — single compact line: name | kg/qty | Notes | Add */
+.no-fast-line,.no-fast-list,.no-fast-row,.no-products-col,.no-main,.no-card{
   min-width:0;max-width:100%;box-sizing:border-box;
 }
 #view-new,#view-new .card.no-card,#new-order-form,#no-workspace{width:100%;max-width:100%;min-width:0;box-sizing:border-box}
@@ -177,6 +176,11 @@ body.embed #no-fast-wrap,
 body.embed .no-fast-list,
 body.embed .no-fast-row{
   min-width:0;max-width:100%;width:100%;box-sizing:border-box;
+}
+
+@container no-workspace (max-width: 720px){
+  .no-fast-line{flex-wrap:wrap}
+  .no-fast-info{flex:1 1 100%}
 }
 
 .no-sheet{
