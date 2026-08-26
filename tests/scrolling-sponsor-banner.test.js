@@ -146,6 +146,14 @@ test('trade template inline script parses (no broken OPTV splice)', function () 
   }
 });
 
+test('SSB page editor uses shared manage button patterns', function () {
+  const manageJs = fs.readFileSync(path.join(root, 'assets/js/marketplace/scrolling-sponsor-banner-manage.js'), 'utf8');
+  assert.match(manageJs, /sec-modeseg/);
+  assert.match(manageJs, /data-ssb-tab/);
+  assert.match(manageJs, /btn ghost/);
+  assert.ok(!manageJs.includes('btn solid'), 'page editor should not use undefined btn solid class');
+});
+
 test('SSB pause control uses shared btn styling', function () {
   const js = fs.readFileSync(path.join(root, 'assets/lp-scrolling-sponsor-banner.js'), 'utf8');
   const css = fs.readFileSync(path.join(root, 'assets/lp-scrolling-sponsor-banner.css'), 'utf8');
