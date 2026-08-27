@@ -83,7 +83,10 @@ assert.ok(responsive.includes('.lp-quote-kv-row'), 'mobile quote kv tweaks');
 assert.ok(manage.includes('lp-lead-card-main'), 'row uses main/identity layout');
 assert.ok(manage.includes('_dashLeadViewBtnHtml'), 'view button label helper');
 assert.ok(manage.includes('dash-lead-view-short'), 'short label markup');
-assert.ok(manage.includes('leads-mobile-inbox-1'), 'cache-bust for leads mobile CSS');
+assert.ok(manage.includes('dash-lead-del-row'), 'row delete control');
+assert.ok(manage.includes('dash-leads-bulk-del'), 'bulk spam delete control');
+assert.ok(manage.includes('leads-backups-fix-1'), 'cache-bust for leads/backups CSS');
+assert.ok(themes.includes('grid-template-columns: minmax(0, 1fr) auto auto'), 'desktop inbox grid with delete');
 
 // Ingest respects blocklist
 assert.ok(leadsApi.includes('isLeadBlocked'), 'website leads check blocklist');

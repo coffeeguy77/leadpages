@@ -37,9 +37,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/lp-themes.css?v=leads-mobile-inbox-1">
+<link rel="stylesheet" href="/assets/lp-themes.css?v=leads-backups-fix-1">
 <link rel="stylesheet" href="/assets/lp-messages-embed.css">
-<link rel="stylesheet" href="/assets/lp-admin-responsive.css?v=leads-mobile-inbox-1">
+<link rel="stylesheet" href="/assets/lp-admin-responsive.css?v=leads-backups-fix-1">
 <link rel="stylesheet" href="/assets/lp-quote-builder.css?v=oq-portal-style-1">
 <style>
 :root{
@@ -16013,6 +16013,7 @@ function heroCtaCard(c){
       +'<div class="dash-leads-menu" id="dash-leads-menu" role="menu">'
       +'<div class="dash-leads-filters" id="dash-leads-filters" role="tablist" aria-label="Lead filters"></div>'
       +'<button type="button" class="btn ghost dash-leads-spam-btn" id="dash-leads-spam" data-dash-filter="spam" role="menuitem">Spam</button>'
+      +'<button type="button" class="btn ghost dash-leads-bulk-del" id="dash-leads-bulk-del" role="menuitem" hidden>Delete spam</button>'
       +'<button type="button" class="btn ghost" id="dash-leads-refresh" role="menuitem">Refresh</button>'
       +'</div></div></div>'
       +'<div id="dash-leads-spam-panel" class="dash-leads-spam-panel" hidden></div>'
@@ -16133,6 +16134,11 @@ function heroCtaCard(c){
     });
     var dlSpam=document.getElementById('dash-leads-spam');
     if(dlSpam) dlSpam.addEventListener('click',function(){ _dashLeadsSetFilter('spam'); });
+    var dlBulkDel=document.getElementById('dash-leads-bulk-del');
+    if(dlBulkDel) dlBulkDel.addEventListener('click',function(){
+      _dashLeadsCloseMenu();
+      _dashLeadDeleteBulk();
+    });
     var dlCog=document.getElementById('dash-leads-cog');
     if(dlCog) dlCog.addEventListener('click',function(e){
       e.preventDefault();
@@ -16185,7 +16191,7 @@ function heroCtaCard(c){
         return;
       }
       var delBtn=e.target.closest('[data-dash-lead-del]');
-      if(delBtn){ _dashLeadDelete(delBtn.getAttribute('data-dash-lead-del')); return; }
+      if(delBtn){ e.preventDefault(); e.stopPropagation(); _dashLeadDelete(delBtn.getAttribute('data-dash-lead-del')); return; }
       var spamBtn=e.target.closest('[data-dash-lead-spam]');
       if(spamBtn){ _dashLeadMarkSpam(spamBtn.getAttribute('data-dash-lead-spam')); return; }
       var btn=e.target.closest('[data-dash-lead]'); if(!btn) return;
@@ -16527,6 +16533,17 @@ function heroCtaCard(c){
     _dashLeadsCloseMenu();
     _dashLeadsPaint();
   }
+  function _dashLeadsSyncBulkDelBtn(){
+    var btn=document.getElementById('dash-leads-bulk-del');
+    if(!btn) return;
+    var spamRows=(DASH_LEADS.rows||[]).filter(function(l){ return (l.status||'')==='spam'; });
+    if(DASH_LEADS.filter==='spam' && spamRows.length){
+      btn.hidden=false;
+      btn.textContent='Delete all spam ('+spamRows.length+')';
+    } else {
+      btn.hidden=true;
+    }
+  }
   async function _dashLeadsDetectQuote(siteId){
     DASH_LEADS.quoteEnabled=false;
     if(window.LPONLINEQUOTE&&LPONLINEQUOTE.siteId===siteId&&LPONLINEQUOTE.config&&LPONLINEQUOTE.config.admin){
@@ -16605,6 +16622,7 @@ function heroCtaCard(c){
       +(isSpam?'<span class="lp-badge-new dash-lead-spam-badge">SPAM</span>':'')
       +'</div></div>'
       +'<button type="button" data-dash-lead="'+esc(l.id)+'" class="ll-view lp-btn-stroke dash-lead-view" aria-expanded="false">'+_dashLeadViewBtnHtml(false)+'</button>'
+      +'<button type="button" class="dash-lead-del-row" data-dash-lead-del="'+esc(l.id)+'" aria-label="Delete lead" title="Delete lead">\u00d7</button>'
       +'</div>'
       +'<div class="lp-lead-card-actions">'
       +(phone?'<a class="dash-lead-phone" href="tel:'+phone+'">'+phone+'</a>':'')
@@ -16623,6 +16641,7 @@ function heroCtaCard(c){
     var panel=document.getElementById('dash-leads-spam-panel');
     _dashLeadsRenderFilters();
     _dashLeadsUpdateDot();
+    _dashLeadsSyncBulkDelBtn();
     if(DASH_LEADS.filter==='spam'){
       if(panel){ panel.hidden=false; panel.innerHTML=_dashLeadsSpamPanelHtml(); }
       _dashLeadWireCountryAutocomplete();
@@ -16649,6 +16668,22 @@ function heroCtaCard(c){
       DASH_LEADS.rows=(DASH_LEADS.rows||[]).filter(function(l){ return String(l.id)!==String(id); });
       _dashLeadsPaint();
       if(typeof toast==='function') toast('Lead deleted');
+    }catch(e){ if(typeof toast==='function') toast('Could not delete: '+((e&&e.message)||e)); }
+  }
+  async function _dashLeadDeleteBulk(){
+    var rows=(DASH_LEADS.rows||[]).filter(function(l){ return (l.status||'')==='spam'; });
+    if(!rows.length){
+      if(typeof toast==='function') toast('No spam leads to delete');
+      return;
+    }
+    if(!confirm('Permanently delete '+rows.length+' spam lead(s)? This cannot be undone.')) return;
+    try{
+      var ids=rows.map(function(l){ return l.id; });
+      var r=await sb.from('leads').delete().in('id', ids);
+      if(r.error) throw r.error;
+      DASH_LEADS.rows=(DASH_LEADS.rows||[]).filter(function(l){ return ids.indexOf(l.id)<0; });
+      _dashLeadsPaint();
+      if(typeof toast==='function') toast('Deleted '+ids.length+' spam lead(s)');
     }catch(e){ if(typeof toast==='function') toast('Could not delete: '+((e&&e.message)||e)); }
   }
   async function _dashLeadMarkSpam(id){
