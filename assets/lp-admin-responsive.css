@@ -1151,7 +1151,7 @@ body.lp-dock-full.lp-prev-open .lp-shell-menu {
     gap: 6px;
   }
   .dash-leads-list.is-scroll {
-    max-height: calc(10 * 56px);
+    max-height: min(70vh, 640px);
   }
   .lp-dash-row,
   .dash-lead-row {
