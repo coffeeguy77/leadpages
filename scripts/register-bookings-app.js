@@ -20,11 +20,17 @@ async function main() {
     slug: 'bookings',
     name: 'Bookings',
     section_key: 'bookingStorefront',
+    tagline: 'Appointments, classes and visits',
     description: 'Appointments, classes, on-site visits and resource hire — native LeadPages scheduling.',
-    tier: 'default',
+    tier: 'free',
+    price_monthly_aud: 0,
+    price_annual_aud: 0,
     default_position: 'mid',
     marketplace_status: 'live',
-    category: 'Lead Capture & Conversion'
+    builder_visible: true,
+    can_reposition: true,
+    hero_exclusive: false,
+    sort_order: 88
   };
   const { data: existing } = await sb.from('app_registry').select('id').eq('slug', 'bookings').maybeSingle();
   if (existing) {

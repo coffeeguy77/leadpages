@@ -123,7 +123,13 @@ body.embed .nav h1{font-size:13px}
     if(state.token) headers.Authorization='Bearer '+state.token;
     var r=await fetch(path, Object.assign({}, opts, { headers:headers }));
     var j=await r.json().catch(function(){return {};});
-    if(!r.ok) throw Object.assign(new Error(j.message||j.error||('HTTP '+r.status)), { status:r.status, body:j });
+    if(!r.ok){
+      var msg=j.message||j.error||('HTTP '+r.status);
+      if(j.error==='schema_missing' || /schema_missing|bookings_schema_missing/i.test(msg)){
+        msg='Bookings database is not installed yet. Ask a super-admin to open /api/bookings/bootstrap (or run db/bookings_schema.sql in Supabase).';
+      }
+      throw Object.assign(new Error(msg), { status:r.status, body:j });
+    }
     return j;
   }
 
