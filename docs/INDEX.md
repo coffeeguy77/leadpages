@@ -136,6 +136,7 @@ Short summary of every engineering document in `docs/`.
 | [04-SITE-BUILDER](04-SITE-BUILDER.md) | Site Builder | Site creation, trade packs, `service_packs`, editing model, persistence tiers, publish vs go-live, partner flows. |
 | [05-PARTNERS](05-PARTNERS.md) | Partner System | Partner tables, APIs, showcase, buy-site, commissions, client transfer, HTML surfaces. |
 | [06-DOMAINS](06-DOMAINS.md) | Domain System | Dreamscape integration, purchase flow, DNS, `custom_domain` routing, `manage-domains.html`. |
+| [features/AI Domain Finder](features/AI%20Domain%20Finder.md) | AI Domain Finder | Generate → check availability → rank available names; OpenAI via Brain; AU TLDs. |
 | [07-TRACKING](07-TRACKING.md) | Tracking & Analytics | `trackEvent`, `events` table, `/api/stats`, dashboard `ANA` object, analytics UI in editor. |
 | [features/Google Ads](features/Google%20Ads.md) | Google Ads (v1) | OAuth connect, session attribution (gclid/UTMs), conversion upload, Advertising dashboard, metrics sync. |
 | [features/Ads Campaign Builder](features/Ads%20Campaign%20Builder.md) | Ads Smart Campaign Builder | Flag-gated plan → paused create, readiness, GTM inspect; extends Ads without replacing sync/conversions. |
@@ -196,6 +197,7 @@ Short summary of every engineering document in `docs/`.
 | **Billing / Stripe** | [01-ARCHITECTURE](01-ARCHITECTURE.md) §14 | [05-PARTNERS](05-PARTNERS.md) § Commissions | `api/billing/*` |
 | **Order Engine / ordering** | [features/Order Engine](features/Order%20Engine.md) | [02-DATABASE](02-DATABASE.md) | `lib/order/*`, `api/order/*`, `orders.html`, `order-shop.html`, `order-portal.html`, `assets/lp-order-storefront.js`, `db/order_engine_*.sql` |
 | **Domains / DNS** | [06-DOMAINS](06-DOMAINS.md) | [01-ARCHITECTURE](01-ARCHITECTURE.md) §12 | `dreamscape.js`, `api/domains/*` |
+| **AI Domain Finder** | [features/AI Domain Finder](features/AI%20Domain%20Finder.md) | [AI/00-STATUS](AI/00-STATUS.md) | `lib/domain-finder/`, `api/domain-finder/*` |
 | **Marketplace apps** | [01-ARCHITECTURE](01-ARCHITECTURE.md) | [10-EDITOR](10-EDITOR.md) § Marketplace | `api/api-apps.js`, `api-site-apps.js` |
 | **Public marketplace V2** | [features/Marketplace-Public-V2](features/Marketplace-Public-V2.md) | [features/Marketplace](features/Marketplace.md) | `marketplace.html`, `marketplace-feature.html`, `assets/js/marketplace/*`, `playground/trustbar-*.json` |
 | **Images / Cloudinary** | [01-ARCHITECTURE](01-ARCHITECTURE.md) §14 | [10-EDITOR](10-EDITOR.md) | `api/cloudinary/*` |
@@ -420,6 +422,7 @@ Detail: [03-TEMPLATE-SYSTEM](03-TEMPLATE-SYSTEM.md)
 | `/partners-admin` | `partners-admin.html` | Super-admin partners |
 | `/billing` | `billing.html` | Billing UI |
 | `/manage-domains.html` | `manage-domains.html` | Domain & DNS manager |
+| `/domain-finder` | `domain-finder.html` | AI Domain Finder (names you can register) |
 | `/marketplace-admin` | `marketplace-admin.html` | Marketplace admin |
 | `/apps-admin` | `apps-admin.html` | App schema admin |
 | `/messages` | `messages.html` | Partner↔client messaging |

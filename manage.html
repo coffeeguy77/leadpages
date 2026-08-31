@@ -9945,6 +9945,17 @@ function heroCtaCard(c){
       });
       bar.insertBefore(dbn, dl);
     }
+    if(!$('btn-domain-finder')){
+      const dfn=document.createElement('button'); dfn.className='btn ghost'; dfn.id='btn-domain-finder';
+      dfn.textContent='Domain Finder';
+      dfn.title='Find a name you can actually register';
+      dfn.addEventListener('click',function(){
+        var q='/domain-finder';
+        if(currentSiteId) q+='?site='+encodeURIComponent(currentSiteId);
+        window.open(q,'_blank','noopener');
+      });
+      bar.insertBefore(dfn, dl);
+    }
     if(currentRole==='super' && !$('btn-switch')){
       const sw=document.createElement('button'); sw.className='btn ghost'; sw.id='btn-switch';
       sw.textContent='Switch Account'; sw.addEventListener('click',function(){ showLanding(); });
@@ -10050,6 +10061,7 @@ function heroCtaCard(c){
     mv('btn-appearance-aa', tools);
     mv('btn-billing', tools);
     mv('btn-domains', tools);
+    mv('btn-domain-finder', tools);
     if(!$('lpc-scope')){ var sc=document.createElement('button'); sc.className='btn ghost lp-drawer-phone-hide'; sc.id='lpc-scope'; sc.type='button'; sc.textContent='Scope'; sc.addEventListener('click',function(){ if(typeof lpScopeOpen==='function') lpScopeOpen(); }); tools.appendChild(sc); }
     mv('lpc-scope', tools);
     if(!$('lpc-backups')){ var bk=document.createElement('button'); bk.className='btn ghost lp-drawer-phone-hide'; bk.id='lpc-backups'; bk.type='button'; bk.textContent='Backups'; bk.addEventListener('click',function(){ if(typeof lpBkOpen==='function') lpBkOpen(); }); tools.appendChild(bk); }

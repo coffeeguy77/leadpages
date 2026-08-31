@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Domain Finder — LeadPages</title>
+<link rel="icon" type="image/x-icon" href="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico">
+<meta name="robots" content="noindex">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/lp-themes.css">
+<link rel="stylesheet" href="/assets/lp-admin-responsive.css">
+<script src="/assets/lp-workspace-appearance.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
+<style>
+:root{--font-display:'Fraunces',Georgia,serif;--font-ui:'DM Sans',system-ui,sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg,#f4f6f8);color:var(--ink,#15191e);font-family:var(--font-ui)}
+.wrap{padding:22px 20px 64px;max-width:1120px;margin:0 auto}
+.hidden{display:none!important}
+.login-card{max-width:420px;margin:12vh auto;padding:28px;border:1px solid var(--line,#e6e8ec);border-radius:16px;background:var(--surface,#fff)}
+.field{margin:0 0 14px}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--ink-soft,#5b6571);margin:0 0 5px}
+.field input,.field select,.field textarea{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--line-strong,#d5d9df);background:var(--input-bg,#fff);color:var(--ink);font:inherit}
+.field textarea{min-height:120px;resize:vertical;line-height:1.45}
+.btn{appearance:none;border:1px solid var(--accent,#155c4a);background:transparent;color:var(--accent,#155c4a);font:600 13px/1 var(--font-ui);padding:11px 16px;border-radius:10px;cursor:pointer;margin:0 8px 8px 0}
+.btn.solid{background:var(--accent,#155c4a);color:#fff}
+.btn.ghost{border-color:var(--line-strong,#d5d9df);color:var(--ink-soft,#5b6571)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.sm{padding:7px 11px;font-size:12px}
+.hero{margin:0 0 22px}
+.hero h1{margin:0 0 8px;font-family:var(--font-display);font-size:clamp(1.7rem,3vw,2.2rem);letter-spacing:-.02em}
+.hero p{margin:0;color:var(--ink-soft,#5b6571);font-size:15px;line-height:1.5;max-width:54ch}
+.card{padding:18px 20px;border:1px solid var(--line,#e6e8ec);border-radius:14px;background:var(--surface,#fff);margin-bottom:16px}
+.card h2{margin:0 0 6px;font-size:1.05rem}
+.sub{margin:0 0 12px;color:var(--ink-soft,#5b6571);font-size:13px;line-height:1.45}
+.details{border-top:1px solid var(--line,#e6e8ec);margin-top:14px;padding-top:12px}
+.details summary{cursor:pointer;font-weight:600;font-size:13px;color:var(--ink-soft)}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.tag{display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:999px;background:color-mix(in srgb,var(--accent,#155c4a) 12%,transparent);font-size:12px;font-weight:600}
+.tag button{border:0;background:none;cursor:pointer;font-size:14px;line-height:1;color:inherit}
+.layout{display:grid;grid-template-columns:minmax(280px,380px) minmax(0,1fr);gap:18px;align-items:start}
+@media(max-width:900px){.layout{grid-template-columns:1fr}}
+.progress{list-style:none;margin:0;padding:0}
+.progress li{padding:8px 0;border-bottom:1px solid var(--line,#eef0f3);font-size:13.5px;display:flex;gap:8px;align-items:flex-start}
+.progress .st{width:18px;flex:none;font-weight:700}
+.progress .active{color:var(--accent,#155c4a)}
+.featured{padding:20px;border:2px solid color-mix(in srgb,var(--accent,#155c4a) 45%,transparent);border-radius:16px;background:color-mix(in srgb,var(--accent,#155c4a) 6%,#fff);margin-bottom:16px}
+.featured .domain{font-family:var(--font-display);font-size:clamp(1.4rem,2.5vw,1.9rem);margin:6px 0;word-break:break-word}
+.badge{display:inline-flex;padding:3px 8px;border-radius:999px;font-size:11px;font-weight:800;background:color-mix(in srgb,var(--accent,#155c4a) 16%,transparent);color:var(--accent,#155c4a)}
+.avail{color:#15803d;font-weight:700;font-size:12.5px}
+.score{font-size:13px;font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.dcard{padding:14px 15px;border:1px solid var(--line,#e6e8ec);border-radius:12px;background:#fff;display:flex;flex-direction:column;gap:8px;min-width:0}
+.dcard h3{margin:0;font-size:15px;word-break:break-word}
+.dcard .dom{font-size:13px;color:var(--ink-soft);word-break:break-word}
+.dcard .why{font-size:12.5px;line-height:1.4;color:var(--ink-soft);flex:1}
+.tlds{font-size:12px;color:var(--ink-soft)}
+.msg{font-size:13px;margin:8px 0 0}
+.msg.bad{color:#b91c1c}
+.msg.ok{color:#15803d}
+.legal{font-size:11.5px;color:var(--ink-faint,#8a93a0);line-height:1.4;margin-top:10px}
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+.filters select{padding:7px 10px;border-radius:8px;border:1px solid var(--line-strong);font:inherit;font-size:12.5px}
+.topbar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start;margin-bottom:8px}
+.recent{display:flex;flex-direction:column;gap:8px}
+.recent a{text-decoration:none;color:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:10px;display:block}
+.recent a:hover{border-color:var(--accent)}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+.refine-panel{margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+.refine-panel .chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.refine-panel .chip{font-size:12px;padding:6px 10px;border-radius:999px;border:1px solid var(--line-strong);background:#fff;cursor:pointer;font-weight:600}
+.refine-panel .chip:hover{border-color:var(--accent);color:var(--accent)}
+</style>
+</head>
+<body>
+<div id="gate" class="login-card">
+  <h1 style="font-family:var(--font-display);margin:0 0 8px">Domain Finder</h1>
+  <p class="sub">Sign in to find names you can actually register.</p>
+  <div class="field"><label>Email</label><input id="email" type="email" autocomplete="username"></div>
+  <div class="field"><label>Password</label><input id="password" type="password" autocomplete="current-password"></div>
+  <button class="btn solid" id="login-btn" type="button">Sign in</button>
+  <p class="msg bad hidden" id="gate-msg"></p>
+</div>
+
+<main id="app" class="wrap hidden">
+  <div class="topbar">
+    <div class="hero">
+      <h1>Find the perfect name</h1>
+      <p>Tell us what you're building. We'll create smart domain ideas, check availability live and only recommend names you can actually register.</p>
+    </div>
+    <div>
+      <a class="btn ghost" href="/domains">Domain store</a>
+      <a class="btn ghost" href="/manage">Manage</a>
+      <button class="btn ghost" id="signout" type="button">Sign out</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <aside>
+      <section class="card" id="brief-card">
+        <h2>What are you creating?</h2>
+        <div class="field">
+          <label class="sr-only" for="brief">Business brief</label>
+          <textarea id="brief" placeholder="A Canberra business helping older people prepare their homes for moving into retirement living. We do yard clean-ups, minor repairs, rubbish removal and prepare properties for sale. The business should feel trustworthy, friendly and professional."></textarea>
+        </div>
+        <div class="field">
+          <label for="btype">Business / project type</label>
+          <select id="btype">
+            <option>Local Business</option>
+            <option>Professional Service</option>
+            <option>Trades</option>
+            <option>Ecommerce</option>
+            <option>App / Software</option>
+            <option>Startup</option>
+            <option>Personal Brand</option>
+            <option>Product</option>
+            <option>Community Organisation</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="location">Location (optional)</label>
+          <input id="location" placeholder="Canberra, ACT">
+        </div>
+        <details class="details">
+          <summary>Optional naming preferences</summary>
+          <div class="field" style="margin-top:12px">
+            <label for="like-in">Words I'd like included</label>
+            <input id="like-in" placeholder="Type a word and press Enter">
+            <div class="tags" id="like-tags"></div>
+          </div>
+          <div class="field">
+            <label for="avoid-in">Words I'd like avoided</label>
+            <input id="avoid-in" placeholder="Type a word and press Enter">
+            <div class="tags" id="avoid-tags"></div>
+          </div>
+          <div class="field">
+            <label for="ideas-in">Existing name ideas</label>
+            <input id="ideas-in" placeholder="Home Ready — press Enter">
+            <div class="tags" id="ideas-tags"></div>
+          </div>
+        </details>
+        <p class="sub" style="margin-top:12px">Domain preference: <strong>.com.au</strong>, <strong>.au</strong>, <strong>.net.au</strong></p>
+        <button class="btn solid" id="btn-find" type="button">Find My Perfect Domain</button>
+        <button class="btn" id="btn-surprise" type="button">Surprise Me</button>
+        <p class="msg bad hidden" id="brief-msg"></p>
+        <p class="legal">Domain availability does not confirm trademark or business-name availability. We recommend checking your chosen name before launching your brand.</p>
+      </section>
+
+      <section class="card">
+        <h2>Already have a name?</h2>
+        <div class="field" style="display:flex;gap:8px;align-items:flex-end">
+          <div style="flex:1"><label for="direct-q">Check a name</label><input id="direct-q" placeholder="homeready"></div>
+          <button class="btn solid sm" id="btn-direct" type="button">Check</button>
+        </div>
+        <div id="direct-out" class="sub"></div>
+      </section>
+
+      <section class="card">
+        <h2>Recent searches</h2>
+        <div id="recent" class="recent"><p class="sub">No recent searches yet.</p></div>
+      </section>
+    </aside>
+
+    <section>
+      <div id="progress-card" class="card hidden">
+        <h2>Finding your perfect domain…</h2>
+        <ul class="progress" id="progress-list"></ul>
+      </div>
+
+      <div id="results-card" class="hidden">
+        <div class="card" style="margin-bottom:12px">
+          <h2 id="results-heading">We found some great options</h2>
+          <p class="sub" id="results-sub"></p>
+          <div class="filters">
+            <select id="f-style" aria-label="Style filter">
+              <option value="all">All styles</option>
+              <option value="professional">Professional</option>
+              <option value="brandable">Brandable</option>
+              <option value="descriptive">Descriptive</option>
+              <option value="creative">Creative</option>
+              <option value="short">Short</option>
+              <option value="local">Local</option>
+              <option value="invented">Invented</option>
+            </select>
+            <select id="f-tld" aria-label="Extension filter">
+              <option value="all">All extensions</option>
+              <option value="com.au">.com.au</option>
+              <option value="au">.au</option>
+              <option value="net.au">.net.au</option>
+            </select>
+            <select id="f-sort" aria-label="Sort">
+              <option value="score">Recommended</option>
+              <option value="short">Shortest</option>
+              <option value="price">Lowest price</option>
+            </select>
+            <button class="btn ghost sm" id="btn-wider" type="button">Search Wider</button>
+          </div>
+        </div>
+        <div id="featured"></div>
+        <div class="grid" id="results-grid"></div>
+        <div class="card" id="saved-card" style="margin-top:16px">
+          <h2>Saved names</h2>
+          <div id="saved-list" class="sub">Heart a domain to shortlist it here.</div>
+        </div>
+      </div>
+
+      <div id="empty-card" class="card hidden">
+        <h2>The obvious names are heavily registered</h2>
+        <p class="sub">We're ready to explore more creative directions.</p>
+        <button class="btn solid" id="btn-wider-empty" type="button">Search Wider</button>
+        <button class="btn" id="btn-edit-brief" type="button">Edit My Brief</button>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script>
+(function(){
+  var sb=window.supabase.createClient(window.__LP.url, window.__LP.anon);
+  var params=new URLSearchParams(location.search);
+  var state={ token:null, results:[], sessionId:null, saved:{}, like:[], avoid:[], ideas:[], lastBrief:null, siteId:params.get('site')||null, refineRoot:null };
+
+  function $(id){ return document.getElementById(id); }
+  function show(el,on){ if(el) el.classList.toggle('hidden', !on); }
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]);}); }
+  function toast(msg, bad){ var m=$('brief-msg'); if(!m) return; m.textContent=msg; m.className='msg '+(bad?'bad':'ok'); show(m,true); }
+
+  async function api(path, opts){
+    opts=opts||{};
+    var headers=Object.assign({'content-type':'application/json'}, opts.headers||{});
+    if(state.token) headers.Authorization='Bearer '+state.token;
+    var r=await fetch(path, Object.assign({}, opts, { headers:headers }));
+    var j=await r.json().catch(function(){ return {}; });
+    if(!r.ok) throw Object.assign(new Error(j.message||j.error||('HTTP '+r.status)), { status:r.status, body:j });
+    return j;
+  }
+
+  function wireTags(inputId, listId, arrKey){
+    var inp=$(inputId), box=$(listId);
+    function paint(){
+      box.innerHTML=state[arrKey].map(function(t,i){
+        return '<span class="tag">'+esc(t)+'<button type="button" data-i="'+i+'" aria-label="Remove">&times;</button></span>';
+      }).join('');
+    }
+    inp.addEventListener('keydown',function(e){
+      if(e.key!=='Enter') return;
+      e.preventDefault();
+      var v=inp.value.trim(); if(!v) return;
+      if(state[arrKey].indexOf(v)<0) state[arrKey].push(v);
+      inp.value=''; paint();
+    });
+    box.addEventListener('click',function(e){
+      var b=e.target.closest('[data-i]'); if(!b) return;
+      state[arrKey].splice(parseInt(b.getAttribute('data-i'),10),1); paint();
+    });
+    paint();
+  }
+  wireTags('like-in','like-tags','like');
+  wireTags('avoid-in','avoid-tags','avoid');
+  wireTags('ideas-in','ideas-tags','ideas');
+
+  function briefPayload(mode){
+    var p={
+      business_description: $('brief').value.trim(),
+      business_type: $('btype').value,
+      location: $('location').value.trim(),
+      preferred_words: state.like.slice(),
+      excluded_words: state.avoid.slice(),
+      existing_ideas: state.ideas.slice(),
+      mode: mode||'standard'
+    };
+    if(state.siteId) p.site_id=state.siteId;
+    return p;
+  }
+
+  function renderProgress(steps){
+    var list=$('progress-list');
+    list.innerHTML=(steps||[]).map(function(s){
+      var mark=s.state==='active'?'⟳':(s.state==='done'?'✓':'·');
+      return '<li class="'+(s.state==='active'?'active':'')+'"><span class="st">'+mark+'</span><span>'+esc(s.label)+(s.detail&&s.detail.added!=null?' <span class="sub">(+'+s.detail.added+')</span>':'')+'</span></li>';
+    }).join('');
+  }
+
+  function priceLabel(p){
+    if(p==null||p==='') return '';
+    return '$'+Number(p).toFixed(Number(p)%1?2:0)+'/year';
+  }
+
+  function filteredResults(){
+    var style=$('f-style').value, tld=$('f-tld').value, sort=$('f-sort').value;
+    var rows=state.results.slice();
+    if(style!=='all'){
+      rows=rows.filter(function(r){
+        var c=String(r.category||'').toLowerCase();
+        if(style==='professional') return /premium|descriptive|outcome|action/.test(c);
+        if(style==='creative') return /invented|brandable|creative|warm/.test(c);
+        return c.indexOf(style)>=0;
+      });
+    }
+    if(tld!=='all') rows=rows.filter(function(r){ return (r.availableTlds||[]).indexOf(tld)>=0; });
+    if(sort==='short') rows.sort(function(a,b){ return a.root.length-b.root.length; });
+    else if(sort==='price') rows.sort(function(a,b){ return (Number(a.price)||999)-(Number(b.price)||999); });
+    else rows.sort(function(a,b){ return Number(b.scores&&b.scores.overall||0)-Number(a.scores&&a.scores.overall||0); });
+    return rows;
+  }
+
+  function cardHtml(r, featured){
+    var primary=r.primaryDomain||(r.domains&&r.domains[0]&&r.domains[0].domain)||'';
+    var price=priceLabel(r.price);
+    var tldLine=(r.domains||[]).map(function(d){
+      return esc(d.tld)+(d.available?' ✓':'');
+    }).join(' · ');
+    var saved=!!state.saved[primary];
+    var useBtn=state.siteId
+      ? '<button type="button" class="btn sm" data-use="'+esc(primary)+'">Use This Domain</button>'
+      : '';
+    return '<article class="'+(featured?'featured':'dcard')+'">'
+      +(r.badge?'<span class="badge">'+esc(r.badge)+'</span>':'')
+      +'<div class="domain">'+(featured?'<div style="font-size:12px;font-weight:700;color:var(--ink-soft)">Featured</div>':'')+'<h3 style="margin:0;font:inherit">'+esc(primary)+'</h3></div>'
+      +'<div><span class="avail">✓ Available</span>'+(price?' · '+esc(price):'')+(r.premium?' · <strong>Premium Domain</strong>':'')+' · <span class="score">'+(r.scores&&r.scores.overall!=null?r.scores.overall:'—')+'/100</span></div>'
+      +'<p class="why">'+(esc(r.reason||''))+'</p>'
+      +'<div class="tlds">'+(r.allMajorAvailable?'<strong>All major AU domains available</strong> · ':'')+tldLine+'</div>'
+      +'<div>'
+      +'<button type="button" class="btn solid sm" data-reg="'+esc(primary)+'">Register Domain</button>'
+      +useBtn
+      +'<button type="button" class="btn ghost sm" data-save="'+esc(primary)+'">'+(saved?'Saved':'Save')+'</button>'
+      +'<button type="button" class="btn ghost sm" data-like="'+esc(r.root)+'">More Like This</button>'
+      +'</div></article>';
+  }
+
+  function paintResults(){
+    var rows=filteredResults();
+    show($('results-card'), true);
+    show($('empty-card'), false);
+    $('results-heading').textContent='We found some great options';
+    $('results-sub').textContent=rows.length+' domains are currently available based on your brief.';
+    if(!rows.length){
+      $('featured').innerHTML='';
+      $('results-grid').innerHTML='<p class="sub">No matches for these filters.</p>';
+      return;
+    }
+    $('featured').innerHTML=cardHtml(rows[0], true);
+    $('results-grid').innerHTML=rows.slice(1).map(function(r){ return cardHtml(r,false); }).join('');
+    paintSaved();
+  }
+
+  function paintSaved(){
+    var keys=Object.keys(state.saved);
+    if(!keys.length){ $('saved-list').textContent='Heart a domain to shortlist it here.'; return; }
+    $('saved-list').innerHTML=keys.map(function(d){
+      return '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:6px 0"><strong>'+esc(d)+'</strong>'
+        +'<button type="button" class="btn solid sm" data-reg="'+esc(d)+'">Register</button>'
+        +'<button type="button" class="btn ghost sm" data-unsave="'+esc(d)+'">Remove</button></div>';
+    }).join('');
+  }
+
+  async function runSearch(mode, extra){
+    var payload=briefPayload(mode);
+    if(extra) Object.assign(payload, extra);
+    if(payload.business_description.length<12){ toast('Please describe what you are building.', true); return; }
+    state.lastBrief=payload;
+    show($('progress-card'), true);
+    show($('results-card'), false);
+    show($('empty-card'), false);
+    renderProgress([
+      {id:'u',label:'Understanding your business',state:'done'},
+      {id:'d',label:'Creating naming directions',state:'active'},
+      {id:'c',label:'Checking domain availability',state:'pending'}
+    ]);
+    $('btn-find').disabled=true; $('btn-surprise').disabled=true;
+    try{
+      var j=await api('/api/domain-finder/search',{ method:'POST', body:JSON.stringify(payload) });
+      state.sessionId=j.sessionId||null;
+      state.results=j.results||[];
+      renderProgress(j.progress||[]);
+      if(!state.results.length){
+        show($('empty-card'), true);
+        show($('results-card'), false);
+      } else {
+        paintResults();
+      }
+      loadRecent();
+      toast('Search complete');
+    }catch(e){
+      toast((e&&e.message)||'Search failed', true);
+      show($('progress-card'), false);
+    }finally{
+      $('btn-find').disabled=false; $('btn-surprise').disabled=false;
+    }
+  }
+
+  async function register(domain){
+    try{
+      var j=await api('/api/domain-finder/register-handoff',{ method:'POST', body:JSON.stringify({ domain:domain }) });
+      if(j.registerUrl) location.href=j.registerUrl;
+    }catch(e){
+      if(e&&e.body&&e.body.error==='snapped_up'){
+        toast(e.body.message||'That domain was just taken.', true);
+      } else toast((e&&e.message)||'Could not start registration', true);
+    }
+  }
+
+  document.addEventListener('click',function(e){
+    var reg=e.target.closest('[data-reg]'); if(reg){ register(reg.getAttribute('data-reg')); return; }
+    var use=e.target.closest('[data-use]');
+    if(use){
+      var ud=use.getAttribute('data-use');
+      try{ localStorage.setItem('lp_domain_finder_pick', JSON.stringify({ domain:ud, siteId:state.siteId, at:Date.now() })); }catch(_e){}
+      register(ud);
+      return;
+    }
+    var save=e.target.closest('[data-save]');
+    if(save){
+      var d=save.getAttribute('data-save');
+      state.saved[d]=true; paintResults(); return;
+    }
+    var un=e.target.closest('[data-unsave]');
+    if(un){ delete state.saved[un.getAttribute('data-unsave')]; paintSaved(); return; }
+    var like=e.target.closest('[data-like]');
+    if(like){
+      state.refineRoot=like.getAttribute('data-like');
+      showRefine(state.refineRoot);
+      return;
+    }
+    var chip=e.target.closest('[data-refine]');
+    if(chip){
+      var dir=chip.getAttribute('data-refine');
+      var notes=$('refine-notes')?$('refine-notes').value.trim():'';
+      runSearch('refine',{
+        refine:{ direction:dir, notes:notes||('More like '+state.refineRoot), inspiration:state.refineRoot },
+        existing_ideas:(state.ideas||[]).concat(state.refineRoot?[state.refineRoot]:[])
+      });
+      return;
+    }
+  });
+
+  function showRefine(root){
+    var box=$('refine-box');
+    if(!box){
+      box=document.createElement('div');
+      box.id='refine-box';
+      box.className='card refine-panel';
+      var host=$('results-card');
+      if(host) host.insertBefore(box, host.firstChild);
+    }
+    box.innerHTML='<h2>More like '+esc(root)+'</h2>'
+      +'<p class="sub">Keep your brief and explore this naming direction.</p>'
+      +'<div class="chips">'
+      +[['more_like_this','More like this'],['shorter','Shorter'],['more_professional','More professional'],['more_creative','More creative'],['more_premium','More premium'],['more_australian','More Australian'],['more_descriptive','More descriptive'],['warmer','Warmer'],['one_word','One-word names'],['two_word','Two-word names']].map(function(p){
+        return '<button type="button" class="chip" data-refine="'+p[0]+'">'+p[1]+'</button>';
+      }).join('')
+      +'</div>'
+      +'<div class="field"><label for="refine-notes">Tell us what to change</label><input id="refine-notes" placeholder="I like this direction but don\'t use the word Home."></div>'
+      +'<button type="button" class="btn solid sm" data-refine="custom_notes">Find More</button>';
+    show(box, true);
+  }
+
+  $('btn-find').addEventListener('click',function(){ runSearch('standard'); });
+  $('btn-surprise').addEventListener('click',function(){ runSearch('surprise'); });
+  $('btn-wider').addEventListener('click',function(){ runSearch('wider'); });
+  $('btn-wider-empty').addEventListener('click',function(){ runSearch('wider'); });
+  $('btn-edit-brief').addEventListener('click',function(){ $('brief').focus(); show($('empty-card'), false); });
+  ['f-style','f-tld','f-sort'].forEach(function(id){ $(id).addEventListener('change', paintResults); });
+
+  $('btn-direct').addEventListener('click',async function(){
+    var q=$('direct-q').value.trim(); if(!q) return;
+    $('direct-out').textContent='Checking…';
+    try{
+      var j=await api('/api/domain-finder/check?q='+encodeURIComponent(q));
+      $('direct-out').innerHTML=(j.results||[]).map(function(r){
+        var ok=r.available===true;
+        return '<div style="margin:6px 0"><strong>'+esc(r.domain)+'</strong> — '+(ok?'<span class="avail">Available</span>':'Unavailable')
+          +(ok&&r.price!=null?' · '+esc(priceLabel(r.price)):'')
+          +(ok?' <button type="button" class="btn solid sm" data-reg="'+esc(r.domain)+'">Register</button>':'')
+          +'</div>';
+      }).join('')||'No results';
+    }catch(e){ $('direct-out').textContent=(e&&e.message)||'Check failed'; }
+  });
+
+  async function loadRecent(){
+    try{
+      var j=await api('/api/domain-finder/sessions');
+      var rows=j.sessions||[];
+      if(!rows.length){ $('recent').innerHTML='<p class="sub">No recent searches yet.</p>'; return; }
+      $('recent').innerHTML=rows.slice(0,8).map(function(s){
+        var n=(s.meta&&s.meta.available)||0;
+        return '<a href="#" data-session="'+esc(s.id)+'"><strong>'+esc((s.business_description||'').slice(0,72))+(s.business_description&&s.business_description.length>72?'…':'')+'</strong><div class="sub" style="margin:4px 0 0">'+n+' available · '+esc(new Date(s.created_at).toLocaleDateString())+'</div></a>';
+      }).join('');
+    }catch(_e){ /* optional table */ }
+  }
+
+  $('recent').addEventListener('click',async function(e){
+    var a=e.target.closest('[data-session]'); if(!a) return;
+    e.preventDefault();
+    try{
+      var j=await api('/api/domain-finder/sessions?id='+encodeURIComponent(a.getAttribute('data-session')));
+      state.sessionId=j.session&&j.session.id;
+      state.results=j.results||[];
+      if(j.session){
+        $('brief').value=j.session.business_description||'';
+        $('btype').value=j.session.business_type||'Local Business';
+        $('location').value=j.session.location||'';
+      }
+      show($('progress-card'), false);
+      if(state.results.length) paintResults();
+    }catch(err){ toast((err&&err.message)||'Could not load session', true); }
+  });
+
+  async function boot(){
+    var sess=await sb.auth.getSession();
+    var s=sess&&sess.data&&sess.data.session;
+    if(!s){ show($('gate'), true); show($('app'), false); return; }
+    state.token=s.access_token;
+    show($('gate'), false); show($('app'), true);
+    loadRecent();
+    try{
+      if(params.get('site')){ state.siteId=params.get('site'); }
+    }catch(_e){}
+  }
+
+  $('login-btn').addEventListener('click',async function(){
+    $('gate-msg').classList.add('hidden');
+    var r=await sb.auth.signInWithPassword({ email:$('email').value.trim(), password:$('password').value });
+    if(r.error){ $('gate-msg').textContent=r.error.message; $('gate-msg').classList.remove('hidden'); return; }
+    boot();
+  });
+  $('signout').addEventListener('click',async function(){ await sb.auth.signOut(); location.reload(); });
+  boot();
+})();
+</script>
+</body>
+</html>
