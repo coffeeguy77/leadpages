@@ -57,12 +57,16 @@ Native LeadPages **Bookings** app for appointments, classes/events, on-site visi
 
 ## Enable a site (ops)
 
-1. Apply SQL: `db/bookings_schema.sql`, `db/bookings_rls.sql`  
+1. **Install schema (required once):** either  
+   - Super-admin `POST /api/bookings/bootstrap` with body `{ "confirm": "APPLY_BOOKINGS_SCHEMA" }`, or  
+   - Run `db/bookings_schema.sql` then `db/bookings_rls.sql` in the Supabase SQL editor  
    If schema was applied before waitlist/notifications: also run `db/bookings_phase2.sql`
 2. Manage → **Bookings** → complete onboarding (or Settings → enable)
 3. Optional: Page editor → **Bookings** section on → publish  
    Or share `/book?slug=<site-slug>`
 4. Stripe: `STRIPE_SECRET_KEY` + `POST /api/bookings/webhook` + `STRIPE_BOOKINGS_WEBHOOK_SECRET` (falls back to order/platform webhook secret)
+
+If staff Bookings errors with schema missing, step 1 was skipped.
 
 ---
 
