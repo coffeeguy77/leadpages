@@ -137,6 +137,60 @@ module.exports = async function (req, res) {
   if (req.method === 'POST') {
     const body = await readBody(req);
     const action = String(body.action || '').trim();
+
+    if (action === 'record') {
+      try {
+        const { data: session, error } = await admin.from('domain_finder_sessions').insert({
+          user_id: user.id,
+          site_id: body.site_id || null,
+          business_description: String(body.business_description || body.brief || '').slice(0, 8000),
+          business_type: String(body.business_type || 'Local Business').slice(0, 80),
+          location: String(body.location || '').slice(0, 120),
+          preferred_words: Array.isArray(body.preferred_words) ? body.preferred_words : [],
+          excluded_words: Array.isArray(body.excluded_words) ? body.excluded_words : [],
+          existing_ideas: Array.isArray(body.existing_ideas) ? body.existing_ideas : [],
+          preferred_tlds: ['com.au', 'au', 'net.au'],
+          mode: String(body.mode || 'standard').slice(0, 40),
+          status: (body.results && body.results.length) ? 'completed' : 'partial',
+          progress: body.progress || [],
+          meta: body.meta || {}
+        }).select('id,created_at').maybeSingle();
+        if (error || !session) {
+          return json(res, 200, { ok: true, sessionId: null, persisted: false });
+        }
+        const rows = [];
+        (body.results || []).forEach(function (fam) {
+          (fam.domains || []).forEach(function (d) {
+            rows.push({
+              session_id: session.id,
+              display_name: fam.displayName || fam.root,
+              root: fam.root,
+              full_domain: d.domain,
+              tld: d.tld,
+              strategy: fam.category || 'brandable',
+              availability: 'available',
+              price: d.price,
+              currency: d.currency || 'AUD',
+              premium: !!d.premium,
+              ai_score: fam.scores && fam.scores.overall,
+              ai_reason: fam.reason || '',
+              scores: fam.scores || {},
+              badge: fam.badge || null,
+              generation_round: 1,
+              saved: false,
+              selected: false
+            });
+          });
+        });
+        if (rows.length) {
+          await admin.from('domain_finder_candidates').insert(rows.slice(0, 120));
+        }
+        return json(res, 200, { ok: true, sessionId: session.id, persisted: true });
+      } catch (_e) {
+        return json(res, 200, { ok: true, sessionId: null, persisted: false });
+      }
+    }
+
     const candidateId = String(body.candidateId || body.id || '').trim();
     if (!candidateId) return json(res, 400, { ok: false, error: 'candidateId_required' });
 

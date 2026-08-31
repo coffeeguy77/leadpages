@@ -140,7 +140,17 @@ module.exports = async function (req, res) {
       body: body,
       brain: brain,
       actor: { userId: user.id },
-      providerOverride: 'openai'
+      providerOverride: 'openai',
+      // Legacy monolithic path — keep strictly short; UI prefers stepped APIs.
+      config: {
+        maxGenerationRounds: 1,
+        candidatesPerRound: 10,
+        targetAvailable: 8,
+        maxDomainsChecked: 24,
+        deadlineMs: 25000,
+        aiGenerateTimeoutMs: 12000,
+        aiRankTimeoutMs: 8000
+      }
     });
 
     if (!result.ok) return json(res, 400, result);
