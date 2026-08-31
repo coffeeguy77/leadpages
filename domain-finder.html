@@ -384,7 +384,11 @@ html,body{margin:0;min-height:100%;background:var(--bg,#f4f6f8);color:var(--ink,
       loadRecent();
       toast('Search complete');
     }catch(e){
-      toast((e&&e.message)||'Search failed', true);
+      var msg=(e&&e.message)||'Search failed';
+      if(e&&(e.status===504||e.status===502||/504|timeout|Gateway/i.test(msg))){
+        msg='That search took too long — try again with a shorter brief, or use Surprise Me for a quicker creative pass.';
+      }
+      toast(msg, true);
       show($('progress-card'), false);
     }finally{
       $('btn-find').disabled=false; $('btn-surprise').disabled=false;

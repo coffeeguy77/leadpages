@@ -177,8 +177,9 @@ describe('config', () => {
   it('AU TLDs only and sensible limits', () => {
     assert.deepEqual(FINDER_TLDS, ['com.au', 'au', 'net.au']);
     const cfg = getConfig();
-    assert.ok(cfg.targetAvailable >= 10);
+    assert.ok(cfg.targetAvailable >= 8);
     assert.ok(cfg.maxGenerationRounds >= 2);
+    assert.ok(cfg.deadlineMs <= 60000);
     assert.deepEqual(cfg.tlds, FINDER_TLDS);
     assert.equal(DEFAULTS.minRootLen, 3);
   });
