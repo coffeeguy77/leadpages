@@ -364,17 +364,136 @@ html,body{margin:0;min-height:100%;background:var(--bg,#f4f6f8);color:var(--ink,
     show($('progress-card'), true);
     show($('results-card'), false);
     show($('empty-card'), false);
-    renderProgress([
+    var steps=[
       {id:'u',label:'Understanding your business',state:'done'},
       {id:'d',label:'Creating naming directions',state:'active'},
-      {id:'c',label:'Checking domain availability',state:'pending'}
-    ]);
+      {id:'c',label:'Checking domain availability',state:'pending'},
+      {id:'r',label:'Ranking the strongest options',state:'pending'}
+    ];
+    renderProgress(steps);
     $('btn-find').disabled=true; $('btn-surprise').disabled=true;
+
+    var excluded=[];
+    var availableRows=[];
+    var generatedTotal=0;
+    var checkedTotal=0;
+    var maxRounds=(mode==='wider'||mode==='surprise')?2:2;
+    var target=10;
+
+    function setStep(id, state, label){
+      steps=steps.map(function(s){
+        if(s.id===id){ return Object.assign({}, s, { state:state, label:label||s.label }); }
+        return s;
+      });
+      renderProgress(steps);
+    }
+
     try{
-      var j=await api('/api/domain-finder/search',{ method:'POST', body:JSON.stringify(payload) });
-      state.sessionId=j.sessionId||null;
-      state.results=j.results||[];
-      renderProgress(j.progress||[]);
+      for(var round=1; round<=maxRounds; round++){
+        setStep('d','active', round===1?'Creating naming directions':'Exploring more ideas');
+        var gen;
+        try{
+          gen=await api('/api/domain-finder/generate',{
+            method:'POST',
+            body:JSON.stringify(Object.assign({}, payload, {
+              count: round===1?12:10,
+              excluded: excluded
+            }))
+          });
+        }catch(ge){
+          if(ge&&(ge.status===504||ge.status===502)){
+            toast('Naming took too long on that pass — checking what we have so far…', true);
+            break;
+          }
+          throw ge;
+        }
+        var candidates=gen.candidates||[];
+        generatedTotal+=candidates.length;
+        candidates.forEach(function(c){ if(c.root&&excluded.indexOf(c.root)<0) excluded.push(c.root); });
+        setStep('d','done','Generated '+candidates.length+' ideas');
+        if(!candidates.length) continue;
+
+        setStep('c','active','Checking .com.au availability');
+        var check;
+        try{
+          check=await api('/api/domain-finder/check',{
+            method:'POST',
+            body:JSON.stringify({ candidates:candidates, tlds:['com.au'] })
+          });
+        }catch(ce){
+          if(ce&&(ce.status===504||ce.status===502)){
+            toast('Availability check timed out — try Search Wider or Check a single name.', true);
+            break;
+          }
+          throw ce;
+        }
+        checkedTotal+=(check.checked||0);
+        var won=(check.available||[]).slice();
+        won.forEach(function(r){ availableRows.push(r); });
+        setStep('c','done','Found '+availableRows.length+' available so far');
+
+        // Sibling TLDs for winners only (short second call)
+        if(won.length){
+          try{
+            var sib=await api('/api/domain-finder/check',{
+              method:'POST',
+              body:JSON.stringify({
+                candidates: won.map(function(w){ return { name:w.displayName||w.root, root:w.root, category:w.category, reason:w.reason }; }),
+                tlds:['au','net.au']
+              })
+            });
+            checkedTotal+=(sib.checked||0);
+            (sib.available||[]).forEach(function(r){ availableRows.push(r); });
+          }catch(_se){ /* optional family expansion */ }
+        }
+
+        // Dedupe by domain
+        var uniq={};
+        availableRows.forEach(function(r){ uniq[r.domain]=r; });
+        availableRows=Object.keys(uniq).map(function(k){ return uniq[k]; });
+
+        var rootCount={};
+        availableRows.forEach(function(r){ rootCount[r.root]=1; });
+        if(Object.keys(rootCount).length>=target) break;
+      }
+
+      if(!availableRows.length){
+        show($('empty-card'), true);
+        show($('results-card'), false);
+        setStep('r','done','No available domains yet');
+        toast('No available domains in that pass — try Search Wider');
+        return;
+      }
+
+      setStep('r','active','Ranking the strongest options');
+      var ranked;
+      try{
+        ranked=await api('/api/domain-finder/rank',{
+          method:'POST',
+          body:JSON.stringify(Object.assign({}, payload, { available: availableRows, fast: false }))
+        });
+      }catch(_re){
+        ranked=await api('/api/domain-finder/rank',{
+          method:'POST',
+          body:JSON.stringify(Object.assign({}, payload, { available: availableRows, fast: true }))
+        });
+      }
+      state.results=ranked.results||[];
+      setStep('r','done','Ranking the strongest options');
+
+      try{
+        var rec=await api('/api/domain-finder/sessions',{
+          method:'POST',
+          body:JSON.stringify(Object.assign({}, payload, {
+            action:'record',
+            results: state.results,
+            progress: steps,
+            meta:{ generated:generatedTotal, checked:checkedTotal, available:availableRows.length }
+          }))
+        });
+        state.sessionId=rec.sessionId||null;
+      }catch(_pe){ /* optional */ }
+
       if(!state.results.length){
         show($('empty-card'), true);
         show($('results-card'), false);
@@ -384,8 +503,23 @@ html,body{margin:0;min-height:100%;background:var(--bg,#f4f6f8);color:var(--ink,
       loadRecent();
       toast('Search complete');
     }catch(e){
-      toast((e&&e.message)||'Search failed', true);
-      show($('progress-card'), false);
+      var msg=(e&&e.message)||'Search failed';
+      if(e&&(e.status===504||e.status===502||/504|timeout|Gateway/i.test(msg))){
+        msg='A step timed out. Try again — searches now run in short stages so this should be rare.';
+      }
+      toast(msg, true);
+      if(availableRows.length){
+        try{
+          var fb=await api('/api/domain-finder/rank',{
+            method:'POST',
+            body:JSON.stringify(Object.assign({}, payload, { available: availableRows, fast: true }))
+          });
+          state.results=fb.results||[];
+          if(state.results.length) paintResults();
+        }catch(_fe){ show($('progress-card'), false); }
+      } else {
+        show($('progress-card'), false);
+      }
     }finally{
       $('btn-find').disabled=false; $('btn-surprise').disabled=false;
     }

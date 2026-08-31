@@ -19,6 +19,8 @@ AI never claims availability. OpenAI is used via LeadPages Brain (`domain_finder
 - TLDs for this feature: **`.com.au` / `.au` / `.net.au` only**
 - Reuses Dreamscape availability + `/domains` purchase handoff
 - Register always does a **fresh** availability check first
+- **Stepped APIs** (generate → check → rank) so no single request can hit Vercel’s 60s gateway timeout
+- Monolithic `/api/domain-finder/search` remains as a short fallback only
 
 ## Flags / env
 
@@ -26,9 +28,10 @@ AI never claims availability. OpenAI is used via LeadPages Brain (`domain_finder
 |-----|---------|--------|
 | `BRAIN_DOMAIN_FINDER` | `1` (on) | Set `0` to disable APIs |
 | `OPENAI_API_KEY` | — | Preferred provider for naming/ranking |
-| `DOMAIN_FINDER_TARGET` | `18` | Target available domains |
-| `DOMAIN_FINDER_MAX_ROUNDS` | `3` | Max AI generation rounds |
-| `DOMAIN_FINDER_MAX_CHECKS` | `120` | Cap Dreamscape checks per search |
+| `DOMAIN_FINDER_TARGET` | `12` | Target available name families |
+| `DOMAIN_FINDER_MAX_ROUNDS` | `2` | Max AI generation rounds |
+| `DOMAIN_FINDER_MAX_CHECKS` | `54` | Cap Dreamscape checks per search |
+| `DOMAIN_FINDER_DEADLINE_MS` | `48000` | Soft wall-clock budget (avoid Vercel 504) |
 
 ## Entry points
 

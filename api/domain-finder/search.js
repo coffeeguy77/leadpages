@@ -140,7 +140,17 @@ module.exports = async function (req, res) {
       body: body,
       brain: brain,
       actor: { userId: user.id },
-      providerOverride: 'openai'
+      providerOverride: 'openai',
+      // Legacy monolithic path — keep strictly short; UI prefers stepped APIs.
+      config: {
+        maxGenerationRounds: 1,
+        candidatesPerRound: 10,
+        targetAvailable: 8,
+        maxDomainsChecked: 24,
+        deadlineMs: 25000,
+        aiGenerateTimeoutMs: 12000,
+        aiRankTimeoutMs: 8000
+      }
     });
 
     if (!result.ok) return json(res, 400, result);
@@ -157,10 +167,15 @@ module.exports = async function (req, res) {
     });
   } catch (e) {
     console.error('domain-finder search:', e && e.message);
-    return json(res, 502, {
-      ok: false,
-      error: 'search_failed',
-      message: 'We can create name ideas, but live availability checking is temporarily unavailable. Try again shortly.'
+    // Prefer a soft JSON response over 5xx so the UI can recover (Vercel 504 is worse).
+    return json(res, 200, {
+      ok: true,
+      progress: [{ id: 'error', label: 'Live checking hit a snag — try again shortly', state: 'done' }],
+      results: [],
+      meta: { error: 'search_failed', zero: true },
+      message: 'We can create name ideas, but live availability checking is temporarily unavailable. Try again shortly.',
+      notice: 'Domain availability does not confirm trademark or business-name availability. We recommend checking your chosen name before launching your brand.',
+      registerPath: '/domains'
     });
   }
 };

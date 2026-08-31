@@ -394,6 +394,15 @@
     },
     "api/domain-finder/search.js": {
       "maxDuration": 60
+    },
+    "api/domain-finder/generate.js": {
+      "maxDuration": 30
+    },
+    "api/domain-finder/check.js": {
+      "maxDuration": 30
+    },
+    "api/domain-finder/rank.js": {
+      "maxDuration": 30
     }
   }
 }
