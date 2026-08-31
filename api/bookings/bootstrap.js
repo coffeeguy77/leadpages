@@ -47,21 +47,28 @@ async function registerApp(admin) {
     slug: 'bookings',
     name: 'Bookings',
     section_key: 'bookingStorefront',
+    tagline: 'Appointments, classes and visits',
     description: 'Appointments, classes, on-site visits and resource hire — native LeadPages scheduling.',
-    tier: 'default',
+    tier: 'free',
+    price_monthly_aud: 0,
+    price_annual_aud: 0,
     default_position: 'mid',
     marketplace_status: 'live',
-    category: 'Lead Capture & Conversion'
+    builder_visible: true,
+    can_reposition: true,
+    hero_exclusive: false,
+    sort_order: 88,
+    updated_at: new Date().toISOString()
   };
   const { data: existing } = await admin.from('app_registry').select('id').eq('slug', 'bookings').maybeSingle();
   if (existing) {
     const { error } = await admin.from('app_registry').update(row).eq('id', existing.id);
     if (error) return { ok: false, error: error.message };
-    return { updated: true };
+    return { updated: true, id: existing.id };
   }
-  const { error } = await admin.from('app_registry').insert(row);
+  const { data, error } = await admin.from('app_registry').insert(row).select('id').single();
   if (error) return { ok: false, error: error.message };
-  return { inserted: true };
+  return { inserted: true, id: data && data.id };
 }
 
 module.exports = async function (req, res) {
