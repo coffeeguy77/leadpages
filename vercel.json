@@ -175,6 +175,18 @@
       "destination": "/orders.html"
     },
     {
+      "source": "/bookings",
+      "destination": "/bookings.html"
+    },
+    {
+      "source": "/book",
+      "destination": "/book.html"
+    },
+    {
+      "source": "/booking-portal",
+      "destination": "/booking-portal.html"
+    },
+    {
       "source": "/order-portal",
       "destination": "/order-portal.html"
     },

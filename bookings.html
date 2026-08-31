@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bookings — LeadPages</title>
+<link rel="icon" type="image/x-icon" href="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico">
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="/assets/lp-themes.css">
+<link rel="stylesheet" href="/assets/lp-admin-responsive.css">
+<script src="/assets/lp-workspace-appearance.js"></script>
+<script src="/assets/lp-hub-embed.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:var(--bg,#f4f6f8);color:var(--ink,#15191e)}
+.layout{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
+@media(max-width:900px){.layout{grid-template-columns:1fr}.nav{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:6px;padding:10px!important}.nav button{flex:none}}
+.nav{background:var(--surface,#fff);border-right:1px solid var(--line,#e6e8ec);padding:16px 12px}
+.nav h1{font-size:15px;margin:0 8px 12px}
+.nav button{display:block;width:100%;text-align:left;border:0;background:transparent;padding:10px 12px;border-radius:8px;cursor:pointer;font:600 13px/1.2 inherit;color:var(--ink-soft,#5b6571);margin:0 0 4px}
+.nav button.on,.nav button:hover{background:color-mix(in srgb,var(--accent,#155c4a) 12%,transparent);color:var(--accent,#155c4a)}
+.main{padding:18px 20px 48px;min-width:0}
+.top{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;margin-bottom:14px}
+.card{background:var(--surface,#fff);border:1px solid var(--line,#e6e8ec);border-radius:14px;padding:16px 18px;margin-bottom:14px}
+.card h2{margin:0 0 8px;font-size:1.05rem}
+.sub{color:var(--ink-soft,#5b6571);font-size:13px;line-height:1.45;margin:0 0 12px}
+.btn{appearance:none;border:1px solid var(--accent,#155c4a);background:transparent;color:var(--accent);font:600 13px/1 inherit;padding:10px 14px;border-radius:10px;cursor:pointer;margin:0 8px 8px 0}
+.btn.solid{background:var(--accent,#155c4a);color:#fff}
+.btn.ghost{border-color:var(--line-strong,#d5d9df);color:var(--ink-soft)}
+.btn:disabled{opacity:.5}
+.field{margin:0 0 12px}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin:0 0 4px}
+.field input,.field select,.field textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line-strong,#d5d9df);font:inherit;background:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.metric{padding:12px;border-radius:12px;border:1px solid var(--line);background:#fff}
+.metric b{display:block;font-size:1.25rem;margin-top:4px}
+.hidden{display:none!important}
+.table{width:100%;border-collapse:collapse;font-size:13px}
+.table th,.table td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;background:color-mix(in srgb,var(--accent) 14%,transparent)}
+.cal-day{display:grid;gap:8px}
+.cal-item{padding:10px 12px;border-left:4px solid var(--accent);background:#fff;border:1px solid var(--line);border-radius:10px;cursor:pointer}
+.panel{position:fixed;top:0;right:0;width:min(420px,100%);height:100%;background:#fff;border-left:1px solid var(--line);box-shadow:0 0 40px rgba(0,0,0,.12);padding:18px;overflow:auto;z-index:40}
+.msg{font-size:13px;margin:8px 0}
+.msg.bad{color:#b91c1c}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:8px 12px;border-radius:999px;border:1px solid var(--line-strong);cursor:pointer;font-size:12px;font-weight:600;background:#fff}
+.chip.on{border-color:var(--accent);color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,#fff)}
+.login{max-width:400px;margin:12vh auto;padding:24px;border:1px solid var(--line);border-radius:16px;background:#fff}
+body.embed .nav h1{font-size:13px}
+</style>
+</head>
+<body>
+<div id="gate" class="login">
+  <h1>Bookings</h1>
+  <p class="sub">Sign in to manage appointments, classes and visits.</p>
+  <div class="field"><label>Email</label><input id="email" type="email"></div>
+  <div class="field"><label>Password</label><input id="password" type="password"></div>
+  <button class="btn solid" id="login-btn" type="button">Sign in</button>
+  <p class="msg bad hidden" id="gate-msg"></p>
+</div>
+
+<div id="app" class="layout hidden">
+  <nav class="nav" aria-label="Bookings">
+    <h1>Bookings</h1>
+    <button type="button" data-view="overview" class="on">Overview</button>
+    <button type="button" data-view="calendar">Calendar</button>
+    <button type="button" data-view="bookings">Bookings</button>
+    <button type="button" data-view="services">Services</button>
+    <button type="button" data-view="team">Team &amp; Resources</button>
+    <button type="button" data-view="settings">Settings</button>
+    <button type="button" data-view="onboarding">Setup</button>
+  </nav>
+  <main class="main">
+    <div class="top">
+      <div>
+        <strong id="site-label">Select a site</strong>
+        <div class="sub" id="tz-label"></div>
+      </div>
+      <div>
+        <select id="site-select" aria-label="Site"></select>
+        <button class="btn solid" type="button" id="btn-new">New booking</button>
+        <a class="btn ghost" id="btn-public" href="#" target="_blank" rel="noopener">Public link</a>
+      </div>
+    </div>
+    <p class="msg bad hidden" id="flash"></p>
+    <section id="view-overview"></section>
+    <section id="view-calendar" class="hidden"></section>
+    <section id="view-bookings" class="hidden"></section>
+    <section id="view-services" class="hidden"></section>
+    <section id="view-team" class="hidden"></section>
+    <section id="view-settings" class="hidden"></section>
+    <section id="view-onboarding" class="hidden"></section>
+  </main>
+</div>
+<div id="side" class="panel hidden" role="dialog" aria-modal="true"></div>
+
+<script>
+(function(){
+  var sb=window.supabase.createClient(window.__LP.url, window.__LP.anon);
+  var state={ token:null, siteId:null, siteSlug:null, system:null, services:[], team:[], view:'overview' };
+  var params=new URLSearchParams(location.search);
+  if(params.get('site_id')) state.siteId=params.get('site_id');
+
+  function $(id){ return document.getElementById(id); }
+  function show(el,on){ if(el) el.classList.toggle('hidden', !on); }
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]);}); }
+  function money(c){ c=Number(c)||0; return '$'+(c/100).toFixed(c%100?2:0); }
+  function flash(msg, bad){ var m=$('flash'); m.textContent=msg; m.className='msg '+(bad?'bad':''); show(m,!!msg); }
+
+  async function api(path, opts){
+    opts=opts||{};
+    var headers=Object.assign({'content-type':'application/json'}, opts.headers||{});
+    if(state.token) headers.Authorization='Bearer '+state.token;
+    var r=await fetch(path, Object.assign({}, opts, { headers:headers }));
+    var j=await r.json().catch(function(){return {};});
+    if(!r.ok) throw Object.assign(new Error(j.message||j.error||('HTTP '+r.status)), { status:r.status, body:j });
+    return j;
+  }
+
+  function setView(v){
+    state.view=v;
+    document.querySelectorAll('.nav [data-view]').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-view')===v); });
+    ['overview','calendar','bookings','services','team','settings','onboarding'].forEach(function(id){
+      show($('view-'+id), id===v);
+    });
+    if(v==='overview') loadOverview();
+    if(v==='calendar') loadCalendar();
+    if(v==='bookings') loadBookings();
+    if(v==='services') loadServices();
+    if(v==='team') loadServices();
+    if(v==='settings'||v==='onboarding') loadSystem();
+  }
+
+  async function loadSites(){
+    var { data }=await sb.from('sites').select('id,slug,business_name').order('business_name').limit(200);
+    var sel=$('site-select');
+    sel.innerHTML=(data||[]).map(function(s){
+      return '<option value="'+esc(s.id)+'" data-slug="'+esc(s.slug)+'"'+(s.id===state.siteId?' selected':'')+'>'+esc(s.business_name||s.slug)+'</option>';
+    }).join('');
+    if(!state.siteId && data && data[0]) state.siteId=data[0].id;
+    if(state.siteId) sel.value=state.siteId;
+    onSiteChange();
+  }
+
+  function onSiteChange(){
+    var sel=$('site-select');
+    state.siteId=sel.value;
+    var opt=sel.options[sel.selectedIndex];
+    state.siteSlug=opt && opt.getAttribute('data-slug');
+    $('site-label').textContent=opt?opt.textContent:'Site';
+    $('btn-public').href=state.siteSlug?('/book?slug='+encodeURIComponent(state.siteSlug)):'#';
+    loadSystem().then(function(){ setView(state.view); });
+  }
+
+  async function loadSystem(){
+    if(!state.siteId) return;
+    var j=await api('/api/bookings/system?site_id='+encodeURIComponent(state.siteId));
+    state.system=j.system;
+    $('tz-label').textContent=(j.system.timezone||'')+' · '+(j.system.enabled?'Enabled':'Setup required');
+    paintSettings();
+    paintOnboarding();
+    if(j.system.onboarding_step!=='done' && state.view==='overview'){
+      /* suggest setup but don't force */
+    }
+  }
+
+  async function loadOverview(){
+    if(!state.siteId) return;
+    var j=await api('/api/bookings/calendar?site_id='+encodeURIComponent(state.siteId)+'&view=overview');
+    var o=j.overview||{};
+    $('view-overview').innerHTML=
+      '<div class="grid">'
+      +metric('Today', o.today_count)
+      +metric('Pending', o.pending_count)
+      +metric('Revenue today', money(o.revenue_today_cents))
+      +metric('Revenue week', money(o.revenue_week_cents))
+      +metric('Revenue month', money(o.revenue_month_cents))
+      +'</div>'
+      +'<div class="card"><h2>Today</h2>'
+      +(o.next?'<p class="sub">Next: <strong>'+esc(o.next.customer_name)+'</strong> at '+esc(new Date(o.next.starts_at).toLocaleString())+'</p>':'<p class="sub">No upcoming bookings today.</p>')
+      +'<table class="table"><thead><tr><th>When</th><th>Customer</th><th>Status</th><th></th></tr></thead><tbody>'
+      +(o.today||[]).map(function(b){
+        return '<tr><td>'+esc(new Date(b.starts_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}))+'</td><td>'+esc(b.customer_name)+'<div class="sub">'+esc(b.reference)+'</div></td><td><span class="badge">'+esc(b.status)+'</span></td><td><button class="btn ghost" data-open="'+esc(b.id)+'" type="button">Open</button></td></tr>';
+      }).join('')
+      +'</tbody></table></div>'
+      +'<div class="card"><h2>Recent activity</h2>'
+      +(j.activity||[]).map(function(a){ return '<div class="sub" style="margin:6px 0">'+esc(a.summary)+' · '+esc(new Date(a.created_at).toLocaleString())+'</div>'; }).join('')
+      +(!(j.activity||[]).length?'<p class="sub">No activity yet.</p>':'')
+      +'</div>';
+  }
+
+  function metric(label, val){
+    return '<div class="metric"><span class="sub">'+esc(label)+'</span><b>'+esc(val)+'</b></div>';
+  }
+
+  async function loadCalendar(){
+    if(!state.siteId) return;
+    var from=new Date(); from.setHours(0,0,0,0);
+    var to=new Date(from); to.setDate(to.getDate()+7);
+    var j=await api('/api/bookings/calendar?site_id='+encodeURIComponent(state.siteId)+'&from='+encodeURIComponent(from.toISOString())+'&to='+encodeURIComponent(to.toISOString()));
+    var byDay={};
+    (j.events||[]).forEach(function(e){
+      var d=new Date(e.start).toDateString();
+      (byDay[d]=byDay[d]||[]).push(e);
+    });
+    var html='<div class="card"><h2>Next 7 days</h2><p class="sub">Day / agenda view. Open a booking for the side panel.</p>';
+    Object.keys(byDay).forEach(function(d){
+      html+='<h3 style="font-size:13px;margin:14px 0 8px">'+esc(d)+'</h3><div class="cal-day">';
+      byDay[d].forEach(function(e){
+        html+='<div class="cal-item" data-open="'+esc(e.id)+'" style="border-left-color:'+esc(e.colour)+'">'
+          +'<strong>'+esc(e.title)+'</strong>'
+          +'<div class="sub">'+esc(new Date(e.start).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}))
+          +'–'+esc(new Date(e.end).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}))
+          +' · <span class="badge">'+esc(e.status)+'</span></div></div>';
+      });
+      html+='</div>';
+    });
+    if(!Object.keys(byDay).length) html+='<p class="sub">No bookings in this range. <button class="btn solid" type="button" id="cal-new">Create one</button></p>';
+    html+='</div>';
+    $('view-calendar').innerHTML=html;
+  }
+
+  async function loadBookings(){
+    if(!state.siteId) return;
+    var j=await api('/api/bookings/bookings?site_id='+encodeURIComponent(state.siteId));
+    $('view-bookings').innerHTML='<div class="card"><h2>All bookings</h2><table class="table"><thead><tr><th>Ref</th><th>When</th><th>Customer</th><th>Status</th><th>Total</th><th></th></tr></thead><tbody>'
+      +(j.bookings||[]).map(function(b){
+        return '<tr><td>'+esc(b.reference)+'</td><td>'+esc(new Date(b.starts_at).toLocaleString())+'</td><td>'+esc(b.customer_name)+'</td><td><span class="badge">'+esc(b.status)+'</span></td><td>'+money(b.total_cents)+'</td><td><button class="btn ghost" type="button" data-open="'+esc(b.id)+'">Open</button></td></tr>';
+      }).join('')
+      +'</tbody></table></div>';
+  }
+
+  async function loadServices(){
+    if(!state.siteId) return;
+    var j=await api('/api/bookings/services?site_id='+encodeURIComponent(state.siteId));
+    state.services=j.services||[];
+    state.team=j.team||[];
+    $('view-services').innerHTML=
+      '<div class="card"><div class="top"><h2>Services</h2><button class="btn solid" type="button" id="add-service">Add service</button></div>'
+      +'<table class="table"><thead><tr><th>Name</th><th>Type</th><th>Duration</th><th>Price</th><th>Status</th></tr></thead><tbody>'
+      +state.services.map(function(s){
+        return '<tr><td>'+esc(s.name)+'</td><td>'+esc(s.booking_type)+'</td><td>'+esc(s.duration_minutes)+' min</td><td>'+money(s.price_cents)+'</td><td>'+esc(s.status)+'</td></tr>';
+      }).join('')
+      +'</tbody></table></div>';
+    $('view-team').innerHTML=
+      '<div class="card"><div class="top"><h2>Team</h2><button class="btn solid" type="button" id="add-team">Add team member</button></div>'
+      +'<table class="table"><thead><tr><th>Name</th><th>Title</th><th>Active</th></tr></thead><tbody>'
+      +state.team.map(function(t){
+        return '<tr><td>'+esc(t.display_name)+'</td><td>'+esc(t.job_title)+'</td><td>'+(t.active?'Yes':'No')+'</td></tr>';
+      }).join('')
+      +'</tbody></table></div>'
+      +'<div class="card"><div class="top"><h2>Resources</h2><button class="btn solid" type="button" id="add-resource">Add resource</button></div>'
+      +'<table class="table"><thead><tr><th>Name</th><th>Type</th><th>Qty</th></tr></thead><tbody>'
+      +(j.resources||[]).map(function(r){
+        return '<tr><td>'+esc(r.name)+'</td><td>'+esc(r.resource_type)+'</td><td>'+esc(r.quantity)+'</td></tr>';
+      }).join('')
+      +'</tbody></table></div>';
+  }
+
+  function paintSettings(){
+    var s=state.system||{};
+    $('view-settings').innerHTML=
+      '<div class="card"><h2>Settings</h2>'
+      +'<div class="field"><label>Business name</label><input id="set-name" value="'+esc(s.business_name||'')+'"></div>'
+      +'<div class="field"><label>Timezone</label><input id="set-tz" value="'+esc(s.timezone||'Australia/Sydney')+'"></div>'
+      +'<div class="field"><label>Payment rule</label><select id="set-pay">'
+      +[['none','No online payment'],['full_payment','Full payment'],['fixed_deposit','Fixed deposit'],['percentage_deposit','Percentage deposit'],['pay_later','Pay later'],['quote_required','Quote required']].map(function(o){
+        return '<option value="'+o[0]+'"'+(s.payment_rule===o[0]?' selected':'')+'>'+o[1]+'</option>';
+      }).join('')
+      +'</select></div>'
+      +'<div class="field"><label>Deposit (cents)</label><input id="set-dep" type="number" value="'+(s.deposit_amount_cents||0)+'"></div>'
+      +'<label class="ck"><input type="checkbox" id="set-on"'+(s.enabled?' checked':'')+'> System enabled</label>'
+      +'<div style="margin-top:12px"><button class="btn solid" type="button" id="save-settings">Save</button>'
+      +'<button class="btn ghost" type="button" id="seed-hours">Seed Mon–Fri 9–5</button></div></div>';
+  }
+
+  function paintOnboarding(){
+    var s=state.system||{};
+    var types=s.booking_types||['appointment'];
+    $('view-onboarding').innerHTML=
+      '<div class="card"><h2>Setup wizard</h2><p class="sub">Step: <strong>'+esc(s.onboarding_step||'types')+'</strong>. Resume anytime.</p>'
+      +'<h3 style="font-size:14px">1. Booking types</h3><div class="chips" id="type-chips">'
+      +[['appointment','Appointments'],['class','Classes / events'],['onsite','On-site visits'],['resource_hire','Resource hire']].map(function(t){
+        return '<button type="button" class="chip'+(types.indexOf(t[0])>=0?' on':'')+'" data-type="'+t[0]+'">'+t[1]+'</button>';
+      }).join('')
+      +'</div>'
+      +'<h3 style="font-size:14px;margin-top:16px">2. First service</h3>'
+      +'<div class="field"><label>Service name</label><input id="ob-svc" placeholder="Consultation"></div>'
+      +'<div class="field"><label>Duration (minutes)</label><input id="ob-dur" type="number" value="60"></div>'
+      +'<div class="field"><label>Price (AUD)</label><input id="ob-price" type="number" step="0.01" value="0"></div>'
+      +'<button class="btn solid" type="button" id="ob-save">Save &amp; continue</button>'
+      +'<button class="btn" type="button" id="ob-done">Finish setup</button></div>';
+  }
+
+  async function openBooking(id){
+    var j=await api('/api/bookings/bookings?site_id='+encodeURIComponent(state.siteId)+'&id='+encodeURIComponent(id));
+    var b=j.booking;
+    var side=$('side');
+    show(side,true);
+    side.innerHTML=
+      '<button class="btn ghost" type="button" id="side-close">Close</button>'
+      +'<h2 style="margin:8px 0">'+esc(b.reference)+'</h2>'
+      +'<p class="sub"><span class="badge">'+esc(b.status)+'</span> · '+esc(b.payment_status)+'</p>'
+      +'<p><strong>'+esc(b.customer_name)+'</strong><br>'+esc(b.customer_email)+'<br>'+esc(b.customer_phone)+'</p>'
+      +'<p>'+esc(new Date(b.starts_at).toLocaleString())+' – '+esc(new Date(b.ends_at).toLocaleTimeString())+'</p>'
+      +'<p><strong>'+money(b.total_cents)+'</strong> (deposit '+money(b.deposit_cents)+', paid '+money(b.amount_paid_cents)+')</p>'
+      +'<div class="field"><label>Internal notes</label><textarea id="side-notes" rows="3">'+esc(b.internal_notes||'')+'</textarea></div>'
+      +'<button class="btn solid" type="button" data-tr="confirmed">Confirm</button>'
+      +'<button class="btn" type="button" data-tr="checked_in">Check in</button>'
+      +'<button class="btn" type="button" data-tr="completed">Complete</button>'
+      +'<button class="btn ghost" type="button" data-tr="cancelled">Cancel</button>'
+      +'<button class="btn ghost" type="button" data-tr="no_show">No-show</button>'
+      +'<h3 style="font-size:14px;margin-top:16px">Activity</h3>'
+      +(j.activity||[]).map(function(a){ return '<div class="sub">'+esc(a.summary)+'</div>'; }).join('');
+    side.dataset.id=b.id;
+  }
+
+  function openNewBooking(){
+    var side=$('side');
+    show(side,true);
+    side.innerHTML=
+      '<button class="btn ghost" type="button" id="side-close">Close</button>'
+      +'<h2>New booking</h2>'
+      +'<div class="field"><label>Service</label><select id="nb-svc">'
+      +state.services.filter(function(s){return s.status==='active';}).map(function(s){
+        return '<option value="'+esc(s.id)+'">'+esc(s.name)+'</option>';
+      }).join('')
+      +'</select></div>'
+      +'<div class="field"><label>Customer name</label><input id="nb-name"></div>'
+      +'<div class="field"><label>Email</label><input id="nb-email" type="email"></div>'
+      +'<div class="field"><label>Phone</label><input id="nb-phone"></div>'
+      +'<div class="field"><label>Start</label><input id="nb-start" type="datetime-local"></div>'
+      +'<div class="field"><label>Team member</label><select id="nb-team"><option value="">First available / unassigned</option>'
+      +state.team.map(function(t){ return '<option value="'+esc(t.id)+'">'+esc(t.display_name)+'</option>'; }).join('')
+      +'</select></div>'
+      +'<button class="btn solid" type="button" id="nb-save">Save booking</button>'
+      +'<p class="msg bad hidden" id="nb-msg"></p>';
+  }
+
+  document.addEventListener('click', async function(e){
+    var v=e.target.closest('[data-view]'); if(v){ setView(v.getAttribute('data-view')); return; }
+    var open=e.target.closest('[data-open]'); if(open){ openBooking(open.getAttribute('data-open')); return; }
+    if(e.target.id==='side-close'){ show($('side'), false); return; }
+    if(e.target.id==='btn-new'||e.target.id==='cal-new'){ if(!state.services.length) await loadServices(); openNewBooking(); return; }
+    if(e.target.id==='nb-save'){
+      var msg=$('nb-msg');
+      try{
+        var start=new Date($('nb-start').value);
+        var j=await api('/api/bookings/bookings',{ method:'POST', body:JSON.stringify({
+          site_id:state.siteId,
+          service_id:$('nb-svc').value,
+          customer_name:$('nb-name').value.trim(),
+          customer_email:$('nb-email').value.trim(),
+          customer_phone:$('nb-phone').value.trim(),
+          starts_at:start.toISOString(),
+          team_member_id:$('nb-team').value||null,
+          force:true
+        })});
+        flash('Created '+j.booking.reference);
+        show($('side'), false);
+        setView(state.view);
+      }catch(err){ msg.textContent=err.message; show(msg,true); }
+      return;
+    }
+    var tr=e.target.closest('[data-tr]');
+    if(tr){
+      var id=$('side').dataset.id;
+      await api('/api/bookings/bookings',{ method:'POST', body:JSON.stringify({ site_id:state.siteId, action:'transition', id:id, status:tr.getAttribute('data-tr') }) });
+      openBooking(id); setView(state.view);
+      return;
+    }
+    if(e.target.id==='add-service'){
+      var name=prompt('Service name'); if(!name) return;
+      await api('/api/bookings/services',{ method:'POST', body:JSON.stringify({ site_id:state.siteId, name:name, duration_minutes:60, price_cents:0 }) });
+      loadServices(); return;
+    }
+    if(e.target.id==='add-team'){
+      var n=prompt('Team member name'); if(!n) return;
+      await api('/api/bookings/services',{ method:'POST', body:JSON.stringify({ site_id:state.siteId, kind:'team', display_name:n }) });
+      loadServices(); return;
+    }
+    if(e.target.id==='add-resource'){
+      var rn=prompt('Resource name'); if(!rn) return;
+      await api('/api/bookings/services',{ method:'POST', body:JSON.stringify({ site_id:state.siteId, kind:'resource', name:rn }) });
+      loadServices(); return;
+    }
+    if(e.target.id==='save-settings'){
+      await api('/api/bookings/system',{ method:'POST', body:JSON.stringify({
+        site_id:state.siteId,
+        business_name:$('set-name').value,
+        timezone:$('set-tz').value,
+        payment_rule:$('set-pay').value,
+        deposit_amount_cents:Number($('set-dep').value)||0,
+        enabled:$('set-on').checked
+      })});
+      flash('Settings saved'); loadSystem(); return;
+    }
+    if(e.target.id==='seed-hours'){
+      await api('/api/bookings/system',{ method:'POST', body:JSON.stringify({ site_id:state.siteId, action:'seed_default_hours' }) });
+      flash('Weekday hours seeded'); return;
+    }
+    var chip=e.target.closest('[data-type]');
+    if(chip){
+      chip.classList.toggle('on');
+      return;
+    }
+    if(e.target.id==='ob-save'){
+      var types=[].map.call(document.querySelectorAll('#type-chips .chip.on'), function(c){ return c.getAttribute('data-type'); });
+      await api('/api/bookings/system',{ method:'POST', body:JSON.stringify({ site_id:state.siteId, booking_types:types.length?types:['appointment'], onboarding_step:'service', business_name:state.system.business_name||$('site-label').textContent }) });
+      var price=Math.round((Number($('ob-price').value)||0)*100);
+      if($('ob-svc').value.trim()){
+        await api('/api/bookings/services',{ method:'POST', body:JSON.stringify({ site_id:state.siteId, name:$('ob-svc').value.trim(), duration_minutes:Number($('ob-dur').value)||60, price_cents:price, booking_type:types[0]||'appointment' }) });
+      }
+      await api('/api/bookings/system',{ method:'POST', body:JSON.stringify({ site_id:state.siteId, action:'seed_default_hours', onboarding_step:'availability' }) });
+      flash('Service saved — hours seeded'); loadSystem(); return;
+    }
+    if(e.target.id==='ob-done'){
+      await api('/api/bookings/system',{ method:'POST', body:JSON.stringify({ site_id:state.siteId, action:'complete_onboarding' }) });
+      flash('Bookings is live'); loadSystem(); setView('overview'); return;
+    }
+  });
+
+  $('site-select').addEventListener('change', onSiteChange);
+  document.querySelectorAll('.nav [data-view]').forEach(function(b){ /* wired via delegation */ });
+
+  async function boot(){
+    var sess=await sb.auth.getSession();
+    var s=sess&&sess.data&&sess.data.session;
+    if(!s){ show($('gate'), true); show($('app'), false); return; }
+    state.token=s.access_token;
+    show($('gate'), false); show($('app'), true);
+    await loadSites();
+  }
+  $('login-btn').addEventListener('click', async function(){
+    var r=await sb.auth.signInWithPassword({ email:$('email').value.trim(), password:$('password').value });
+    if(r.error){ $('gate-msg').textContent=r.error.message; show($('gate-msg'), true); return; }
+    boot();
+  });
+  boot();
+})();
+</script>
+</body>
+</html>

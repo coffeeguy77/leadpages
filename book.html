@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Book — LeadPages</title>
+<meta name="robots" content="noindex">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#15191e;--muted:#5b6571;--line:#e6e8ec;--accent:#155c4a;--bg:#f6f7f9;--card:#fff;--radius:14px;--font:'DM Sans',system-ui,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;font-family:var(--font);background:var(--bg);color:var(--ink);min-height:100vh}
+.wrap{max-width:720px;margin:0 auto;padding:24px 16px 64px}
+.brand{display:flex;gap:12px;align-items:center;margin-bottom:18px}
+.brand img{width:48px;height:48px;border-radius:10px;object-fit:cover}
+.brand h1{margin:0;font-size:1.35rem}
+.sub{color:var(--muted);font-size:14px;line-height:1.45;margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-bottom:14px}
+.steps{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px}
+.steps span{font-size:11px;font-weight:700;padding:5px 9px;border-radius:999px;background:#eef1f4;color:var(--muted)}
+.steps span.on{background:color-mix(in srgb,var(--accent) 18%,#fff);color:var(--accent)}
+.svc{display:block;width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:12px;padding:14px;margin:0 0 8px;cursor:pointer;font:inherit}
+.svc:hover,.svc.on{border-color:var(--accent)}
+.svc strong{display:block;margin-bottom:4px}
+.field{margin:0 0 12px}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin:0 0 4px}
+.field input,.field select,.field textarea{width:100%;padding:11px 12px;border-radius:10px;border:1px solid #d5d9df;font:inherit}
+.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.slot{border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 8px;cursor:pointer;font:600 13px/1 inherit}
+.slot.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,#fff);color:var(--accent)}
+.btn{appearance:none;border:1px solid var(--accent);background:var(--accent);color:#fff;font:600 14px/1 var(--font);padding:12px 16px;border-radius:10px;cursor:pointer;margin:0 8px 8px 0}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn:disabled{opacity:.5}
+.summary{font-size:14px;line-height:1.5}
+.msg{font-size:13px;margin:8px 0}
+.msg.bad{color:#b91c1c}
+.hidden{display:none!important}
+.legal{font-size:11px;color:#8a93a0;margin-top:16px;line-height:1.4}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="brand">
+    <img id="logo" class="hidden" alt="">
+    <div>
+      <h1 id="biz-name">Book online</h1>
+      <p class="sub" id="biz-meta"></p>
+    </div>
+  </div>
+  <div class="steps" id="steps" aria-hidden="true"></div>
+  <p class="msg bad hidden" id="err"></p>
+  <section class="card" id="panel"></section>
+  <p class="legal">Times shown in the business timezone. By booking you agree to this business’s cancellation policy.</p>
+</main>
+<script>
+(function(){
+  var params=new URLSearchParams(location.search);
+  var slug=params.get('slug')||'';
+  var preService=params.get('service')||'';
+  var state={ catalogue:null, step:0, service:null, teamId:'', date:'', slot:null, idempotency: (crypto.randomUUID?crypto.randomUUID():String(Date.now())) };
+  var STEPS=['Service','When','Your details','Confirm'];
+
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]);}); }
+  function money(c){ c=Number(c)||0; return '$'+(c/100).toFixed(c%100?2:0); }
+  function err(m){ var e=$('err'); e.textContent=m||''; e.classList.toggle('hidden', !m); }
+  function paintSteps(){
+    $('steps').innerHTML=STEPS.map(function(s,i){ return '<span class="'+(i===state.step?'on':'')+'">'+(i+1)+'. '+esc(s)+'</span>'; }).join('');
+  }
+
+  async function load(){
+    if(!slug){ err('Missing business link (?slug=)'); return; }
+    var r=await fetch('/api/bookings/public?slug='+encodeURIComponent(slug));
+    var j=await r.json();
+    if(!r.ok||!j.ok){ err(j.message||j.error||'Bookings unavailable'); return; }
+    state.catalogue=j;
+    $('biz-name').textContent=j.business.name||'Book online';
+    $('biz-meta').textContent=(j.business.timezone||'')+(j.business.phone?' · '+j.business.phone:'');
+    if(j.business.logo_url){ var img=$('logo'); img.src=j.business.logo_url; img.classList.remove('hidden'); }
+    if(preService){
+      state.service=(j.services||[]).find(function(s){ return s.id===preService||s.slug===preService; })||null;
+      if(state.service) state.step=1;
+    }
+    render();
+  }
+
+  function render(){
+    paintSteps();
+    err('');
+    var p=$('panel');
+    if(state.step===0){
+      p.innerHTML='<h2 style="margin:0 0 8px;font-size:1.1rem">Choose a service</h2><p class="sub">Pick what you’d like to book.</p>'
+        +(state.catalogue.services||[]).map(function(s){
+          return '<button type="button" class="svc'+(state.service&&state.service.id===s.id?' on':'')+'" data-svc="'+esc(s.id)+'">'
+            +'<strong>'+esc(s.name)+'</strong>'
+            +'<span class="sub">'+esc(s.duration_minutes)+' min'
+            +(s.price_model==='free'?' · Free':(s.price_model==='quote_required'?' · Quote':' · from '+money(s.price_cents)))
+            +'</span>'
+            +(s.short_description?'<div class="sub" style="margin-top:6px">'+esc(s.short_description)+'</div>':'')
+            +'</button>';
+        }).join('')
+        +(!(state.catalogue.services||[]).length?'<p class="sub">No public services yet.</p>':'');
+      return;
+    }
+    if(state.step===1){
+      var today=new Date(); var ymd=today.toISOString().slice(0,10);
+      p.innerHTML='<h2 style="margin:0 0 8px;font-size:1.1rem">'+esc(state.service.name)+'</h2>'
+        +'<p class="sub">'+esc(state.service.duration_minutes)+' minutes · '+esc(state.catalogue.business.timezone)+'</p>'
+        +((state.catalogue.team||[]).length?'<div class="field"><label>Team member</label><select id="team"><option value="">Anyone available</option>'
+          +state.catalogue.team.map(function(t){ return '<option value="'+esc(t.id)+'"'+(state.teamId===t.id?' selected':'')+'>'+esc(t.display_name)+'</option>'; }).join('')
+          +'</select></div>':'')
+        +'<div class="field"><label>Date</label><input type="date" id="date" value="'+esc(state.date||ymd)+'" min="'+esc(ymd)+'"></div>'
+        +'<div id="slots" class="slots"><p class="sub">Pick a date to see times.</p></div>'
+        +'<button class="btn ghost" type="button" id="back">Back</button>';
+      loadSlots();
+      return;
+    }
+    if(state.step===2){
+      p.innerHTML='<h2 style="margin:0 0 8px;font-size:1.1rem">Your details</h2>'
+        +'<p class="sub">'+esc(state.service.name)+' · '+esc(new Date(state.slot.start).toLocaleString())+'</p>'
+        +'<div class="field"><label>Full name</label><input id="name" autocomplete="name" required></div>'
+        +'<div class="field"><label>Email</label><input id="email" type="email" autocomplete="email"></div>'
+        +'<div class="field"><label>Phone</label><input id="phone" type="tel" autocomplete="tel"></div>'
+        +'<div class="field"><label>Notes (optional)</label><textarea id="notes" rows="3"></textarea></div>'
+        +'<button class="btn ghost" type="button" id="back">Back</button>'
+        +'<button class="btn" type="button" id="next">Continue</button>';
+      return;
+    }
+    if(state.step===3){
+      p.innerHTML='<h2 style="margin:0 0 8px;font-size:1.1rem">Confirm</h2>'
+        +'<div class="summary">'
+        +'<p><strong>'+esc(state.service.name)+'</strong><br>'+esc(new Date(state.slot.start).toLocaleString())+' ('+esc(state.catalogue.business.timezone)+')</p>'
+        +'<p>'+esc(state.customer.name)+'<br>'+esc(state.customer.email)+'<br>'+esc(state.customer.phone)+'</p>'
+        +'<p>Price: <strong>'+(state.service.price_model==='quote_required'?'Quote required':money(state.service.price_cents))+'</strong></p>'
+        +'</div>'
+        +'<button class="btn ghost" type="button" id="back">Back</button>'
+        +'<button class="btn" type="button" id="book">Confirm booking</button>';
+    }
+    if(state.step===4){
+      var b=state.result&&state.result.booking;
+      p.innerHTML='<h2 style="margin:0 0 8px;font-size:1.1rem">You’re booked</h2>'
+        +'<p class="sub">Reference <strong>'+esc(b.reference)+'</strong> · '+esc(b.status)+'</p>'
+        +'<p>'+esc(b.service_name)+'<br>'+esc(new Date(b.starts_at).toLocaleString())+'</p>'
+        +(b.customer_instructions?'<p class="sub">'+esc(b.customer_instructions)+'</p>':'')
+        +'<a class="btn" href="'+esc(state.result.portal_url)+'">Manage booking</a>'
+        +'<a class="btn ghost" href="'+location.pathname+'?slug='+encodeURIComponent(slug)+'">Book another</a>';
+    }
+  }
+
+  async function loadSlots(){
+    var dateEl=$('date'); if(!dateEl) return;
+    state.date=dateEl.value;
+    state.teamId=$('team')?$('team').value:'';
+    var box=$('slots');
+    box.innerHTML='<p class="sub">Loading times…</p>';
+    var q='/api/bookings/availability?slug='+encodeURIComponent(slug)
+      +'&service_id='+encodeURIComponent(state.service.id)
+      +'&date='+encodeURIComponent(state.date);
+    if(state.teamId) q+='&team_member_id='+encodeURIComponent(state.teamId);
+    var r=await fetch(q); var j=await r.json();
+    if(!r.ok||!j.ok){ box.innerHTML='<p class="msg bad">'+(j.message||j.error||'Could not load times')+'</p>'; return; }
+    if(!(j.slots||[]).length){
+      box.innerHTML='<p class="sub">'+(j.reasons&&j.reasons[0]&&j.reasons[0].message||'No times available that day.')+'</p>';
+      return;
+    }
+    box.innerHTML=j.slots.map(function(s){
+      return '<button type="button" class="slot'+(state.slot&&state.slot.start===s.start?' on':'')+'" data-start="'+esc(s.start)+'" data-end="'+esc(s.end)+'">'+esc(s.localTime)+'</button>';
+    }).join('');
+  }
+
+  document.addEventListener('click', async function(e){
+    var svc=e.target.closest('[data-svc]');
+    if(svc){
+      state.service=state.catalogue.services.find(function(s){ return s.id===svc.getAttribute('data-svc'); });
+      state.step=1; state.slot=null; render(); return;
+    }
+    var slot=e.target.closest('[data-start]');
+    if(slot){
+      state.slot={ start:slot.getAttribute('data-start'), end:slot.getAttribute('data-end') };
+      state.step=2; render(); return;
+    }
+    if(e.target.id==='back'){ state.step=Math.max(0, state.step-1); render(); return; }
+    if(e.target.id==='next'){
+      var name=$('name').value.trim();
+      var email=$('email').value.trim();
+      var phone=$('phone').value.trim();
+      if(!name||(!email&&!phone)){ err('Name and email or phone are required.'); return; }
+      state.customer={ name:name, email:email, phone:phone, notes:$('notes').value.trim() };
+      state.step=3; render(); return;
+    }
+    if(e.target.id==='book'){
+      e.target.disabled=true;
+      try{
+        var r=await fetch('/api/bookings/public',{
+          method:'POST',
+          headers:{'content-type':'application/json'},
+          body:JSON.stringify({
+            slug:slug,
+            service_id:state.service.id,
+            starts_at:state.slot.start,
+            team_member_id:state.teamId||null,
+            customer_name:state.customer.name,
+            customer_email:state.customer.email,
+            customer_phone:state.customer.phone,
+            customer_notes:state.customer.notes,
+            idempotency_key:state.idempotency
+          })
+        });
+        var j=await r.json();
+        if(!r.ok||!j.ok) throw new Error(j.message||j.error||'Booking failed');
+        state.result=j; state.step=4; render();
+      }catch(ex){ err(ex.message); e.target.disabled=false; }
+    }
+  });
+  document.addEventListener('change', function(e){
+    if(e.target.id==='date'||e.target.id==='team') loadSlots();
+  });
+  load();
+})();
+</script>
+</body>
+</html>

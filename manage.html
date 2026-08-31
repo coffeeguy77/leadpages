@@ -790,6 +790,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     <button class="anav-btn" id="nav-apps" aria-selected="false" aria-label="App Marketplace"><span class="anav-l1">App</span><span class="anav-gap"> </span><span class="anav-l2">Marketplace</span></button>
     <button class="anav-btn" id="nav-onlinequotes" aria-selected="false" style="display:none" aria-label="Quote Builder"><span class="anav-l1">Quote</span><span class="anav-gap"> </span><span class="anav-l2">Builder</span></button>
     <button class="anav-btn" id="nav-orders" aria-selected="false" style="display:none" aria-label="Orders"><span class="anav-l1">Orders</span></button>
+    <button class="anav-btn" id="nav-bookings" aria-selected="false" style="display:none" aria-label="Bookings"><span class="anav-l1">Bookings</span></button>
     <button class="anav-btn" id="nav-mailer" aria-selected="false">Newsletter</button>
     <button class="anav-btn" id="nav-messages" aria-selected="false">Support</button>
     <button class="anav-btn" id="nav-appearance" aria-selected="false">Appearance</button>
@@ -814,6 +815,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   <div id="av-onlinequotes" hidden></div>
 
   <div id="av-orders" hidden></div>
+  <div id="av-bookings" hidden></div>
 
   <div id="av-mailer" hidden></div>
 
@@ -3344,6 +3346,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     serviceAreaMap:{on:false,eyebrow:'Service area',heading:'Suburbs we cover across the ACT',intro:'Local, Canberra-wide coverage. Here’s where we work — if you’re nearby, get in touch.'},
     onlineQuote:{on:false,eyebrow:'Online quote',heading:'Get your verified quote',intro:'Answer a few questions — verify your email to see your total, then SMS for the full breakdown.',bg:'',eyebrowColor:'',headingColor:'',introColor:''},
     orderStorefront:{on:false,eyebrow:'Order online',heading:'Place your order',intro:'Choose products, pick a pickup date, and pay your deposit if required.',showPortalLink:true,portalCtaLabel:'Sign in to your orders',bg:'',eyebrowColor:'',headingColor:'',introColor:'',accent:'',cardBg:'',cardBorder:'',text:'',muted:'',btnBg:'',btnText:'',inputBg:'',inputBorder:'',maxWidth:'',padding:'',radius:''},
+    bookingStorefront:{on:false,eyebrow:'Book online',heading:'Book an appointment',intro:'Choose a service and a time that works for you.',ctaLabel:'Book now',bg:'',eyebrowColor:'',headingColor:'',introColor:'',accent:'',btnBg:'',btnText:'',maxWidth:'',padding:'',radius:''},
     customHtml:{on:false,title:'',html:'',cssUrls:[],jsUrls:[],cssVars:{},fullBleed:true,bg:''},
     estimateBuilder:{on:false,eyebrow:'Instant estimate',heading:'Get a ballpark price in 30 seconds',intro:'Answer a few quick questions for an indicative range. For an exact price, send the details through and we’ll confirm.',currency:'$',disclaimer:'This is a guide only — your final price is confirmed after a quick on-site inspection.',ctaText:'Get my exact quote'},
     certifications:{eyebrow:'Accredited & insured',heading:'Licensed, insured & accredited',intro:'Fully qualified and backed by recognised industry accreditations — so you know the job is done right.'},
@@ -3517,12 +3520,12 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   function themeFromPreset(tradeKey){ var p=getTradeColourPreset(tradeKey); return { pipe:p.brand, hivis:p.cta, steel:p.dark, safety:p.highlight, accent:p.accent, lightBg:p.lightBg, presetName:p.presetName, presetKey:tradeKey }; }
   const LAYOUTS = { classic: { id: "classic", name: "Classic Conversion", description: "Current tradie landing page.", sections: ["emerg","hero","services","serviceProcess","featureStrip","why","crew","area","reviews","quote","faq","footer"], features: [] }, "quote-first": { id: "quote-first", name: "Quote First", description: "Hero and quote form appear together above the fold for paid traffic.", sections: ["emerg","hero","quote","services","serviceProcess","featureStrip","why","crew","reviews","area","faq","footer"], features: ["heroQuote"] }, "photo-proof": { id: "photo-proof", name: "Photo Proof", description: "Shows project proof early with a before and after gallery.", sections: ["emerg","hero","services","serviceProcess","featureStrip","beforeAfter","reviews","why","crew","area","quote","faq","footer"], features: ["beforeAfter"] }, "emergency-response": { id: "emergency-response", name: "Emergency Response", description: "Urgency-first page: trust badges and quote form pushed high for emergency trades.", sections: ["emerg","hero","responseCards","quote","services","serviceProcess","featureStrip","reviews","why","crew","faq","area","footer"], features: ["responseCards"] }, "authority-builder": { id: "authority-builder", name: "Authority Builder", description: "Leads with big credibility numbers to establish an experienced, established business.", sections: ["emerg","hero","projectStats","services","serviceProcess","featureStrip","why","crew","area","reviews","quote","faq","footer"], features: ["projectStats"] }, "service-area-dominator": { id: "service-area-dominator", name: "Service Area Dominator", description: "Leads with a large suburb coverage grid under the hero to dominate local SEO and paid search.", sections: ["emerg","hero","serviceAreas","services","serviceProcess","featureStrip","why","crew","reviews","area","quote","faq","footer"], features: ["serviceAreas"] }, "reviews-first": { id: "reviews-first", name: "Reviews First", description: "Leads with star-rated review highlights under the hero so visitors hit social proof first.", sections: ["emerg","hero","reviewHighlights","quote","services","serviceProcess","featureStrip","reviews","faq","why","crew","area","footer"], features: ["reviewHighlights"] }, "premium-showcase": { id: "premium-showcase", name: "Premium Showcase", description: "A mini portfolio of large project image cards under the hero \u2014 for high-end visual trades.", sections: ["emerg","hero","featuredProjects","services","serviceProcess","featureStrip","reviews","why","crew","area","quote","faq","footer"], features: ["featuredProjects"] }, "offer-funnel": { id: "offer-funnel", name: "Offer Funnel", description: "AdWords lead-gen layout: a bold special-offer banner under the hero, straight into the quote form.", sections: ["emerg","hero","specialOffer","quote","services","serviceProcess","featureStrip","reviews","faq","why","crew","area","footer"], features: ["specialOffer"] }, "ba-hero-slider": { id: "ba-hero-slider", name: "Before / After Hero Slider", description: "A large interactive before/after wipe slider near the top of the page.", sections: ["emerg","hero","heroBeforeAfter","services","serviceProcess","featureStrip","reviews","why","crew","area","quote","faq","footer"], features: ["heroBeforeAfter"] }, "hero-image-slider": { id: "hero-image-slider", name: "Hero Image Slider", description: "Large image hero with editable slides, overlay text, CTA buttons and transitions.", sections: ["emerg","heroSlider","services","serviceProcess","featureStrip","why","crew","reviews","area","quote","faq","footer"], features: ["heroSlider"] }, "social-proof-feed": { id: "social-proof-feed", name: "Social Proof Feed", description: "A live, modern \u201cproof feed\u201d of jobs, reviews, videos and before/afters \u2014 every card links to a CTA.", sections: ["emerg","splitHero","activityCounter","activityTimeline","proofStream","projectFeed","jobsFeed","beforeAfterFeed","videoReels","services","serviceProcess","featureStrip","reviews","customerReactions","why","crew","area","quote","faq","footer"], features: ["proofStream","splitHero","activityCounter","crew","jobsFeed","beforeAfterFeed","videoReels","activityTimeline","customerReactions","projectFeed"] } };
   function getLayout(layoutId){ return (layoutId && LAYOUTS[layoutId]) ? LAYOUTS[layoutId] : LAYOUTS.classic; }
-  const OFF_BY_DEFAULT_SECTIONS=['searchCanvas','featureStrip','instaGallery','igProjectFeed','lpAccessibility','navMenu','mobileBar','emergencyAvailability','onlineQuote','orderStorefront','customHtml','estimateBuilder','finance','serviceAreaMap','beforeAfter','responseCards','projectStats','serviceAreas','reviewHighlights','featuredProjects','premiumGallery','specialOffer','heroBeforeAfter','heroSlider','splitHero','activityCounter','proofStream','projectFeed','jobsFeed','beforeAfterFeed','videoReels','activityTimeline','customerReactions','textBox','seoText','scrollingSponsorBanner'];
-  const OPTIONAL_COMPONENTS=['searchCanvas','featureStrip','instaGallery','igProjectFeed','beforeAfter','responseCards','projectStats','serviceAreas','reviewHighlights','featuredProjects','premiumGallery','specialOffer','heroBeforeAfter','heroSlider','splitHero','activityCounter','proofStream','projectFeed','jobsFeed','beforeAfterFeed','videoReels','activityTimeline','customerReactions','textBox','seoText','onlineQuote','orderStorefront','customHtml','estimateBuilder','finance','serviceAreaMap','emergencyAvailability','certifications','promotions','scrollingSponsorBanner'];
+  const OFF_BY_DEFAULT_SECTIONS=['searchCanvas','featureStrip','instaGallery','igProjectFeed','lpAccessibility','navMenu','mobileBar','emergencyAvailability','onlineQuote','orderStorefront','bookingStorefront','customHtml','estimateBuilder','finance','serviceAreaMap','beforeAfter','responseCards','projectStats','serviceAreas','reviewHighlights','featuredProjects','premiumGallery','specialOffer','heroBeforeAfter','heroSlider','splitHero','activityCounter','proofStream','projectFeed','jobsFeed','beforeAfterFeed','videoReels','activityTimeline','customerReactions','textBox','seoText','scrollingSponsorBanner'];
+  const OPTIONAL_COMPONENTS=['searchCanvas','featureStrip','instaGallery','igProjectFeed','beforeAfter','responseCards','projectStats','serviceAreas','reviewHighlights','featuredProjects','premiumGallery','specialOffer','heroBeforeAfter','heroSlider','splitHero','activityCounter','proofStream','projectFeed','jobsFeed','beforeAfterFeed','videoReels','activityTimeline','customerReactions','textBox','seoText','onlineQuote','orderStorefront','bookingStorefront','customHtml','estimateBuilder','finance','serviceAreaMap','emergencyAvailability','certifications','promotions','scrollingSponsorBanner'];
   const PAGE_CONTENT_EDITONLY=['details','seoTokens','branding','logo','sectionOrder','lpFooter'];
   function layoutHasFeature(c,feat){ try{ var f=getLayout((c&&c.layout)||"classic").features||[]; return f.indexOf(feat)>=0; }catch(e){ return false; } }
   function wireLayout(c){ var el=$('layout-pick'); if(!el) return; el.value=getLayout(c.layout).id; el.onchange=function(){ c.layout=getLayout(el.value).id; persist(); previewApply(); renderDetails(); }; }
-  var HERO_CTA_SCROLL_TARGETS=[['quote','Quote form'],['onlineQuote','Online Quote'],['orderStorefront','Order Storefront'],['customHtml','Custom HTML'],['estimateBuilder','Estimate Builder'],['finance','Finance Options'],['specialOffer','Special Offer'],['promotions','Promotions'],['scrollingSponsorBanner','Scrolling Sponsor Banner'],['emergencyAvailability','Emergency Availability'],['services','Services'],['serviceProcess','How It Works'],['why','Why us'],['reviews','Reviews'],['faq','FAQ'],['area','Where we work'],['crew','Team'],['beforeAfter','Before & After'],['featuredProjects','Project Portfolio'],['premiumGallery','Premium Gallery'],['serviceAreaMap','Service Area Map'],['projectFeed','Project Feed'],['jobsFeed','Jobs Feed']];
+  var HERO_CTA_SCROLL_TARGETS=[['quote','Quote form'],['onlineQuote','Online Quote'],['orderStorefront','Order Storefront'],['bookingStorefront','Bookings'],['customHtml','Custom HTML'],['estimateBuilder','Estimate Builder'],['finance','Finance Options'],['specialOffer','Special Offer'],['promotions','Promotions'],['scrollingSponsorBanner','Scrolling Sponsor Banner'],['emergencyAvailability','Emergency Availability'],['services','Services'],['serviceProcess','How It Works'],['why','Why us'],['reviews','Reviews'],['faq','FAQ'],['area','Where we work'],['crew','Team'],['beforeAfter','Before & After'],['featuredProjects','Project Portfolio'],['premiumGallery','Premium Gallery'],['serviceAreaMap','Service Area Map'],['projectFeed','Project Feed'],['jobsFeed','Jobs Feed']];
   function heroCtaScrollOptsHtml(sel){ return HERO_CTA_SCROLL_TARGETS.map(function(o){ return '<option value="'+o[0]+'"'+(sel===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join(''); }
   function _secLabel(id){ for(var i=0;i<TRADE_SUBTABS.length;i++){ if(TRADE_SUBTABS[i][0]===id) return TRADE_SUBTABS[i][1]; } return id; }
   function _secOn(c,id){ if(id==='lpFooter') return true; var s=(c&&c.sections&&c.sections[id])||{}; return (OFF_BY_DEFAULT_SECTIONS.indexOf(id)>=0)?(s.on===true):(s.on!==false); }
@@ -4203,7 +4206,7 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
     var CORE_GROUPS=[
       ['Business Identity & Hero Area',['branding','logo','details','hero','splitHero','heroBeforeAfter','heroSlider','emerg','mobileBar','sectionOrder']],
       ['Services & Selling Content',['services','serviceProcess','featureStrip','serviceAreas','serviceAreaMap','seoTokens','finance','searchCanvas','seoText','textBox','videoReels']],
-      ['Lead Capture & Conversion',['quote','onlineQuote','orderStorefront','customHtml','promotions','faq','estimateBuilder','jobsFeed','emergencyAvailability','specialOffer','responseCards']],
+      ['Lead Capture & Conversion',['quote','onlineQuote','orderStorefront','bookingStorefront','customHtml','promotions','faq','estimateBuilder','jobsFeed','emergencyAvailability','specialOffer','responseCards']],
       ['Trust, Proof & Authority',['trustBar','scrollingSponsorBanner','certifications','reviews','reviewHighlights','customerReactions','proofStream','activityCounter','activityTimeline']],
       ['Projects, Gallery & Before/After',['projectFeed','igProjectFeed','instaGallery','featuredProjects','premiumGallery','projectStats','beforeAfter','beforeAfterFeed']],
       ['Company & Location Details',['crew','area','why','navMenu','footer','lpFooter']]
@@ -8475,6 +8478,17 @@ function heroCtaCard(c){
         var pl=$('os-portal-label'); if(pl){ pl.addEventListener('input',function(){ ens().portalCtaLabel=pl.value; persist(); previewApply(); }); }
       })();
       var og=$('os-goto-orders'); if(og) og.addEventListener('click',function(){ if(typeof showView==='function') showView('orders'); });
+    } else if(sub==='bookingStorefront'){
+      body.innerHTML=secCard(c,'bookingStorefront','Bookings',true,[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro','ta'],['ctaLabel','Button label']])
+        +'<div class="card" style="margin-bottom:22px;"><h2>How it works</h2>'
+        +'<p class="lede">Adds a Bookings call-to-action on the live site. Full scheduling lives under the <strong>Bookings</strong> tab (services, calendar, availability).</p>'
+        +'<p class="hint" style="margin:0 0 12px;">Public book URL: <code>/book?slug='+esc(currentSiteSlug||'your-slug')+'</code></p>'
+        +'<p style="margin:0;display:flex;flex-wrap:wrap;gap:8px;">'
+        +'<button type="button" class="btn" id="bk-goto-admin">Open Bookings</button>'
+        +'<a class="btn ghost" href="/book?slug='+esc(currentSiteSlug||'')+'" target="_blank" rel="noopener" style="text-decoration:none;">Preview booking page ↗</a>'
+        +'</p></div>';
+      wireSec(c,'bookingStorefront',true,[['eyebrow'],['heading'],['intro'],['ctaLabel']]);
+      var bg=$('bk-goto-admin'); if(bg) bg.addEventListener('click',function(){ if(typeof showView==='function') showView('bookings'); });
     } else if(sub==='customHtml'){
       if(!c.sections) c.sections={}; if(!c.sections.customHtml) c.sections.customHtml=JSON.parse(JSON.stringify(DEFAULT_TRADE_SECTIONS.customHtml||{}));
       var CH=c.sections.customHtml;
@@ -10079,6 +10093,17 @@ function heroCtaCard(c){
       tools.appendChild(od);
     }
     mv('lpc-order-desk', tools);
+    if(!$('lpc-bookings-desk')){
+      var bd=document.createElement('button');
+      bd.id='lpc-bookings-desk';
+      bd.className='btn';
+      bd.type='button';
+      bd.textContent='Bookings';
+      bd.title='Bookings — appointments, classes, visits';
+      bd.addEventListener('click', function(){ if(typeof showView==='function') showView('bookings'); });
+      tools.appendChild(bd);
+    }
+    mv('lpc-bookings-desk', tools);
     if(currentRole==='super'){
       if(!$('lpc-ops-command')){ var oc=document.createElement('a'); oc.id='lpc-ops-command'; oc.className='btn'; oc.href='/command'; oc.style.textDecoration='none'; oc.textContent='Ops Command'; tools.appendChild(oc); }
       else mv('lpc-ops-command', tools);
@@ -10720,8 +10745,8 @@ function heroCtaCard(c){
     toast('Removed “'+name+'”'); renderSharedThemes();
   }
   /* ===== end leadpages integration ===== */
-  const ALLOWED={ super:['rates','landing','ai-team','appearance','themes','contact','logo','users','demothemes','details','mailer','messages','apps','onlinequotes','orders','dashboard','advertising','seo'], broker:['appearance','themes','contact','logo','landing','ai-team','details','mailer','messages','apps','onlinequotes','orders','dashboard','advertising','seo'], client:['appearance','themes','contact','logo','landing','ai-team','details','mailer','messages','apps','onlinequotes','orders','dashboard','advertising','seo'], leads:['rates'] };
-  const TEMPLATE_NAV={ 'broker-app':['rates','landing','appearance','themes','contact','logo','users','demothemes','mailer','messages'], 'broker-leads':['details','mailer','messages'], 'trade':['dashboard','advertising','seo','details','landing','ai-team','apps','themes','onlinequotes','orders','mailer','messages'] };
+  const ALLOWED={ super:['rates','landing','ai-team','appearance','themes','contact','logo','users','demothemes','details','mailer','messages','apps','onlinequotes','orders','bookings','dashboard','advertising','seo'], broker:['appearance','themes','contact','logo','landing','ai-team','details','mailer','messages','apps','onlinequotes','orders','bookings','dashboard','advertising','seo'], client:['appearance','themes','contact','logo','landing','ai-team','details','mailer','messages','apps','onlinequotes','orders','bookings','dashboard','advertising','seo'], leads:['rates'] };
+  const TEMPLATE_NAV={ 'broker-app':['rates','landing','appearance','themes','contact','logo','users','demothemes','mailer','messages'], 'broker-leads':['details','mailer','messages'], 'trade':['dashboard','advertising','seo','details','landing','ai-team','apps','themes','onlinequotes','orders','bookings','mailer','messages'] };
   function tplNav(){ return TEMPLATE_NAV[currentSiteTemplate]||TEMPLATE_NAV['broker-app']; }
   function buildLogin(){
     if($('login-mask')) return;
@@ -11122,7 +11147,7 @@ function heroCtaCard(c){
       toast('Opened Landing pages');
     }
   };
-  const NAV=[['dashboard','av-dashboard',renderDashboard],['advertising','av-advertising',renderAdvertising],['seo','av-seo',renderSeoCommandCentre],['details','av-details',renderDetails],['rates','av-rates',null],['landing','av-landing',renderSeoPages],['ai-team','av-ai-team',renderAiTeamPanel],['appearance','av-appearance',function(){ renderAppearance(); renderSavedThemes(); }],['themes','av-themes',renderPositioningThemes],['contact','av-contact',renderContact],['logo','av-logo',renderLogo],['users','av-users',renderUsers],['demothemes','av-demothemes',function(){ renderDemoThemes(); renderSharedThemes(); }],['mailer','av-mailer',renderMailer],['messages','av-messages',renderMessages],['apps','av-apps',renderAppsMarketplace],['onlinequotes','av-onlinequotes',renderOnlineQuoteAdmin],['orders','av-orders',renderOrdersAdmin]];
+  const NAV=[['dashboard','av-dashboard',renderDashboard],['advertising','av-advertising',renderAdvertising],['seo','av-seo',renderSeoCommandCentre],['details','av-details',renderDetails],['rates','av-rates',null],['landing','av-landing',renderSeoPages],['ai-team','av-ai-team',renderAiTeamPanel],['appearance','av-appearance',function(){ renderAppearance(); renderSavedThemes(); }],['themes','av-themes',renderPositioningThemes],['contact','av-contact',renderContact],['logo','av-logo',renderLogo],['users','av-users',renderUsers],['demothemes','av-demothemes',function(){ renderDemoThemes(); renderSharedThemes(); }],['mailer','av-mailer',renderMailer],['messages','av-messages',renderMessages],['apps','av-apps',renderAppsMarketplace],['onlinequotes','av-onlinequotes',renderOnlineQuoteAdmin],['orders','av-orders',renderOrdersAdmin],['bookings','av-bookings',renderBookingsAdmin]];
   let activeView=null;
   function showView(which){
     activeView=which;
@@ -11178,7 +11203,45 @@ function heroCtaCard(c){
     if(cents==null||isNaN(cents)) return '—';
     return '$'+(Math.round(cents)/100).toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2});
   }
-  var ordEmbedWarmedSiteId=null;
+  var bkEmbedWarmedSiteId=null;
+  function bookingsEmbedSrc(){
+    return '/bookings?embed=1&site_id='+encodeURIComponent(currentSiteId);
+  }
+  function bookingsEmbedHeaderHtml(src){
+    return '<div class="card bk-admin-header" style="margin-bottom:14px;padding:14px 16px;">'
+      +'<div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;">'
+      +'<div><h2 style="margin:0 0 4px;font-size:18px;">Bookings</h2>'
+      +'<p class="lede" style="margin:0;">Appointments, classes, visits and resources. Share <strong>/book?slug=…</strong> or turn on the <strong>Bookings</strong> page section.</p></div>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:8px;">'
+      +'<button type="button" class="btn ghost" id="bk-goto-storefront">Page section</button>'
+      +'<a class="btn ghost" href="'+src.replace('embed=1&','')+'" target="_blank" rel="noopener" style="text-decoration:none;">Open full screen ↗</a>'
+      +'</div></div></div>';
+  }
+  function renderBookingsAdmin(){
+    var box=$('av-bookings'); if(!box) return;
+    if(currentSiteTemplate!=='trade'){
+      bkEmbedWarmedSiteId=null;
+      box.innerHTML='<div class="card"><p class="lede">Bookings are available on trade sites only.</p></div>';
+      return;
+    }
+    if(!currentSiteId){
+      bkEmbedWarmedSiteId=null;
+      box.innerHTML='<div class="card"><p class="lede">Select a site first.</p></div>';
+      return;
+    }
+    var src=bookingsEmbedSrc();
+    bkEmbedWarmedSiteId=currentSiteId;
+    box.innerHTML=bookingsEmbedHeaderHtml(src)
+      +'<div class="card" style="padding:0;overflow:hidden;min-height:72vh;">'
+      +'<iframe id="bk-embed" title="Bookings" src="'+esc(src)+'" style="display:block;width:100%;min-height:72vh;height:calc(100vh - 220px);border:0;background:var(--panel,#fff);"></iframe>'
+      +'</div>';
+    var g=$('bk-goto-storefront');
+    if(g) g.addEventListener('click',function(){
+      landingSub='bookingStorefront';
+      if(typeof showView==='function') showView('details');
+    });
+  }
+    var ordEmbedWarmedSiteId=null;
   function ordersEmbedSrc(){
     return '/orders?embed=1&site_id='+encodeURIComponent(currentSiteId);
   }

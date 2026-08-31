@@ -142,6 +142,7 @@ Short summary of every engineering document in `docs/`.
 | [features/Ads Campaign Builder](features/Ads%20Campaign%20Builder.md) | Ads Smart Campaign Builder | Flag-gated plan → paused create, readiness, GTM inspect; extends Ads without replacing sync/conversions. |
 | [features/LeadPages Brain](features/LeadPages%20Brain.md) | LeadPages Brain | AI gateway Phases 1–7; Control Centre; landing-draft migration. Canonical status: [AI/00-STATUS](AI/00-STATUS.md). |
 | [features/Order Engine](features/Order%20Engine.md) | Order Engine | Universal ordering: products, deposits, cutoffs, supply, magic-link portal. Butcher preset first. |
+| [features/Bookings](features/Bookings.md) | Bookings | Native scheduling: appointments, classes, visits, resources. Order Engine–style subsystem. |
 | [AI/README](AI/README.md) | LeadPages Brain | Provider-agnostic AI gateway — Phases 1–7 in `lib/brain` + Control Centre + landing-draft migration. |
 | [08-SEO](08-SEO.md) | SEO System (publish) | Suburb App Router pages, `lib/seo/*`, landing pages, `seoTokens`, sitemap, routing collision notes. |
 | [search-intelligence/00-VISION](search-intelligence/00-VISION.md) | Search Intelligence | Product OS: SEO Command Centre, connectors, provider gateway, NBA recipes — docs-first; see folder index below. |
@@ -196,6 +197,7 @@ Short summary of every engineering document in `docs/`.
 | **Partner features** | [05-PARTNERS](05-PARTNERS.md) | [00-VISION](00-VISION.md) § Partners | `api/partner/*`, `partner.html` |
 | **Billing / Stripe** | [01-ARCHITECTURE](01-ARCHITECTURE.md) §14 | [05-PARTNERS](05-PARTNERS.md) § Commissions | `api/billing/*` |
 | **Order Engine / ordering** | [features/Order Engine](features/Order%20Engine.md) | [02-DATABASE](02-DATABASE.md) | `lib/order/*`, `api/order/*`, `orders.html`, `order-shop.html`, `order-portal.html`, `assets/lp-order-storefront.js`, `db/order_engine_*.sql` |
+| **Bookings / scheduling** | [features/Bookings](features/Bookings.md) | [02-DATABASE](02-DATABASE.md) | `lib/bookings/*`, `api/bookings/*`, `bookings.html`, `book.html`, `booking-portal.html`, `db/bookings_*.sql` |
 | **Domains / DNS** | [06-DOMAINS](06-DOMAINS.md) | [01-ARCHITECTURE](01-ARCHITECTURE.md) §12 | `dreamscape.js`, `api/domains/*` |
 | **AI Domain Finder** | [features/AI Domain Finder](features/AI%20Domain%20Finder.md) | [AI/00-STATUS](AI/00-STATUS.md) | `lib/domain-finder/`, `api/domain-finder/*` |
 | **Marketplace apps** | [01-ARCHITECTURE](01-ARCHITECTURE.md) | [10-EDITOR](10-EDITOR.md) § Marketplace | `api/api-apps.js`, `api-site-apps.js` |
