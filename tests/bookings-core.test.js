@@ -242,3 +242,29 @@ describe('stripe helpers', () => {
     assert.equal(verifyStripeSig(raw, 't=' + t + ',v1=deadbeef', secret), false);
   });
 });
+
+describe('ics', () => {
+  const { buildBookingIcs, toIcsUtc } = require('../lib/bookings/ics');
+
+  it('builds VEVENT with UTC times', () => {
+    const ics = buildBookingIcs({
+      booking: {
+        id: 'b1',
+        reference: 'BK-00001',
+        starts_at: '2026-06-15T02:00:00.000Z',
+        ends_at: '2026-06-15T03:00:00.000Z',
+        status: 'confirmed',
+        customer_name: 'Sam',
+        location_label: 'Shop'
+      },
+      service: { name: 'Cut' },
+      system: { business_name: 'Barber Co', phone: '0400000000' }
+    });
+    assert.match(ics, /BEGIN:VCALENDAR/);
+    assert.match(ics, /SUMMARY:Cut/);
+    assert.match(ics, /BK-00001/);
+    assert.match(ics, /DTSTART:20260615T020000Z/);
+    assert.match(ics, /LOCATION:Shop/);
+    assert.equal(toIcsUtc('2026-01-01T00:00:00.000Z'), '20260101T000000Z');
+  });
+});

@@ -151,6 +151,59 @@ module.exports = async function (req, res) {
       return json(res, 200, { ok: true, booking: updated });
     }
 
+    if (action === 'mark_paid') {
+      const { data: booking } = await admin.from('bookings').select('*').eq('id', body.id).eq('booking_system_id', system.id).maybeSingle();
+      if (!booking) return json(res, 404, { ok: false, error: 'not_found' });
+      const amount = Math.max(0, Number(body.amount_cents) || 0);
+      const add = amount > 0 ? amount : Math.max(0, (Number(booking.total_cents) || 0) - (Number(booking.amount_paid_cents) || 0));
+      if (add <= 0 && booking.payment_status === 'paid') {
+        return json(res, 400, { ok: false, error: 'already_paid' });
+      }
+      const paid = (Number(booking.amount_paid_cents) || 0) + add;
+      const paymentStatus = paid >= (Number(booking.total_cents) || 0) ? 'paid' : (paid > 0 ? 'deposit_paid' : booking.payment_status);
+      let nextStatus = booking.status;
+      if ((booking.status === 'awaiting_payment' || booking.status === 'pending') && paid > 0) {
+        nextStatus = 'confirmed';
+      }
+      await admin.from('booking_payments').insert({
+        booking_id: booking.id,
+        booking_system_id: system.id,
+        site_id: system.site_id,
+        provider: body.provider || 'manual',
+        kind: paymentStatus === 'paid' ? 'full' : 'deposit',
+        amount_cents: add,
+        currency: system.currency || 'AUD',
+        status: 'succeeded',
+        provider_ref: body.provider_ref || 'manual:' + user.id,
+        meta: { actor: 'staff', note: body.note || '' }
+      });
+      const { data: updated, error } = await admin
+        .from('bookings')
+        .update({
+          amount_paid_cents: paid,
+          payment_status: paymentStatus,
+          status: nextStatus,
+          updated_at: new Date().toISOString(),
+          updated_by: user.id,
+          version: (booking.version || 1) + 1
+        })
+        .eq('id', booking.id)
+        .eq('version', booking.version || 1)
+        .select('*')
+        .single();
+      if (error || !updated) return json(res, 409, { ok: false, error: 'version_conflict' });
+      await admin.from('booking_activity').insert({
+        booking_id: booking.id,
+        booking_system_id: system.id,
+        site_id: system.site_id,
+        event_type: 'payment_manual',
+        summary: 'Manual payment recorded: ' + add + ' cents',
+        actor_user_id: user.id,
+        meta: { amount_cents: add, provider: body.provider || 'manual' }
+      });
+      return json(res, 200, { ok: true, booking: updated });
+    }
+
     // create
     if (!body.service_id || !body.starts_at) {
       return json(res, 400, { ok: false, error: 'service_and_start_required' });

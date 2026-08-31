@@ -68,6 +68,7 @@ h1{margin:0 0 8px;font-size:1.35rem}
       +(b.instructions?'<p class="sub">'+esc(b.instructions)+'</p>':'')
       +'<p class="sub">Cancel up to '+esc(pol.cancellation_hours)+'h before · Reschedule up to '+esc(pol.reschedule_hours)+'h before</p>'
       +(data.can_pay?'<button class="btn" type="button" id="pay">Pay '+money(b.amount_due_cents)+' now</button>':'')
+      +(data.ics_url?'<a class="btn ghost" href="'+esc(data.ics_url)+'">Add to calendar</a>':'')
       +'<div class="field"><label>New start time</label><input type="datetime-local" id="new-start"></div>'
       +'<button class="btn ghost" type="button" id="reschedule">Reschedule</button>'
       +'<button class="btn danger" type="button" id="cancel">Cancel booking</button>'

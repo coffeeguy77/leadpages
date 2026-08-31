@@ -288,9 +288,10 @@ body.embed .nav h1{font-size:13px}
     state.team=j.team||[];
     $('view-services').innerHTML=
       '<div class="card"><div class="top"><h2>Services</h2><button class="btn solid" type="button" id="add-service">Add service</button></div>'
-      +'<table class="table"><thead><tr><th>Name</th><th>Type</th><th>Duration</th><th>Price</th><th>Status</th></tr></thead><tbody>'
+      +'<table class="table"><thead><tr><th>Name</th><th>Type</th><th>Duration</th><th>Price</th><th>Status</th><th></th></tr></thead><tbody>'
       +state.services.map(function(s){
-        return '<tr><td>'+esc(s.name)+'</td><td>'+esc(s.booking_type)+'</td><td>'+esc(s.duration_minutes)+' min</td><td>'+money(s.price_cents)+'</td><td>'+esc(s.status)+'</td></tr>';
+        return '<tr><td>'+esc(s.name)+'</td><td>'+esc(s.booking_type)+'</td><td>'+esc(s.duration_minutes)+' min</td><td>'+money(s.price_cents)+'</td><td>'+esc(s.status)+'</td>'
+          +'<td><button class="btn ghost" type="button" data-edit-svc="'+esc(s.id)+'">Edit</button></td></tr>';
       }).join('')
       +'</tbody></table></div>';
     $('view-team').innerHTML=
@@ -358,6 +359,7 @@ body.embed .nav h1{font-size:13px}
       +'<p>'+esc(new Date(b.starts_at).toLocaleString())+' – '+esc(new Date(b.ends_at).toLocaleTimeString())+'</p>'
       +'<p><strong>'+money(b.total_cents)+'</strong> (deposit '+money(b.deposit_cents)+', paid '+money(b.amount_paid_cents)+')</p>'
       +(due>0?'<button class="btn solid" type="button" id="side-pay">Collect '+money(due)+'</button>':'')
+      +(due>0||b.payment_status!=='paid'?'<button class="btn ghost" type="button" id="side-mark-paid">Mark paid (manual)</button>':'')
       +'<div class="field"><label>Internal notes</label><textarea id="side-notes" rows="3">'+esc(b.internal_notes||'')+'</textarea></div>'
       +'<button class="btn solid" type="button" data-tr="confirmed">Confirm</button>'
       +'<button class="btn" type="button" data-tr="checked_in">Check in</button>'
@@ -422,6 +424,48 @@ body.embed .nav h1{font-size:13px}
         else flash('No checkout URL', true);
       }catch(err){ flash(err.message,true); }
       return;
+    }
+    if(e.target.id==='side-mark-paid'){
+      try{
+        await api('/api/bookings/bookings',{ method:'POST', body:JSON.stringify({
+          site_id:state.siteId, action:'mark_paid', id:$('side').dataset.id
+        })});
+        flash('Marked paid'); openBooking($('side').dataset.id); setView(state.view);
+      }catch(err){ flash(err.message,true); }
+      return;
+    }
+    var editSvc=e.target.closest('[data-edit-svc]');
+    if(editSvc){
+      var svc=state.services.find(function(s){ return s.id===editSvc.getAttribute('data-edit-svc'); });
+      if(!svc) return;
+      var side=$('side'); show(side,true);
+      side.innerHTML='<button class="btn ghost" type="button" id="side-close">Close</button>'
+        +'<h2>Edit service</h2>'
+        +'<div class="field"><label>Name</label><input id="es-name" value="'+esc(svc.name)+'"></div>'
+        +'<div class="field"><label>Duration (min)</label><input id="es-dur" type="number" value="'+esc(svc.duration_minutes)+'"></div>'
+        +'<div class="field"><label>Price (cents)</label><input id="es-price" type="number" value="'+esc(svc.price_cents)+'"></div>'
+        +'<div class="field"><label>Short description</label><textarea id="es-short" rows="2">'+esc(svc.short_description||'')+'</textarea></div>'
+        +'<div class="field"><label>Status</label><select id="es-status">'
+        +['active','draft','archived'].map(function(st){ return '<option value="'+st+'"'+(svc.status===st?' selected':'')+'>'+st+'</option>'; }).join('')
+        +'</select></div>'
+        +'<div class="field"><label>Visibility</label><select id="es-vis">'
+        +['public','unlisted','private'].map(function(st){ return '<option value="'+st+'"'+(svc.visibility===st?' selected':'')+'>'+st+'</option>'; }).join('')
+        +'</select></div>'
+        +'<button class="btn solid" type="button" id="es-save" data-id="'+esc(svc.id)+'">Save</button>';
+      return;
+    }
+    if(e.target.id==='es-save'){
+      await api('/api/bookings/services',{ method:'PATCH', body:JSON.stringify({
+        site_id:state.siteId,
+        id:e.target.getAttribute('data-id'),
+        name:$('es-name').value.trim(),
+        duration_minutes:Number($('es-dur').value)||60,
+        price_cents:Number($('es-price').value)||0,
+        short_description:$('es-short').value,
+        status:$('es-status').value,
+        visibility:$('es-vis').value
+      })});
+      flash('Service updated'); show($('side'),false); loadServices(); return;
     }
     if(e.target.id==='cust-search'){ loadCustomers(); return; }
     var cust=e.target.closest('[data-cust]');

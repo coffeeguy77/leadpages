@@ -134,6 +134,11 @@ module.exports = async function (req, res) {
       });
       if (!result.ok) return json(res, 409, result);
 
+      // Release soft hold if client held the slot
+      if (body.hold_key) {
+        await admin.from('booking_holds').delete().eq('booking_system_id', pub.system.id).eq('hold_key', body.hold_key);
+      }
+
       const portal = await issuePortalToken(result.booking, 'manage', 168);
       const out = {
         ok: true,

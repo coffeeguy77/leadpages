@@ -40,6 +40,16 @@ module.exports = async function (req, res) {
 
   if (req.method === 'GET') {
     await admin.from('booking_portal_tokens').update({ used_at: new Date().toISOString() }).eq('id', tok.id);
+    const format = url.searchParams.get('format');
+    if (format === 'ics') {
+      const { buildBookingIcs } = require('../../lib/bookings/ics');
+      const ics = buildBookingIcs({ booking: booking, service: service, system: system });
+      res.statusCode = 200;
+      res.setHeader('content-type', 'text/calendar; charset=utf-8');
+      res.setHeader('content-disposition', 'attachment; filename="' + (booking.reference || 'booking') + '.ics"');
+      res.end(ics);
+      return;
+    }
     const { amountDueCents } = require('../../lib/bookings/stripe');
     const due = amountDueCents(booking);
     return json(res, 200, {
@@ -70,7 +80,8 @@ module.exports = async function (req, res) {
         cancellation_hours: (service && service.cancellation_hours) != null ? service.cancellation_hours : system.cancellation_hours,
         reschedule_hours: (service && service.reschedule_hours) != null ? service.reschedule_hours : system.reschedule_hours
       },
-      can_pay: due > 0
+      can_pay: due > 0,
+      ics_url: '/api/bookings/portal?t=' + encodeURIComponent(raw) + '&format=ics'
     });
   }
 

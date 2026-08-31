@@ -82,6 +82,8 @@ Native LeadPages **Bookings** app for appointments, classes/events, on-site visi
 | `/api/bookings/exceptions` | Blocked times CRUD |
 | `/api/bookings/customers` | Search / notes |
 | `/api/bookings/waitlist` | Public join + staff notify |
+| `/api/bookings/holds` | Soft-lock slot during public checkout |
+| `/api/cron/bookings-notify` | Flush notification outbox (every 10 min) |
 
 ---
 
@@ -94,12 +96,23 @@ Also: `awaiting_payment`, `cancelled`, `no_show`, `refunded`
 
 Public bookings with `deposit_cents > 0` start as `awaiting_payment` until Stripe webhook confirms.
 
+Staff can **Mark paid (manual)** or open Stripe Checkout from the booking panel.
+
+Portal: Pay deposit + **Add to calendar** (`.ics`).
+
 ---
 
 ## Money
 
 **Integer cents** only. GST inclusive/exclusive per `gst_mode`.  
 Deposit rules: system `payment_rule` / service override → `quoteBooking`.
+
+---
+
+## Notifications
+
+Rows land in `booking_notifications` on create (confirmation + optional 24h reminder).  
+Cron `/api/cron/bookings-notify` sends via Resend (`RESEND_API_KEY`, optional `BOOKINGS_FROM`) / Twilio for SMS.
 
 ---
 

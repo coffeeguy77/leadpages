@@ -57,7 +57,7 @@ body{margin:0;font-family:var(--font);background:var(--bg);color:var(--ink);min-
   var params=new URLSearchParams(location.search);
   var slug=params.get('slug')||'';
   var preService=params.get('service')||'';
-  var state={ catalogue:null, step:0, service:null, teamId:'', date:'', slot:null, idempotency: (crypto.randomUUID?crypto.randomUUID():String(Date.now())) };
+  var state={ catalogue:null, step:0, service:null, teamId:'', date:'', slot:null, holdKey:'', idempotency: (crypto.randomUUID?crypto.randomUUID():String(Date.now())) };
   var STEPS=['Service','When','Your details','Confirm'];
 
   function $(id){ return document.getElementById(id); }
@@ -181,9 +181,22 @@ body{margin:0;font-family:var(--font);background:var(--bg);color:var(--ink);min-
     var slot=e.target.closest('[data-start]');
     if(slot){
       state.slot={ start:slot.getAttribute('data-start'), end:slot.getAttribute('data-end') };
+      try{
+        var hr=await fetch('/api/bookings/holds',{ method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({
+          slug:slug, service_id:state.service.id, starts_at:state.slot.start,
+          team_member_id:state.teamId||null, hold_key:state.holdKey||undefined
+        })});
+        var hj=await hr.json();
+        if(hr.ok&&hj.ok) state.holdKey=hj.hold_key;
+      }catch(_e){}
       state.step=2; render(); return;
     }
-    if(e.target.id==='back'){ state.step=Math.max(0, state.step-1); render(); return; }
+    if(e.target.id==='back'){
+      if(state.step===2 && state.holdKey){
+        fetch('/api/bookings/holds',{ method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({ slug:slug, action:'release', hold_key:state.holdKey }) }).catch(function(){});
+      }
+      state.step=Math.max(0, state.step-1); render(); return;
+    }
     if(e.target.id==='waitlist'){
       var name=prompt('Your name'); if(!name) return;
       var email=prompt('Email (or leave blank)');
@@ -223,7 +236,8 @@ body{margin:0;font-family:var(--font);background:var(--bg);color:var(--ink);min-
             customer_email:state.customer.email,
             customer_phone:state.customer.phone,
             customer_notes:state.customer.notes,
-            idempotency_key:state.idempotency
+            idempotency_key:state.idempotency,
+            hold_key:state.holdKey||null
           })
         });
         var j=await r.json();
