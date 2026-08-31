@@ -36,6 +36,7 @@
 | Website Composer | `lib/website-composer/` | Studio generation stack — not active product path |
 | Website Studio docs | `docs/website-studio/` | Includes [ON-ICE](../website-studio/ON-ICE.md) |
 | Marketing Hub | `marketing-hub.html` + `api/brain/ads-*.js` | Phase 9 — suggest only; approve stores, no Ads mutate |
+| AI Domain Finder | `/domain-finder` + `api/domain-finder/*` + `lib/domain-finder/` | Generate → Dreamscape check → rank available only; AU TLDs; OpenAI via Brain |
 | Tests | `tests/brain-*.test.js` | No live network; injected `fetch` / mock |
 
 ---
@@ -75,6 +76,7 @@ Roadmap detail: [17-IMPLEMENTATION-ROADMAP](17-IMPLEMENTATION-ROADMAP.md).
 | `SITE_BRAIN_TEST` | unset | `1` forces test harness behaviour for Site Brain |
 | `SITE_BRAIN_ENV` | unset | Optional `staging`/`preview`/`production` marker to force database mode |
 | `BRAIN_MARKETING_HUB` | on (`1`) | `0` disables Marketing Hub APIs |
+| `BRAIN_DOMAIN_FINDER` | on (`1`) | `0` disables AI Domain Finder APIs |
 | `BRAIN_LANDING_PROVIDER` | — | Optional env override; prefer **AI Control Centre → Save provider** (durable `brain_settings`) |
 | `ANTHROPIC_API_KEY` | — | Anthropic adapter / legacy callers |
 | `OPENAI_API_KEY` | — | OpenAI adapter |

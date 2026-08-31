@@ -211,6 +211,10 @@
       "destination": "/marketing-hub.html"
     },
     {
+      "source": "/domain-finder",
+      "destination": "/domain-finder.html"
+    },
+    {
       "source": "/tradies",
       "destination": "/tradies.html"
     },
@@ -386,6 +390,9 @@
       "includeFiles": "landing-shell-neutral-v1.template.json,trade.template.json"
     },
     "api/order/import.js": {
+      "maxDuration": 60
+    },
+    "api/domain-finder/search.js": {
       "maxDuration": 60
     }
   }
