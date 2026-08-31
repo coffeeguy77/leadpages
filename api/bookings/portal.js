@@ -40,6 +40,8 @@ module.exports = async function (req, res) {
 
   if (req.method === 'GET') {
     await admin.from('booking_portal_tokens').update({ used_at: new Date().toISOString() }).eq('id', tok.id);
+    const { amountDueCents } = require('../../lib/bookings/stripe');
+    const due = amountDueCents(booking);
     return json(res, 200, {
       ok: true,
       booking: {
@@ -55,7 +57,8 @@ module.exports = async function (req, res) {
         payment_status: booking.payment_status,
         location_label: booking.location_label,
         service_name: service && service.name,
-        instructions: (service && (service.confirmation_instructions || service.customer_instructions)) || ''
+        instructions: (service && (service.confirmation_instructions || service.customer_instructions)) || '',
+        amount_due_cents: due
       },
       business: {
         name: system.business_name,
@@ -66,7 +69,8 @@ module.exports = async function (req, res) {
       policies: {
         cancellation_hours: (service && service.cancellation_hours) != null ? service.cancellation_hours : system.cancellation_hours,
         reschedule_hours: (service && service.reschedule_hours) != null ? service.reschedule_hours : system.reschedule_hours
-      }
+      },
+      can_pay: due > 0
     });
   }
 

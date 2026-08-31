@@ -135,7 +135,7 @@ module.exports = async function (req, res) {
       if (!result.ok) return json(res, 409, result);
 
       const portal = await issuePortalToken(result.booking, 'manage', 168);
-      return json(res, 200, {
+      const out = {
         ok: true,
         booking: {
           id: result.booking.id,
@@ -154,8 +154,82 @@ module.exports = async function (req, res) {
         quote: quote,
         portal_token: portal.token,
         portal_url: '/booking-portal?t=' + encodeURIComponent(portal.token),
+        checkout_required: result.booking.status === 'awaiting_payment' && (result.booking.deposit_cents || 0) > 0,
         manage_notice: 'Save your manage link to reschedule or cancel within policy.'
-      });
+      };
+
+      // Auto-create Stripe Checkout when deposit is due (best-effort)
+      if (out.checkout_required && process.env.STRIPE_SECRET_KEY) {
+        try {
+          const { amountDueCents, paymentKind, stripePost, PUBLIC_BASE, connectOpts } = require('../../lib/bookings/stripe');
+          const amount = amountDueCents(result.booking);
+          if (amount > 0) {
+            const kind = paymentKind(result.booking, amount);
+            const { data: payment } = await admin.from('booking_payments').insert({
+              booking_id: result.booking.id,
+              booking_system_id: pub.system.id,
+              site_id: pub.system.site_id,
+              provider: 'stripe',
+              kind: kind === 'full' ? 'full' : 'deposit',
+              amount_cents: amount,
+              currency: pub.system.currency || 'AUD',
+              status: 'pending',
+              meta: { actor: 'public' }
+            }).select('*').single();
+
+            const currency = String(pub.system.currency || 'AUD').toLowerCase();
+            const success =
+              PUBLIC_BASE +
+              '/booking-portal?paid=1&t=' +
+              encodeURIComponent(portal.token) +
+              '&ref=' +
+              encodeURIComponent(result.booking.reference);
+            const cancel =
+              PUBLIC_BASE +
+              '/booking-portal?cancelled=1&t=' +
+              encodeURIComponent(portal.token);
+
+            const sessionParams = {
+              mode: 'payment',
+              success_url: success,
+              cancel_url: cancel,
+              customer_email: result.booking.customer_email || undefined,
+              client_reference_id: payment.id,
+              'line_items[0][price_data][currency]': currency,
+              'line_items[0][price_data][product_data][name]':
+                (pub.system.business_name || 'Booking') + ' — Deposit — ' + result.booking.reference,
+              'line_items[0][price_data][unit_amount]': amount,
+              'line_items[0][quantity]': 1,
+              'metadata[booking_id]': result.booking.id,
+              'metadata[payment_id]': payment.id,
+              'metadata[kind]': kind === 'full' ? 'booking_payment' : 'booking_deposit',
+              'metadata[site_id]': pub.system.site_id
+            };
+            const connect = connectOpts(pub.system);
+            let stripeOpts = {};
+            if (connect.accountId) {
+              if (connect.mode === 'direct') stripeOpts = { stripeAccount: connect.accountId };
+              else {
+                sessionParams['payment_intent_data[transfer_data][destination]'] = connect.accountId;
+                sessionParams['payment_intent_data[on_behalf_of]'] = connect.accountId;
+              }
+            }
+            const session = await stripePost('checkout/sessions', sessionParams, stripeOpts);
+            if (session.ok && session.data && session.data.url) {
+              await admin.from('booking_payments').update({
+                provider_ref: session.data.id,
+                updated_at: new Date().toISOString()
+              }).eq('id', payment.id);
+              out.checkout_url = session.data.url;
+              out.payment_id = payment.id;
+            }
+          }
+        } catch (payErr) {
+          console.warn('public book checkout', payErr && payErr.message);
+        }
+      }
+
+      return json(res, 200, out);
     } catch (e) {
       console.error('public book', e && e.message);
       return json(res, 500, { ok: false, error: 'book_failed' });

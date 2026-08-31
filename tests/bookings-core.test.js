@@ -21,6 +21,8 @@ const {
   zonedParts,
 } = require('../lib/bookings/time');
 const { toCents, formatAud } = require('../lib/bookings/money');
+const { amountDueCents, paymentKind, verifyStripeSig } = require('../lib/bookings/stripe');
+const crypto = require('crypto');
 
 describe('status transitions', () => {
   it('allows pending → confirmed', () => {
@@ -216,5 +218,27 @@ describe('money', () => {
   it('toCents and formatAud', () => {
     assert.equal(toCents('70.50'), 7050);
     assert.equal(formatAud(7000), '$70.00');
+  });
+});
+
+describe('stripe helpers', () => {
+  it('amountDueCents prefers unpaid deposit', () => {
+    assert.equal(amountDueCents({ deposit_cents: 5000, amount_paid_cents: 0, total_cents: 20000 }), 5000);
+    assert.equal(amountDueCents({ deposit_cents: 5000, amount_paid_cents: 5000, total_cents: 20000 }), 15000);
+    assert.equal(amountDueCents({ deposit_cents: 0, amount_paid_cents: 0, total_cents: 0 }), 0);
+  });
+
+  it('paymentKind', () => {
+    assert.equal(paymentKind({ deposit_cents: 5000, amount_paid_cents: 0, total_cents: 20000 }, 5000), 'deposit');
+    assert.equal(paymentKind({ deposit_cents: 5000, amount_paid_cents: 5000, total_cents: 20000 }, 15000), 'full');
+  });
+
+  it('verifyStripeSig accepts valid HMAC', () => {
+    const secret = 'whsec_test';
+    const raw = '{"id":"evt_1"}';
+    const t = '1234567890';
+    const v1 = crypto.createHmac('sha256', secret).update(t + '.' + raw, 'utf8').digest('hex');
+    assert.equal(verifyStripeSig(raw, 't=' + t + ',v1=' + v1, secret), true);
+    assert.equal(verifyStripeSig(raw, 't=' + t + ',v1=deadbeef', secret), false);
   });
 });

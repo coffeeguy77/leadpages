@@ -138,11 +138,14 @@ body{margin:0;font-family:var(--font);background:var(--bg);color:var(--ink);min-
     }
     if(state.step===4){
       var b=state.result&&state.result.booking;
-      p.innerHTML='<h2 style="margin:0 0 8px;font-size:1.1rem">You’re booked</h2>'
+      var pay=state.result&&state.result.checkout_url;
+      p.innerHTML='<h2 style="margin:0 0 8px;font-size:1.1rem">'+(pay?'Almost done — pay to confirm':'You’re booked')+'</h2>'
         +'<p class="sub">Reference <strong>'+esc(b.reference)+'</strong> · '+esc(b.status)+'</p>'
         +'<p>'+esc(b.service_name)+'<br>'+esc(new Date(b.starts_at).toLocaleString())+'</p>'
+        +(b.deposit_cents?'<p class="sub">Deposit due: <strong>'+money(b.deposit_cents)+'</strong></p>':'')
         +(b.customer_instructions?'<p class="sub">'+esc(b.customer_instructions)+'</p>':'')
-        +'<a class="btn" href="'+esc(state.result.portal_url)+'">Manage booking</a>'
+        +(pay?'<a class="btn" href="'+esc(pay)+'">Pay deposit securely</a>':'')
+        +'<a class="btn'+(pay?' ghost':'')+'" href="'+esc(state.result.portal_url)+'">Manage booking</a>'
         +'<a class="btn ghost" href="'+location.pathname+'?slug='+encodeURIComponent(slug)+'">Book another</a>';
     }
   }
@@ -160,7 +163,8 @@ body{margin:0;font-family:var(--font);background:var(--bg);color:var(--ink);min-
     var r=await fetch(q); var j=await r.json();
     if(!r.ok||!j.ok){ box.innerHTML='<p class="msg bad">'+(j.message||j.error||'Could not load times')+'</p>'; return; }
     if(!(j.slots||[]).length){
-      box.innerHTML='<p class="sub">'+(j.reasons&&j.reasons[0]&&j.reasons[0].message||'No times available that day.')+'</p>';
+      box.innerHTML='<p class="sub">'+(j.reasons&&j.reasons[0]&&j.reasons[0].message||'No times available that day.')+'</p>'
+        +'<button type="button" class="btn ghost" id="waitlist">Join waitlist</button>';
       return;
     }
     box.innerHTML=j.slots.map(function(s){
@@ -180,6 +184,22 @@ body{margin:0;font-family:var(--font);background:var(--bg);color:var(--ink);min-
       state.step=2; render(); return;
     }
     if(e.target.id==='back'){ state.step=Math.max(0, state.step-1); render(); return; }
+    if(e.target.id==='waitlist'){
+      var name=prompt('Your name'); if(!name) return;
+      var email=prompt('Email (or leave blank)');
+      var phone=prompt('Phone (or leave blank)');
+      if(!email&&!phone){ err('Email or phone required for waitlist'); return; }
+      try{
+        var wr=await fetch('/api/bookings/waitlist',{ method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({
+          slug:slug, service_id:state.service.id, team_member_id:state.teamId||null,
+          name:name, email:email||'', phone:phone||'', preferred_date:state.date
+        })});
+        var wj=await wr.json();
+        if(!wr.ok||!wj.ok) throw new Error(wj.message||wj.error||'Waitlist failed');
+        err(''); alert('You’re on the waitlist. We’ll be in touch if a slot opens.');
+      }catch(ex){ err(ex.message); }
+      return;
+    }
     if(e.target.id==='next'){
       var name=$('name').value.trim();
       var email=$('email').value.trim();
@@ -209,6 +229,7 @@ body{margin:0;font-family:var(--font);background:var(--bg);color:var(--ink);min-
         var j=await r.json();
         if(!r.ok||!j.ok) throw new Error(j.message||j.error||'Booking failed');
         state.result=j; state.step=4; render();
+        if(j.checkout_url){ /* offer pay button; optional auto-redirect */ }
       }catch(ex){ err(ex.message); e.target.disabled=false; }
     }
   });

@@ -4,18 +4,23 @@
  * POST /api/bookings/webhook
  * Stripe webhook for Bookings deposits/payments.
  * Env: STRIPE_BOOKINGS_WEBHOOK_SECRET (fallback: STRIPE_ORDER_WEBHOOK_SECRET / STRIPE_WEBHOOK_SECRET)
+ * Uses HMAC verify (no stripe npm package) — same pattern as Order Engine.
  */
 
-const Stripe = require('stripe');
 const { getAdmin, json } = require('../../lib/bookings/auth');
+const { verifyStripeSig } = require('../../lib/bookings/stripe');
+const { enqueueNotification } = require('../../lib/bookings/notify');
 
 function readRaw(req) {
   return new Promise(function (resolve, reject) {
-    if (Buffer.isBuffer(req.body)) return resolve(req.body);
-    if (typeof req.body === 'string') return resolve(Buffer.from(req.body));
+    if (Buffer.isBuffer(req.body)) return resolve(req.body.toString('utf8'));
+    if (typeof req.body === 'string') return resolve(req.body);
+    if (req.body && typeof req.body === 'object' && req.body.type) {
+      return resolve(JSON.stringify(req.body));
+    }
     const chunks = [];
     req.on('data', function (c) { chunks.push(c); });
-    req.on('end', function () { resolve(Buffer.concat(chunks)); });
+    req.on('end', function () { resolve(Buffer.concat(chunks).toString('utf8')); });
     req.on('error', reject);
   });
 }
@@ -26,27 +31,33 @@ module.exports = async function (req, res) {
   const secret =
     process.env.STRIPE_BOOKINGS_WEBHOOK_SECRET ||
     process.env.STRIPE_ORDER_WEBHOOK_SECRET ||
-    process.env.STRIPE_WEBHOOK_SECRET;
-  const key = process.env.STRIPE_SECRET_KEY;
-  if (!secret || !key) {
-    return json(res, 503, { ok: false, error: 'stripe_not_configured' });
+    process.env.STRIPE_WEBHOOK_SECRET ||
+    '';
+
+  let raw;
+  try {
+    raw = await readRaw(req);
+  } catch (e) {
+    return json(res, 400, { ok: false, error: 'bad_body' });
   }
 
-  const stripe = new Stripe(key, { apiVersion: '2023-10-16' });
+  const sig = req.headers['stripe-signature'];
+  if (secret && !verifyStripeSig(raw, sig, secret)) {
+    return json(res, 400, { ok: false, error: 'invalid_signature' });
+  }
+
   let event;
   try {
-    const raw = await readRaw(req);
-    event = stripe.webhooks.constructEvent(raw, req.headers['stripe-signature'], secret);
-  } catch (e) {
-    console.error('bookings webhook verify', e && e.message);
-    return json(res, 400, { ok: false, error: 'invalid_signature' });
+    event = typeof req.body === 'object' && req.body && req.body.type ? req.body : JSON.parse(raw);
+  } catch (_e) {
+    return json(res, 400, { ok: false, error: 'bad_json' });
   }
 
   const admin = getAdmin();
 
   try {
     if (event.type === 'checkout.session.completed') {
-      const session = event.data.object;
+      const session = event.data && event.data.object ? event.data.object : {};
       const meta = session.metadata || {};
       if (meta.kind !== 'booking_deposit' && meta.kind !== 'booking_payment') {
         return json(res, 200, { ok: true, ignored: true });
@@ -68,19 +79,35 @@ module.exports = async function (req, res) {
       const { data: booking } = await admin.from('bookings').select('*').eq('id', bookingId).maybeSingle();
       if (!booking) return json(res, 200, { ok: true, missing_booking: true });
 
-      await admin.from('booking_payments').insert({
-        booking_id: booking.id,
-        booking_system_id: booking.booking_system_id,
-        site_id: booking.site_id,
-        provider: 'stripe',
-        kind: meta.kind === 'booking_payment' ? 'full' : 'deposit',
-        amount_cents: amount,
-        currency: (session.currency || 'aud').toUpperCase(),
-        status: 'succeeded',
-        provider_ref: providerRef,
-        idempotency_key: idem,
-        meta: { event_id: event.id }
-      });
+      // Prefer updating pending payment row from checkout
+      if (meta.payment_id) {
+        await admin
+          .from('booking_payments')
+          .update({
+            status: 'succeeded',
+            provider_ref: providerRef,
+            idempotency_key: idem,
+            amount_cents: amount,
+            updated_at: new Date().toISOString(),
+            meta: { event_id: event.id }
+          })
+          .eq('id', meta.payment_id)
+          .eq('booking_id', booking.id);
+      } else {
+        await admin.from('booking_payments').insert({
+          booking_id: booking.id,
+          booking_system_id: booking.booking_system_id,
+          site_id: booking.site_id,
+          provider: 'stripe',
+          kind: meta.kind === 'booking_payment' ? 'full' : 'deposit',
+          amount_cents: amount,
+          currency: (session.currency || 'aud').toUpperCase(),
+          status: 'succeeded',
+          provider_ref: providerRef,
+          idempotency_key: idem,
+          meta: { event_id: event.id }
+        });
+      }
 
       const paid = (Number(booking.amount_paid_cents) || 0) + amount;
       const paymentStatus = paid >= (Number(booking.total_cents) || 0) ? 'paid' : 'deposit_paid';
@@ -104,6 +131,20 @@ module.exports = async function (req, res) {
         summary: 'Stripe payment ' + amount + ' cents',
         meta: { provider_ref: providerRef, event_id: event.id }
       });
+
+      if (booking.customer_email) {
+        await enqueueNotification({
+          booking_system_id: booking.booking_system_id,
+          site_id: booking.site_id,
+          booking_id: booking.id,
+          channel: 'email',
+          template_key: 'booking_payment_received',
+          to_address: booking.customer_email,
+          subject: 'Payment received — ' + booking.reference,
+          body_text: 'We received your payment for booking ' + booking.reference + '.',
+          payload: { amount_cents: amount }
+        });
+      }
     }
     return json(res, 200, { ok: true });
   } catch (e) {

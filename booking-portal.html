@@ -22,8 +22,10 @@ h1{margin:0 0 8px;font-size:1.35rem}
 .field label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin:0 0 4px}
 .field input{width:100%;padding:10px 12px;border-radius:10px;border:1px solid #d5d9df;font:inherit}
 .msg{font-size:13px;margin-top:10px}
+.msg.ok{color:var(--accent)}
 .msg.bad{color:#b91c1c}
 .hidden{display:none!important}
+.banner{padding:10px 12px;border-radius:10px;background:color-mix(in srgb,var(--accent) 12%,#fff);margin:0 0 12px;font-size:13px}
 </style>
 </head>
 <body>
@@ -32,7 +34,10 @@ h1{margin:0 0 8px;font-size:1.35rem}
 </main>
 <script>
 (function(){
-  var t=new URLSearchParams(location.search).get('t')||'';
+  var params=new URLSearchParams(location.search);
+  var t=params.get('t')||'';
+  var paid=params.get('paid')==='1';
+  var cancelled=params.get('cancelled')==='1';
   var data=null;
   function $(id){ return document.getElementById(id); }
   function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]);}); }
@@ -48,24 +53,40 @@ h1{margin:0 0 8px;font-size:1.35rem}
 
   function paint(){
     var b=data.booking, biz=data.business, pol=data.policies||{};
+    var banner='';
+    if(paid) banner='<div class="banner">Thanks — if payment just completed it may take a moment to show as paid.</div>';
+    if(cancelled) banner='<div class="banner">Checkout cancelled. You can try again below.</div>';
     $('panel').innerHTML=
-      '<p class="sub">'+esc(biz.name||'')+'</p>'
+      banner
+      +'<p class="sub">'+esc(biz.name||'')+'</p>'
       +'<h1>'+esc(b.service_name||'Booking')+'</h1>'
       +'<p><span class="badge">'+esc(b.status)+'</span> · '+esc(b.reference)+'</p>'
       +'<p class="sub">'+esc(new Date(b.starts_at).toLocaleString())+' ('+esc(b.timezone)+')</p>'
       +(b.location_label?'<p class="sub">'+esc(b.location_label)+'</p>':'')
-      +'<p>Total '+money(b.total_cents)+' · Paid '+money(b.amount_paid_cents)+'</p>'
+      +'<p>Total '+money(b.total_cents)+' · Paid '+money(b.amount_paid_cents)
+      +(b.amount_due_cents?' · Due '+money(b.amount_due_cents):'')+'</p>'
       +(b.instructions?'<p class="sub">'+esc(b.instructions)+'</p>':'')
       +'<p class="sub">Cancel up to '+esc(pol.cancellation_hours)+'h before · Reschedule up to '+esc(pol.reschedule_hours)+'h before</p>'
+      +(data.can_pay?'<button class="btn" type="button" id="pay">Pay '+money(b.amount_due_cents)+' now</button>':'')
       +'<div class="field"><label>New start time</label><input type="datetime-local" id="new-start"></div>'
-      +'<button class="btn" type="button" id="reschedule">Reschedule</button>'
+      +'<button class="btn ghost" type="button" id="reschedule">Reschedule</button>'
       +'<button class="btn danger" type="button" id="cancel">Cancel booking</button>'
       +'<p class="msg bad hidden" id="msg"></p>';
   }
 
   document.addEventListener('click', async function(e){
     var msg=$('msg');
-    function show(m){ if(!msg) return; msg.textContent=m; msg.classList.toggle('hidden', !m); }
+    function show(m, ok){ if(!msg) return; msg.textContent=m; msg.className='msg '+(ok?'ok':'bad'); msg.classList.toggle('hidden', !m); }
+    if(e.target.id==='pay'){
+      e.target.disabled=true;
+      try{
+        var r=await fetch('/api/bookings/checkout',{ method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({ t:t }) });
+        var j=await r.json();
+        if(!r.ok||!j.ok||!j.url) throw new Error(j.message||j.error||'Could not start payment');
+        location.href=j.url;
+      }catch(ex){ show(ex.message); e.target.disabled=false; }
+      return;
+    }
     if(e.target.id==='cancel'){
       if(!confirm('Cancel this booking?')) return;
       var r=await fetch('/api/bookings/portal',{ method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({ t:t, action:'cancel' }) });

@@ -55,7 +55,9 @@ begin
     'booking_holds',
     'booking_payments',
     'booking_portal_tokens',
-    'booking_audit_events'
+    'booking_audit_events',
+    'booking_waitlist',
+    'booking_notifications'
   ]
   loop
     execute format('alter table if exists public.%I enable row level security', t);

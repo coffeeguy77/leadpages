@@ -42,6 +42,11 @@ body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:var(--bg
 .badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;background:color-mix(in srgb,var(--accent) 14%,transparent)}
 .cal-day{display:grid;gap:8px}
 .cal-item{padding:10px 12px;border-left:4px solid var(--accent);background:#fff;border:1px solid var(--line);border-radius:10px;cursor:pointer}
+.cal-item.ex{opacity:.85;border-left-color:#6b7280;cursor:default}
+.cal-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+@media(max-width:900px){.cal-week{grid-template-columns:1fr}}
+.cal-col{border:1px solid var(--line);border-radius:12px;padding:8px;background:#fff;min-height:120px}
+.cal-col h4{margin:0 0 8px;font-size:12px;color:var(--ink-soft)}
 .panel{position:fixed;top:0;right:0;width:min(420px,100%);height:100%;background:#fff;border-left:1px solid var(--line);box-shadow:0 0 40px rgba(0,0,0,.12);padding:18px;overflow:auto;z-index:40}
 .msg{font-size:13px;margin:8px 0}
 .msg.bad{color:#b91c1c}
@@ -68,6 +73,7 @@ body.embed .nav h1{font-size:13px}
     <button type="button" data-view="overview" class="on">Overview</button>
     <button type="button" data-view="calendar">Calendar</button>
     <button type="button" data-view="bookings">Bookings</button>
+    <button type="button" data-view="customers">Customers</button>
     <button type="button" data-view="services">Services</button>
     <button type="button" data-view="team">Team &amp; Resources</button>
     <button type="button" data-view="settings">Settings</button>
@@ -89,6 +95,7 @@ body.embed .nav h1{font-size:13px}
     <section id="view-overview"></section>
     <section id="view-calendar" class="hidden"></section>
     <section id="view-bookings" class="hidden"></section>
+    <section id="view-customers" class="hidden"></section>
     <section id="view-services" class="hidden"></section>
     <section id="view-team" class="hidden"></section>
     <section id="view-settings" class="hidden"></section>
@@ -123,12 +130,13 @@ body.embed .nav h1{font-size:13px}
   function setView(v){
     state.view=v;
     document.querySelectorAll('.nav [data-view]').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-view')===v); });
-    ['overview','calendar','bookings','services','team','settings','onboarding'].forEach(function(id){
+    ['overview','calendar','bookings','customers','services','team','settings','onboarding'].forEach(function(id){
       show($('view-'+id), id===v);
     });
     if(v==='overview') loadOverview();
     if(v==='calendar') loadCalendar();
     if(v==='bookings') loadBookings();
+    if(v==='customers') loadCustomers();
     if(v==='services') loadServices();
     if(v==='team') loadServices();
     if(v==='settings'||v==='onboarding') loadSystem();
@@ -201,34 +209,74 @@ body.embed .nav h1{font-size:13px}
     var from=new Date(); from.setHours(0,0,0,0);
     var to=new Date(from); to.setDate(to.getDate()+7);
     var j=await api('/api/bookings/calendar?site_id='+encodeURIComponent(state.siteId)+'&from='+encodeURIComponent(from.toISOString())+'&to='+encodeURIComponent(to.toISOString()));
-    var byDay={};
-    (j.events||[]).forEach(function(e){
-      var d=new Date(e.start).toDateString();
-      (byDay[d]=byDay[d]||[]).push(e);
-    });
-    var html='<div class="card"><h2>Next 7 days</h2><p class="sub">Day / agenda view. Open a booking for the side panel.</p>';
-    Object.keys(byDay).forEach(function(d){
-      html+='<h3 style="font-size:13px;margin:14px 0 8px">'+esc(d)+'</h3><div class="cal-day">';
-      byDay[d].forEach(function(e){
-        html+='<div class="cal-item" data-open="'+esc(e.id)+'" style="border-left-color:'+esc(e.colour)+'">'
-          +'<strong>'+esc(e.title)+'</strong>'
-          +'<div class="sub">'+esc(new Date(e.start).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}))
-          +'–'+esc(new Date(e.end).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}))
-          +' · <span class="badge">'+esc(e.status)+'</span></div></div>';
+    state.team=j.team||state.team||[];
+    var days=[];
+    for(var i=0;i<7;i++){
+      var d=new Date(from); d.setDate(from.getDate()+i);
+      days.push(d);
+    }
+    var html='<div class="card"><div class="top"><h2>Next 7 days</h2>'
+      +'<div><button class="btn ghost" type="button" id="cal-block">Block time</button>'
+      +'<button class="btn solid" type="button" id="cal-new">New booking</button></div></div>'
+      +'<p class="sub">Week agenda with blocked times. Open a booking for actions.</p>'
+      +'<div class="cal-week">';
+    days.forEach(function(d){
+      var key=d.toDateString();
+      var items=(j.events||[]).filter(function(e){ return new Date(e.start).toDateString()===key; });
+      html+='<div class="cal-col"><h4>'+esc(d.toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'}))+'</h4>';
+      if(!items.length) html+='<p class="sub">—</p>';
+      items.forEach(function(e){
+        if(e.kind==='exception'){
+          html+='<div class="cal-item ex"><strong>'+esc(e.title)+'</strong>'
+            +'<div class="sub">'+esc(new Date(e.start).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}))
+            +'–'+esc(new Date(e.end).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}))
+            +' · blocked'
+            +' <button class="btn ghost" type="button" data-del-ex="'+esc(e.exception_id)+'">Remove</button></div></div>';
+        } else {
+          html+='<div class="cal-item" data-open="'+esc(e.id)+'" style="border-left-color:'+esc(e.colour)+'">'
+            +'<strong>'+esc(e.title)+'</strong>'
+            +'<div class="sub">'+esc(new Date(e.start).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}))
+            +'–'+esc(new Date(e.end).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}))
+            +' · <span class="badge">'+esc(e.status)+'</span></div></div>';
+        }
       });
       html+='</div>';
     });
-    if(!Object.keys(byDay).length) html+='<p class="sub">No bookings in this range. <button class="btn solid" type="button" id="cal-new">Create one</button></p>';
-    html+='</div>';
+    html+='</div></div>';
     $('view-calendar').innerHTML=html;
   }
 
   async function loadBookings(){
     if(!state.siteId) return;
     var j=await api('/api/bookings/bookings?site_id='+encodeURIComponent(state.siteId));
+    var w=await api('/api/bookings/waitlist?site_id='+encodeURIComponent(state.siteId)).catch(function(){ return { entries:[] }; });
     $('view-bookings').innerHTML='<div class="card"><h2>All bookings</h2><table class="table"><thead><tr><th>Ref</th><th>When</th><th>Customer</th><th>Status</th><th>Total</th><th></th></tr></thead><tbody>'
       +(j.bookings||[]).map(function(b){
         return '<tr><td>'+esc(b.reference)+'</td><td>'+esc(new Date(b.starts_at).toLocaleString())+'</td><td>'+esc(b.customer_name)+'</td><td><span class="badge">'+esc(b.status)+'</span></td><td>'+money(b.total_cents)+'</td><td><button class="btn ghost" type="button" data-open="'+esc(b.id)+'">Open</button></td></tr>';
+      }).join('')
+      +'</tbody></table></div>'
+      +'<div class="card"><h2>Waitlist</h2>'
+      +(!(w.entries||[]).length?'<p class="sub">No waitlist entries.</p>':'')
+      +'<table class="table"><thead><tr><th>Name</th><th>Contact</th><th>Preferred</th><th>Status</th><th></th></tr></thead><tbody>'
+      +(w.entries||[]).map(function(e){
+        return '<tr><td>'+esc(e.name)+'</td><td>'+esc(e.email||e.phone)+'</td><td>'+esc(e.preferred_date||'')+'</td><td>'+esc(e.status)+'</td>'
+          +'<td>'+(e.status==='waiting'?'<button class="btn ghost" type="button" data-wl-notify="'+esc(e.id)+'">Notify</button>':'')+'</td></tr>';
+      }).join('')
+      +'</tbody></table></div>';
+  }
+
+  async function loadCustomers(){
+    if(!state.siteId) return;
+    var q=($('cust-q')&&$('cust-q').value)||'';
+    var j=await api('/api/bookings/customers?site_id='+encodeURIComponent(state.siteId)+(q?'&q='+encodeURIComponent(q):''));
+    $('view-customers').innerHTML=
+      '<div class="card"><div class="top"><h2>Customers</h2>'
+      +'<input id="cust-q" placeholder="Search name, email, phone" value="'+esc(q)+'" style="max-width:240px;padding:8px 10px;border-radius:8px;border:1px solid var(--line-strong)">'
+      +'<button class="btn ghost" type="button" id="cust-search">Search</button></div>'
+      +'<table class="table"><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Bookings</th><th></th></tr></thead><tbody>'
+      +(j.customers||[]).map(function(c){
+        return '<tr><td>'+esc(c.name)+'</td><td>'+esc(c.email)+'</td><td>'+esc(c.phone)+'</td><td>'+esc(c.booking_count)+'</td>'
+          +'<td><button class="btn ghost" type="button" data-cust="'+esc(c.id)+'">Open</button></td></tr>';
       }).join('')
       +'</tbody></table></div>';
   }
@@ -298,6 +346,8 @@ body.embed .nav h1{font-size:13px}
   async function openBooking(id){
     var j=await api('/api/bookings/bookings?site_id='+encodeURIComponent(state.siteId)+'&id='+encodeURIComponent(id));
     var b=j.booking;
+    var due=Math.max(0, (Number(b.deposit_cents)||0)-(Number(b.amount_paid_cents)||0));
+    if(due<=0) due=Math.max(0,(Number(b.total_cents)||0)-(Number(b.amount_paid_cents)||0));
     var side=$('side');
     show(side,true);
     side.innerHTML=
@@ -307,6 +357,7 @@ body.embed .nav h1{font-size:13px}
       +'<p><strong>'+esc(b.customer_name)+'</strong><br>'+esc(b.customer_email)+'<br>'+esc(b.customer_phone)+'</p>'
       +'<p>'+esc(new Date(b.starts_at).toLocaleString())+' – '+esc(new Date(b.ends_at).toLocaleTimeString())+'</p>'
       +'<p><strong>'+money(b.total_cents)+'</strong> (deposit '+money(b.deposit_cents)+', paid '+money(b.amount_paid_cents)+')</p>'
+      +(due>0?'<button class="btn solid" type="button" id="side-pay">Collect '+money(due)+'</button>':'')
       +'<div class="field"><label>Internal notes</label><textarea id="side-notes" rows="3">'+esc(b.internal_notes||'')+'</textarea></div>'
       +'<button class="btn solid" type="button" data-tr="confirmed">Confirm</button>'
       +'<button class="btn" type="button" data-tr="checked_in">Check in</button>'
@@ -345,6 +396,62 @@ body.embed .nav h1{font-size:13px}
     var open=e.target.closest('[data-open]'); if(open){ openBooking(open.getAttribute('data-open')); return; }
     if(e.target.id==='side-close'){ show($('side'), false); return; }
     if(e.target.id==='btn-new'||e.target.id==='cal-new'){ if(!state.services.length) await loadServices(); openNewBooking(); return; }
+    if(e.target.id==='cal-block'){
+      var title=prompt('Block title','Blocked'); if(title==null) return;
+      var start=prompt('Start (local ISO or datetime-local style YYYY-MM-DDTHH:MM)'); if(!start) return;
+      var end=prompt('End (YYYY-MM-DDTHH:MM)'); if(!end) return;
+      try{
+        await api('/api/bookings/exceptions',{ method:'POST', body:JSON.stringify({
+          site_id:state.siteId, title:title||'Blocked', kind:'block',
+          starts_at:new Date(start).toISOString(), ends_at:new Date(end).toISOString()
+        })});
+        flash('Time blocked'); loadCalendar();
+      }catch(err){ flash(err.message,true); }
+      return;
+    }
+    var delEx=e.target.closest('[data-del-ex]');
+    if(delEx){
+      if(!confirm('Remove this block?')) return;
+      await api('/api/bookings/exceptions?site_id='+encodeURIComponent(state.siteId)+'&id='+encodeURIComponent(delEx.getAttribute('data-del-ex')),{ method:'DELETE' });
+      flash('Block removed'); loadCalendar(); return;
+    }
+    if(e.target.id==='side-pay'){
+      try{
+        var pay=await api('/api/bookings/checkout',{ method:'POST', body:JSON.stringify({ site_id:state.siteId, booking_id:$('side').dataset.id }) });
+        if(pay.url) window.open(pay.url,'_blank','noopener');
+        else flash('No checkout URL', true);
+      }catch(err){ flash(err.message,true); }
+      return;
+    }
+    if(e.target.id==='cust-search'){ loadCustomers(); return; }
+    var cust=e.target.closest('[data-cust]');
+    if(cust){
+      var cj=await api('/api/bookings/customers?site_id='+encodeURIComponent(state.siteId)+'&id='+encodeURIComponent(cust.getAttribute('data-cust')));
+      var c=cj.customer;
+      var side=$('side'); show(side,true);
+      side.innerHTML='<button class="btn ghost" type="button" id="side-close">Close</button>'
+        +'<h2>'+esc(c.name)+'</h2><p class="sub">'+esc(c.email)+'<br>'+esc(c.phone)+'</p>'
+        +'<p class="sub">'+esc(c.booking_count)+' bookings · LTV '+money(c.lifetime_value_cents)+'</p>'
+        +'<div class="field"><label>Notes</label><textarea id="cust-notes" rows="4">'+esc(c.notes||'')+'</textarea></div>'
+        +'<button class="btn solid" type="button" id="cust-save" data-id="'+esc(c.id)+'">Save notes</button>'
+        +'<h3 style="font-size:14px;margin-top:16px">History</h3>'
+        +(cj.bookings||[]).map(function(b){
+          return '<div class="sub"><button class="btn ghost" type="button" data-open="'+esc(b.id)+'">'+esc(b.reference)+'</button> '
+            +esc(new Date(b.starts_at).toLocaleString())+' · '+esc(b.status)+'</div>';
+        }).join('');
+      return;
+    }
+    if(e.target.id==='cust-save'){
+      await api('/api/bookings/customers',{ method:'POST', body:JSON.stringify({
+        site_id:state.siteId, action:'update', id:e.target.getAttribute('data-id'), notes:$('cust-notes').value
+      })});
+      flash('Customer updated'); return;
+    }
+    var wl=e.target.closest('[data-wl-notify]');
+    if(wl){
+      await api('/api/bookings/waitlist',{ method:'POST', body:JSON.stringify({ site_id:state.siteId, id:wl.getAttribute('data-wl-notify'), action:'notify' }) });
+      flash('Waitlist notify queued'); loadBookings(); return;
+    }
     if(e.target.id==='nb-save'){
       var msg=$('nb-msg');
       try{

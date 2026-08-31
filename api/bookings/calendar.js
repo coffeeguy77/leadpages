@@ -122,6 +122,14 @@ module.exports = async function (req, res) {
     .select('id,display_name,colour')
     .eq('booking_system_id', system.id);
 
+  const { data: exceptions } = await admin
+    .from('booking_schedule_exceptions')
+    .select('*')
+    .eq('booking_system_id', system.id)
+    .lt('starts_at', to)
+    .gt('ends_at', from)
+    .order('starts_at');
+
   const svcMap = {};
   (services || []).forEach(function (s) { svcMap[s.id] = s; });
 
@@ -138,8 +146,27 @@ module.exports = async function (req, res) {
       service_id: b.service_id,
       colour: svc.colour || '#155c4a',
       total_cents: b.total_cents,
-      payment_status: b.payment_status
+      payment_status: b.payment_status,
+      kind: 'booking'
     };
+  });
+
+  (exceptions || []).forEach(function (ex) {
+    events.push({
+      id: 'ex-' + ex.id,
+      exception_id: ex.id,
+      title: ex.title || ex.kind || 'Blocked',
+      start: ex.starts_at,
+      end: ex.ends_at,
+      status: ex.kind,
+      team_member_id: ex.scope === 'team' ? ex.scope_id : null,
+      colour: '#6b7280',
+      kind: 'exception'
+    });
+  });
+
+  events.sort(function (a, b) {
+    return new Date(a.start) - new Date(b.start);
   });
 
   return json(res, 200, {
@@ -147,6 +174,7 @@ module.exports = async function (req, res) {
     from: from,
     to: to,
     events: events,
+    exceptions: exceptions || [],
     services: services || [],
     team: team || [],
     timezone: system.timezone
