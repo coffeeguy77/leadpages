@@ -40,12 +40,14 @@
   header.hero{background:var(--gum);color:#F3EFEA;padding:8px 0 64px}
   header.hero h1{font-family:var(--disp);font-weight:400;font-size:clamp(28px,4vw,42px);margin:18px 0 10px;line-height:1.12}
   header.hero p{margin:0 0 28px;color:#C9D2CC;font-size:18px}
-  .search{display:flex;gap:10px;background:#fff;border-radius:999px;padding:8px;box-shadow:var(--shadow)}
+  .search{display:flex;gap:10px;background:#fff;border-radius:999px;padding:8px;box-shadow:var(--shadow);flex-wrap:wrap;align-items:stretch}
   .search input{flex:1;border:0;outline:0;font-size:17px;padding:12px 18px;color:var(--ink);background:transparent;min-width:0;font-family:var(--bodyf)}
   .search input:focus-visible{outline:2px solid var(--rose);outline-offset:2px;border-radius:999px}
   .search button{border:0;border-radius:999px;background:var(--rose);color:#fff;font-weight:700;font-size:16px;padding:0 26px;cursor:pointer;white-space:nowrap;font-family:var(--bodyf)}
   .search button:hover{background:var(--rose-d)}
   .search button:disabled{opacity:.6;cursor:default}
+  .search .btn-find-name{display:inline-flex;align-items:center;justify-content:center;padding:0 18px;border-radius:999px;border:1.5px solid var(--gum,#155c4a);color:var(--gum,#155c4a);font-weight:700;font-size:14px;text-decoration:none;white-space:nowrap;background:#fff;font-family:var(--bodyf)}
+  .search .btn-find-name:hover{background:#EAF3EF}
   .hint{color:#A9B7AE;font-size:13px;margin-top:12px}
   main{padding:28px 0 120px}
   .status{color:var(--mut);padding:20px 4px}
@@ -142,7 +144,7 @@
     <div class="search">
       <input id="q" type="text" placeholder="your business name or domain" autocomplete="off" autofocus>
       <button id="go">Search</button>
-      <a id="find-name" href="/domain-finder" class="btn-find-name" style="display:inline-flex;align-items:center;justify-content:center;padding:0 16px;border-radius:12px;border:1.5px solid var(--gum,#155c4a);color:var(--gum,#155c4a);font-weight:700;text-decoration:none;white-space:nowrap;background:#fff">Find Me A Name</a>
+      <a id="find-name" href="/domain-finder" class="btn-find-name">Find Me A Name</a>
     </div>
     <div class="hint">We check .com.au, .au, .com and more — and suggest smart alternatives if your first pick is taken. Or use AI Domain Finder for names you can actually register.</div>
   </div>
