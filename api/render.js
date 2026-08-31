@@ -951,6 +951,38 @@ function injectOrderStorefront(html, slug, cfg) {
     : (html + block);
 }
 
+function injectBookingStorefront(html, slug, cfg) {
+  const sec = cfg && cfg.sections && cfg.sections.bookingStorefront;
+  if (!sec || sec.on !== true) return html;
+  const safeSlug = esc(slug || (cfg && cfg.slug) || '');
+  const eyebrow = esc(sec.eyebrow || 'Book online');
+  const heading = esc(sec.heading || 'Book an appointment');
+  const intro = esc(sec.intro || 'Choose a service and a time that works for you.');
+  const cta = esc(sec.ctaLabel || 'Book now');
+  const href = '/book?slug=' + encodeURIComponent(safeSlug);
+  const styleParts = [];
+  if (sec.bg && /^#[0-9a-fA-F]{6}$/.test(sec.bg)) styleParts.push('background:' + sec.bg);
+  if (sec.accent && /^#[0-9a-fA-F]{6}$/.test(sec.accent)) styleParts.push('--bk-accent:' + sec.accent);
+  const styleAttr = styleParts.length ? (' style="' + styleParts.join(';') + '"') : '';
+  const block =
+    '<section data-sec="bookingStorefront" class="sec booking-storefront" id="bookingStorefront"' + styleAttr + '>' +
+    '<div class="in" style="max-width:720px;margin:0 auto;text-align:center;padding:28px 16px">' +
+    (eyebrow ? '<p class="eyebrow" style="letter-spacing:.14em;text-transform:uppercase;font-weight:700;font-size:12px;color:var(--bk-accent,var(--accent,#155c4a))">' + eyebrow + '</p>' : '') +
+    '<h2 style="margin:10px 0 8px;font-size:clamp(28px,4vw,44px);letter-spacing:-.02em">' + heading + '</h2>' +
+    (intro ? '<p class="intro" style="color:var(--muted,#667066);font-size:17px;line-height:1.45;margin:0 0 18px">' + intro + '</p>' : '') +
+    '<a class="btn" href="' + href + '" style="display:inline-block;background:var(--bk-accent,var(--accent,#155c4a));color:#fff;text-decoration:none;padding:12px 18px;border-radius:999px;font-weight:700">' + cta + '</a>' +
+    '</div></section>';
+  if (html.includes('data-sec="bookingStorefront"')) {
+    return html.replace(/<section[^>]*data-sec="bookingStorefront"[^>]*>[\s\S]*?<\/section>/i, block);
+  }
+  if (html.includes('<section data-sec="quote"')) {
+    return html.replace('<section data-sec="quote"', block + '<section data-sec="quote"');
+  }
+  return html.indexOf('</body>') !== -1
+    ? html.replace('</body>', block + '</body>')
+    : (html + block);
+}
+
 /**
  * SSR SearchCanvas: all tab text in the document for crawlers + no-JS visitors.
  */
@@ -1383,6 +1415,7 @@ module.exports = async (req, res) => {
       } catch (_guardErr) { /* never break live render */ }
       html = injectOnlineQuote(html, site.slug, cfg);
       html = injectOrderStorefront(html, site.slug, cfg);
+      html = injectBookingStorefront(html, site.slug, cfg);
       html = injectSearchCanvas(html, cfg);
     }
 

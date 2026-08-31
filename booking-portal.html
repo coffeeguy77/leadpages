@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manage booking — LeadPages</title>
+<meta name="robots" content="noindex">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#15191e;--muted:#5b6571;--line:#e6e8ec;--accent:#155c4a;--bg:#f6f7f9}
+*{box-sizing:border-box}
+body{margin:0;font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+.wrap{max-width:560px;margin:0 auto;padding:28px 16px 64px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px}
+h1{margin:0 0 8px;font-size:1.35rem}
+.sub{color:var(--muted);font-size:14px;line-height:1.45}
+.badge{display:inline-block;padding:3px 8px;border-radius:999px;font-size:11px;font-weight:700;background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent)}
+.btn{appearance:none;border:1px solid var(--accent);background:var(--accent);color:#fff;font:600 13px/1 inherit;padding:11px 14px;border-radius:10px;cursor:pointer;margin:8px 8px 0 0}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn.danger{border-color:#b91c1c;background:#b91c1c}
+.field{margin:12px 0}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin:0 0 4px}
+.field input{width:100%;padding:10px 12px;border-radius:10px;border:1px solid #d5d9df;font:inherit}
+.msg{font-size:13px;margin-top:10px}
+.msg.ok{color:var(--accent)}
+.msg.bad{color:#b91c1c}
+.hidden{display:none!important}
+.banner{padding:10px 12px;border-radius:10px;background:color-mix(in srgb,var(--accent) 12%,#fff);margin:0 0 12px;font-size:13px}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="card" id="panel"><p class="sub">Loading…</p></div>
+</main>
+<script>
+(function(){
+  var params=new URLSearchParams(location.search);
+  var t=params.get('t')||'';
+  var paid=params.get('paid')==='1';
+  var cancelled=params.get('cancelled')==='1';
+  var data=null;
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]);}); }
+  function money(c){ return '$'+((Number(c)||0)/100).toFixed(2); }
+
+  async function load(){
+    if(!t){ $('panel').innerHTML='<h1>Link missing</h1><p class="sub">Open the manage link from your confirmation email.</p>'; return; }
+    var r=await fetch('/api/bookings/portal?t='+encodeURIComponent(t));
+    var j=await r.json();
+    if(!r.ok||!j.ok){ $('panel').innerHTML='<h1>Link unavailable</h1><p class="sub">'+(esc(j.message||j.error||'This link has expired or was revoked.'))+'</p>'; return; }
+    data=j; paint();
+  }
+
+  function paint(){
+    var b=data.booking, biz=data.business, pol=data.policies||{};
+    var banner='';
+    if(paid) banner='<div class="banner">Thanks — if payment just completed it may take a moment to show as paid.</div>';
+    if(cancelled) banner='<div class="banner">Checkout cancelled. You can try again below.</div>';
+    $('panel').innerHTML=
+      banner
+      +'<p class="sub">'+esc(biz.name||'')+'</p>'
+      +'<h1>'+esc(b.service_name||'Booking')+'</h1>'
+      +'<p><span class="badge">'+esc(b.status)+'</span> · '+esc(b.reference)+'</p>'
+      +'<p class="sub">'+esc(new Date(b.starts_at).toLocaleString())+' ('+esc(b.timezone)+')</p>'
+      +(b.location_label?'<p class="sub">'+esc(b.location_label)+'</p>':'')
+      +'<p>Total '+money(b.total_cents)+' · Paid '+money(b.amount_paid_cents)
+      +(b.amount_due_cents?' · Due '+money(b.amount_due_cents):'')+'</p>'
+      +(b.instructions?'<p class="sub">'+esc(b.instructions)+'</p>':'')
+      +'<p class="sub">Cancel up to '+esc(pol.cancellation_hours)+'h before · Reschedule up to '+esc(pol.reschedule_hours)+'h before</p>'
+      +(data.can_pay?'<button class="btn" type="button" id="pay">Pay '+money(b.amount_due_cents)+' now</button>':'')
+      +(data.ics_url?'<a class="btn ghost" href="'+esc(data.ics_url)+'">Add to calendar</a>':'')
+      +'<div class="field"><label>New start time</label><input type="datetime-local" id="new-start"></div>'
+      +'<button class="btn ghost" type="button" id="reschedule">Reschedule</button>'
+      +'<button class="btn danger" type="button" id="cancel">Cancel booking</button>'
+      +'<p class="msg bad hidden" id="msg"></p>';
+  }
+
+  document.addEventListener('click', async function(e){
+    var msg=$('msg');
+    function show(m, ok){ if(!msg) return; msg.textContent=m; msg.className='msg '+(ok?'ok':'bad'); msg.classList.toggle('hidden', !m); }
+    if(e.target.id==='pay'){
+      e.target.disabled=true;
+      try{
+        var r=await fetch('/api/bookings/checkout',{ method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({ t:t }) });
+        var j=await r.json();
+        if(!r.ok||!j.ok||!j.url) throw new Error(j.message||j.error||'Could not start payment');
+        location.href=j.url;
+      }catch(ex){ show(ex.message); e.target.disabled=false; }
+      return;
+    }
+    if(e.target.id==='cancel'){
+      if(!confirm('Cancel this booking?')) return;
+      var r=await fetch('/api/bookings/portal',{ method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({ t:t, action:'cancel' }) });
+      var j=await r.json();
+      if(!r.ok||!j.ok){ show(j.message||j.error||'Could not cancel'); return; }
+      show(''); load(); return;
+    }
+    if(e.target.id==='reschedule'){
+      var v=$('new-start').value; if(!v){ show('Pick a new time'); return; }
+      var r2=await fetch('/api/bookings/portal',{ method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({ t:t, action:'reschedule', starts_at:new Date(v).toISOString() }) });
+      var j2=await r2.json();
+      if(!r2.ok||!j2.ok){ show(j2.message||j2.error||'Could not reschedule'); return; }
+      show(''); load();
+    }
+  });
+  load();
+})();
+</script>
+</body>
+</html>

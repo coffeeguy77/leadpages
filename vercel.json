@@ -49,6 +49,10 @@
     {
       "path": "/api/cron/order-deposit-reminder",
       "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/bookings-notify",
+      "schedule": "*/10 * * * *"
     }
   ],
   "rewrites": [
@@ -173,6 +177,18 @@
     {
       "source": "/orders",
       "destination": "/orders.html"
+    },
+    {
+      "source": "/bookings",
+      "destination": "/bookings.html"
+    },
+    {
+      "source": "/book",
+      "destination": "/book.html"
+    },
+    {
+      "source": "/booking-portal",
+      "destination": "/booking-portal.html"
     },
     {
       "source": "/order-portal",
