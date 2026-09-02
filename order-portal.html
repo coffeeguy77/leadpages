@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f5c3a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Your order — LeadPages</title>
 <meta name="robots" content="noindex">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -69,6 +72,168 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
 .history li{padding:8px 0;border-top:1px solid var(--line);}
 .history li:first-child{border-top:0;}
 .add-box{margin-top:14px;padding-top:14px;border-top:1px dashed var(--line);}
+.portal-view{display:block;}
+.portal-top{display:block;margin:0 0 14px;}
+.portal-scroll{display:block;}
+.portal-bar{display:none;}
+.section-title{margin:0 0 10px;font-family:var(--font-display);font-size:20px;}
+.section-title-sm{margin:0 0 10px;font-size:16px;font-weight:700;}
+.portal-bar-inner{display:flex;flex-direction:column;gap:8px;}
+.portal-bar-row{display:flex;gap:8px;}
+.portal-bar-row button,.portal-bar-row .btn{flex:1;min-width:0;}
+.item-card{padding:0;}
+.status-strip{display:flex;flex-direction:column;gap:8px;margin:0 0 14px;}
+@media(min-width:721px){
+  .portal-bar-desktop{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
+  .portal-bar-mobile-host{display:none;}
+}
+@media(max-width:720px){
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    background:var(--bg);
+    padding-bottom:env(safe-area-inset-bottom,0);
+    overscroll-behavior-y:none;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .wrap{
+    width:100%;
+    max-width:100%;
+    margin:0;
+    padding:0;
+    padding-bottom:calc(88px + env(safe-area-inset-bottom,0));
+  }
+  .gate{
+    max-width:none;
+    margin:0;
+    min-height:100vh;
+    min-height:100dvh;
+    padding:max(16px,env(safe-area-inset-top)) 16px 24px;
+    text-align:left;
+  }
+  .gate .brand{font-size:24px;}
+  .gate .actions{flex-direction:column;}
+  .gate .actions button,.gate .actions .btn{width:100%;min-height:48px;font-size:16px;border-radius:12px;}
+  .gate input{font-size:16px;min-height:48px;border-radius:12px;}
+  #otp-step2 input{font-size:20px;letter-spacing:.25em;text-align:center;font-weight:600;}
+  .portal-view{
+    min-height:100vh;
+    min-height:100dvh;
+    display:flex;
+    flex-direction:column;
+  }
+  .portal-top{
+    position:sticky;
+    top:0;
+    z-index:20;
+    margin:0;
+    padding:max(10px,env(safe-area-inset-top)) 14px 12px;
+    background:rgba(246,243,238,.94);
+    backdrop-filter:saturate(160%) blur(10px);
+    -webkit-backdrop-filter:saturate(160%) blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .portal-top .brand{font-size:22px;margin:0;line-height:1.15;}
+  .portal-top .sub{margin:4px 0 0;font-size:13px;}
+  .portal-top .biz-label{margin:0 0 2px;font-size:10px;}
+  .portal-scroll{
+    flex:1;
+    padding:12px 14px 8px;
+  }
+  .card{
+    border-radius:16px;
+    padding:16px;
+    margin:0 0 12px;
+    box-shadow:0 2px 12px rgba(26,31,28,.06);
+  }
+  .brand{font-size:24px;}
+  .sub{font-size:14px;margin-bottom:12px;}
+  .banner{border-radius:14px;padding:14px 16px;font-size:14px;}
+  .status-strip{margin-bottom:12px;}
+  .status-strip .hrow{flex-direction:column;align-items:stretch;gap:8px;}
+  .status-strip .note{font-size:13px;margin:0;}
+  .badge{align-self:flex-start;padding:7px 12px;font-size:11px;}
+  .meta{gap:8px;}
+  .meta div{padding:12px;border-radius:12px;}
+  .meta strong{font-size:16px;}
+  .item{
+    padding:14px 0;
+    margin:0;
+  }
+  .item h3{font-size:17px;line-height:1.3;}
+  .item p{font-size:14px;}
+  .opt-list{font-size:14px;}
+  .opt-list li{
+    background:#f7f4ef;
+    border-radius:10px;
+    padding:8px 10px;
+    margin:4px 0 0;
+  }
+  .opt-group{margin-top:12px;}
+  .opt-title{font-size:13px;margin-bottom:8px;}
+  .opt-chips{flex-direction:column;gap:8px;}
+  .opt-chip{
+    width:100%;
+    min-height:48px;
+    padding:12px 14px;
+    border-radius:12px;
+    font-size:15px;
+    justify-content:flex-start;
+  }
+  .opt-chip input{width:18px;height:18px;flex-shrink:0;}
+  label.f{font-size:13px;margin-bottom:6px;}
+  input,textarea,select{
+    font-size:16px;
+    min-height:48px;
+    padding:12px 14px;
+    border-radius:12px;
+  }
+  textarea{min-height:96px;}
+  .edit-row{gap:12px;margin-top:12px;}
+  .item-actions{margin-top:12px;}
+  .item-actions button{
+    width:100%;
+    min-height:44px;
+    font-size:15px;
+    border-radius:12px;
+  }
+  .add-box{margin-top:16px;padding-top:16px;}
+  .add-box #addBtn{width:100%;min-height:48px;font-size:16px;border-radius:12px;margin-top:12px!important;}
+  .totals .row{font-size:15px;padding:2px 0;}
+  .totals .row.emph{font-size:18px;}
+  .actions{display:none;}
+  .portal-bar-desktop{display:none!important;}
+  .portal-bar-mobile-host{display:block;}
+  .portal-bar{
+    display:block;
+    position:fixed;
+    left:0;
+    right:0;
+    bottom:0;
+    z-index:30;
+    padding:10px 14px calc(10px + env(safe-area-inset-bottom,0));
+    background:rgba(255,253,249,.96);
+    backdrop-filter:saturate(160%) blur(12px);
+    -webkit-backdrop-filter:saturate(160%) blur(12px);
+    border-top:1px solid var(--line);
+    box-shadow:0 -8px 24px rgba(26,31,28,.08);
+  }
+  .portal-bar button,.portal-bar .btn{
+    min-height:50px;
+    font-size:16px;
+    border-radius:12px;
+    width:100%;
+  }
+  .portal-bar .js-print{display:none;}
+  .portal-bar .js-save{
+    font-size:17px;
+    font-weight:700;
+  }
+  .portal-bar-row .ghost{
+    background:#fff;
+  }
+  .history li{padding:10px 0;font-size:14px;}
+  button,.btn{touch-action:manipulation;}
+}
 </style>
 </head>
 <body>
@@ -209,22 +374,121 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
     return answers;
   }
 
+  function renderActionButtons(o, d, canEdit, suffix){
+    suffix = suffix || '';
+    var html = '';
+    html += '<button type="button" class="ghost js-print">Print / Save PDF</button>';
+    if((o.deposit_paid_cents||0) < (o.deposit_required_cents||0)){
+      html += '<button type="button" class="js-pay">Pay '+esc(d.deposit_required||money(o.deposit_required_cents))+' deposit &amp; confirm</button>';
+    }
+    if(canEdit) html += '<button type="button" class="js-save">Save changes</button>';
+    return html;
+  }
+
+  function wirePortalActions(){
+    document.querySelectorAll('.js-print').forEach(function(printBtn){
+      printBtn.onclick = function(){
+        window.open('/order-print?t=' + encodeURIComponent(token) + '&format=receipt', '_blank', 'noopener');
+      };
+    });
+
+    document.querySelectorAll('.js-pay').forEach(function(payBtn){
+      payBtn.onclick = async function(){
+        if (payBtn.disabled) return;
+        payBtn.disabled = true;
+        var label = payBtn.textContent;
+        payBtn.textContent = 'Opening secure checkout…';
+        document.querySelectorAll('.js-pay').forEach(function(b){ b.disabled = true; });
+        try{
+          var out = await api('/api/order/checkout-deposit', { method:'POST', body:{ t: token } });
+          if(out.url) location.href = out.url; else throw new Error('No checkout URL');
+        }catch(e){
+          document.querySelectorAll('.js-pay').forEach(function(b){
+            b.disabled = false;
+            b.textContent = label;
+          });
+          alert(e.message||e);
+        }
+      };
+    });
+
+    document.querySelectorAll('.js-save').forEach(function(saveBtn){
+      saveBtn.onclick = async function(){
+        if (saveBtn.disabled) return;
+        saveBtn.disabled = true;
+        document.querySelectorAll('.js-save').forEach(function(b){ b.disabled = true; });
+        var changes = [];
+        document.querySelectorAll('.item[data-item-id]').forEach(function(block){
+          var id = block.getAttribute('data-item-id');
+          if (window.__portalRemoveIds && window.__portalRemoveIds.indexOf(id) >= 0) return;
+          var inp = block.querySelector('.ed-qty[data-id="'+id+'"]');
+          var w = block.querySelector('.ed-w[data-id="'+id+'"]');
+          var ch = { order_item_id: id };
+          if (inp) ch.quantity = parseFloat(inp.value);
+          if (w && w.value !== '') ch.requested_weight_kg = parseFloat(w.value);
+          var optRow = block.querySelector('.opt-edit');
+          if (optRow) ch.answers = collectAnswersFromRow(optRow);
+          changes.push(ch);
+        });
+        var payload = {
+          t: token,
+          changes: changes,
+          remove_item_ids: window.__portalRemoveIds || [],
+          add_items: (window.__portalPendingAdds || []).map(function(a){
+            return { product_id: a.product_id, quantity: a.quantity, requested_weight_kg: a.requested_weight_kg, answers: a.answers };
+          })
+        };
+        var nd = document.getElementById('ed-date');
+        var nt = document.getElementById('ed-time');
+        var nn = document.getElementById('ed-notes');
+        if(nd) payload.pickup_date = nd.value || null;
+        if(nt) payload.pickup_time = nt.value || null;
+        if(nn) payload.customer_notes = nn.value;
+        try{
+          var out = await api('/api/order/portal', { method:'POST', body: payload });
+          if (out.mode === 'approval_required') {
+            alert('Your changes were sent to the shop for approval.');
+          }
+          location.reload();
+        }catch(e){
+          document.querySelectorAll('.js-save').forEach(function(b){ b.disabled = false; });
+          alert(e.message||e);
+        }
+      };
+    });
+
+    document.querySelectorAll('.opt-chip input[type=radio]').forEach(function(radio){
+      radio.addEventListener('change', function(){
+        var chips = radio.closest('.opt-chips');
+        if (!chips) return;
+        chips.querySelectorAll('.opt-chip').forEach(function(c){ c.classList.remove('on'); });
+        var chip = radio.closest('.opt-chip');
+        if (chip) chip.classList.add('on');
+      });
+    });
+  }
+
   function render(data){
     $('gate').style.display='none';
     $('view').style.display='';
     var o = data.order, d = data.display || {}, items = data.items || [];
     var biz = (data.business && data.business.business_name) || 'Your order';
     if(data.business && data.business.slug) rememberSlug(data.business.slug);
-    var html = '';
-    html += '<p class="sub" style="margin:0 0 6px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:11px;color:var(--accent)">'+esc(biz)+'</p>';
+    var html = '<div class="portal-view">';
+
+    html += '<header class="portal-top">';
+    html += '<p class="sub biz-label" style="margin:0 0 6px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:11px;color:var(--accent)">'+esc(biz)+'</p>';
     html += '<h1 class="brand">Order '+esc(o.order_number)+'</h1>';
-    html += '<p class="sub">Review your order'+( (o.deposit_required_cents||0)>(o.deposit_paid_cents||0) ? ', then proceed to payment when ready.' : '.' )+'</p>';
+    html += '<p class="sub">Review your order'+( (o.deposit_required_cents||0)>(o.deposit_paid_cents||0) ? ', then pay when ready.' : '.' )+'</p>';
+    html += '</header>';
+
+    html += '<main class="portal-scroll">';
     if(paid) html += '<div class="banner ok"><strong>Deposit received.</strong> Thank you — your order is confirmed.</div>';
     if(o.deposit_satisfied && !paid) html += '<div class="banner ok"><strong>Deposit confirmed.</strong> You can still edit your order until the cutoff — no extra deposit is required when you add or change items.</div>';
     if(cancelled) html += '<div class="banner warn"><strong>Payment cancelled.</strong> Your order is still saved — you can pay the deposit below when you are ready.</div>';
     if(data.pending_change_request) html += '<div class="banner warn"><strong>Change request pending.</strong> We received your edit request and will confirm shortly.</div>';
     if(o.editing_state==='locked') html += '<div class="locked">'+esc(d.locked_message||'ORDER LOCKED')+'</div>';
-    else html += '<div class="hrow" style="margin:0 0 12px">'+badge(o.editing_state)+'<span class="note" style="margin:0">Changes allowed until <strong>'+esc(o.effective_cutoff_at?new Date(o.effective_cutoff_at).toLocaleString():'—')+'</strong></span></div>';
+    else html += '<div class="status-strip"><div class="hrow">'+badge(o.editing_state)+'<span class="note" style="margin:0">Changes allowed until <strong>'+esc(o.effective_cutoff_at?new Date(o.effective_cutoff_at).toLocaleString():'—')+'</strong></span></div></div>';
     if(o.cutoff_reason) html += '<p class="note">'+esc(o.cutoff_reason)+'</p>';
 
     html += '<div class="card"><div class="meta">';
@@ -234,7 +498,7 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
     html += '<div><label>Price status</label><strong>'+(o.has_unknown_prices?'<span class="badge b-tbc">Final price TBC</span>':esc(o.price_status))+'</strong></div>';
     html += '</div></div>';
 
-    html += '<div class="card"><h2 style="margin:0 0 10px;font-family:var(--font-display);font-size:20px">Items</h2>';
+    html += '<div class="card"><h2 class="section-title">Items</h2>';
     items.forEach(function(it, idx){
       html += '<div class="item" data-i="'+idx+'" data-item-id="'+esc(it.id)+'"><h3>'+esc(it.product_name)+'</h3>';
       html += renderOptionsDisplay(it);
@@ -255,14 +519,14 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
     html += '</div>';
 
     if((data.change_history || []).length){
-      html += '<div class="card"><h2 style="margin:0 0 10px;font-size:16px">Your change history</h2><ul class="history">';
+      html += '<div class="card"><h2 class="section-title-sm">Your change history</h2><ul class="history">';
       data.change_history.slice(0, 15).forEach(function(h){
         html += '<li><strong>'+esc(h.detail)+'</strong> · '+esc(h.when)+(h.who ? (' · '+esc(h.who)) : '')+'</li>';
       });
       html += '</ul><p class="note">Contact the shop if anything looks wrong.</p></div>';
     }
 
-    html += '<div class="card"><h2 style="margin:0 0 10px;font-family:var(--font-display);font-size:20px">Payment</h2><div class="totals">';
+    html += '<div class="card"><h2 class="section-title">Payment</h2><div class="totals">';
     html += '<div class="row"><span>Known subtotal</span><span>'+esc(d.known_subtotal||money(o.known_subtotal_cents))+'</span></div>';
     if(o.has_unknown_prices) html += '<div class="row"><span>Other items</span><span>Price TBC after preparation</span></div>';
     html += '<div class="row"><span>Deposit required</span><span>'+esc(d.deposit_required||money(o.deposit_required_cents))+'</span></div>';
@@ -271,32 +535,32 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
     html += '<div class="row emph"><span>Balance</span><span>'+esc(d.balance||'TBC')+'</span></div>';
     html += '</div>';
     html += '<p class="note">Deposit today secures your order. Final order price will be confirmed after your items are prepared/weighed. Balance settlement: <strong>'+esc((o.balance_settlement||'').replace(/_/g,' '))+'</strong>.</p>';
-    html += '<div class="actions">';
-    html += '<button type="button" class="ghost" id="printBtn">Print / Save PDF</button>';
-    if((o.deposit_paid_cents||0) < (o.deposit_required_cents||0)){
-      html += '<button type="button" id="payBtn">Pay '+esc(d.deposit_required||money(o.deposit_required_cents))+' deposit &amp; confirm</button>';
-    }
-    if(data.can_edit) html += '<button type="button" id="saveBtn">Save changes</button>';
-    html += '</div></div>';
+    html += '<div class="actions portal-bar-desktop">'+renderActionButtons(o, d, data.can_edit)+'</div></div>';
 
     if(data.can_edit){
-      html += '<div class="card"><h2 style="margin:0 0 10px;font-size:16px">Edit pickup & notes</h2>';
+      html += '<div class="card"><h2 class="section-title-sm">Edit pickup & notes</h2>';
       html += '<label class="f">Pickup date</label><input type="date" id="ed-date" value="'+esc(o.pickup_date||'')+'">';
       html += '<label class="f" style="margin-top:8px">Pickup time</label><input type="time" id="ed-time" value="'+esc(o.pickup_time||'')+'">';
       html += '<label class="f" style="margin-top:8px">Notes</label><textarea id="ed-notes">'+(o.customer_notes?esc(o.customer_notes):'')+'</textarea>';
       html += '</div>';
     }
 
-    if(o.customer_notes && !data.can_edit) html += '<div class="card"><h2 style="margin:0 0 8px;font-size:16px">Notes</h2><p class="note" style="margin:0">'+esc(o.customer_notes)+'</p></div>';
+    if(o.customer_notes && !data.can_edit) html += '<div class="card"><h2 class="section-title-sm">Notes</h2><p class="note" style="margin:0">'+esc(o.customer_notes)+'</p></div>';
+
+    html += '</main>';
+
+    html += '<footer class="portal-bar portal-bar-mobile-host"><div class="portal-bar-inner">'+renderActionButtons(o, d, data.can_edit)+'</div></footer>';
+    html += '</div>';
 
     $('view').innerHTML = html;
 
-    var removeIds = [];
+    window.__portalRemoveIds = [];
+    window.__portalPendingAdds = [];
     document.querySelectorAll('.ed-remove').forEach(function(btn){
       btn.onclick = function(){
         var id = btn.getAttribute('data-id');
         if (!confirm('Remove this item from your order?')) return;
-        removeIds.push(id);
+        window.__portalRemoveIds.push(id);
         var block = btn.closest('.item');
         if (block) block.style.opacity = '0.4';
         btn.disabled = true;
@@ -304,7 +568,7 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
       };
     });
 
-    var pendingAdds = [];
+    var pendingAdds = window.__portalPendingAdds;
     var addProduct = document.getElementById('add-product');
     var addFields = document.getElementById('add-fields');
     function refreshAddFields(){
@@ -352,59 +616,7 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
       };
     }
 
-    var printBtn = document.getElementById('printBtn');
-    if(printBtn) printBtn.onclick = function(){
-      var url = '/order-print?t=' + encodeURIComponent(token) + '&format=receipt';
-      window.open(url, '_blank', 'noopener');
-    };
-
-    var payBtn = document.getElementById('payBtn');
-    if(payBtn) payBtn.onclick = async function(){
-      payBtn.disabled = true; payBtn.textContent = 'Opening secure checkout…';
-      try{
-        var out = await api('/api/order/checkout-deposit', { method:'POST', body:{ t: token } });
-        if(out.url) location.href = out.url; else throw new Error('No checkout URL');
-      }catch(e){ payBtn.disabled=false; payBtn.textContent='Try again'; alert(e.message||e); }
-    };
-
-    var saveBtn = document.getElementById('saveBtn');
-    if(saveBtn) saveBtn.onclick = async function(){
-      saveBtn.disabled = true;
-      var changes = [];
-      document.querySelectorAll('.item[data-item-id]').forEach(function(block){
-        var id = block.getAttribute('data-item-id');
-        if (removeIds.indexOf(id) >= 0) return;
-        var inp = block.querySelector('.ed-qty[data-id="'+id+'"]');
-        var w = block.querySelector('.ed-w[data-id="'+id+'"]');
-        var ch = { order_item_id: id };
-        if (inp) ch.quantity = parseFloat(inp.value);
-        if (w && w.value !== '') ch.requested_weight_kg = parseFloat(w.value);
-        var optRow = block.querySelector('.opt-edit');
-        if (optRow) ch.answers = collectAnswersFromRow(optRow);
-        changes.push(ch);
-      });
-      var payload = {
-        t: token,
-        changes: changes,
-        remove_item_ids: removeIds,
-        add_items: pendingAdds.map(function(a){
-          return { product_id: a.product_id, quantity: a.quantity, requested_weight_kg: a.requested_weight_kg, answers: a.answers };
-        })
-      };
-      var nd = document.getElementById('ed-date');
-      var nt = document.getElementById('ed-time');
-      var nn = document.getElementById('ed-notes');
-      if(nd) payload.pickup_date = nd.value || null;
-      if(nt) payload.pickup_time = nt.value || null;
-      if(nn) payload.customer_notes = nn.value;
-      try{
-        var out = await api('/api/order/portal', { method:'POST', body: payload });
-        if (out.mode === 'approval_required') {
-          alert('Your changes were sent to the shop for approval.');
-        }
-        location.reload();
-      }catch(e){ saveBtn.disabled=false; alert(e.message||e); }
-    };
+    wirePortalActions();
   }
 
   function renderHistory(data, sessionToken, slug){
