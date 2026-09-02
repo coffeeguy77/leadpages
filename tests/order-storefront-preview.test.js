@@ -72,3 +72,22 @@ test('render reapplies color overrides after order storefront inject', function 
   assert.ok(reapplyAt > injectAt);
   assert.match(render, /lp-order-storefront\.js\?v=oe-17/);
 });
+
+test('demo-shared keeps Order Storefront live while restyling', function () {
+  var js = fs.readFileSync(path.join(__dirname, '..', 'marketplace/demos/demo-shared.js'), 'utf8');
+  assert.match(js, /__lpApplyOrderStorefrontStyles/);
+  assert.match(js, /_lpDetachLiveOrderStorefront/);
+  assert.match(js, /_lpReattachLiveOrderStorefront/);
+  assert.match(js, /__lpOeBooted/);
+  // Homepage wipe + hybrid page rebuild must reattach the live mount
+  assert.match(js, /_osKeep=_lpDetachLiveOrderStorefront\(\)/);
+  assert.match(js, /_lpReattachLiveOrderStorefront\(_osKeep\)/);
+});
+
+test('manage.html colour pickers use style-only Order Storefront preview', function () {
+  var html = fs.readFileSync(path.join(__dirname, '..', 'manage.html'), 'utf8');
+  assert.match(html, /previewOrderStorefrontLive/);
+  assert.match(html, /__lpApplyOrderStorefrontStyles/);
+  assert.match(html, /pushOsPreview/);
+  assert.match(html, /function wireOrderStorefrontStyle/);
+});
