@@ -70,7 +70,7 @@ test('render reapplies color overrides after order storefront inject', function 
   var reapplyAt = render.indexOf('Colour overrides run again after dynamic injects');
   assert.ok(injectAt > 0);
   assert.ok(reapplyAt > injectAt);
-  assert.match(render, /lp-order-storefront\.js\?v=oe-17/);
+  assert.match(render, /lp-order-storefront\.js\?v=oe-18/);
 });
 
 test('demo-shared keeps Order Storefront live while restyling', function () {
@@ -90,4 +90,20 @@ test('manage.html colour pickers use style-only Order Storefront preview', funct
   assert.match(html, /__lpApplyOrderStorefrontStyles/);
   assert.match(html, /pushOsPreview/);
   assert.match(html, /function wireOrderStorefrontStyle/);
+});
+
+test('storefront CSS bridges theme tokens into catalogue/cart', function () {
+  var js = fs.readFileSync(path.join(__dirname, '..', 'assets/lp-order-storefront.js'), 'utf8');
+  assert.match(js, /--oe-accent:var\(--lp-oe-accent,var\(--hivis/);
+  assert.match(js, /--accent:var\(--oe-accent\)/);
+  assert.match(js, /--card:var\(--oe-card\)/);
+  assert.match(js, /Keep catalogue \+ cart aliases in lockstep/);
+});
+
+test('render inject uses unified --oe-\* catalogue tokens', function () {
+  var render = fs.readFileSync(path.join(__dirname, '..', 'api/render.js'), 'utf8');
+  assert.match(render, /--oe-accent:var\(--lp-oe-accent,var\(--hivis/);
+  assert.match(render, /--accent:var\(--oe-accent\)/);
+  assert.match(render, /lp-order-storefront\.js\?v=oe-18/);
+  assert.match(render, /--lp-oe-page-bg:/);
 });
