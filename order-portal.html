@@ -55,6 +55,20 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
 .banner{border-radius:12px;padding:12px 14px;margin:0 0 14px;font-size:14px;line-height:1.45;}
 .banner.warn{background:#fff1d6;border:1px solid #efd7a2;color:#7a5600;}
 .banner.ok{background:#f3faf5;border:1px solid #b7d7c0;color:var(--ok);}
+.opt-list{margin:6px 0 0;padding:0;list-style:none;font-size:13px;color:var(--muted);}
+.opt-list li{margin:2px 0;}
+.opt-group{margin-top:10px;}
+.opt-title{font-size:12px;font-weight:700;margin:0 0 6px;color:var(--muted);}
+.opt-chips{display:flex;flex-wrap:wrap;gap:6px;}
+.opt-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--line);border-radius:999px;font-size:13px;cursor:pointer;background:#fff;}
+.opt-chip input{margin:0;accent-color:var(--accent);}
+.opt-chip.on{border-color:var(--accent);background:#eef6f0;}
+.item-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.item-actions button{padding:8px 12px;font-size:13px;}
+.history{margin:0;padding:0;list-style:none;font-size:13px;color:var(--muted);}
+.history li{padding:8px 0;border-top:1px solid var(--line);}
+.history li:first-child{border-top:0;}
+.add-box{margin-top:14px;padding-top:14px;border-top:1px dashed var(--line);}
 </style>
 </head>
 <body>
@@ -111,6 +125,90 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
     return esc(o.pickup_date||'—') + (t ? (' · '+esc(t)) : '');
   }
 
+  function productFromCatalog(catalog, productId){
+    return (catalog && catalog.products || []).find(function(p){ return p.id === productId; }) || null;
+  }
+
+  function choiceLabel(c){
+    if (!c) return '';
+    if (typeof c === 'string') return c;
+    var lab = c.label || c.value || '';
+    if (c.price_cents > 0) lab += ' (+$'+(Number(c.price_cents)/100).toFixed(2)+')';
+    return lab;
+  }
+
+  function parseChoices(q){
+    return (q && Array.isArray(q.options) ? q.options : []).map(function(c){
+      if (typeof c === 'string') return { label: c, value: c, price_cents: 0 };
+      return { label: c.label || c.value, value: c.value != null ? c.value : c.label, price_cents: c.price_cents || 0 };
+    });
+  }
+
+  function renderOptionsDisplay(it){
+    var opts = it.selected_options || [];
+    if (!opts.length) return '';
+    return '<ul class="opt-list">' + opts.map(function(o){ return '<li>'+esc(o)+'</li>'; }).join('') + '</ul>';
+  }
+
+  function renderOptionEditors(it, catalog){
+    var p = productFromCatalog(catalog, it.product_id);
+    if (!p || !(p.questions || []).length) return '';
+    var saved = it.answers || {};
+    var html = '<div class="opt-edit" data-item="'+esc(it.id)+'">';
+    (p.questions || []).forEach(function(q){
+      var choices = parseChoices(q);
+      if (q.field_type === 'yes_no' && !choices.length) {
+        choices = [{ label: 'Yes', value: 'Yes' }, { label: 'No', value: 'No' }];
+      }
+      if (choices.length && (q.field_type === 'radio' || q.field_type === 'dropdown' || q.field_type === 'select' || q.field_type === 'yes_no')) {
+        var savedVal = saved[q.key] && saved[q.key].value != null ? String(saved[q.key].value) : '';
+        html += '<div class="opt-group"><p class="opt-title">'+esc(q.label)+(q.required?' *':'')+'</p><div class="opt-chips">';
+        choices.forEach(function(c){
+          var val = String(c.value != null ? c.value : c.label);
+          var on = savedVal === val;
+          html += '<label class="opt-chip'+(on?' on':'')+'"><input type="radio" name="opt-'+esc(it.id)+'-'+esc(q.key)+'" data-q="'+esc(q.key)+'" value="'+esc(val)+'"'+(on?' checked':'')+'><span>'+esc(choiceLabel(c))+'</span></label>';
+        });
+        html += '</div></div>';
+      } else {
+        var qv = saved[q.key] && saved[q.key].value != null ? saved[q.key].value : '';
+        html += '<div class="opt-group"><label class="f">'+esc(q.label)+'</label><input data-q="'+esc(q.key)+'" data-qtype="'+esc(q.field_type||'short_text')+'" value="'+esc(qv)+'"></div>';
+      }
+    });
+    html += '</div>';
+    return html;
+  }
+
+  function renderAddProductPanel(catalog){
+    if (!catalog || !(catalog.products || []).length) return '';
+    var html = '<div class="add-box"><h2 style="margin:0 0 10px;font-size:16px">Add an item</h2>';
+    html += '<label class="f">Product</label><select id="add-product"><option value="">Choose a product…</option>';
+    catalog.products.forEach(function(p){
+      html += '<option value="'+esc(p.id)+'">'+esc(p.name)+'</option>';
+    });
+    html += '</select>';
+    html += '<div id="add-fields" style="margin-top:10px"></div>';
+    html += '<button type="button" class="ghost" id="addBtn" style="margin-top:10px">Add to order</button></div>';
+    return html;
+  }
+
+  function collectAnswersFromRow(row){
+    var answers = {};
+    row.querySelectorAll('[data-q]').forEach(function(el){
+      if (el.type === 'radio' && !el.checked) return;
+      var key = el.getAttribute('data-q');
+      if (!key) return;
+      var val = el.value;
+      if (val === '' && el.type !== 'checkbox') return;
+      var group = el.closest('.opt-group');
+      var qLabel = group && group.querySelector('.opt-title') ? group.querySelector('.opt-title').textContent.replace(/\s*\*$/, '').trim() : key;
+      if (!group) qLabel = el.previousElementSibling && el.previousElementSibling.textContent ? el.previousElementSibling.textContent.trim() : key;
+      var chip = el.closest('.opt-chip');
+      var choiceLabel = chip && chip.querySelector('span') ? chip.querySelector('span').textContent.trim() : val;
+      answers[key] = { value: val, label: qLabel, choice_label: choiceLabel, field_type: el.getAttribute('data-qtype') || 'short_text' };
+    });
+    return answers;
+  }
+
   function render(data){
     $('gate').style.display='none';
     $('view').style.display='';
@@ -122,7 +220,9 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
     html += '<h1 class="brand">Order '+esc(o.order_number)+'</h1>';
     html += '<p class="sub">Review your order'+( (o.deposit_required_cents||0)>(o.deposit_paid_cents||0) ? ', then proceed to payment when ready.' : '.' )+'</p>';
     if(paid) html += '<div class="banner ok"><strong>Deposit received.</strong> Thank you — your order is confirmed.</div>';
+    if(o.deposit_satisfied && !paid) html += '<div class="banner ok"><strong>Deposit confirmed.</strong> You can still edit your order until the cutoff — no extra deposit is required when you add or change items.</div>';
     if(cancelled) html += '<div class="banner warn"><strong>Payment cancelled.</strong> Your order is still saved — you can pay the deposit below when you are ready.</div>';
+    if(data.pending_change_request) html += '<div class="banner warn"><strong>Change request pending.</strong> We received your edit request and will confirm shortly.</div>';
     if(o.editing_state==='locked') html += '<div class="locked">'+esc(d.locked_message||'ORDER LOCKED')+'</div>';
     else html += '<div class="hrow" style="margin:0 0 12px">'+badge(o.editing_state)+'<span class="note" style="margin:0">Changes allowed until <strong>'+esc(o.effective_cutoff_at?new Date(o.effective_cutoff_at).toLocaleString():'—')+'</strong></span></div>';
     if(o.cutoff_reason) html += '<p class="note">'+esc(o.cutoff_reason)+'</p>';
@@ -136,19 +236,31 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
 
     html += '<div class="card"><h2 style="margin:0 0 10px;font-family:var(--font-display);font-size:20px">Items</h2>';
     items.forEach(function(it, idx){
-      html += '<div class="item" data-i="'+idx+'"><h3>'+esc(it.product_name)+'</h3>';
+      html += '<div class="item" data-i="'+idx+'" data-item-id="'+esc(it.id)+'"><h3>'+esc(it.product_name)+'</h3>';
+      html += renderOptionsDisplay(it);
       html += '<p>Qty '+esc(it.quantity)+(it.requested_weight_kg!=null?(' · approx '+esc(it.requested_weight_kg)+' kg'):'')+(it.actual_weight_kg!=null?(' · actual '+esc(it.actual_weight_kg)+' kg'):'')+'</p>';
       var price = it.line_final_cents!=null?money(it.line_final_cents):(it.price_status==='tbc'||it.price_status==='quote_required'?'Price TBC':(it.line_known_cents!=null?money(it.line_known_cents):'—'));
       html += '<p style="margin-top:4px"><strong>'+price+'</strong>'+(it.price_status==='estimated'?' <span class="badge b-tbc">Est.</span>':'')+(it.includes_gst?' <span class="badge b-open">inc. GST</span>':'')+'</p>';
       if(data.can_edit){
+        html += renderOptionEditors(it, data.catalog);
         html += '<div class="edit-row">';
         html += '<div><label class="f">Quantity</label><input type="number" min="0" step="0.01" class="ed-qty" data-id="'+esc(it.id)+'" value="'+esc(it.quantity)+'"></div>';
         html += '<div><label class="f">Approx. weight (kg)</label><input type="number" min="0.1" step="0.1" class="ed-w" data-id="'+esc(it.id)+'" value="'+(it.requested_weight_kg!=null?esc(it.requested_weight_kg):'')+'"></div>';
         html += '</div>';
+        html += '<div class="item-actions"><button type="button" class="ghost ed-remove" data-id="'+esc(it.id)+'">Remove item</button></div>';
       }
       html += '</div>';
     });
+    if(data.can_edit) html += renderAddProductPanel(data.catalog);
     html += '</div>';
+
+    if((data.change_history || []).length){
+      html += '<div class="card"><h2 style="margin:0 0 10px;font-size:16px">Your change history</h2><ul class="history">';
+      data.change_history.slice(0, 15).forEach(function(h){
+        html += '<li><strong>'+esc(h.detail)+'</strong> · '+esc(h.when)+(h.who ? (' · '+esc(h.who)) : '')+'</li>';
+      });
+      html += '</ul><p class="note">Contact the shop if anything looks wrong.</p></div>';
+    }
 
     html += '<div class="card"><h2 style="margin:0 0 10px;font-family:var(--font-display);font-size:20px">Payment</h2><div class="totals">';
     html += '<div class="row"><span>Known subtotal</span><span>'+esc(d.known_subtotal||money(o.known_subtotal_cents))+'</span></div>';
@@ -164,7 +276,7 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
     if((o.deposit_paid_cents||0) < (o.deposit_required_cents||0)){
       html += '<button type="button" id="payBtn">Pay '+esc(d.deposit_required||money(o.deposit_required_cents))+' deposit &amp; confirm</button>';
     }
-    if(data.can_edit) html += '<button type="button" class="ghost" id="saveBtn">Save changes</button>';
+    if(data.can_edit) html += '<button type="button" id="saveBtn">Save changes</button>';
     html += '</div></div>';
 
     if(data.can_edit){
@@ -178,6 +290,67 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
     if(o.customer_notes && !data.can_edit) html += '<div class="card"><h2 style="margin:0 0 8px;font-size:16px">Notes</h2><p class="note" style="margin:0">'+esc(o.customer_notes)+'</p></div>';
 
     $('view').innerHTML = html;
+
+    var removeIds = [];
+    document.querySelectorAll('.ed-remove').forEach(function(btn){
+      btn.onclick = function(){
+        var id = btn.getAttribute('data-id');
+        if (!confirm('Remove this item from your order?')) return;
+        removeIds.push(id);
+        var block = btn.closest('.item');
+        if (block) block.style.opacity = '0.4';
+        btn.disabled = true;
+        btn.textContent = 'Will remove on save';
+      };
+    });
+
+    var pendingAdds = [];
+    var addProduct = document.getElementById('add-product');
+    var addFields = document.getElementById('add-fields');
+    function refreshAddFields(){
+      if (!addFields || !addProduct) return;
+      var p = productFromCatalog(data.catalog, addProduct.value);
+      if (!p) { addFields.innerHTML = ''; return; }
+      var needsW = p.pricing_method === 'per_weight' || p.pricing_method === 'price_tbc' || p.weight_required;
+      var html = '';
+      if (!needsW) html += '<label class="f">Quantity</label><input type="number" id="add-qty" min="1" step="1" value="1">';
+      if (needsW) html += '<label class="f">Approx. weight (kg)</label><input type="number" id="add-kg" min="0.1" step="0.1" value="1">';
+      html += '<div id="add-opt"></div>';
+      addFields.innerHTML = html;
+      var optHost = document.getElementById('add-opt');
+      if (optHost && p.questions && p.questions.length) {
+        var fakeItem = { id: 'new', product_id: p.id, answers: {} };
+        optHost.innerHTML = renderOptionEditors(fakeItem, { products: [p] }).replace(/data-item="new"/, 'data-item="add"');
+      }
+    }
+    if (addProduct) {
+      addProduct.onchange = refreshAddFields;
+      refreshAddFields();
+    }
+    var addBtn = document.getElementById('addBtn');
+    if (addBtn) {
+      addBtn.onclick = function(){
+        var pid = addProduct && addProduct.value;
+        if (!pid) { alert('Choose a product'); return; }
+        var p = productFromCatalog(data.catalog, pid);
+        var needsW = p && (p.pricing_method === 'per_weight' || p.pricing_method === 'price_tbc' || p.weight_required);
+        var line = { product_id: pid, _temp: true };
+        if (needsW) {
+          var kg = document.getElementById('add-kg');
+          line.requested_weight_kg = kg && kg.value !== '' ? parseFloat(kg.value) : 1;
+          line.quantity = 1;
+        } else {
+          var qty = document.getElementById('add-qty');
+          line.quantity = qty && qty.value !== '' ? parseFloat(qty.value) : 1;
+        }
+        var optRow = addFields && addFields.querySelector('.opt-edit');
+        if (optRow) line.answers = collectAnswersFromRow(optRow);
+        pendingAdds.push(line);
+        addBtn.textContent = pendingAdds.length + ' item(s) queued — save to apply';
+        addProduct.value = '';
+        refreshAddFields();
+      };
+    }
 
     var printBtn = document.getElementById('printBtn');
     if(printBtn) printBtn.onclick = function(){
@@ -198,12 +371,26 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
     if(saveBtn) saveBtn.onclick = async function(){
       saveBtn.disabled = true;
       var changes = [];
-      document.querySelectorAll('.ed-qty').forEach(function(inp){
-        var id = inp.getAttribute('data-id');
-        var w = document.querySelector('.ed-w[data-id="'+id+'"]');
-        changes.push({ order_item_id:id, quantity: parseFloat(inp.value), requested_weight_kg: w && w.value!=='' ? parseFloat(w.value) : null });
+      document.querySelectorAll('.item[data-item-id]').forEach(function(block){
+        var id = block.getAttribute('data-item-id');
+        if (removeIds.indexOf(id) >= 0) return;
+        var inp = block.querySelector('.ed-qty[data-id="'+id+'"]');
+        var w = block.querySelector('.ed-w[data-id="'+id+'"]');
+        var ch = { order_item_id: id };
+        if (inp) ch.quantity = parseFloat(inp.value);
+        if (w && w.value !== '') ch.requested_weight_kg = parseFloat(w.value);
+        var optRow = block.querySelector('.opt-edit');
+        if (optRow) ch.answers = collectAnswersFromRow(optRow);
+        changes.push(ch);
       });
-      var payload = { t: token, changes: changes };
+      var payload = {
+        t: token,
+        changes: changes,
+        remove_item_ids: removeIds,
+        add_items: pendingAdds.map(function(a){
+          return { product_id: a.product_id, quantity: a.quantity, requested_weight_kg: a.requested_weight_kg, answers: a.answers };
+        })
+      };
       var nd = document.getElementById('ed-date');
       var nt = document.getElementById('ed-time');
       var nn = document.getElementById('ed-notes');
@@ -211,7 +398,10 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
       if(nt) payload.pickup_time = nt.value || null;
       if(nn) payload.customer_notes = nn.value;
       try{
-        await api('/api/order/portal', { method:'POST', body: payload });
+        var out = await api('/api/order/portal', { method:'POST', body: payload });
+        if (out.mode === 'approval_required') {
+          alert('Your changes were sent to the shop for approval.');
+        }
         location.reload();
       }catch(e){ saveBtn.disabled=false; alert(e.message||e); }
     };
