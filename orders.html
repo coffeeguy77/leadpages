@@ -3220,6 +3220,9 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       order_voided: 'Order voided',
       order_restored: 'Order restored',
       order_edited: 'Order edited',
+      customer_edit: 'Customer edited order',
+      change_request_submitted: 'Change request submitted',
+      line_change: 'Line change',
       customer_notified: 'Message sent',
       status_changed: 'Status changed'
     };
@@ -3544,6 +3547,24 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     var events = (data.audit_events || []).concat((data.messages || []).map(function(m){
       return { created_at: m.created_at, event_type: 'message_' + (m.channel || 'sms'), actor_label: m.destination, payload: { body: m.body } };
     }));
+    (data.changes || []).forEach(function(chg){
+      var detail = '';
+      if (chg.field_path === 'item.removed' && chg.previous_value && chg.previous_value.product_name) {
+        detail = 'Removed ' + chg.previous_value.product_name;
+      } else if (chg.field_path === 'item.added' && chg.new_value && chg.new_value.product_name) {
+        detail = 'Added ' + chg.new_value.product_name;
+      } else if (chg.field_path === 'item.options') detail = 'Customer updated options';
+      else if (chg.field_path === 'item') detail = 'Line updated';
+      else if (chg.field_path === 'pickup') detail = 'Pickup changed';
+      else if (chg.field_path === 'customer_notes') detail = 'Notes updated';
+      else detail = (chg.field_path || 'change').replace(/_/g, ' ');
+      events.push({
+        created_at: chg.created_at,
+        event_type: 'line_change',
+        actor_label: chg.actor_label || chg.source,
+        payload: { reason: detail, source: chg.source, previous: chg.previous_value, new: chg.new_value }
+      });
+    });
     events.sort(function(a,b){ return String(b.created_at||'').localeCompare(String(a.created_at||'')); });
     if (!events.length) html += '<p class="notice">No history yet.</p>';
     events.slice(0, 40).forEach(function(ev){

@@ -1607,6 +1607,14 @@
         '"' +
         (self.state.busy ? ' disabled' : '') +
         '>Order again</button>';
+      if (o.can_edit) {
+        html +=
+          '<button type="button" class="lp-oe-account-btn ghost" data-act="edit-order" data-order-id="' +
+          esc(o.id) +
+          '"' +
+          (self.state.busy ? ' disabled' : '') +
+          '>View &amp; edit</button>';
+      }
       html += '</div>';
       html += '<ul class="lp-oe-order-lines">';
       (o.items || []).forEach(function (it) {
@@ -1619,6 +1627,12 @@
         if (it.notes) bits.push(it.notes);
         if (bits.length) {
           html += '<span class="lp-oe-order-line-meta">' + esc(bits.join(' · ')) + '</span>';
+        }
+        if (it.selected_options && it.selected_options.length) {
+          html +=
+            '<span class="lp-oe-order-line-meta">' +
+            esc(it.selected_options.join(' · ')) +
+            '</span>';
         }
         html += '</li>';
       });
@@ -2337,6 +2351,36 @@
         }
         self.state.msg = 'You can add your email anytime from Your orders.';
         self.render();
+        return;
+      }
+      if (act === 'edit-order') {
+        if (!self.isLoggedIn()) {
+          self.openAuthModal();
+          return;
+        }
+        var editOrderId = el.getAttribute('data-order-id');
+        self.state.busy = true;
+        self.render();
+        try {
+          var link = await api('/api/order/portal-auth', {
+            method: 'POST',
+            body: {
+              action: 'order_portal_link',
+              slug: self.slug,
+              token: self.state.customerToken,
+              order_id: editOrderId
+            }
+          });
+          if (link.portal_url) {
+            window.location.href = link.portal_url;
+            return;
+          }
+          throw new Error('Could not open order editor');
+        } catch (e) {
+          self.state.busy = false;
+          self.state.msg = (e && e.message) || String(e);
+          self.render();
+        }
         return;
       }
       if (act === 'reorder') {

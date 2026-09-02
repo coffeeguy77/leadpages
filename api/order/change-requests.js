@@ -5,6 +5,7 @@ const { requireUser, assertSiteAccess, ensureOrderSystem } = require('../../lib/
 const { getAdmin } = require('../../lib/order/supabase');
 const { writeAudit, writeChange } = require('../../lib/order/audit');
 const { recalculateOrder } = require('../../lib/order/service');
+const { applyPortalEdits } = require('../../lib/order/portal-edit');
 
 module.exports = async function (req, res) {
   try {
@@ -68,48 +69,61 @@ module.exports = async function (req, res) {
     }
 
     if (action === 'approve') {
-      const changes = Array.isArray(reqRow.proposed_changes)
-        ? reqRow.proposed_changes
-        : reqRow.proposed_changes && reqRow.proposed_changes.items
-          ? reqRow.proposed_changes.items
-          : [];
       const meta =
         reqRow.proposed_changes && !Array.isArray(reqRow.proposed_changes)
           ? reqRow.proposed_changes
-          : {};
-
-      for (const line of changes) {
-        const itemId = line.order_item_id || line.id;
-        if (!itemId) continue;
-        const itemPatch = {};
-        if (line.quantity != null) itemPatch.quantity = line.quantity;
-        if (line.requested_weight_kg != null) itemPatch.requested_weight_kg = line.requested_weight_kg;
-        if (line.notes != null) itemPatch.notes = line.notes;
-        if (Object.keys(itemPatch).length) {
-          const { data: before } = await admin.from('order_items').select('*').eq('id', itemId).maybeSingle();
-          await admin.from('order_items').update(itemPatch).eq('id', itemId).eq('order_id', reqRow.order_id);
-          if (before) {
-            await writeChange({
-              order_id: reqRow.order_id,
-              site_id: siteId,
-              order_item_id: itemId,
-              field_path: 'item_update',
-              previous_value: { quantity: before.quantity, requested_weight_kg: before.requested_weight_kg },
-              new_value: itemPatch,
-              source: 'admin',
-              actor_user_id: user.id,
-              actor_label: user.email
-            });
+          : { items: Array.isArray(reqRow.proposed_changes) ? reqRow.proposed_changes : [] };
+      const { data: order } = await admin.from('order_orders').select('*').eq('id', reqRow.order_id).maybeSingle();
+      const { data: site } = await admin.from('sites').select('id,slug,business_name').eq('id', siteId).maybeSingle();
+      if (order && site) {
+        await applyPortalEdits({
+          order: order,
+          site: site,
+          system: system,
+          body: {
+            changes: meta.items || [],
+            add_items: meta.add_items || [],
+            remove_item_ids: meta.remove_item_ids || [],
+            customer_notes: meta.customer_notes,
+            pickup_date: meta.pickup_date,
+            pickup_time: meta.pickup_time
+          },
+          actorLabel: user.email || 'Staff'
+        });
+      } else {
+        const changes = meta.items || [];
+        for (const line of changes) {
+          const itemId = line.order_item_id || line.id;
+          if (!itemId) continue;
+          const itemPatch = {};
+          if (line.quantity != null) itemPatch.quantity = line.quantity;
+          if (line.requested_weight_kg != null) itemPatch.requested_weight_kg = line.requested_weight_kg;
+          if (line.notes != null) itemPatch.notes = line.notes;
+          if (Object.keys(itemPatch).length) {
+            const { data: before } = await admin.from('order_items').select('*').eq('id', itemId).maybeSingle();
+            await admin.from('order_items').update(itemPatch).eq('id', itemId).eq('order_id', reqRow.order_id);
+            if (before) {
+              await writeChange({
+                order_id: reqRow.order_id,
+                site_id: siteId,
+                order_item_id: itemId,
+                field_path: 'item_update',
+                previous_value: { quantity: before.quantity, requested_weight_kg: before.requested_weight_kg },
+                new_value: itemPatch,
+                source: 'admin',
+                actor_user_id: user.id,
+                actor_label: user.email
+              });
+            }
           }
         }
+        const orderPatch = { updated_at: new Date().toISOString() };
+        if (meta.customer_notes != null) orderPatch.customer_notes = meta.customer_notes;
+        if (meta.pickup_date != null) orderPatch.pickup_date = meta.pickup_date;
+        if (meta.pickup_time != null) orderPatch.pickup_time = meta.pickup_time;
+        await admin.from('order_orders').update(orderPatch).eq('id', reqRow.order_id);
+        if (changes.length) await recalculateOrder(reqRow.order_id);
       }
-
-      const orderPatch = { updated_at: new Date().toISOString() };
-      if (meta.customer_notes != null) orderPatch.customer_notes = meta.customer_notes;
-      if (meta.pickup_date != null) orderPatch.pickup_date = meta.pickup_date;
-      if (meta.pickup_time != null) orderPatch.pickup_time = meta.pickup_time;
-      await admin.from('order_orders').update(orderPatch).eq('id', reqRow.order_id);
-      if (changes.length) await recalculateOrder(reqRow.order_id);
 
       const { data } = await admin
         .from('order_change_requests')

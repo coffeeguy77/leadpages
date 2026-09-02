@@ -12,6 +12,7 @@ const {
   storeSmsOtp,
   verifySmsOtp,
   createCustomerSessionToken,
+  createAccessToken,
   resolveAccessToken
 } = require('../../lib/order/tokens');
 const { queueAndSend, twilioOtpConfigured, sendPortalOtpSms, checkPortalOtpSms } = require('../../lib/order/messaging');
@@ -19,6 +20,10 @@ const { recordSmsUsage } = require('../../lib/order/sms-usage');
 const { createCart, addReorderLines } = require('../../lib/order/cart');
 const { parseGstSettings } = require('../../lib/order/gst');
 const { packCartResponse } = require('../../lib/order/cart-pack');
+const { formatOptionsForPortal } = require('../../lib/order/portal-edit');
+const { editingStateFor } = require('../../lib/order/cutoff');
+const { parsePickupSchedule } = require('../../lib/order/pickup-schedule');
+const { isMasterLockActive } = require('../../lib/order/master-lock');
 
 function sixDigitCode() {
   return String(100000 + Math.floor(Math.random() * 900000));
@@ -182,7 +187,7 @@ module.exports = async function (req, res) {
       const { data: orders } = await admin
         .from('order_orders')
         .select(
-          'id, order_number, status, pickup_date, known_subtotal_cents, deposit_paid_cents, has_unknown_prices, price_status, created_at, customer_name'
+          'id, order_number, status, pickup_date, effective_cutoff_at, editing_state, known_subtotal_cents, deposit_paid_cents, has_unknown_prices, price_status, created_at, customer_name'
         )
         .eq('customer_id', customer.id)
         .order('created_at', { ascending: false })
@@ -192,21 +197,51 @@ module.exports = async function (req, res) {
         return o.id;
       });
       let itemsByOrder = {};
+      var allItemIds = [];
       if (orderIds.length) {
         const { data: items } = await admin
           .from('order_items')
           .select(
-            'id, order_id, product_id, product_name, quantity, requested_weight_kg, notes, price_status, unit_price_cents, line_known_cents'
+            'id, order_id, product_id, product_name, quantity, requested_weight_kg, notes, price_status, unit_price_cents, line_known_cents, product_snapshot, options_snapshot'
           )
           .in('order_id', orderIds);
         (items || []).forEach(function (it) {
           if (!itemsByOrder[it.order_id]) itemsByOrder[it.order_id] = [];
           itemsByOrder[it.order_id].push(it);
+          allItemIds.push(it.id);
         });
       }
+      var answerRows = [];
+      if (allItemIds.length) {
+        const { data: ans } = await admin.from('order_item_answers').select('*').in('order_item_id', allItemIds);
+        answerRows = ans || [];
+      }
+
+      const { data: system } = await admin
+        .from('order_systems')
+        .select('*')
+        .eq('site_id', session.site_id)
+        .maybeSingle();
 
       const packed = (orders || []).map(function (o) {
-        return Object.assign({}, o, { items: itemsByOrder[o.id] || [] });
+        var liveEdit = editingStateFor(o.effective_cutoff_at);
+        var editingState =
+          o.editing_state === 'locked' || liveEdit === 'locked' ? 'locked' : liveEdit;
+        var masterLocked =
+          system &&
+          isMasterLockActive(parsePickupSchedule(system), new Date(), system.timezone || 'Australia/Sydney');
+        var canEdit =
+          !masterLocked &&
+          editingState !== 'locked' &&
+          !!(system && system.customer_editing_enabled);
+        return Object.assign({}, o, {
+          can_edit: canEdit,
+          items: (itemsByOrder[o.id] || []).map(function (it) {
+            return Object.assign({}, it, {
+              selected_options: formatOptionsForPortal(it, answerRows)
+            });
+          })
+        });
       });
 
       return json(res, 200, {
@@ -393,6 +428,28 @@ module.exports = async function (req, res) {
         ok: true,
         customer: packCustomerPublic(updated),
         needs_email: false
+      });
+    }
+
+    if (action === 'order_portal_link') {
+      const token = body.token || '';
+      const session = await resolveAccessToken(token);
+      if (!session || session.purpose !== 'portal_customer' || !session.customer_id) {
+        return json(res, 401, { error: 'auth' });
+      }
+      const orderId = body.order_id;
+      if (!orderId) return json(res, 400, { error: 'order_id_required' });
+      const { data: order } = await admin
+        .from('order_orders')
+        .select('id,site_id,customer_id')
+        .eq('id', orderId)
+        .eq('customer_id', session.customer_id)
+        .maybeSingle();
+      if (!order) return json(res, 404, { error: 'order_not_found' });
+      const link = await createAccessToken(order.id, order.site_id, 'portal', 168);
+      return json(res, 200, {
+        ok: true,
+        portal_url: '/order-portal?t=' + encodeURIComponent(link.token)
       });
     }
 
