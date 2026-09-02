@@ -1762,6 +1762,19 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     }catch(e){}
   }
   window.previewApply = previewApply;
+  /** Style-only Order Storefront update — keeps the live catalogue mounted while dragging colours. */
+  function previewOrderStorefrontLive(){
+    var fr=lpFrame(); if(!fr||!lpPrevReady) return false;
+    try{
+      var w=fr.contentWindow;
+      if(w && typeof w.__lpApplyOrderStorefrontStyles==='function'){
+        w.__lpApplyOrderStorefrontStyles(data);
+        try{ setTimeout(lpPreviewFitFrameHeight, 0); }catch(_f){}
+        return true;
+      }
+    }catch(e){}
+    return false;
+  }
   function previewLoad(){
     var fr=lpFrame(); if(!fr) return;
     lpPrevReady=false; lpPrevSlug=previewTarget();
@@ -4538,7 +4551,8 @@ function onlineQuoteStyleCard(c){
   }
   function wireOrderStorefrontStyle(c){
     function OS(){ if(!c.sections)c.sections={}; if(!c.sections.orderStorefront)c.sections.orderStorefront={}; return c.sections.orderStorefront; }
-    function colWire(id,key){ var clr=$(id+'-clr'),tx=$(id+'-tx'),df=$(id+'-def'); if(clr) clr.addEventListener('input',function(){ OS()[key]=clr.value; if(tx)tx.value=clr.value; persist(); previewApply(); }); if(tx) tx.addEventListener('input',function(){ var v=tx.value.trim(); if(v===''){ OS()[key]=''; } else { if(v[0]!=='#')v='#'+v; if(/^#[0-9a-fA-F]{6}$/.test(v)){ OS()[key]=v; if(clr)clr.value=v; } } persist(); previewApply(); }); if(df) df.addEventListener('click',function(){ OS()[key]=''; if(tx)tx.value=''; persist(); previewApply(); }); }
+    function pushOsPreview(){ persist(); if(!previewOrderStorefrontLive()) previewApply(); }
+    function colWire(id,key){ var clr=$(id+'-clr'),tx=$(id+'-tx'),df=$(id+'-def'); if(clr) clr.addEventListener('input',function(){ OS()[key]=clr.value; if(tx)tx.value=clr.value; pushOsPreview(); }); if(tx) tx.addEventListener('input',function(){ var v=tx.value.trim(); if(v===''){ OS()[key]=''; } else { if(v[0]!=='#')v='#'+v; if(/^#[0-9a-fA-F]{6}$/.test(v)){ OS()[key]=v; if(clr)clr.value=v; } } pushOsPreview(); }); if(df) df.addEventListener('click',function(){ OS()[key]=''; if(tx)tx.value=''; pushOsPreview(); }); }
     colWire('os-bg','bg'); colWire('os-eyebrow','eyebrowColor'); colWire('os-heading','headingColor'); colWire('os-intro','introColor');
     colWire('os-accent','accent'); colWire('os-card','cardBg'); colWire('os-border','cardBorder'); colWire('os-text','text'); colWire('os-muted','muted');
     colWire('os-btnbg','btnBg'); colWire('os-btntx','btnText'); colWire('os-ibg','inputBg'); colWire('os-ibd','inputBorder');
@@ -4547,7 +4561,7 @@ function onlineQuoteStyleCard(c){
       el.addEventListener('input', function(){
         var v = el.value.trim();
         OS()[key] = v === '' ? '' : (isFinite(Number(v)) ? Number(v) : '');
-        persist(); previewApply();
+        pushOsPreview();
       });
     }
     numWire('os-maxw', 'maxWidth');
