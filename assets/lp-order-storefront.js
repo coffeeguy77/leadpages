@@ -712,20 +712,34 @@
     var a = cfg.appearance || {};
     var el = this.root.querySelector('.lp-oe');
     if (!el) return;
+    // Page-editor / CSS-override colours live on the section. Prefer those so live
+    // preview and Branding → CSS Override remaps are not wiped by API defaults.
+    var section = this.root.closest('[data-sec="orderStorefront"],section.order-storefront');
+    function sectionVar(name) {
+      if (!section) return '';
+      try {
+        // Only trust inline section styles from the page editor / CSS override inject.
+        // Computed styles can inherit unrelated theme tokens and fight the catalogue.
+        var inline = section.style && section.style.getPropertyValue(name);
+        return inline && String(inline).trim() ? String(inline).trim() : '';
+      } catch (_e) {
+        return '';
+      }
+    }
     var map = {
-      '--lp-oe-maxw': a.max_width ? (Number(a.max_width) + 'px') : '',
-      '--lp-oe-pad': a.padding != null && a.padding !== '' ? (Number(a.padding) + 'px') : '',
-      '--lp-oe-radius': a.radius != null && a.radius !== '' ? (Number(a.radius) + 'px') : '',
-      '--lp-oe-accent': a.accent || '',
-      '--lp-oe-card': a.card_bg || '',
-      '--lp-oe-line': a.card_border || '',
-      '--lp-oe-ink': a.text || '',
-      '--lp-oe-muted': a.muted || '',
-      '--lp-oe-btn-bg': a.btn_bg || '',
-      '--lp-oe-btn-text': a.btn_text || '',
-      '--lp-oe-input-bg': a.input_bg || '',
-      '--lp-oe-input-border': a.input_border || '',
-      '--lp-oe-page-bg': a.page_bg || ''
+      '--lp-oe-maxw': sectionVar('--lp-oe-maxw') || (a.max_width ? (Number(a.max_width) + 'px') : ''),
+      '--lp-oe-pad': sectionVar('--lp-oe-pad') || (a.padding != null && a.padding !== '' ? (Number(a.padding) + 'px') : ''),
+      '--lp-oe-radius': sectionVar('--lp-oe-radius') || (a.radius != null && a.radius !== '' ? (Number(a.radius) + 'px') : ''),
+      '--lp-oe-accent': sectionVar('--lp-oe-accent') || a.accent || '',
+      '--lp-oe-card': sectionVar('--lp-oe-card') || a.card_bg || '',
+      '--lp-oe-line': sectionVar('--lp-oe-line') || a.card_border || '',
+      '--lp-oe-ink': sectionVar('--lp-oe-ink') || a.text || '',
+      '--lp-oe-muted': sectionVar('--lp-oe-muted') || a.muted || '',
+      '--lp-oe-btn-bg': sectionVar('--lp-oe-btn-bg') || a.btn_bg || '',
+      '--lp-oe-btn-text': sectionVar('--lp-oe-btn-text') || a.btn_text || '',
+      '--lp-oe-input-bg': sectionVar('--lp-oe-input-bg') || a.input_bg || '',
+      '--lp-oe-input-border': sectionVar('--lp-oe-input-border') || a.input_border || '',
+      '--lp-oe-page-bg': sectionVar('--lp-oe-page-bg') || a.page_bg || ''
     };
     Object.keys(map).forEach(function (k) {
       if (map[k]) el.style.setProperty(k, map[k]);
@@ -3004,8 +3018,15 @@
   function boot(root) {
     if (!root) return;
     ensureStyles();
+    if (root.__lpOeBooted && root.__lpOeApp) {
+      try {
+        if (typeof root.__lpOeApp.applyAppearance === 'function') root.__lpOeApp.applyAppearance();
+      } catch (_re) {}
+      return;
+    }
     root.__lpOeBooted = true;
     var app = new OrderStorefront(root);
+    root.__lpOeApp = app;
     app.init();
   }
 
