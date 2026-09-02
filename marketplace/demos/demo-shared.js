@@ -684,7 +684,7 @@ function applyCfg(C){
       }
     }catch(e){}
         try{ if(typeof window.lpPaintSearchCanvas==='function'){ window.lpPaintSearchCanvas((C.sections&&C.sections.searchCanvas)||{}, document.querySelector('[data-sec="searchCanvas"]')); } }catch(e){}
-    try{ ['navMenu','beforeAfter','responseCards','projectStats','serviceAreas','reviewHighlights','featuredProjects','premiumGallery','featureStrip','specialOffer','heroBeforeAfter','heroSlider','splitHero','activityCounter','proofStream','projectFeed','jobsFeed','beforeAfterFeed','videoReels','activityTimeline','customerReactions','textBox','seoText','searchCanvas','onlineQuote','customHtml'].forEach(function(__id){ var __n=document.querySelector('[data-sec="'+__id+'"]'); if(!__n) return; if(SEC[__id] && SEC[__id].on===true){ __n.style.display='block'; } else { __n.style.display='none'; } }); }catch(e){}
+    try{ ['navMenu','beforeAfter','responseCards','projectStats','serviceAreas','reviewHighlights','featuredProjects','premiumGallery','featureStrip','specialOffer','heroBeforeAfter','heroSlider','splitHero','activityCounter','proofStream','projectFeed','jobsFeed','beforeAfterFeed','videoReels','activityTimeline','customerReactions','textBox','seoText','searchCanvas','onlineQuote','orderStorefront','bookingStorefront','customHtml'].forEach(function(__id){ var __n=document.querySelector('[data-sec="'+__id+'"]'); if(!__n) return; if(SEC[__id] && SEC[__id].on===true){ __n.style.display='block'; } else { __n.style.display='none'; } }); }catch(e){}
       (function(){ var SEC=C.sections||{}; function lpIcon(v){ if(v==null) return ''; v=String(v); if(/^[a-z0-9-]+$/.test(v)){ var _i=(window.LP_ICONS&&window.LP_ICONS[v]); if(_i) return '<svg class="lp-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+_i+'</svg>'; } return esc(v); }
       function rlist(sel,items,fn){ var box=document.querySelector(sel); if(!box||!Array.isArray(items)) return; box.innerHTML=items.filter(function(it){return it&&it.on!==false;}).map(fn).join(''); }
       var nmEl=document.querySelector('a.brand .nm'); var _SCb=(typeof SITE_CONFIG!=='undefined'&&SITE_CONFIG)||{}; var BIZ=(C.business||C.name||C.business_name||C.businessName||_SCb.business||_SCb.name||_SCb.business_name||_SCb.businessName||(nmEl&&nmEl.textContent.trim())||'');
@@ -1219,6 +1219,49 @@ function applyCfg(C){
           var _slug=(C.slug||'').trim().toLowerCase();
           if(_slug) _oqEl.setAttribute('data-slug',_slug);
           if(window.LPOnlineQuoteMount) window.LPOnlineQuoteMount(_oqEl);
+        }
+      })();
+      ;(function(){ var OS=SEC.orderStorefront||{}; var node=document.querySelector('[data-sec="orderStorefront"]'); if(!node) return;
+        function _osHex(v){ v=String(v||'').trim(); return /^#[0-9a-fA-F]{6}$/.test(v)?v:''; }
+        function _osSet(name,val){ if(val) node.style.setProperty(name,val); else node.style.removeProperty(name); }
+        if(OS.on!==true){ node.style.display='none'; return; }
+        node.style.display='';
+        var _eh=node.querySelector('.eyebrow,.ey'); if(_eh){ _eh.textContent=(OS.eyebrow||''); var _ec=_osHex(OS.eyebrowColor); if(_ec){ _eh.style.color=_ec; } else { _eh.style.removeProperty('color'); } }
+        var _hh=node.querySelector('h2'); if(_hh){ _hh.textContent=(OS.heading||''); var _hc=_osHex(OS.headingColor); if(_hc){ _hh.style.color=_hc; } else { _hh.style.removeProperty('color'); } }
+        var _pp=node.querySelector('.intro'); if(_pp){ var _pv=(OS.intro||''); _pp.textContent=_pv; _pp.style.display=_pv?'':'none'; var _ic=_osHex(OS.introColor); if(_ic){ _pp.style.color=_ic; } else { _pp.style.removeProperty('color'); } }
+        var _bg=_osHex(OS.bg); if(_bg) node.style.background=_bg; else node.style.removeProperty('background');
+        _osSet('--os-eyebrow', _osHex(OS.eyebrowColor));
+        _osSet('--os-heading', _osHex(OS.headingColor));
+        _osSet('--os-intro', _osHex(OS.introColor));
+        _osSet('--lp-oe-accent', _osHex(OS.accent));
+        _osSet('--lp-oe-card', _osHex(OS.cardBg));
+        _osSet('--lp-oe-line', _osHex(OS.cardBorder));
+        _osSet('--lp-oe-ink', _osHex(OS.text));
+        _osSet('--lp-oe-muted', _osHex(OS.muted));
+        _osSet('--lp-oe-btn-bg', _osHex(OS.btnBg));
+        _osSet('--lp-oe-btn-text', _osHex(OS.btnText));
+        _osSet('--lp-oe-input-bg', _osHex(OS.inputBg));
+        _osSet('--lp-oe-input-border', _osHex(OS.inputBorder));
+        if(OS.maxWidth!=null && OS.maxWidth!=='' && isFinite(Number(OS.maxWidth))) _osSet('--lp-oe-maxw', Number(OS.maxWidth)+'px'); else node.style.removeProperty('--lp-oe-maxw');
+        if(OS.padding!=null && OS.padding!=='' && isFinite(Number(OS.padding))) _osSet('--lp-oe-pad', Number(OS.padding)+'px'); else node.style.removeProperty('--lp-oe-pad');
+        if(OS.radius!=null && OS.radius!=='' && isFinite(Number(OS.radius))) _osSet('--lp-oe-radius', Number(OS.radius)+'px'); else node.style.removeProperty('--lp-oe-radius');
+        var _mount=node.querySelector('#lp-order-storefront,[data-lp-order-storefront]');
+        if(_mount){
+          var _slug=(C.slug||'').trim().toLowerCase();
+          if(_slug) _mount.setAttribute('data-slug',_slug);
+          var _showPortal=OS.showPortalLink!==false;
+          _mount.setAttribute('data-show-portal',_showPortal?'1':'0');
+          _mount.setAttribute('data-portal-label', OS.portalCtaLabel||'Sign in to your orders');
+          // Push section colours onto the live catalogue so CSS override + editor colours win over API defaults.
+          var _oe=_mount.querySelector('.lp-oe')||_mount;
+          ['--lp-oe-accent','--lp-oe-card','--lp-oe-line','--lp-oe-ink','--lp-oe-muted','--lp-oe-btn-bg','--lp-oe-btn-text','--lp-oe-input-bg','--lp-oe-input-border','--lp-oe-maxw','--lp-oe-pad','--lp-oe-radius'].forEach(function(k){
+            var v=node.style.getPropertyValue(k);
+            if(v) _oe.style.setProperty(k, v.trim());
+            else _oe.style.removeProperty(k);
+          });
+          if(window.LPOrderStorefront && typeof window.LPOrderStorefront.scan==='function'){
+            try{ window.LPOrderStorefront.scan(); }catch(_scanErr){}
+          }
         }
       })();
       var JF=SEC.jobsFeed||{}; var jfNode=document.querySelector('[data-sec="jobsFeed"]');
@@ -1794,7 +1837,7 @@ function applyCfg(C){
     /* preview-only section name labels (backend preview iframe carries ?preview=; never the live site) */
     try{
       var __PV=false; try{ __PV=/[?&]preview=/.test(location.search); }catch(_p){}
-      var __LB={emerg:'Top Bar',hero:'Hero',heroSlider:'Hero Slider',heroBeforeAfter:'Hero Before/After Slider',trustBar:'Trust Bar',scrollingSponsorBanner:'Scrolling Sponsor Banner',services:'Services',serviceProcess:'How It Works Steps',featureStrip:'Feature Strip',why:'Why Us',area:'Service Area',reviews:'Reviews',promotions:'Promotions',certifications:'Certifications',finance:'Finance Options',estimateBuilder:'Estimate Builder',onlineQuote:'Online Quote',customHtml:'Custom HTML',searchCanvas:'SearchCanvas',serviceAreaMap:'Service Area Map',emergencyAvailability:'Emergency Availability',crew:'Team Members',quote:'Quote Form',faq:'FAQ',footer:'Footer',beforeAfter:'Before & After',responseCards:'Response Cards',projectStats:'Project Stats',serviceAreas:'Service Areas',reviewHighlights:'Review Highlights',featuredProjects:'Project Portfolio',premiumGallery:'Premium Gallery',specialOffer:'Special Offer',splitHero:'Split Hero',activityCounter:'Activity Counter',proofStream:'Proof Stream',projectFeed:'Project Feed',jobsFeed:'Jobs Feed',beforeAfterFeed:'Before/After Feed',videoReels:'Video Reels',activityTimeline:'Activity Timeline',customerReactions:'Customer Reactions',textBox:'Text Box'};
+      var __LB={emerg:'Top Bar',hero:'Hero',heroSlider:'Hero Slider',heroBeforeAfter:'Hero Before/After Slider',trustBar:'Trust Bar',scrollingSponsorBanner:'Scrolling Sponsor Banner',services:'Services',serviceProcess:'How It Works Steps',featureStrip:'Feature Strip',why:'Why Us',area:'Service Area',reviews:'Reviews',promotions:'Promotions',certifications:'Certifications',finance:'Finance Options',estimateBuilder:'Estimate Builder',onlineQuote:'Online Quote',orderStorefront:'Order Storefront',bookingStorefront:'Bookings',customHtml:'Custom HTML',searchCanvas:'SearchCanvas',serviceAreaMap:'Service Area Map',emergencyAvailability:'Emergency Availability',crew:'Team Members',quote:'Quote Form',faq:'FAQ',footer:'Footer',beforeAfter:'Before & After',responseCards:'Response Cards',projectStats:'Project Stats',serviceAreas:'Service Areas',reviewHighlights:'Review Highlights',featuredProjects:'Project Portfolio',premiumGallery:'Premium Gallery',specialOffer:'Special Offer',splitHero:'Split Hero',activityCounter:'Activity Counter',proofStream:'Proof Stream',projectFeed:'Project Feed',jobsFeed:'Jobs Feed',beforeAfterFeed:'Before/After Feed',videoReels:'Video Reels',activityTimeline:'Activity Timeline',customerReactions:'Customer Reactions',textBox:'Text Box'};
       if(!__PV){ document.querySelectorAll('.lp-seclabel').forEach(function(__x){ __x.remove(); }); document.documentElement.classList.remove('lp-preview-mode'); }
       else{
         document.documentElement.classList.add('lp-preview-mode');

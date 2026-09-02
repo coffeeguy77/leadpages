@@ -794,7 +794,7 @@ function injectOrderStorefront(html, slug, cfg) {
   const sec = cfg && cfg.sections && cfg.sections.orderStorefront;
   if (!sec || sec.on !== true) return html;
   const safeSlug = esc(slug || (cfg && cfg.slug) || '');
-  const SCRIPT = '/assets/lp-order-storefront.js?v=oe-16';
+  const SCRIPT = '/assets/lp-order-storefront.js?v=oe-17';
   const showPortal = sec.showPortalLink !== false;
   const portalLabel = esc(sec.portalCtaLabel || 'Sign in to your orders');
 
@@ -805,7 +805,7 @@ function injectOrderStorefront(html, slug, cfg) {
     if (doc.indexOf('/assets/lp-order-storefront.js') >= 0) {
       return doc.replace(
         /\/assets\/lp-order-storefront\.js(?:\?[^"']*)?/g,
-        '/assets/lp-order-storefront.js?v=oe-16'
+        '/assets/lp-order-storefront.js?v=oe-17'
       );
     }
     return doc.indexOf('</body>') !== -1
@@ -1417,6 +1417,12 @@ module.exports = async (req, res) => {
       html = injectOrderStorefront(html, site.slug, cfg);
       html = injectBookingStorefront(html, site.slug, cfg);
       html = injectSearchCanvas(html, cfg);
+      // Colour overrides run again after dynamic injects so Order Storefront /
+      // Online Quote / Bookings section hex values are remapped too.
+      try {
+        const { applyColorOverridesToHtml } = require('../lib/color-overrides');
+        html = applyColorOverridesToHtml(html, cfg.colorOverrides);
+      } catch (_co2) { /* never break live render */ }
     }
 
     return sendHtml(res, html, isLive, { slug: site.slug, siteId: site.id });

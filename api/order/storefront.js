@@ -1,7 +1,7 @@
 'use strict';
 
 const { readBody, json, methodOk } = require('../../lib/order/http');
-const { normalizeStorefrontSettings } = require('../../lib/order/storefront-appearance');
+const { normalizeStorefrontSettings, resolveStorefrontAppearance } = require('../../lib/order/storefront-appearance');
 const { getAdmin } = require('../../lib/order/supabase');
 const { getOrderSystemForSite } = require('../../lib/order/auth');
 const { formatAud } = require('../../lib/order/money');
@@ -113,6 +113,10 @@ module.exports = async function (req, res) {
         },
         (system.settings && system.settings.storefront) || {}
       )
+    );
+    storefrontSettings.appearance = resolveStorefrontAppearance(
+      storefrontSettings,
+      site.config || {}
     );
 
     const { packLabel, isPackSize, isEachSize, minimumKgOption } = require('../../lib/order/product-options');
