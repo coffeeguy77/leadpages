@@ -1169,6 +1169,28 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
           </div>
           <p class="empty hide" id="supply-empty">No supply lines for this date.</p>
         </div>
+        <div class="card" style="margin-top:16px">
+          <h3>Product search sheet</h3>
+          <p class="sub">Find every order line for a product (e.g. <em>Turkey</em> for all sizes, or exact <em>Stuffed turkey roll</em>). Prints order number, customer, phone, product, options, and qty/weight — by one date or a range with day headings.</p>
+          <div class="toolbar" style="flex-wrap:wrap;gap:8px">
+            <input id="ps-q" type="search" placeholder="Product name…" style="min-width:180px;flex:1">
+            <select id="ps-mode" aria-label="Search mode">
+              <option value="partial">Contains</option>
+              <option value="exact">Exact name</option>
+            </select>
+            <label class="sub" style="margin:0;display:flex;align-items:center;gap:6px">
+              <span>From</span>
+              <input id="ps-from" type="date">
+            </label>
+            <label class="sub" style="margin:0;display:flex;align-items:center;gap:6px">
+              <span>To</span>
+              <input id="ps-to" type="date" title="Leave blank for single date">
+            </label>
+            <button class="btn ghost" type="button" id="ps-preview">Preview count</button>
+            <button class="btn solid" type="button" id="ps-print">Print sheet</button>
+          </div>
+          <p class="sub hide" id="ps-status" style="margin:8px 0 0"></p>
+        </div>
       </section>
 
       <section class="view" id="view-allocation" data-view="allocation">
@@ -9086,6 +9108,76 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     var date = $('supply-date').value;
     if (!date) { toast('Pick a date', 'err'); return; }
     openPrint('pickup_date=' + encodeURIComponent(date) + '&format=' + encodeURIComponent(format), autoprint);
+  }
+
+  function psDateRange(){
+    var from = ($('ps-from') && $('ps-from').value) || ($('supply-date') && $('supply-date').value) || '';
+    var to = ($('ps-to') && $('ps-to').value) || '';
+    if (!from) return null;
+    if (!to) to = from;
+    if (to < from) {
+      var swap = from;
+      from = to;
+      to = swap;
+    }
+    return { from: from, to: to };
+  }
+
+  async function previewProductSheet(){
+    if (!requireSite()) return;
+    var q = ($('ps-q') && $('ps-q').value || '').trim();
+    if (!q) { toast('Enter a product name', 'err'); return; }
+    var range = psDateRange();
+    if (!range) { toast('Pick a from date', 'err'); return; }
+    var status = $('ps-status');
+    if (status) {
+      status.classList.remove('hide');
+      status.textContent = 'Searching…';
+    }
+    try {
+      var params =
+        'product_q=' + encodeURIComponent(q) +
+        '&product_mode=' + encodeURIComponent(($('ps-mode') && $('ps-mode').value) || 'partial') +
+        '&pickup_from=' + encodeURIComponent(range.from) +
+        '&pickup_to=' + encodeURIComponent(range.to);
+      var data = await api('/api/order/product-search?' + siteQuery(params));
+      var msg =
+        (data.match_count || 0) + ' matching line' + (data.match_count === 1 ? '' : 's') +
+        ' across ' + (data.order_count || 0) + ' order' + (data.order_count === 1 ? '' : 's');
+      if (range.from !== range.to) {
+        msg += ' (' + range.from + ' to ' + range.to + ')';
+      } else {
+        msg += ' (' + range.from + ')';
+      }
+      if (status) status.textContent = msg;
+      if (!data.match_count) toast('No matches — try Contains instead of Exact', 'warn');
+    } catch (e) {
+      if (status) status.textContent = (e && e.message) || String(e);
+      toast((e && e.message) || String(e), 'err');
+    }
+  }
+
+  function printProductSheet(autoprint){
+    if (!requireSite()) return;
+    var q = ($('ps-q') && $('ps-q').value || '').trim();
+    if (!q) { toast('Enter a product name', 'err'); return; }
+    var range = psDateRange();
+    if (!range) { toast('Pick a from date', 'err'); return; }
+    var extra =
+      'format=product_sheet' +
+      '&product_q=' + encodeURIComponent(q) +
+      '&product_mode=' + encodeURIComponent(($('ps-mode') && $('ps-mode').value) || 'partial') +
+      '&pickup_from=' + encodeURIComponent(range.from) +
+      '&pickup_to=' + encodeURIComponent(range.to);
+    openPrint(extra, autoprint);
+  }
+
+  if ($('ps-preview')) $('ps-preview').addEventListener('click', previewProductSheet);
+  if ($('ps-print')) $('ps-print').addEventListener('click', function(){ printProductSheet(false); });
+  if ($('supply-date')) {
+    $('supply-date').addEventListener('change', function(){
+      if ($('ps-from') && !$('ps-from').value) $('ps-from').value = $('supply-date').value;
+    });
   }
   if ($('supply-print-run')) $('supply-print-run').addEventListener('click', function(){ supplyPrint('day_run'); });
   if ($('supply-print-pick')) $('supply-print-pick').addEventListener('click', function(){ supplyPrint('pick_list'); });
