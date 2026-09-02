@@ -66,6 +66,13 @@ async function portalContext(raw) {
 }
 
 async function loadPortalCatalog(admin, system) {
+  const { buildPortalCatalog } = require('../../lib/order/portal-catalog');
+  const { data: categories } = await admin
+    .from('order_categories')
+    .select('id,name,slug,sort_order')
+    .eq('order_system_id', system.id)
+    .eq('active', true)
+    .order('sort_order');
   const { data: products } = await admin
     .from('order_products')
     .select(
@@ -92,21 +99,7 @@ async function loadPortalCatalog(admin, system) {
     if (!byProduct[q.product_id]) byProduct[q.product_id] = [];
     byProduct[q.product_id].push(q);
   });
-  return {
-    products: (products || []).map(function (p) {
-      return {
-        id: p.id,
-        name: p.name,
-        pricing_method: p.pricing_method,
-        price_cents: p.price_cents,
-        price_per_kg_cents: p.price_per_kg_cents,
-        unit_label: p.unit_label,
-        weight_required: p.weight_required,
-        options: p.options || {},
-        questions: byProduct[p.id] || []
-      };
-    })
-  };
+  return buildPortalCatalog(categories || [], products || [], byProduct);
 }
 
 module.exports = async function (req, res) {
