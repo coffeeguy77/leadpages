@@ -579,6 +579,7 @@ function _pgOpenLightbox(idx, PG){
     _osSet('--lp-oe-btn-text', _osHex(OS.btnText));
     _osSet('--lp-oe-input-bg', _osHex(OS.inputBg));
     _osSet('--lp-oe-input-border', _osHex(OS.inputBorder));
+    _osSet('--lp-oe-page-bg', _bg);
     if(OS.maxWidth!=null && OS.maxWidth!=='' && isFinite(Number(OS.maxWidth))) _osSet('--lp-oe-maxw', Number(OS.maxWidth)+'px'); else node.style.removeProperty('--lp-oe-maxw');
     if(OS.padding!=null && OS.padding!=='' && isFinite(Number(OS.padding))) _osSet('--lp-oe-pad', Number(OS.padding)+'px'); else node.style.removeProperty('--lp-oe-pad');
     if(OS.radius!=null && OS.radius!=='' && isFinite(Number(OS.radius))) _osSet('--lp-oe-radius', Number(OS.radius)+'px'); else node.style.removeProperty('--lp-oe-radius');
@@ -591,9 +592,21 @@ function _pgOpenLightbox(idx, PG){
     _mount.setAttribute('data-portal-label', OS.portalCtaLabel||'Sign in to your orders');
     // Push section colours onto the live catalogue so CSS override + editor colours win over API defaults.
     var _oe=_mount.querySelector('.lp-oe')||_mount;
-    ['--lp-oe-accent','--lp-oe-card','--lp-oe-line','--lp-oe-ink','--lp-oe-muted','--lp-oe-btn-bg','--lp-oe-btn-text','--lp-oe-input-bg','--lp-oe-input-border','--lp-oe-maxw','--lp-oe-pad','--lp-oe-radius'].forEach(function(k){
+    ['--lp-oe-accent','--lp-oe-card','--lp-oe-line','--lp-oe-ink','--lp-oe-muted','--lp-oe-btn-bg','--lp-oe-btn-text','--lp-oe-input-bg','--lp-oe-input-border','--lp-oe-page-bg','--lp-oe-maxw','--lp-oe-pad','--lp-oe-radius'].forEach(function(k){
       var v=node.style.getPropertyValue(k);
       if(v) _oe.style.setProperty(k, v.trim());
+      else _oe.style.removeProperty(k);
+    });
+    // Mirror onto --oe-* / legacy --accent/--card so catalogue + cart CSS matches section CSS.
+    var _alias={
+      '--oe-accent':'--lp-oe-accent','--oe-card':'--lp-oe-card','--oe-line':'--lp-oe-line','--oe-ink':'--lp-oe-ink','--oe-muted':'--lp-oe-muted',
+      '--oe-btn':'--lp-oe-btn-bg','--oe-btn-text':'--lp-oe-btn-text','--accent':'--lp-oe-accent','--card':'--lp-oe-card','--line':'--lp-oe-line','--ink':'--lp-oe-ink','--muted':'--lp-oe-muted'
+    };
+    Object.keys(_alias).forEach(function(k){
+      var src=_alias[k];
+      var v=node.style.getPropertyValue(src);
+      if(v) _oe.style.setProperty(k, v.trim());
+      else if(k==='--oe-btn'){ var a=node.style.getPropertyValue('--lp-oe-accent'); if(a) _oe.style.setProperty(k, a.trim()); else _oe.style.removeProperty(k); }
       else _oe.style.removeProperty(k);
     });
     // Already live: update CSS vars only — never tear down / re-fetch the catalogue.
