@@ -6,8 +6,14 @@ const { getAdmin } = require('../../lib/order/supabase');
 const { resolveAccessToken } = require('../../lib/order/tokens');
 const { supplyForDate } = require('../../lib/order/service');
 const { formatAud } = require('../../lib/order/money');
-const { buildPrintDocument, normaliseFormat } = require('../../lib/order/print-document');
+const { buildPrintDocument, normaliseFormat, formatDateLabel } = require('../../lib/order/print-document');
 const { attachPortalQrToOrders } = require('../../lib/order/qr');
+const {
+  collectProductSheetRows,
+  groupProductSheetRowsByDate,
+  summariseProductSearch,
+  normaliseQuery
+} = require('../../lib/order/product-search');
 
 async function loadOrderWithItems(admin, orderId, siteId) {
   const { data: order, error } = await admin
@@ -24,6 +30,35 @@ async function loadOrderWithItems(admin, orderId, siteId) {
     .eq('order_id', order.id)
     .order('sort_order');
   return { order: order, items: items || [] };
+}
+
+async function loadOrdersForDateRange(admin, systemId, siteId, fromDate, toDate) {
+  const { data: orders, error } = await admin
+    .from('order_orders')
+    .select('*')
+    .eq('order_system_id', systemId)
+    .eq('site_id', siteId)
+    .gte('pickup_date', fromDate)
+    .lte('pickup_date', toDate)
+    .not('status', 'in', '("draft","cancelled","refunded")')
+    .order('pickup_date')
+    .order('order_number');
+  if (error) throw error;
+  const ids = (orders || []).map(function (o) {
+    return o.id;
+  });
+  if (!ids.length) return [];
+  const { data: items } = await admin.from('order_items').select('*').in('order_id', ids).order('sort_order');
+  const byOrder = {};
+  (orders || []).forEach(function (o) {
+    byOrder[o.id] = Object.assign({}, o, { items: [] });
+  });
+  (items || []).forEach(function (it) {
+    if (byOrder[it.order_id]) byOrder[it.order_id].items.push(it);
+  });
+  return Object.keys(byOrder).map(function (k) {
+    return byOrder[k];
+  });
 }
 
 async function loadOrdersForDate(admin, systemId, siteId, pickupDate) {
@@ -68,6 +103,10 @@ module.exports = async function (req, res) {
     const format = (req.query && req.query.format) || 'slip';
     const autoprint = (req.query && req.query.autoprint) === '1';
     const pickupDate = req.query && req.query.pickup_date;
+    const pickupFrom = req.query && req.query.pickup_from;
+    const pickupTo = req.query && req.query.pickup_to;
+    const productQ = req.query && req.query.product_q;
+    const productMode = (req.query && req.query.product_mode) === 'exact' ? 'exact' : 'partial';
     const orderId = req.query && req.query.order_id;
 
     if (portalToken) {
@@ -146,6 +185,68 @@ module.exports = async function (req, res) {
           business: business,
           pickup_date: dateLabel,
           orders: orders,
+          autoprint: autoprint
+        })
+      );
+    }
+
+    if (fmt === 'product_sheet') {
+      const q = normaliseQuery(productQ);
+      if (!q) {
+        return sendHtml(
+          res,
+          400,
+          buildPrintDocument({
+            format: 'slip',
+            business: business,
+            order: { order_number: 'product_q required' },
+            items: []
+          })
+        );
+      }
+      var fromDate = pickupFrom || pickupDate;
+      var toDate = pickupTo || pickupDate || pickupFrom;
+      if (!fromDate) {
+        return sendHtml(
+          res,
+          400,
+          buildPrintDocument({
+            format: 'slip',
+            business: business,
+            order: { order_number: 'pickup_date or pickup_from required' },
+            items: []
+          })
+        );
+      }
+      if (!toDate) toDate = fromDate;
+      if (toDate < fromDate) {
+        var swap = fromDate;
+        fromDate = toDate;
+        toDate = swap;
+      }
+      const rangeOrders = await loadOrdersForDateRange(admin, system.id, siteId, fromDate, toDate);
+      const sheetRows = collectProductSheetRows(rangeOrders, q, productMode);
+      const summary = summariseProductSearch(sheetRows);
+      const groups = groupProductSheetRowsByDate(sheetRows);
+      var dateLabel =
+        fromDate === toDate
+          ? formatDateLabel(fromDate)
+          : formatDateLabel(fromDate) + ' – ' + formatDateLabel(toDate);
+      return sendHtml(
+        res,
+        200,
+        buildPrintDocument({
+          format: 'product_sheet',
+          business: business,
+          product_groups: groups,
+          meta: {
+            product_query: productQ,
+            product_mode: productMode,
+            match_count: summary.match_count,
+            order_count: summary.order_count,
+            date_label: dateLabel,
+            show_date_heading: fromDate !== toDate || groups.length > 1
+          },
           autoprint: autoprint
         })
       );
