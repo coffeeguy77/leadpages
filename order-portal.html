@@ -501,7 +501,7 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
     html += '<div class="card"><h2 class="section-title">Items</h2>';
     items.forEach(function(it, idx){
       html += '<div class="item" data-i="'+idx+'" data-item-id="'+esc(it.id)+'"><h3>'+esc(it.product_name)+'</h3>';
-      html += renderOptionsDisplay(it);
+      if(!data.can_edit) html += renderOptionsDisplay(it);
       html += '<p>Qty '+esc(it.quantity)+(it.requested_weight_kg!=null?(' · approx '+esc(it.requested_weight_kg)+' kg'):'')+(it.actual_weight_kg!=null?(' · actual '+esc(it.actual_weight_kg)+' kg'):'')+'</p>';
       var price = it.line_final_cents!=null?money(it.line_final_cents):(it.price_status==='tbc'||it.price_status==='quote_required'?'Price TBC':(it.line_known_cents!=null?money(it.line_known_cents):'—'));
       html += '<p style="margin-top:4px"><strong>'+price+'</strong>'+(it.price_status==='estimated'?' <span class="badge b-tbc">Est.</span>':'')+(it.includes_gst?' <span class="badge b-open">inc. GST</span>':'')+'</p>';
