@@ -99,6 +99,8 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
 
   <nav class="ba-tabs" id="tabs">
     <button type="button" data-tab="overview" class="on">Overview</button>
+    <button type="button" data-tab="hosting">Hosting manager</button>
+    <button type="button" data-tab="premium">Premium apps</button>
     <button type="button" data-tab="clients">Clients</button>
     <button type="button" data-tab="partners">Partners &amp; payouts</button>
     <button type="button" data-tab="invoices">Invoice edits</button>
@@ -130,6 +132,76 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
         <h2>Suspended customers</h2>
         <p class="sub">Hosting stopped after Stripe retries exhausted.</p>
         <div id="suspended-list"></div>
+      </div>
+    </div>
+  </section>
+
+  <section data-panel="hosting" class="hidden">
+    <div class="ba-grid">
+      <div class="ba-card">
+        <h2>Start hosting billing</h2>
+        <p class="sub">Pick an existing site that should be paying, choose a plan, and open a Stripe Checkout link (or add to their existing subscription). Partner site purchases still start hosting automatically.</p>
+        <div class="field"><label for="hm-search">Find site</label>
+          <input id="hm-search" placeholder="Slug, business name, email or domain" autocomplete="off">
+        </div>
+        <div id="hm-results" class="msg" style="margin:0 0 12px"></div>
+        <div class="field"><label for="hm-site">Selected site</label>
+          <select id="hm-site"><option value="">— Search or pick unpaid below —</option></select>
+        </div>
+        <div class="field"><label for="hm-plan">Hosting plan</label>
+          <select id="hm-plan"><option value="">— Select —</option></select>
+        </div>
+        <label style="display:inline-flex;align-items:center;gap:8px;font-weight:600;margin:0 0 14px">
+          <input type="checkbox" id="hm-link" style="width:auto" checked> Link / create client login from owner email
+        </label>
+        <div>
+          <button class="btn solid" type="button" id="hm-start">Start Stripe billing</button>
+        </div>
+        <p class="msg" id="hm-msg"></p>
+      </div>
+      <div class="ba-card">
+        <h2>Needs billing</h2>
+        <p class="sub">Live sites with no plan, unpaid, or suspended — click to select.</p>
+        <div id="hm-unpaid" style="overflow:auto;max-height:420px"></div>
+      </div>
+    </div>
+  </section>
+
+  <section data-panel="premium" class="hidden">
+    <div class="ba-grid">
+      <div class="ba-card">
+        <h2>Premium app access</h2>
+        <p class="sub">Orders, Quote Builder, and Bookings stay hidden on the client backend until activated (or grandfathered via engine enabled / Quote platform exempt).</p>
+        <div class="field"><label for="pa-search">Find site</label>
+          <input id="pa-search" placeholder="Slug, business name or email" autocomplete="off">
+        </div>
+        <div id="pa-results" class="msg" style="margin:0 0 12px"></div>
+        <div class="field"><label for="pa-site">Site</label>
+          <select id="pa-site"><option value="">— Select site —</option></select>
+        </div>
+        <div class="row2">
+          <div class="field"><label for="pa-app">App</label>
+            <select id="pa-app">
+              <option value="order-storefront">Orders</option>
+              <option value="online-quote">Quote Builder</option>
+              <option value="bookings">Bookings</option>
+            </select>
+          </div>
+          <div class="field"><label for="pa-cycle">Billing cycle (admin activate)</label>
+            <select id="pa-cycle"><option value="monthly">Monthly</option><option value="annual">Annual</option></select>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px">
+          <button class="btn solid" type="button" id="pa-activate">Activate (no charge)</button>
+          <button class="btn" type="button" id="pa-stripe">Stripe checkout</button>
+          <button class="btn ghost" type="button" id="pa-revoke">Revoke</button>
+        </div>
+        <p class="msg" id="pa-msg"></p>
+      </div>
+      <div class="ba-card">
+        <h2>Price list &amp; entitlement</h2>
+        <p class="sub">From <code>app_registry</code> + site entitlement. Edit prices in Apps admin.</p>
+        <div id="pa-list"></div>
       </div>
     </div>
   </section>
@@ -473,6 +545,263 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
       await load();
     }catch(e){ msg.textContent=e.message; msg.className='msg bad'; }
   });
+
+  /* ── Hosting manager + Premium apps ───────────────────────── */
+  var hmState={ plans:[], sites:[], selected:null };
+  var paState={ siteId:null, apps:[] };
+
+  function fillPlanSelect(sel, plans, prefer){
+    if(!sel) return;
+    var cur=prefer||sel.value;
+    sel.innerHTML='<option value="">— Select —</option>'+(plans||[]).filter(function(p){return p.active!==false;}).map(function(p){
+      return '<option value="'+esc(p.key)+'">'+esc(p.name)+' — '+money(p.monthly_amount)+(p.is_free?' (free)':'/mo')+'</option>';
+    }).join('');
+    if(cur) sel.value=cur;
+  }
+
+  function hmSelectSite(site){
+    if(!site) return;
+    hmState.selected=site;
+    var sel=$('hm-site');
+    var exists=[].some.call(sel.options, function(o){ return o.value===site.id; });
+    if(!exists){
+      var opt=document.createElement('option');
+      opt.value=site.id;
+      opt.textContent=(site.business_name||site.slug)+' ('+site.slug+')';
+      sel.appendChild(opt);
+    }
+    sel.value=site.id;
+    $('hm-msg').textContent='';
+    $('hm-msg').className='msg';
+  }
+
+  function renderHmUnpaid(sites){
+    var el=$('hm-unpaid');
+    if(!sites||!sites.length){ el.innerHTML='<p class="sub">No unpaid sites found.</p>'; return; }
+    el.innerHTML='<table class="ba-table"><thead><tr><th>Business</th><th>Email</th><th>Status</th><th></th></tr></thead><tbody>'
+      +sites.map(function(s){
+        return '<tr><td><strong>'+esc(s.business_name||s.slug)+'</strong><div class="mono">'+esc(s.slug)+'</div></td>'
+          +'<td>'+esc(s.owner_email||'—')+'</td><td>'+statusPill(s.billing_status)+'</td>'
+          +'<td><button type="button" class="btn ghost" data-hm-pick="'+esc(s.id)+'" style="padding:6px 10px">Select</button></td></tr>';
+      }).join('')+'</tbody></table>';
+  }
+
+  async function loadHostingManager(){
+    try{
+      var data=await api('/api/billing/start-hosting');
+      hmState.plans=data.plans||[];
+      hmState.sites=data.sites||[];
+      fillPlanSelect($('hm-plan'), hmState.plans);
+      fillPlanSelect($('na-plan'), hmState.plans.length?hmState.plans:(state.data&&state.data.plans)||[]);
+      var sel=$('hm-site');
+      sel.innerHTML='<option value="">— Search or pick unpaid below —</option>'+hmState.sites.map(function(s){
+        return '<option value="'+esc(s.id)+'">'+esc(s.business_name||s.slug)+' · '+esc(s.slug)+'</option>';
+      }).join('');
+      renderHmUnpaid(hmState.sites);
+    }catch(e){
+      $('hm-unpaid').innerHTML='<p class="msg bad">'+esc(e.message)+'</p>';
+    }
+  }
+
+  var hmSearchTimer=null;
+  $('hm-search').addEventListener('input', function(){
+    clearTimeout(hmSearchTimer);
+    var q=$('hm-search').value.trim();
+    hmSearchTimer=setTimeout(async function(){
+      if(q.length<2){ $('hm-results').textContent=''; return; }
+      try{
+        var data=await api('/api/billing/start-hosting?q='+encodeURIComponent(q));
+        var sites=data.sites||[];
+        if(!sites.length){ $('hm-results').textContent='No matches.'; $('hm-results').className='msg'; return; }
+        $('hm-results').innerHTML=sites.slice(0,8).map(function(s){
+          return '<button type="button" class="btn ghost" data-hm-pick="'+esc(s.id)+'" style="margin:0 6px 6px 0;padding:6px 10px">'
+            +esc(s.business_name||s.slug)+' <span class="mono">'+esc(s.slug)+'</span> '+statusPill(s.billing_status)+'</button>';
+        }).join('');
+        sites.forEach(function(s){
+          var sel=$('hm-site');
+          if(![].some.call(sel.options, function(o){ return o.value===s.id; })){
+            var opt=document.createElement('option');
+            opt.value=s.id; opt.textContent=(s.business_name||s.slug)+' ('+s.slug+')';
+            sel.appendChild(opt);
+          }
+        });
+      }catch(e){ $('hm-results').textContent=e.message; $('hm-results').className='msg bad'; }
+    }, 280);
+  });
+
+  document.addEventListener('click', function(e){
+    var b=e.target.closest('[data-hm-pick]');
+    if(!b) return;
+    var id=b.getAttribute('data-hm-pick');
+    var site=(hmState.sites||[]).find(function(s){return s.id===id;});
+    if(!site){
+      api('/api/billing/start-hosting?siteId='+encodeURIComponent(id)).then(function(d){
+        if(d.site){ hmSelectSite(d.site); if(d.plans) fillPlanSelect($('hm-plan'), d.plans); }
+      }).catch(function(err){ $('hm-msg').textContent=err.message; $('hm-msg').className='msg bad'; });
+      return;
+    }
+    hmSelectSite(site);
+  });
+
+  $('hm-site').addEventListener('change', function(){
+    var id=$('hm-site').value;
+    if(!id){ hmState.selected=null; return; }
+    var site=(hmState.sites||[]).find(function(s){return s.id===id;});
+    if(site) hmState.selected=site;
+    else hmState.selected={ id:id };
+  });
+
+  $('hm-start').addEventListener('click', async function(){
+    var msg=$('hm-msg'); msg.textContent=''; msg.className='msg';
+    var siteId=$('hm-site').value;
+    var planKey=$('hm-plan').value;
+    if(!siteId||!planKey){ msg.textContent='Select a site and plan.'; msg.className='msg bad'; return; }
+    try{
+      var res=await api('/api/billing/start-hosting',{method:'POST',body:{
+        siteId:siteId,
+        planKey:planKey,
+        linkOwner:$('hm-link').checked,
+        returnUrl:location.origin+'/billing-admin?tab=hosting'
+      }});
+      if(res.mode==='checkout'&&res.url){
+        msg.innerHTML='Checkout ready — <a href="'+esc(res.url)+'" target="_blank" rel="noopener">Open Stripe Checkout</a> (send this link to the client).';
+        msg.className='msg ok';
+      } else if(res.mode==='added'){
+        msg.textContent='Added to their existing Stripe subscription.';
+        msg.className='msg ok';
+      } else if(res.mode==='free'){
+        msg.textContent='Free plan assigned — site is active without Stripe.';
+        msg.className='msg ok';
+      } else {
+        msg.textContent='Done ('+(res.mode||'ok')+').';
+        msg.className='msg ok';
+      }
+      await loadHostingManager();
+      try{ await load(); }catch(_e){}
+    }catch(e){ msg.textContent=e.message; msg.className='msg bad'; }
+  });
+
+  function renderPremiumList(apps){
+    var el=$('pa-list');
+    if(!apps||!apps.length){ el.innerHTML='<p class="sub">Select a site to load entitlements.</p>'; return; }
+    el.innerHTML='<table class="ba-table"><thead><tr><th>App</th><th>Monthly</th><th>Yearly</th><th>Access</th></tr></thead><tbody>'
+      +apps.map(function(a){
+        var mo=a.price_monthly_aud!=null?('$'+Number(a.price_monthly_aud).toFixed(2)):'—';
+        var yr=a.price_annual_aud!=null?('$'+Number(a.price_annual_aud).toFixed(2)):'—';
+        var access=a.entitled
+          ? '<span class="ba-pill ok">'+esc(a.reason||'entitled')+'</span>'
+          : '<span class="ba-pill muted">hidden</span>';
+        return '<tr><td><strong>'+esc(a.name||a.slug)+'</strong><div class="mono">'+esc(a.slug)+'</div></td>'
+          +'<td>'+esc(mo)+'</td><td>'+esc(yr)+'</td><td>'+access+'</td></tr>';
+      }).join('')+'</tbody></table>';
+  }
+
+  async function loadPremiumForSite(siteId){
+    paState.siteId=siteId;
+    if(!siteId){ renderPremiumList([]); return; }
+    try{
+      var data=await api('/api/billing/premium-apps?siteId='+encodeURIComponent(siteId));
+      paState.apps=data.apps||[];
+      renderPremiumList(paState.apps);
+      $('pa-msg').textContent='';
+    }catch(e){
+      $('pa-msg').textContent=e.message; $('pa-msg').className='msg bad';
+    }
+  }
+
+  var paSearchTimer=null;
+  $('pa-search').addEventListener('input', function(){
+    clearTimeout(paSearchTimer);
+    var q=$('pa-search').value.trim();
+    paSearchTimer=setTimeout(async function(){
+      if(q.length<2){ $('pa-results').textContent=''; return; }
+      try{
+        var data=await api('/api/billing/start-hosting?q='+encodeURIComponent(q));
+        var sites=data.sites||[];
+        if(!sites.length){ $('pa-results').textContent='No matches.'; return; }
+        $('pa-results').innerHTML=sites.slice(0,8).map(function(s){
+          return '<button type="button" class="btn ghost" data-pa-pick="'+esc(s.id)+'" data-pa-label="'+esc(s.business_name||s.slug)+'" style="margin:0 6px 6px 0;padding:6px 10px">'
+            +esc(s.business_name||s.slug)+' <span class="mono">'+esc(s.slug)+'</span></button>';
+        }).join('');
+        var sel=$('pa-site');
+        sites.forEach(function(s){
+          if(![].some.call(sel.options, function(o){ return o.value===s.id; })){
+            var opt=document.createElement('option');
+            opt.value=s.id; opt.textContent=(s.business_name||s.slug)+' ('+s.slug+')';
+            sel.appendChild(opt);
+          }
+        });
+      }catch(e){ $('pa-results').textContent=e.message; $('pa-results').className='msg bad'; }
+    }, 280);
+  });
+
+  document.addEventListener('click', function(e){
+    var b=e.target.closest('[data-pa-pick]');
+    if(!b) return;
+    var id=b.getAttribute('data-pa-pick');
+    $('pa-site').value=id;
+    loadPremiumForSite(id);
+  });
+
+  $('pa-site').addEventListener('change', function(){ loadPremiumForSite($('pa-site').value); });
+
+  $('pa-activate').addEventListener('click', async function(){
+    var msg=$('pa-msg'); msg.textContent=''; msg.className='msg';
+    var siteId=$('pa-site').value, app=$('pa-app').value;
+    if(!siteId||!app){ msg.textContent='Select site and app.'; msg.className='msg bad'; return; }
+    try{
+      await api('/api/billing/premium-apps',{method:'POST',body:{
+        action:'activate', siteId:siteId, app:app, billing_cycle:$('pa-cycle').value
+      }});
+      msg.textContent='Activated — client backend will show the app after refresh.';
+      msg.className='msg ok';
+      await loadPremiumForSite(siteId);
+    }catch(e){ msg.textContent=e.message; msg.className='msg bad'; }
+  });
+
+  $('pa-revoke').addEventListener('click', async function(){
+    var msg=$('pa-msg'); msg.textContent=''; msg.className='msg';
+    var siteId=$('pa-site').value, app=$('pa-app').value;
+    if(!siteId||!app){ msg.textContent='Select site and app.'; msg.className='msg bad'; return; }
+    try{
+      await api('/api/billing/premium-apps',{method:'POST',body:{ action:'deactivate', siteId:siteId, app:app }});
+      msg.textContent='Revoked subscription access (engine grandfather may still entitle).';
+      msg.className='msg ok';
+      await loadPremiumForSite(siteId);
+    }catch(e){ msg.textContent=e.message; msg.className='msg bad'; }
+  });
+
+  $('pa-stripe').addEventListener('click', async function(){
+    var msg=$('pa-msg'); msg.textContent=''; msg.className='msg';
+    var siteId=$('pa-site').value, appSlug=$('pa-app').value, cycle=$('pa-cycle').value;
+    if(!siteId||!appSlug){ msg.textContent='Select site and app.'; msg.className='msg bad'; return; }
+    try{
+      var apps=paState.apps;
+      if(!apps.length) await loadPremiumForSite(siteId);
+      apps=paState.apps||[];
+      var row=apps.find(function(a){ return a.slug===appSlug; });
+      if(!row||!row.app_id){ msg.textContent='App not in registry — register it in Apps admin first.'; msg.className='msg bad'; return; }
+      var res=await api('/api/billing/app-checkout',{method:'POST',body:{
+        siteId:siteId, appId:row.app_id, cycle:cycle,
+        returnUrl:location.origin+'/billing-admin?tab=premium'
+      }});
+      if(res.mode==='checkout'&&res.url){
+        msg.innerHTML='Stripe checkout — <a href="'+esc(res.url)+'" target="_blank" rel="noopener">Open link</a>';
+        msg.className='msg ok';
+      } else {
+        msg.textContent='Done ('+(res.mode||'ok')+').';
+        msg.className='msg ok';
+      }
+      await loadPremiumForSite(siteId);
+    }catch(e){ msg.textContent=e.message; msg.className='msg bad'; }
+  });
+
+  var _showTab=showTab;
+  showTab=function(id){
+    _showTab(id);
+    if(id==='hosting') loadHostingManager();
+    if(id==='premium' && !paState.apps.length) renderPremiumList([]);
+  };
 
   boot();
 })();

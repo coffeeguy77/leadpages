@@ -3030,6 +3030,9 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   /* ===== leadpages: live Supabase auth + DB-backed config ===== */
   const sb = window.supabase.createClient(window.__LP.url, window.__LP.anon);
   let currentSiteId=null, currentSiteSlug=null, currentSiteTemplate=null, currentBusinessName='', currentCustomDomain='', currentOwnerEmail='', currentIsPartnerHome=false, currentSiteStatus='', currentReferringPartnerId=null, currentServicingPartnerId=null, currentCommissionPartnerId=null, currentRecurringCommissionActive=true, allSites=[];
+
+  var _premiumEntitledNav=null; // null=loading/unknown, []=none, ['orders',...]=entitled nav keys
+  var _premiumAppsCache=null;
   var LP_NAV_STATE_KEY='lp_manage_nav_v1';
   var lpNavRestorePending=null;
   function lpNavStateLoad(){ try{ return JSON.parse(localStorage.getItem(LP_NAV_STATE_KEY)||'{}')||{}; }catch(e){ return {}; } }
@@ -4007,6 +4010,26 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
       ['lp-title','lp-slug','lp-meta','lp-h1','lp-body','lp-img'].forEach(function(id){ var el=$(id); if(el) el.value=''; });
     }catch(e){}
   }
+  
+  async function lpLoadPremiumEntitlements(siteId){
+    _premiumEntitledNav=null; _premiumAppsCache=null;
+    if(!siteId){ _premiumEntitledNav=[]; return; }
+    try{
+      var token=await cwToken();
+      var r=await fetch('/api/billing/premium-apps?siteId='+encodeURIComponent(siteId),{
+        headers: token?{Authorization:'Bearer '+token}:{}
+      });
+      var j=await r.json().catch(function(){return {};});
+      if(r.ok && j && j.ok){
+        _premiumAppsCache=j.apps||[];
+        _premiumEntitledNav=Array.isArray(j.entitled_nav)?j.entitled_nav:[];
+      } else {
+        // Fail closed for clients; super still sees tabs via applyRoleGating
+        _premiumEntitledNav=[];
+      }
+    }catch(_e){ _premiumEntitledNav=[]; }
+  }
+
   function loadSite(site){
     hideLanding();
     // Close any open landing-page editor from the previous site and cancel pending autosaves
@@ -4015,6 +4038,7 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
     if(manageMsgEmbed&&manageMsgEmbed.destroy){ try{ manageMsgEmbed.destroy(); }catch(_e){} manageMsgEmbed=null; }
     updateSupportNavBadge(0);
     currentSiteId=site.id; currentSiteSlug=site.slug; currentSiteTemplate=site.template||'broker-app'; currentIsPartnerHome=!!site.is_partner_home;
+    _premiumEntitledNav=null; _premiumAppsCache=null;
     if(typeof ordEmbedWarmedSiteId!=='undefined'&&ordEmbedWarmedSiteId&&ordEmbedWarmedSiteId!==site.id) ordEmbedWarmedSiteId=null;
     currentSiteStatus=String(site.status||'').toLowerCase();
     currentReferringPartnerId=site.referring_partner_id||null;
@@ -4047,10 +4071,14 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
       ensureSiteBar();
       try{ renderSeoPages(); }catch(e){}
       try{ prefetchOrdersEmbed(); }catch(_ordPf){}
-      _reconcileSiteApps(currentSiteId, data).then(function(){
+      Promise.all([
+        lpLoadPremiumEntitlements(currentSiteId),
+        _reconcileSiteApps(currentSiteId, data)
+      ]).then(function(){
         var sref=(typeof allSites!=='undefined'&&allSites)?allSites.find(function(x){return x.id===currentSiteId;}):null;
         if(sref) sref.config=JSON.parse(JSON.stringify(data||{}));
         applyRoleGating();
+        try{ ensureSiteBar(); }catch(_esb){}
         try{ renderSeoPages(); }catch(e){}
         try{ renderSiteAnalytics(); }catch(e){}
         try{ lpRenderSupportContact(); }catch(e){}
@@ -10118,6 +10146,14 @@ function heroCtaCard(c){
       tools.appendChild(bd);
     }
     mv('lpc-bookings-desk', tools);
+    // Premium app desk shortcuts — hide for clients/partners without entitlement
+    (function(){
+      var odEl=$('lpc-order-desk'), bdEl=$('lpc-bookings-desk');
+      var showOrders=currentRole==='super' || (_premiumEntitledNav && _premiumEntitledNav.indexOf('orders')>=0);
+      var showBookings=currentRole==='super' || (_premiumEntitledNav && _premiumEntitledNav.indexOf('bookings')>=0);
+      if(odEl) odEl.style.display=showOrders?'':'none';
+      if(bdEl) bdEl.style.display=showBookings?'':'none';
+    })();
     if(currentRole==='super'){
       if(!$('lpc-ops-command')){ var oc=document.createElement('a'); oc.id='lpc-ops-command'; oc.className='btn'; oc.href='/command'; oc.style.textDecoration='none'; oc.textContent='Ops Command'; tools.appendChild(oc); }
       else mv('lpc-ops-command', tools);
@@ -10903,7 +10939,22 @@ function heroCtaCard(c){
   function applyRoleGating(){
     const roleAllow=ALLOWED[currentRole]||ALLOWED.super;
     const tnav=tplNav();
-    const allow=roleAllow.filter(function(k){ return tnav.indexOf(k)>=0; });
+    var allow=roleAllow.filter(function(k){ return tnav.indexOf(k)>=0; });
+    // Premium apps (Orders / Quote Builder / Bookings): clients & partners only see entitled sites.
+    // Super-admins always see the tabs so they can open Ops / activate access.
+    var PREMIUM_NAV=['onlinequotes','orders','bookings'];
+    if(currentRole!=='super' && currentSiteTemplate==='trade'){
+      var entitled=_premiumEntitledNav;
+      if(entitled==null){
+        // Still loading — hide premium tabs to avoid a flash of unpurchased apps
+        allow=allow.filter(function(k){ return PREMIUM_NAV.indexOf(k)<0; });
+      } else {
+        allow=allow.filter(function(k){
+          if(PREMIUM_NAV.indexOf(k)<0) return true;
+          return entitled.indexOf(k)>=0;
+        });
+      }
+    }
     // First: hide ALL nav buttons and panes to reset state cleanly
     NAV.forEach(function(it){
       const b=$('nav-'+it[0]); if(b) b.style.display = allow.indexOf(it[0])>=0 ? '' : 'none';

@@ -8,6 +8,7 @@
 //                                using the saved card                            -> { mode:'added' }
 
 const { sb, stripe, getUser, isAdminEmail, json } = require('./_stripe');
+const { isSuperAdmin } = require('./_admin-auth');
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') return json(res, 405, { error: 'POST only' });
@@ -24,7 +25,8 @@ module.exports = async (req, res) => {
   const { data: site } = await sb.from('sites').select('id,slug,business_name,owner_user_id,owner_email,plan_key,stripe_item_id,billing_status').eq('id', siteId).maybeSingle();
   if (!site) return json(res, 404, { error: 'site not found' });
 
-  const admin = isAdminEmail(user.email);
+  // SUPER_ADMIN_EMAILS or profiles.is_super_admin (Command Ops hosting manager)
+  const admin = isAdminEmail(user.email) || (await isSuperAdmin(user));
   if (!admin && site.owner_user_id && site.owner_user_id !== user.id) return json(res, 403, { error: 'not your site' });
 
   const ownerId = site.owner_user_id || (admin ? null : user.id);

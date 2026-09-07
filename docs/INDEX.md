@@ -291,6 +291,8 @@ Short summary of every engineering document in `docs/`.
 | `POST /api/billing/webhook` | `billing/webhook.js` | Stripe billing events |
 | `GET /api/billing/status` | `billing/status.js` | Account status |
 | `POST /api/billing/checkout` | `billing/checkout.js` | Checkout session |
+| `GET/POST /api/billing/start-hosting` | `billing/start-hosting.js` | Ops: start hosting for existing site |
+| `GET/POST /api/billing/premium-apps` | `billing/premium-apps.js` | Premium app entitlements + activate |
 | `GET /api/billing/portal` | `billing/portal.js` | Customer portal |
 | `GET/POST /api/billing/plans` | `billing/plans.js` | Plan CRUD |
 | `GET /api/billing/account` | `billing/account.js` | Account details |
