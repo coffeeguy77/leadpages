@@ -6,9 +6,13 @@ const {
   productMatchesItem,
   collectProductSheetRows,
   groupProductSheetRowsByDate,
-  summariseProductSearch
+  summariseProductSearch,
+  sortProductSheetRows,
+  serializeProductSheetRows
 } = require('../lib/order/product-search');
 const { buildPrintDocument } = require('../lib/order/print-document');
+const fs = require('fs');
+const path = require('path');
 
 var orders = [
   {
@@ -58,6 +62,47 @@ test('collectProductSheetRows groups and sorts by date then order', function () 
   assert.equal(rows.length, 2);
   assert.equal(rows[0].order.order_number, 'ORD-100');
   assert.equal(rows[1].order.order_number, 'ORD-101');
+});
+
+test('sortProductSheetRows by customer name and product', function () {
+  var {
+    sortProductSheetRows,
+    collectProductSheetRows
+  } = require('../lib/order/product-search');
+  var rows = collectProductSheetRows(orders, 'turkey', 'partial');
+  var byName = sortProductSheetRows(rows, 'name');
+  assert.equal(byName[0].order.customer_name, 'Alice');
+  assert.equal(byName[1].order.customer_name, 'Bob');
+  var byProduct = sortProductSheetRows(rows, 'product');
+  assert.equal(byProduct[0].item.product_name, 'Stuffed turkey roll');
+  assert.equal(byProduct[1].item.product_name, 'Turkey — bird size');
+});
+
+test('serializeProductSheetRows returns compact live-list fields', function () {
+  var {
+    collectProductSheetRows,
+    serializeProductSheetRows
+  } = require('../lib/order/product-search');
+  var rows = serializeProductSheetRows(collectProductSheetRows(orders, 'turkey', 'partial'));
+  assert.equal(rows.length, 2);
+  assert.equal(rows[0].order_number, 'ORD-100');
+  assert.equal(rows[0].customer_name, 'Alice');
+  assert.equal(rows[0].product_name, 'Turkey — bird size');
+  assert.match(String(rows[0].options || ''), /Buff basting/);
+  assert.ok(rows[0].qty_label);
+});
+
+test('orders.html product search sheet has autocomplete + live results hooks', function () {
+  var fs = require('fs');
+  var path = require('path');
+  var html = fs.readFileSync(path.join(__dirname, '../orders.html'), 'utf8');
+  assert.match(html, /id="ps-suggest"/);
+  assert.match(html, /id="ps-tbody"/);
+  assert.match(html, /id="ps-sort"/);
+  assert.match(html, /id="ps-date-mode"/);
+  assert.match(html, /wireProductSearchSheet/);
+  assert.match(html, /Search all containing/);
+  assert.match(html, /Print results/);
 });
 
 test('groupProductSheetRowsByDate splits range days', function () {
