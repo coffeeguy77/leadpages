@@ -748,7 +748,7 @@ function injectOnlineQuote(html, slug, cfg) {
   }
   function sectionStyleAttr() {
     const parts = [];
-    if (hexOk(sec.bg)) parts.push('background:' + sec.bg);
+    if (hexOk(sec.bg)) { parts.push('background:' + sec.bg); parts.push('--lp-oe-page-bg:' + sec.bg); }
     if (hexOk(sec.eyebrowColor)) parts.push('--oq-eyebrow:' + sec.eyebrowColor);
     if (hexOk(sec.headingColor)) parts.push('--oq-heading:' + sec.headingColor);
     if (hexOk(sec.introColor)) parts.push('--oq-intro:' + sec.introColor);
@@ -794,7 +794,7 @@ function injectOrderStorefront(html, slug, cfg) {
   const sec = cfg && cfg.sections && cfg.sections.orderStorefront;
   if (!sec || sec.on !== true) return html;
   const safeSlug = esc(slug || (cfg && cfg.slug) || '');
-  const SCRIPT = '/assets/lp-order-storefront.js?v=oe-17';
+  const SCRIPT = '/assets/lp-order-storefront.js?v=oe-18';
   const showPortal = sec.showPortalLink !== false;
   const portalLabel = esc(sec.portalCtaLabel || 'Sign in to your orders');
 
@@ -805,7 +805,7 @@ function injectOrderStorefront(html, slug, cfg) {
     if (doc.indexOf('/assets/lp-order-storefront.js') >= 0) {
       return doc.replace(
         /\/assets\/lp-order-storefront\.js(?:\?[^"']*)?/g,
-        '/assets/lp-order-storefront.js?v=oe-17'
+        '/assets/lp-order-storefront.js?v=oe-18'
       );
     }
     return doc.indexOf('</body>') !== -1
@@ -845,22 +845,22 @@ function injectOrderStorefront(html, slug, cfg) {
       '.order-storefront .section-head .eyebrow,.order-storefront .section-head .ey{font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;margin:0;color:var(--os-eyebrow,var(--accent,inherit))}' +
       '.order-storefront .section-head h2{font-size:clamp(32px,4.4vw,52px);margin-top:10px;line-height:1.15;letter-spacing:-.02em;color:var(--os-heading,inherit)}' +
       '.order-storefront .section-head .intro{margin-top:13px;color:var(--os-intro,var(--muted,inherit));font-size:18px;font-weight:500;line-height:1.45}' +
-      '.order-storefront .lp-oe{--accent:var(--lp-oe-accent,var(--accent,#1f7a63));--card:var(--lp-oe-card,#fff);--line:var(--lp-oe-line,#e4e0d8);--ink:var(--lp-oe-ink,#1c241e);--muted:var(--lp-oe-muted,#667066);--oe-radius:var(--lp-oe-radius,14px);--oe-pad:var(--lp-oe-pad,16px);--oe-maxw:var(--lp-oe-maxw,1440px);max-width:var(--oe-maxw);padding:var(--oe-pad);color:var(--ink);margin-left:auto;margin-right:auto;box-sizing:border-box}' +
+      .order-storefront .lp-oe{--oe-accent:var(--lp-oe-accent,var(--hivis,var(--accent,var(--pipe,#1f7a63))));--oe-card:var(--lp-oe-card,var(--card,var(--paper,#fffcf7)));--oe-line:var(--lp-oe-line,var(--line,#e4e0d8));--oe-ink:var(--lp-oe-ink,var(--ink,#1c241e));--oe-muted:var(--lp-oe-muted,var(--muted,#667066));--oe-btn:var(--lp-oe-btn-bg,var(--oe-accent));--oe-btn-text:var(--lp-oe-btn-text,#fff);--oe-radius:var(--lp-oe-radius,14px);--oe-pad:var(--lp-oe-pad,16px);--oe-maxw:var(--lp-oe-maxw,1440px);--accent:var(--oe-accent);--card:var(--oe-card);--line:var(--oe-line);--ink:var(--oe-ink);--muted:var(--oe-muted);max-width:var(--oe-maxw);padding:var(--oe-pad);color:var(--oe-ink);margin-left:auto;margin-right:auto;box-sizing:border-box;background:var(--lp-oe-page-bg,transparent)} +
       '.order-storefront .lp-oe-layout{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:22px;align-items:start}' +
       '@media(max-width:960px){.order-storefront .lp-oe-layout{grid-template-columns:1fr}}' +
-      '.order-storefront .lp-oe-cart-btn,.order-storefront .lp-oe-primary,.order-storefront .lp-oe-card button,.order-storefront .lp-oe-view-btn{background:var(--lp-oe-btn-bg,var(--accent));color:var(--lp-oe-btn-text,#fff);border:0;border-radius:999px;padding:10px 16px;font:700 13px/1 var(--font-ui,system-ui);cursor:pointer}' +
-      '.order-storefront .lp-oe-view-btn{background:transparent;color:var(--accent);border:1px solid var(--line)}' +
-      '.order-storefront .lp-oe-view-btn.on{background:color-mix(in srgb,var(--accent) 12%,transparent);border-color:var(--accent)}' +
-      '.order-storefront .lp-oe-card{background:var(--card);border:1px solid var(--line);border-radius:var(--oe-radius,14px);overflow:hidden}' +
+      '.order-storefront .lp-oe-cart-btn,.order-storefront .lp-oe-primary,.order-storefront .lp-oe-card button,.order-storefront .lp-oe-view-btn{background:var(--lp-oe-btn-bg,var(--oe-btn,var(--oe-accent)));color:var(--lp-oe-btn-text,var(--oe-btn-text,#fff));border:0;border-radius:999px;padding:10px 16px;font:700 13px/1 var(--font-ui,system-ui);cursor:pointer}' +
+      '.order-storefront .lp-oe-view-btn{background:transparent;color:var(--oe-accent);border:1px solid var(--oe-line)}' +
+      '.order-storefront .lp-oe-view-btn.on{background:color-mix(in srgb,var(--oe-accent) 12%,transparent);border-color:var(--oe-accent)}' +
+      '.order-storefront .lp-oe-card{background:var(--oe-card);border:1px solid var(--oe-line);border-radius:var(--oe-radius,14px);overflow:hidden}' +
       '.order-storefront .lp-oe-list{padding:8px 4px 16px}' +
       '.order-storefront .lp-oe-list .lp-oe-card{padding:16px 18px}' +
-      '.order-storefront .lp-oe-body h3{color:var(--ink);font-size:32px;line-height:1.2;letter-spacing:-.02em}' +
+      '.order-storefront .lp-oe-body h3{color:var(--oe-ink);font-size:32px;line-height:1.2;letter-spacing:-.02em}' +
       '.order-storefront .lp-oe-list .lp-oe-body h3{font-size:30px}' +
       '.order-storefront .lp-oe-fast-info h3{font-size:30px;line-height:1.2}' +
-      '.order-storefront .lp-oe-body p,.order-storefront .lp-oe-sub,.order-storefront .lp-oe-note{color:var(--muted)}' +
-      '.order-storefront .lp-oe-price,.order-storefront .lp-oe-ey{color:var(--accent)}' +
-      '.order-storefront .lp-oe-filters button.on{border-color:var(--accent);color:var(--accent)}' +
-      '.order-storefront .lp-oe-fields input,.order-storefront .lp-oe-fields textarea,.order-storefront .lp-oe-fields select{background:var(--lp-oe-input-bg,#fff);border:1px solid var(--lp-oe-input-border,var(--line));color:var(--ink);border-radius:10px;padding:10px 12px;font:inherit}' +
+      '.order-storefront .lp-oe-body p,.order-storefront .lp-oe-sub,.order-storefront .lp-oe-note{color:var(--oe-muted)}' +
+      '.order-storefront .lp-oe-price,.order-storefront .lp-oe-ey{color:var(--oe-accent)}' +
+      '.order-storefront .lp-oe-filters button.on{border-color:var(--oe-accent);color:var(--oe-accent)}' +
+      '.order-storefront .lp-oe-fields input,.order-storefront .lp-oe-fields textarea,.order-storefront .lp-oe-fields select{background:var(--lp-oe-input-bg,var(--oe-card,#fff));border:1px solid var(--lp-oe-input-border,var(--oe-line));color:var(--oe-ink);border-radius:10px;padding:10px 12px;font:inherit}' +
       '</style>'
     );
   }
