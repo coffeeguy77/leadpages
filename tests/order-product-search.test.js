@@ -8,7 +8,8 @@ const {
   groupProductSheetRowsByDate,
   summariseProductSearch,
   sortProductSheetRows,
-  serializeProductSheetRows
+  serializeProductSheetRows,
+  todayYmd
 } = require('../lib/order/product-search');
 const { buildPrintDocument } = require('../lib/order/print-document');
 const fs = require('fs');
@@ -27,7 +28,8 @@ var orders = [
         quantity: 1,
         product_snapshot: { selected_options: [{ label: 'Buff basting' }] }
       },
-      { product_name: 'Ham', quantity: 1 }
+      { product_name: 'Ham half', quantity: 1 },
+      { product_name: 'Whole ham', quantity: 1 }
     ]
   },
   {
@@ -57,6 +59,18 @@ test('productMatchesItem — exact matches full product name only', function () 
   assert.equal(productMatchesItem(orders[0].items[0], 'turkey', 'exact'), false);
 });
 
+test('productMatchesItem — secondary refine narrows ham to whole', function () {
+  assert.equal(productMatchesItem({ product_name: 'Whole ham' }, 'ham', 'partial', 'whole'), true);
+  assert.equal(productMatchesItem({ product_name: 'Ham half' }, 'ham', 'partial', 'whole'), false);
+  assert.equal(productMatchesItem({ product_name: 'Ham', quantity: 1, notes: 'whole bone-in' }, 'ham', 'partial', 'whole'), true);
+});
+
+test('collectProductSheetRows with refine filters to whole hams', function () {
+  var rows = collectProductSheetRows(orders, 'ham', 'partial', 'whole');
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].item.product_name, 'Whole ham');
+});
+
 test('collectProductSheetRows groups and sorts by date then order', function () {
   var rows = collectProductSheetRows(orders, 'turkey', 'partial');
   assert.equal(rows.length, 2);
@@ -64,12 +78,15 @@ test('collectProductSheetRows groups and sorts by date then order', function () 
   assert.equal(rows[1].order.order_number, 'ORD-101');
 });
 
-test('sortProductSheetRows by customer name and product', function () {
+test('sortProductSheetRows toggles asc/desc by customer name', function () {
   var rows = collectProductSheetRows(orders, 'turkey', 'partial');
-  var byName = sortProductSheetRows(rows, 'name');
+  var byName = sortProductSheetRows(rows, 'name', 'asc');
   assert.equal(byName[0].order.customer_name, 'Alice');
   assert.equal(byName[1].order.customer_name, 'Bob');
-  var byProduct = sortProductSheetRows(rows, 'product');
+  var desc = sortProductSheetRows(rows, 'name', 'desc');
+  assert.equal(desc[0].order.customer_name, 'Bob');
+  assert.equal(desc[1].order.customer_name, 'Alice');
+  var byProduct = sortProductSheetRows(rows, 'product', 'asc');
   assert.equal(byProduct[0].item.product_name, 'Stuffed turkey roll');
   assert.equal(byProduct[1].item.product_name, 'Turkey — bird size');
 });
@@ -82,27 +99,23 @@ test('serializeProductSheetRows returns compact live-list fields', function () {
   assert.equal(rows[0].product_name, 'Turkey — bird size');
   assert.match(String(rows[0].options || ''), /Buff basting/);
   assert.ok(rows[0].qty_label);
+  assert.ok(rows[0].weight_label);
 });
 
-test('productMatchesItem — partial "ham" matches Ham Half variants', function () {
-  assert.equal(productMatchesItem({ product_name: 'Ham half' }, 'ham', 'partial'), true);
-  assert.equal(productMatchesItem({ product_name: 'Ham — full' }, 'ham', 'partial'), true);
-  assert.equal(productMatchesItem({ product_name: 'Turkey' }, 'ham', 'partial'), false);
-  assert.equal(productMatchesItem({ product_name: 'Ham half' }, 'ham', 'exact'), false);
-  assert.equal(productMatchesItem({ product_name: 'Ham half' }, 'Ham half', 'exact'), true);
+test('todayYmd returns YYYY-MM-DD', function () {
+  assert.match(todayYmd(), /^\d{4}-\d{2}-\d{2}$/);
 });
 
-test('orders.html typing uses contains; exact only after catalogue pick', function () {
+test('orders.html product search sheet UX hooks', function () {
   var html = fs.readFileSync(path.join(__dirname, '../orders.html'), 'utf8');
   assert.match(html, /id="ps-suggest"/);
   assert.match(html, /id="ps-tbody"/);
-  assert.match(html, /id="ps-sort"/);
-  assert.match(html, /id="ps-date-mode"/);
-  assert.match(html, /id="ps-mode-label"/);
+  assert.match(html, /id="ps-refine"/);
+  assert.match(html, /id="ps-mode-btn"/);
+  assert.match(html, /from_today/);
+  assert.match(html, /data-ps-sort="name"/);
   assert.match(html, /wireProductSearchSheet/);
-  assert.match(html, /setPsMode\('partial'\)/);
   assert.match(html, /Show all orders containing/);
-  assert.match(html, /Enter always runs Contains/);
   assert.match(html, /Print results/);
 });
 

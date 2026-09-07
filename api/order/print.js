@@ -12,7 +12,8 @@ const {
   collectProductSheetRows,
   groupProductSheetRowsByDate,
   summariseProductSearch,
-  normaliseQuery
+  normaliseQuery,
+  todayYmd
 } = require('../../lib/order/product-search');
 
 async function loadOrderWithItems(admin, orderId, siteId) {
@@ -33,16 +34,17 @@ async function loadOrderWithItems(admin, orderId, siteId) {
 }
 
 async function loadOrdersForDateRange(admin, systemId, siteId, fromDate, toDate) {
-  const { data: orders, error } = await admin
+  var q = admin
     .from('order_orders')
     .select('*')
     .eq('order_system_id', systemId)
     .eq('site_id', siteId)
     .gte('pickup_date', fromDate)
-    .lte('pickup_date', toDate)
     .not('status', 'in', '("draft","cancelled","refunded")')
     .order('pickup_date')
     .order('order_number');
+  if (toDate) q = q.lte('pickup_date', toDate);
+  const { data: orders, error } = await q;
   if (error) throw error;
   const ids = (orders || []).map(function (o) {
     return o.id;
@@ -106,6 +108,7 @@ module.exports = async function (req, res) {
     const pickupFrom = req.query && req.query.pickup_from;
     const pickupTo = req.query && req.query.pickup_to;
     const productQ = req.query && req.query.product_q;
+    const productRefine = (req.query && req.query.product_refine) || '';
     const productMode = (req.query && req.query.product_mode) === 'exact' ? 'exact' : 'partial';
     const orderId = req.query && req.query.order_id;
 
@@ -204,34 +207,30 @@ module.exports = async function (req, res) {
           })
         );
       }
-      var fromDate = pickupFrom || pickupDate;
-      var toDate = pickupTo || pickupDate || pickupFrom;
-      if (!fromDate) {
-        return sendHtml(
-          res,
-          400,
-          buildPrintDocument({
-            format: 'slip',
-            business: business,
-            order: { order_number: 'pickup_date or pickup_from required' },
-            items: []
-          })
-        );
-      }
-      if (!toDate) toDate = fromDate;
-      if (toDate < fromDate) {
+      var openEnded =
+        String((req.query && req.query.open_ended) || '') === '1' ||
+        String((req.query && req.query.date_mode) || '') === 'from_today' ||
+        String((req.query && req.query.date_mode) || '') === 'all';
+      var fromDate = pickupFrom || pickupDate || (openEnded ? todayYmd() : null);
+      var toDate = pickupTo || null;
+      if (!openEnded && !toDate) toDate = pickupDate || pickupFrom || fromDate;
+      if (!fromDate) fromDate = todayYmd();
+      if (toDate && toDate < fromDate) {
         var swap = fromDate;
         fromDate = toDate;
         toDate = swap;
       }
+      if (openEnded) toDate = null;
       const rangeOrders = await loadOrdersForDateRange(admin, system.id, siteId, fromDate, toDate);
-      const sheetRows = collectProductSheetRows(rangeOrders, q, productMode);
+      const sheetRows = collectProductSheetRows(rangeOrders, q, productMode, productRefine);
       const summary = summariseProductSearch(sheetRows);
       const groups = groupProductSheetRowsByDate(sheetRows);
-      var dateLabel =
-        fromDate === toDate
+      var dateLabel = !toDate
+        ? 'from ' + formatDateLabel(fromDate)
+        : fromDate === toDate
           ? formatDateLabel(fromDate)
           : formatDateLabel(fromDate) + ' – ' + formatDateLabel(toDate);
+      var queryLabel = productQ + (productRefine ? ' + ' + productRefine : '');
       return sendHtml(
         res,
         200,
@@ -240,12 +239,12 @@ module.exports = async function (req, res) {
           business: business,
           product_groups: groups,
           meta: {
-            product_query: productQ,
+            product_query: queryLabel,
             product_mode: productMode,
             match_count: summary.match_count,
             order_count: summary.order_count,
             date_label: dateLabel,
-            show_date_heading: fromDate !== toDate || groups.length > 1
+            show_date_heading: !toDate || fromDate !== toDate || groups.length > 1
           },
           autoprint: autoprint
         })
