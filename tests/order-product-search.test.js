@@ -65,10 +65,6 @@ test('collectProductSheetRows groups and sorts by date then order', function () 
 });
 
 test('sortProductSheetRows by customer name and product', function () {
-  var {
-    sortProductSheetRows,
-    collectProductSheetRows
-  } = require('../lib/order/product-search');
   var rows = collectProductSheetRows(orders, 'turkey', 'partial');
   var byName = sortProductSheetRows(rows, 'name');
   assert.equal(byName[0].order.customer_name, 'Alice');
@@ -79,10 +75,6 @@ test('sortProductSheetRows by customer name and product', function () {
 });
 
 test('serializeProductSheetRows returns compact live-list fields', function () {
-  var {
-    collectProductSheetRows,
-    serializeProductSheetRows
-  } = require('../lib/order/product-search');
   var rows = serializeProductSheetRows(collectProductSheetRows(orders, 'turkey', 'partial'));
   assert.equal(rows.length, 2);
   assert.equal(rows[0].order_number, 'ORD-100');
@@ -92,16 +84,25 @@ test('serializeProductSheetRows returns compact live-list fields', function () {
   assert.ok(rows[0].qty_label);
 });
 
-test('orders.html product search sheet has autocomplete + live results hooks', function () {
-  var fs = require('fs');
-  var path = require('path');
+test('productMatchesItem — partial "ham" matches Ham Half variants', function () {
+  assert.equal(productMatchesItem({ product_name: 'Ham half' }, 'ham', 'partial'), true);
+  assert.equal(productMatchesItem({ product_name: 'Ham — full' }, 'ham', 'partial'), true);
+  assert.equal(productMatchesItem({ product_name: 'Turkey' }, 'ham', 'partial'), false);
+  assert.equal(productMatchesItem({ product_name: 'Ham half' }, 'ham', 'exact'), false);
+  assert.equal(productMatchesItem({ product_name: 'Ham half' }, 'Ham half', 'exact'), true);
+});
+
+test('orders.html typing uses contains; exact only after catalogue pick', function () {
   var html = fs.readFileSync(path.join(__dirname, '../orders.html'), 'utf8');
   assert.match(html, /id="ps-suggest"/);
   assert.match(html, /id="ps-tbody"/);
   assert.match(html, /id="ps-sort"/);
   assert.match(html, /id="ps-date-mode"/);
+  assert.match(html, /id="ps-mode-label"/);
   assert.match(html, /wireProductSearchSheet/);
-  assert.match(html, /Search all containing/);
+  assert.match(html, /setPsMode\('partial'\)/);
+  assert.match(html, /Show all orders containing/);
+  assert.match(html, /Enter always runs Contains/);
   assert.match(html, /Print results/);
 });
 
