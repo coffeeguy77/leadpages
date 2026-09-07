@@ -99,9 +99,11 @@ Validated via `getUser()` → Supabase `/auth/v1/user`.
 | `GET /api/billing/status` | Own account | Own account only | `?siteId=` / `?ownerId=` for any client |
 | `GET /api/billing/account` | Own | — | `?siteId=` |
 | `GET /api/billing/contra` | Read own (if enabled/visible) | — | Read/write via `?siteId=` |
-| `POST /api/billing/checkout` | Own site | — | Any site; gets checkout **URL prompt** |
+| `POST /api/billing/checkout` | Own site | — | Any site; gets checkout **URL prompt** (`profiles.is_super_admin` also accepted) |
 | `POST /api/billing/portal` | Own | — | Optional `body.ownerId` |
 | `POST /api/billing/owner` | — | — | Admin only |
+| `GET/POST /api/billing/start-hosting` | — | — | Super: search unpaid sites + start Stripe hosting for existing site |
+| `GET/POST /api/billing/premium-apps` | Own / servicing partner (GET) | GET if partner on site | GET entitlements; POST activate/deactivate (super) |
 | `POST /api/billing/admin` | — | — | Admin only |
 | `GET/POST /api/billing/plans` | GET active plans | GET active | Full CRUD |
 | `GET/POST /api/billing/system-pages` | — | — | Super-admin (`profiles.is_super_admin`) |
@@ -403,6 +405,8 @@ All paths under `/api/billing/`. Shared module: `_stripe.js` (not a route).
 | **`owner.js`** | POST | Admin | `{ siteId }` | `{ linked, created?, owner_user_id }` |
 | **`account.js`** | GET | Bearer | `?siteId=`, `?ownerId=` (admin) | Stripe detail: `{ hasStripe, customer, items, invoices, payment_method, ... }` |
 | **`checkout.js`** | POST | Owner/admin | `{ siteId, planKey, returnUrl? }` | `{ mode: 'free'\|'added'\|'checkout', url? }` |
+| **`start-hosting.js`** | GET/POST | Super | GET `?q=` / `?siteId=`; POST `{ siteId, planKey, linkOwner? }` | Unpaid list / checkout forward |
+| **`premium-apps.js`** | GET/POST | Owner/partner GET; super POST | GET `?siteId=`; POST `{ action, siteId, app, billing_cycle? }` | Entitlements + admin activate |
 | **`portal.js`** | POST | Bearer | `{ returnUrl?, ownerId? }` | `{ url }` |
 | **`plans.js`** | GET | Bearer | — | `{ plans[], admin }` |
 | **`plans.js`** | POST | Admin | `{ action:'save', plan }` or `{ action:'delete', key }` | `{ ok }` |
@@ -422,6 +426,25 @@ All paths under `/api/billing/`. Shared module: `_stripe.js` (not a route).
 |------|------|
 | `_stripe.js` | Supabase service client, Stripe REST, JWT verify, webhook HMAC |
 | `_accrual.js` | Monthly contra debit idempotency (`last_accrual_month`) |
+| `../../lib/premium-apps.js` | Orders / Quote Builder / Bookings entitlement + admin activate |
+
+### Premium apps (Orders, Quote Builder, Bookings)
+
+These marketplace apps are **paid / admin-activated**. Client and partner backends only show the nav tabs when `GET /api/billing/premium-apps` returns the nav key in `entitled_nav`.
+
+Entitlement sources (any one is enough):
+
+1. Active `site_app_subscriptions` row (admin activate or Stripe `app-checkout`)
+2. Quote Builder `quote_systems.configuration_classification = private_superuser` (Bean Culture)
+3. Grandfather: `order_systems.enabled` / `booking_systems.enabled`
+
+Ops surfaces:
+
+- **Command → Accounting → Hosting manager** — start Stripe hosting for existing unpaid sites
+- **Command → Accounting → Premium apps** — price list + activate / Stripe checkout / revoke
+- **Command → Apps → Site subscriptions** — slug search; premium apps route through `premium-apps` activate
+
+Partner **buy-site** checkout still starts hosting automatically via the existing webhook path.
 
 ---
 

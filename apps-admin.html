@@ -256,14 +256,19 @@ dialog::backdrop{background:rgba(38,32,34,.55)}
 <dialog id="sub-dlg">
   <div class="dhead">Add site subscription</div>
   <div class="dbody">
-    <label>Site ID (UUID from profiles)</label><input id="s-site">
+    <label>Find site (slug / name)</label>
+    <input id="s-site-search" placeholder="e.g. bean-culture or Griffith">
+    <div id="s-site-hits" style="display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px"></div>
+    <label>Site</label>
+    <select id="s-site"><option value="">— Search above —</option></select>
     <label>App</label><select id="s-app"></select>
     <div class="g2">
       <div><label>Billing cycle</label>
         <select id="s-cycle"><option value="monthly">Monthly</option><option value="annual">Annual</option></select>
       </div>
-      <div><label>Price AUD</label><input id="s-price" type="number" step="0.01"></div>
+      <div><label>Price AUD (optional)</label><input id="s-price" type="number" step="0.01" placeholder="From registry if blank"></div>
     </div>
+    <p class="note" style="margin-top:8px">Prefer Command Ops → Accounting → Premium apps for Orders / Quote / Bookings (enables engine + section).</p>
     <div class="err" id="s-err"></div>
   </div>
   <div class="dfoot">
@@ -504,14 +509,65 @@ dialog::backdrop{background:rgba(38,32,34,.55)}
   }
   $('sub-new').addEventListener('click',function(){$('sub-dlg').showModal();});
   $('s-cancel').addEventListener('click',function(){$('sub-dlg').close();});
+  var sSearchTimer=null;
+  $('s-site-search').addEventListener('input',function(){
+    clearTimeout(sSearchTimer);
+    var q=$('s-site-search').value.trim();
+    sSearchTimer=setTimeout(async function(){
+      if(q.length<2){ $('s-site-hits').innerHTML=''; return; }
+      var r=await sb.from('sites').select('id,slug,business_name,owner_email').or(
+        'slug.ilike.%'+q+'%,business_name.ilike.%'+q+'%,owner_email.ilike.%'+q+'%'
+      ).limit(12);
+      var rows=r.data||[];
+      $('s-site-hits').innerHTML=rows.map(function(s){
+        return '<button type="button" class="btn ghost sm" data-pick-site="'+esc(s.id)+'">'+esc(s.business_name||s.slug)+' <span style="opacity:.7">'+esc(s.slug)+'</span></button>';
+      }).join('')||'<span class="note">No matches</span>';
+      var sel=$('s-site');
+      rows.forEach(function(s){
+        if(![].some.call(sel.options,function(o){return o.value===s.id;})){
+          var opt=document.createElement('option');
+          opt.value=s.id; opt.textContent=(s.business_name||s.slug)+' ('+s.slug+')';
+          sel.appendChild(opt);
+        }
+      });
+    },250);
+  });
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('[data-pick-site]'); if(!b) return;
+    $('s-site').value=b.getAttribute('data-pick-site');
+  });
   $('s-save').addEventListener('click',async function(){
     $('s-err').textContent='';
     var site=$('s-site').value.trim(),app=$('s-app').value,cycle=$('s-cycle').value,price=parseFloat($('s-price').value);
-    if(!site||!app||!price){$('s-err').textContent='All fields required.';return;}
+    if(!site||!app){$('s-err').textContent='Site and app required.';return;}
+    var appRow=APPS.find(function(a){return a.id===app;});
+    if(!Number.isFinite(price)&&appRow){
+      price=cycle==='annual'?(Number(appRow.price_annual_aud)||0):(Number(appRow.price_monthly_aud)||0);
+    }
+    if(!Number.isFinite(price)){$('s-err').textContent='Set a price or fill app registry prices.';return;}
     var now=new Date(),end=new Date(now);
     if(cycle==='annual')end.setFullYear(end.getFullYear()+1);
     else end.setMonth(end.getMonth()+1);
     $('s-save').disabled=true;
+    // Prefer premium-apps API for Orders / Quote / Bookings (enables engine + section)
+    var premiumSlugs={'online-quote':1,'order-storefront':1,'bookings':1,'onlineQuote':1,'orderStorefront':1,'bookingStorefront':1};
+    var slug=appRow&&appRow.slug;
+    var seckey=appRow&&appRow.section_key;
+    if(premiumSlugs[slug]||premiumSlugs[seckey]){
+      try{
+        var sess=(await sb.auth.getSession()).data.session;
+        var tok=sess&&sess.access_token;
+        var pr=await fetch('/api/billing/premium-apps',{
+          method:'POST',
+          headers:{'content-type':'application/json',Authorization:'Bearer '+(tok||'')},
+          body:JSON.stringify({action:'activate',siteId:site,app:slug||seckey||app,billing_cycle:cycle})
+        });
+        var pj=await pr.json().catch(function(){return{};});
+        $('s-save').disabled=false;
+        if(!pr.ok||pj.ok===false){$('s-err').textContent=pj.error||('HTTP '+pr.status);return;}
+        $('sub-dlg').close(); loadAll(); return;
+      }catch(e){ $('s-save').disabled=false; $('s-err').textContent=String(e.message||e); return; }
+    }
     var r=await sb.from('site_app_subscriptions').upsert({
       site_id:site,app_id:app,billing_cycle:cycle,price_aud:price,
       status:'active',started_at:now.toISOString(),
