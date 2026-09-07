@@ -1175,19 +1175,17 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
         </div>
         <div class="card" style="margin-top:16px">
           <h3>Product search sheet</h3>
-          <p class="sub">Type to autocomplete catalogue products (e.g. <em>Tur</em> → Turkey, Turkey Buff, Whole Turkey). Pick one for an exact product, or keep typing / choose “search all containing…” for every matching line. Refine by one day or a date range, sort the live list, and print anytime.</p>
+          <p class="sub">Type <em>Ham</em> or <em>Turkey</em> to list every order line containing that word. Suggestions appear as you type — pick one only if you want that exact product (e.g. Ham half). Refine by one day or a date range, sort, and print anytime.</p>
           <div class="toolbar" style="flex-wrap:wrap;gap:8px;align-items:flex-end">
             <div class="ps-combo prod-combo" id="ps-combo">
               <label class="sub" for="ps-q" style="display:block;margin:0 0 4px">Product</label>
-              <input id="ps-q" type="search" placeholder="Type product… e.g. Turkey" autocomplete="off" aria-autocomplete="list" aria-controls="ps-suggest">
+              <input id="ps-q" type="search" placeholder="Type Ham, Turkey…" autocomplete="off" aria-autocomplete="list" aria-controls="ps-suggest">
               <ul id="ps-suggest" class="prod-combo-list hide" role="listbox"></ul>
             </div>
             <div>
-              <label class="sub" for="ps-mode" style="display:block;margin:0 0 4px">Match</label>
-              <select id="ps-mode" aria-label="Search mode">
-                <option value="partial">Contains</option>
-                <option value="exact">Exact name</option>
-              </select>
+              <label class="sub" style="display:block;margin:0 0 4px">Match</label>
+              <span id="ps-mode-label" style="display:inline-flex;align-items:center;min-height:38px;padding:0 12px;border:1px solid var(--line-strong);border-radius:10px;font:600 13px/1 var(--font-ui);color:var(--ink-soft);background:var(--surface)">Contains (all matches)</span>
+              <input type="hidden" id="ps-mode" value="partial">
             </div>
             <div>
               <label class="sub" for="ps-date-mode" style="display:block;margin:0 0 4px">Dates</label>
@@ -9198,7 +9196,19 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
 
   var psLiveTimer = null;
   var psLiveSeq = 0;
-  var psState = { rows: [], lastQ: '' };
+  var psState = { rows: [], lastQ: '', exactName: null };
+
+  function setPsMode(mode, exactName){
+    mode = mode === 'exact' ? 'exact' : 'partial';
+    if ($('ps-mode')) $('ps-mode').value = mode;
+    psState.exactName = mode === 'exact' ? String(exactName || '').trim() : null;
+    var label = $('ps-mode-label');
+    if (label) {
+      label.textContent = mode === 'exact'
+        ? ('Exact: ' + (psState.exactName || 'product'))
+        : 'Contains (all matches)';
+    }
+  }
 
   function renderPsSuggest(q){
     var list = $('ps-suggest');
@@ -9211,12 +9221,12 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     }
     var items = filterProducts(needle);
     var html = '';
-    html += '<li data-ps-action="contains" class="ps-suggest-action">Search all containing “' + esc(needle) + '”</li>';
+    html += '<li data-ps-action="contains" class="ps-suggest-action">Show all orders containing “' + esc(needle) + '”</li>';
     if (!items.length) {
-      html += '<li class="muted">No catalogue matches — still searches order lines</li>';
+      html += '<li class="muted">No catalogue matches — searching order lines for “' + esc(needle) + '”</li>';
     } else {
       html += items.map(function(p){
-        return '<li data-ps-id="' + esc(p.id) + '">' + esc(productLabel(p)) + '</li>';
+        return '<li data-ps-id="' + esc(p.id) + '" title="Exact product only">' + esc(productLabel(p)) + ' <span class="notice">(exact)</span></li>';
       }).join('');
     }
     list.innerHTML = html;
@@ -9226,8 +9236,9 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
         ev.preventDefault();
         var p = (state.products || []).find(function(x){ return x.id === li.getAttribute('data-ps-id'); });
         if (!p) return;
-        if ($('ps-q')) $('ps-q').value = p.name || productLabel(p);
-        if ($('ps-mode')) $('ps-mode').value = 'exact';
+        var name = p.name || productLabel(p);
+        if ($('ps-q')) $('ps-q').value = name;
+        setPsMode('exact', name);
         list.classList.add('hide');
         list.innerHTML = '';
         previewProductSheet({ live: true });
@@ -9237,7 +9248,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     if (contains) {
       contains.addEventListener('mousedown', function(ev){
         ev.preventDefault();
-        if ($('ps-mode')) $('ps-mode').value = 'partial';
+        setPsMode('partial');
         list.classList.add('hide');
         list.innerHTML = '';
         previewProductSheet({ live: true });
@@ -9267,7 +9278,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
         empty.classList.remove('hide');
         empty.textContent = meta.searched
           ? 'No matching order lines for this product and date.'
-          : 'Type a product name to see matching orders.';
+          : 'Type a product name (e.g. Ham or Turkey) to see matching orders.';
       }
       if (status) {
         status.classList.remove('hide');
@@ -9293,10 +9304,12 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     }).join('');
     if (status) {
       status.classList.remove('hide');
+      var modeBit = meta.mode === 'exact' ? 'exact' : 'contains';
       var msg =
         (meta.match_count || rows.length) + ' matching line' + ((meta.match_count || rows.length) === 1 ? '' : 's') +
         ' across ' + (meta.order_count != null ? meta.order_count : '—') + ' order' +
-        ((meta.order_count === 1) ? '' : 's');
+        ((meta.order_count === 1) ? '' : 's') +
+        ' · ' + modeBit;
       if (meta.from && meta.to) {
         msg += meta.from === meta.to ? (' (' + meta.from + ')') : (' (' + meta.from + ' to ' + meta.to + ')');
       }
@@ -9310,8 +9323,15 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     var q = ($('ps-q') && $('ps-q').value || '').trim();
     var status = $('ps-status');
     if (!q) {
+      setPsMode('partial');
       renderPsResults([], { searched: false });
       return;
+    }
+    // Typing free text always means Contains unless locked to an exact catalogue pick
+    if (psState.exactName && q.toLowerCase() === String(psState.exactName).toLowerCase()) {
+      setPsMode('exact', psState.exactName);
+    } else {
+      setPsMode('partial');
     }
     var range = psDateRange();
     if (!range) {
@@ -9328,9 +9348,10 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       status.textContent = 'Searching…';
     }
     try {
+      var mode = ($('ps-mode') && $('ps-mode').value) || 'partial';
       var params =
         'product_q=' + encodeURIComponent(q) +
-        '&product_mode=' + encodeURIComponent(($('ps-mode') && $('ps-mode').value) || 'partial') +
+        '&product_mode=' + encodeURIComponent(mode) +
         '&sort=' + encodeURIComponent(($('ps-sort') && $('ps-sort').value) || 'date') +
         '&pickup_from=' + encodeURIComponent(range.from) +
         '&pickup_to=' + encodeURIComponent(range.to);
@@ -9342,9 +9363,10 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
         match_count: data.match_count,
         order_count: data.order_count,
         from: range.from,
-        to: range.to
+        to: range.to,
+        mode: mode
       });
-      if (!opts.live && !data.match_count) toast('No matches — try Contains instead of Exact', 'warn');
+      if (!opts.live && !data.match_count) toast('No matches for this date', 'warn');
     } catch (e) {
       if (seq !== psLiveSeq) return;
       if (status) status.textContent = (e && e.message) || String(e);
@@ -9363,6 +9385,12 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     if (!q) { toast('Enter a product name', 'err'); return; }
     var range = psDateRange();
     if (!range) { toast('Pick a date', 'err'); return; }
+    // Same mode rules as live search
+    if (psState.exactName && q.toLowerCase() === String(psState.exactName).toLowerCase()) {
+      setPsMode('exact', psState.exactName);
+    } else {
+      setPsMode('partial');
+    }
     var extra =
       'format=product_sheet' +
       '&product_q=' + encodeURIComponent(q) +
@@ -9374,6 +9402,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
 
   function wireProductSearchSheet(){
     if (!$('ps-q')) return;
+    setPsMode('partial');
     syncPsDateModeUi();
     if ($('ps-from') && !$('ps-from').value && $('supply-date') && $('supply-date').value) {
       $('ps-from').value = $('supply-date').value;
@@ -9384,26 +9413,27 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       renderPsSuggest($('ps-q').value);
     });
     $('ps-q').addEventListener('input', function(){
+      // Any typing broadens to Contains unless value still equals an exact pick
+      var q = String($('ps-q').value || '').trim();
+      if (!psState.exactName || q.toLowerCase() !== String(psState.exactName).toLowerCase()) {
+        setPsMode('partial');
+      }
       renderPsSuggest($('ps-q').value);
       schedulePsLiveSearch();
     });
     $('ps-q').addEventListener('keydown', function(ev){
       if (ev.key === 'Escape') { closePsSuggest(); return; }
       if (ev.key === 'Enter') {
-        var list = $('ps-suggest');
-        var first = list && list.querySelector('li[data-ps-id], li[data-ps-action]');
-        if (first && list && !list.classList.contains('hide')) {
-          ev.preventDefault();
-          first.dispatchEvent(new Event('mousedown'));
-        } else {
-          closePsSuggest();
-          previewProductSheet({ live: true });
-        }
+        ev.preventDefault();
+        // Enter always runs Contains for the typed text (don't snap to first exact product)
+        setPsMode('partial');
+        closePsSuggest();
+        previewProductSheet({ live: true });
       }
     });
     $('ps-q').addEventListener('blur', function(){ setTimeout(closePsSuggest, 160); });
 
-    ['ps-mode', 'ps-sort', 'ps-from', 'ps-to'].forEach(function(id){
+    ['ps-sort', 'ps-from', 'ps-to'].forEach(function(id){
       if ($(id)) $(id).addEventListener('change', function(){ schedulePsLiveSearch(); });
     });
     if ($('ps-date-mode')) {
