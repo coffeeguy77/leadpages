@@ -5,6 +5,8 @@ const { requireUser, assertSiteAccess, ensureOrderSystem } = require('../../lib/
 const { getAdmin } = require('../../lib/order/supabase');
 const {
   collectProductSheetRows,
+  sortProductSheetRows,
+  serializeProductSheetRows,
   summariseProductSearch,
   normaliseQuery
 } = require('../../lib/order/product-search');
@@ -51,6 +53,7 @@ module.exports = async function (req, res) {
 
     const productQ = req.query && req.query.product_q;
     const productMode = (req.query && req.query.product_mode) === 'exact' ? 'exact' : 'partial';
+    const sortKey = (req.query && req.query.sort) || 'date';
     const q = normaliseQuery(productQ);
     if (!q) return json(res, 400, { error: 'product_q required' });
 
@@ -68,17 +71,20 @@ module.exports = async function (req, res) {
     }
 
     const orders = await loadOrdersForDateRange(admin, system.id, siteId, fromDate, toDate);
-    const rows = collectProductSheetRows(orders, q, productMode);
+    let rows = collectProductSheetRows(orders, q, productMode);
+    rows = sortProductSheetRows(rows, sortKey);
     const summary = summariseProductSearch(rows);
 
     return json(res, 200, {
       product_q: productQ,
       product_mode: productMode,
+      sort: sortKey === 'name' || sortKey === 'product' ? sortKey : 'date',
       pickup_from: fromDate,
       pickup_to: toDate,
       match_count: summary.match_count,
       order_count: summary.order_count,
-      dates: summary.dates
+      dates: summary.dates,
+      rows: serializeProductSheetRows(rows)
     });
   } catch (e) {
     console.error('order/product-search', e);

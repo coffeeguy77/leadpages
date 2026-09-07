@@ -258,6 +258,10 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
 .prod-combo-list li:hover,.prod-combo-list li.on{background:color-mix(in srgb,var(--accent) 12%,transparent)}
 .prod-combo-list li.muted{color:var(--ink-faint);cursor:default}
 .prod-combo-list li.muted:hover{background:transparent}
+.ps-combo{position:relative;min-width:200px;flex:1.5 1 220px}
+.ps-suggest-action{font-weight:700;color:var(--accent)}
+#ps-results .table-wrap{margin-top:10px;max-height:420px;overflow:auto}
+#ps-to-wrap.hide{display:none!important}
 @media(max-width:700px){
   .line-row{grid-template-columns:1fr 1fr}
   .line-row .prod-combo{grid-column:1/-1}
@@ -1171,25 +1175,58 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
         </div>
         <div class="card" style="margin-top:16px">
           <h3>Product search sheet</h3>
-          <p class="sub">Find every order line for a product (e.g. <em>Turkey</em> for all sizes, or exact <em>Stuffed turkey roll</em>). Prints order number, customer, phone, product, options, and qty/weight — by one date or a range with day headings.</p>
-          <div class="toolbar" style="flex-wrap:wrap;gap:8px">
-            <input id="ps-q" type="search" placeholder="Product name…" style="min-width:180px;flex:1">
-            <select id="ps-mode" aria-label="Search mode">
-              <option value="partial">Contains</option>
-              <option value="exact">Exact name</option>
-            </select>
-            <label class="sub" style="margin:0;display:flex;align-items:center;gap:6px">
-              <span>From</span>
+          <p class="sub">Type to autocomplete catalogue products (e.g. <em>Tur</em> → Turkey, Turkey Buff, Whole Turkey). Pick one for an exact product, or keep typing / choose “search all containing…” for every matching line. Refine by one day or a date range, sort the live list, and print anytime.</p>
+          <div class="toolbar" style="flex-wrap:wrap;gap:8px;align-items:flex-end">
+            <div class="ps-combo prod-combo" id="ps-combo">
+              <label class="sub" for="ps-q" style="display:block;margin:0 0 4px">Product</label>
+              <input id="ps-q" type="search" placeholder="Type product… e.g. Turkey" autocomplete="off" aria-autocomplete="list" aria-controls="ps-suggest">
+              <ul id="ps-suggest" class="prod-combo-list hide" role="listbox"></ul>
+            </div>
+            <div>
+              <label class="sub" for="ps-mode" style="display:block;margin:0 0 4px">Match</label>
+              <select id="ps-mode" aria-label="Search mode">
+                <option value="partial">Contains</option>
+                <option value="exact">Exact name</option>
+              </select>
+            </div>
+            <div>
+              <label class="sub" for="ps-date-mode" style="display:block;margin:0 0 4px">Dates</label>
+              <select id="ps-date-mode" aria-label="Date mode">
+                <option value="single">One day</option>
+                <option value="range">Date range</option>
+              </select>
+            </div>
+            <label class="sub" style="margin:0;display:flex;flex-direction:column;gap:4px">
+              <span id="ps-from-label">Date</span>
               <input id="ps-from" type="date">
             </label>
-            <label class="sub" style="margin:0;display:flex;align-items:center;gap:6px">
+            <label class="sub hide" id="ps-to-wrap" style="margin:0;display:flex;flex-direction:column;gap:4px">
               <span>To</span>
-              <input id="ps-to" type="date" title="Leave blank for single date">
+              <input id="ps-to" type="date" title="End of range">
             </label>
-            <button class="btn ghost" type="button" id="ps-preview">Preview count</button>
-            <button class="btn solid" type="button" id="ps-print">Print sheet</button>
+            <div>
+              <label class="sub" for="ps-sort" style="display:block;margin:0 0 4px">Sort</label>
+              <select id="ps-sort" aria-label="Sort results">
+                <option value="date">Date</option>
+                <option value="name">Customer name</option>
+                <option value="product">Product</option>
+              </select>
+            </div>
+            <button class="btn ghost" type="button" id="ps-refresh">Refresh</button>
+            <button class="btn solid" type="button" id="ps-print">Print results</button>
           </div>
           <p class="sub hide" id="ps-status" style="margin:8px 0 0"></p>
+          <div id="ps-results" class="hide">
+            <div class="table-wrap">
+              <table class="oe">
+                <thead><tr>
+                  <th>Date</th><th>Order</th><th>Customer</th><th>Phone</th><th>Product</th><th>Qty / weight</th><th>Options</th>
+                </tr></thead>
+                <tbody id="ps-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+          <p class="empty hide" id="ps-empty">No matching order lines for this product and date.</p>
         </div>
       </section>
 
@@ -2805,7 +2842,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     updateSideOrderCartVisibility();
     if (meta.view === 'dashboard') startDashCutoffTimer();
     else stopDashCutoffTimer();
-    if (['customers', 'products', 'new', 'orders'].indexOf(meta.view) >= 0) {
+    if (['customers', 'products', 'new', 'orders', 'supply'].indexOf(meta.view) >= 0) {
       warmCatalogCache().catch(function(){});
     }
     loadCurrentView().then(function(){
@@ -9133,24 +9170,159 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
 
   function psDateRange(){
     var from = ($('ps-from') && $('ps-from').value) || ($('supply-date') && $('supply-date').value) || '';
-    var to = ($('ps-to') && $('ps-to').value) || '';
+    var mode = ($('ps-date-mode') && $('ps-date-mode').value) || 'single';
+    var to = '';
+    if (mode === 'range') {
+      to = ($('ps-to') && $('ps-to').value) || '';
+      if (!to) to = from;
+    } else {
+      to = from;
+    }
     if (!from) return null;
-    if (!to) to = from;
     if (to < from) {
       var swap = from;
       from = to;
       to = swap;
     }
-    return { from: from, to: to };
+    return { from: from, to: to, mode: mode };
   }
 
-  async function previewProductSheet(){
+  function syncPsDateModeUi(){
+    var mode = ($('ps-date-mode') && $('ps-date-mode').value) || 'single';
+    var wrap = $('ps-to-wrap');
+    var label = $('ps-from-label');
+    if (wrap) wrap.classList.toggle('hide', mode !== 'range');
+    if (label) label.textContent = mode === 'range' ? 'From' : 'Date';
+    if (mode === 'single' && $('ps-to')) $('ps-to').value = '';
+  }
+
+  var psLiveTimer = null;
+  var psLiveSeq = 0;
+  var psState = { rows: [], lastQ: '' };
+
+  function renderPsSuggest(q){
+    var list = $('ps-suggest');
+    if (!list) return;
+    var needle = String(q || '').trim();
+    if (needle.length < 1) {
+      list.classList.add('hide');
+      list.innerHTML = '';
+      return;
+    }
+    var items = filterProducts(needle);
+    var html = '';
+    html += '<li data-ps-action="contains" class="ps-suggest-action">Search all containing “' + esc(needle) + '”</li>';
+    if (!items.length) {
+      html += '<li class="muted">No catalogue matches — still searches order lines</li>';
+    } else {
+      html += items.map(function(p){
+        return '<li data-ps-id="' + esc(p.id) + '">' + esc(productLabel(p)) + '</li>';
+      }).join('');
+    }
+    list.innerHTML = html;
+    list.classList.remove('hide');
+    list.querySelectorAll('li[data-ps-id]').forEach(function(li){
+      li.addEventListener('mousedown', function(ev){
+        ev.preventDefault();
+        var p = (state.products || []).find(function(x){ return x.id === li.getAttribute('data-ps-id'); });
+        if (!p) return;
+        if ($('ps-q')) $('ps-q').value = p.name || productLabel(p);
+        if ($('ps-mode')) $('ps-mode').value = 'exact';
+        list.classList.add('hide');
+        list.innerHTML = '';
+        previewProductSheet({ live: true });
+      });
+    });
+    var contains = list.querySelector('[data-ps-action="contains"]');
+    if (contains) {
+      contains.addEventListener('mousedown', function(ev){
+        ev.preventDefault();
+        if ($('ps-mode')) $('ps-mode').value = 'partial';
+        list.classList.add('hide');
+        list.innerHTML = '';
+        previewProductSheet({ live: true });
+      });
+    }
+  }
+
+  function closePsSuggest(){
+    var list = $('ps-suggest');
+    if (!list) return;
+    list.classList.add('hide');
+    list.innerHTML = '';
+  }
+
+  function renderPsResults(rows, meta){
+    meta = meta || {};
+    var tbody = $('ps-tbody');
+    var wrap = $('ps-results');
+    var empty = $('ps-empty');
+    var status = $('ps-status');
+    if (!tbody) return;
+    psState.rows = rows || [];
+    if (!(rows || []).length) {
+      tbody.innerHTML = '';
+      if (wrap) wrap.classList.add('hide');
+      if (empty) {
+        empty.classList.remove('hide');
+        empty.textContent = meta.searched
+          ? 'No matching order lines for this product and date.'
+          : 'Type a product name to see matching orders.';
+      }
+      if (status) {
+        status.classList.remove('hide');
+        status.textContent = meta.searched ? '0 matches' : '';
+        if (!meta.searched) status.classList.add('hide');
+      }
+      return;
+    }
+    if (empty) empty.classList.add('hide');
+    if (wrap) wrap.classList.remove('hide');
+    tbody.innerHTML = rows.map(function(r){
+      return '<tr>' +
+        '<td>' + esc(r.pickup_date || '—') + '</td>' +
+        '<td><strong>' + esc(r.order_number || '—') + '</strong></td>' +
+        '<td>' + esc(r.customer_name || '—') + '</td>' +
+        '<td>' + esc(r.customer_phone || '—') + '</td>' +
+        '<td><strong>' + esc(r.product_name || '—') + '</strong>' +
+          (r.notes ? '<div class="notice">' + esc(r.notes) + '</div>' : '') +
+        '</td>' +
+        '<td>' + esc(r.qty_label || '—') + '</td>' +
+        '<td>' + esc(r.options || '—') + '</td>' +
+      '</tr>';
+    }).join('');
+    if (status) {
+      status.classList.remove('hide');
+      var msg =
+        (meta.match_count || rows.length) + ' matching line' + ((meta.match_count || rows.length) === 1 ? '' : 's') +
+        ' across ' + (meta.order_count != null ? meta.order_count : '—') + ' order' +
+        ((meta.order_count === 1) ? '' : 's');
+      if (meta.from && meta.to) {
+        msg += meta.from === meta.to ? (' (' + meta.from + ')') : (' (' + meta.from + ' to ' + meta.to + ')');
+      }
+      status.textContent = msg;
+    }
+  }
+
+  async function previewProductSheet(opts){
+    opts = opts || {};
     if (!requireSite()) return;
     var q = ($('ps-q') && $('ps-q').value || '').trim();
-    if (!q) { toast('Enter a product name', 'err'); return; }
-    var range = psDateRange();
-    if (!range) { toast('Pick a from date', 'err'); return; }
     var status = $('ps-status');
+    if (!q) {
+      renderPsResults([], { searched: false });
+      return;
+    }
+    var range = psDateRange();
+    if (!range) {
+      if (!opts.live) toast('Pick a date', 'err');
+      if (status) {
+        status.classList.remove('hide');
+        status.textContent = 'Pick a date to search orders.';
+      }
+      return;
+    }
+    var seq = ++psLiveSeq;
     if (status) {
       status.classList.remove('hide');
       status.textContent = 'Searching…';
@@ -9159,23 +9331,30 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       var params =
         'product_q=' + encodeURIComponent(q) +
         '&product_mode=' + encodeURIComponent(($('ps-mode') && $('ps-mode').value) || 'partial') +
+        '&sort=' + encodeURIComponent(($('ps-sort') && $('ps-sort').value) || 'date') +
         '&pickup_from=' + encodeURIComponent(range.from) +
         '&pickup_to=' + encodeURIComponent(range.to);
       var data = await api('/api/order/product-search?' + siteQuery(params));
-      var msg =
-        (data.match_count || 0) + ' matching line' + (data.match_count === 1 ? '' : 's') +
-        ' across ' + (data.order_count || 0) + ' order' + (data.order_count === 1 ? '' : 's');
-      if (range.from !== range.to) {
-        msg += ' (' + range.from + ' to ' + range.to + ')';
-      } else {
-        msg += ' (' + range.from + ')';
-      }
-      if (status) status.textContent = msg;
-      if (!data.match_count) toast('No matches — try Contains instead of Exact', 'warn');
+      if (seq !== psLiveSeq) return;
+      psState.lastQ = q;
+      renderPsResults(data.rows || [], {
+        searched: true,
+        match_count: data.match_count,
+        order_count: data.order_count,
+        from: range.from,
+        to: range.to
+      });
+      if (!opts.live && !data.match_count) toast('No matches — try Contains instead of Exact', 'warn');
     } catch (e) {
+      if (seq !== psLiveSeq) return;
       if (status) status.textContent = (e && e.message) || String(e);
-      toast((e && e.message) || String(e), 'err');
+      if (!opts.live) toast((e && e.message) || String(e), 'err');
     }
+  }
+
+  function schedulePsLiveSearch(){
+    clearTimeout(psLiveTimer);
+    psLiveTimer = setTimeout(function(){ previewProductSheet({ live: true }); }, 280);
   }
 
   function printProductSheet(autoprint){
@@ -9183,7 +9362,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     var q = ($('ps-q') && $('ps-q').value || '').trim();
     if (!q) { toast('Enter a product name', 'err'); return; }
     var range = psDateRange();
-    if (!range) { toast('Pick a from date', 'err'); return; }
+    if (!range) { toast('Pick a date', 'err'); return; }
     var extra =
       'format=product_sheet' +
       '&product_q=' + encodeURIComponent(q) +
@@ -9193,13 +9372,59 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     openPrint(extra, autoprint);
   }
 
-  if ($('ps-preview')) $('ps-preview').addEventListener('click', previewProductSheet);
-  if ($('ps-print')) $('ps-print').addEventListener('click', function(){ printProductSheet(false); });
-  if ($('supply-date')) {
-    $('supply-date').addEventListener('change', function(){
-      if ($('ps-from') && !$('ps-from').value) $('ps-from').value = $('supply-date').value;
+  function wireProductSearchSheet(){
+    if (!$('ps-q')) return;
+    syncPsDateModeUi();
+    if ($('ps-from') && !$('ps-from').value && $('supply-date') && $('supply-date').value) {
+      $('ps-from').value = $('supply-date').value;
+    }
+    loadProductsCache({ activeOnly: true }).catch(function(){});
+
+    $('ps-q').addEventListener('focus', function(){
+      renderPsSuggest($('ps-q').value);
     });
+    $('ps-q').addEventListener('input', function(){
+      renderPsSuggest($('ps-q').value);
+      schedulePsLiveSearch();
+    });
+    $('ps-q').addEventListener('keydown', function(ev){
+      if (ev.key === 'Escape') { closePsSuggest(); return; }
+      if (ev.key === 'Enter') {
+        var list = $('ps-suggest');
+        var first = list && list.querySelector('li[data-ps-id], li[data-ps-action]');
+        if (first && list && !list.classList.contains('hide')) {
+          ev.preventDefault();
+          first.dispatchEvent(new Event('mousedown'));
+        } else {
+          closePsSuggest();
+          previewProductSheet({ live: true });
+        }
+      }
+    });
+    $('ps-q').addEventListener('blur', function(){ setTimeout(closePsSuggest, 160); });
+
+    ['ps-mode', 'ps-sort', 'ps-from', 'ps-to'].forEach(function(id){
+      if ($(id)) $(id).addEventListener('change', function(){ schedulePsLiveSearch(); });
+    });
+    if ($('ps-date-mode')) {
+      $('ps-date-mode').addEventListener('change', function(){
+        syncPsDateModeUi();
+        schedulePsLiveSearch();
+      });
+    }
+    if ($('ps-refresh')) $('ps-refresh').addEventListener('click', function(){ previewProductSheet({ live: false }); });
+    if ($('ps-print')) $('ps-print').addEventListener('click', function(){ printProductSheet(false); });
+    if ($('supply-date')) {
+      $('supply-date').addEventListener('change', function(){
+        if ($('ps-from') && (!$('ps-from').value || ($('ps-date-mode') && $('ps-date-mode').value === 'single'))) {
+          $('ps-from').value = $('supply-date').value;
+          schedulePsLiveSearch();
+        }
+      });
+    }
   }
+
+  wireProductSearchSheet();
   if ($('supply-print-run')) $('supply-print-run').addEventListener('click', function(){ supplyPrint('day_run'); });
   if ($('supply-print-pick')) $('supply-print-pick').addEventListener('click', function(){ supplyPrint('pick_list'); });
   if ($('supply-print-prep')) $('supply-print-prep').addEventListener('click', function(){ supplyPrint('prep'); });
