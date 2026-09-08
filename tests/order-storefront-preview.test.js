@@ -107,3 +107,10 @@ test('render inject uses unified --oe-\* catalogue tokens', function () {
   assert.match(render, /lp-order-storefront\.js\?v=oe-18/);
   assert.match(render, /--lp-oe-page-bg:/);
 });
+
+test('api/render.js parses (syntax check — prevents total /api/render 500s)', function () {
+  var { spawnSync } = require('child_process');
+  var file = path.join(__dirname, '..', 'api/render.js');
+  var r = spawnSync(process.execPath, ['--check', file], { encoding: 'utf8' });
+  assert.equal(r.status, 0, (r.stderr || r.stdout || 'node --check failed').trim());
+});
