@@ -205,11 +205,73 @@ module.exports = async function (req, res) {
     }
 
     // create
-    if (!body.service_id || !body.starts_at) {
+    if (!body.service_id) {
+      return json(res, 400, { ok: false, error: 'service_required' });
+    }
+    const { data: service } = await admin
+      .from('booking_services')
+      .select('*')
+      .eq('id', body.service_id)
+      .eq('booking_system_id', system.id)
+      .maybeSingle();
+    if (!service) return json(res, 404, { ok: false, error: 'service_not_found' });
+
+    if (service.booking_type === 'resource_hire' || body.resource_id) {
+      if (!body.resource_id || !(body.pickup_ymd || body.starts_at)) {
+        return json(res, 400, { ok: false, error: 'hire_fields_required' });
+      }
+      const { data: resource } = await admin
+        .from('booking_resources')
+        .select('*')
+        .eq('id', body.resource_id)
+        .eq('booking_system_id', system.id)
+        .maybeSingle();
+      if (!resource) return json(res, 404, { ok: false, error: 'resource_not_found' });
+      let pickupYmd = body.pickup_ymd;
+      let pickupHm = body.pickup_hm || '09:00';
+      if (!pickupYmd && body.starts_at) {
+        const d = new Date(body.starts_at);
+        pickupYmd = d.toISOString().slice(0, 10);
+        pickupHm =
+          String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0');
+      }
+      try {
+        const { createHireBooking } = require('../../lib/bookings/hire/service');
+        const result = await createHireBooking({
+          admin: admin,
+          system: system,
+          service: service,
+          resource: resource,
+          pickupYmd: pickupYmd,
+          pickupHm: pickupHm,
+          durationMode: body.duration_mode || 'single_block',
+          hireDays: body.hire_days || 1,
+          returnYmd: body.return_ymd,
+          returnHm: body.return_hm,
+          extras: body.extras,
+          customerName: body.customer_name || body.name,
+          customerEmail: body.customer_email || body.email,
+          customerPhone: body.customer_phone || body.phone,
+          customerNotes: body.customer_notes,
+          internalNotes: body.internal_notes,
+          capacityOverride: !!body.capacity_override || !!body.force,
+          capacityOverrideReason: body.capacity_override_reason || body.force_reason || '',
+          actorUserId: user.id,
+          source: 'admin',
+          status: body.status || 'confirmed',
+          idempotencyKey: body.idempotency_key || null
+        });
+        if (!result.ok) return json(res, 409, result);
+        return json(res, 200, result);
+      } catch (e) {
+        console.error('hire create', e && e.message);
+        return json(res, 500, { ok: false, error: 'hire_create_failed', message: e.message });
+      }
+    }
+
+    if (!body.starts_at) {
       return json(res, 400, { ok: false, error: 'service_and_start_required' });
     }
-    const { data: service } = await admin.from('booking_services').select('*').eq('id', body.service_id).eq('booking_system_id', system.id).maybeSingle();
-    if (!service) return json(res, 404, { ok: false, error: 'service_not_found' });
     try {
       const result = await createBooking({
         system: system,

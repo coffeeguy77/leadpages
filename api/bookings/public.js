@@ -47,6 +47,21 @@ module.exports = async function (req, res) {
       .eq('status', 'active')
       .neq('visibility', 'private')
       .order('sort_order');
+    const hireServices = (services || []).filter(function (s) {
+      return s.booking_type === 'resource_hire';
+    });
+    let hireResources = [];
+    if (hireServices.length) {
+      const { data: resources } = await admin
+        .from('booking_resources')
+        .select(
+          'id,name,public_name,resource_type,calendar_colour,image_url,hire_status,default_daily_rate_cents,bond_cents,short_description,description'
+        )
+        .eq('booking_system_id', pub.system.id)
+        .neq('hire_status', 'archived')
+        .order('name');
+      hireResources = resources || [];
+    }
     const { data: team } = await admin
       .from('booking_team_members')
       .select('id,display_name,job_title,bio,photo_url,colour')
@@ -72,6 +87,7 @@ module.exports = async function (req, res) {
       },
       categories: categories || [],
       services: services || [],
+      hire_resources: hireResources,
       team: team || [],
       site: { slug: pub.site.slug }
     });
@@ -84,8 +100,12 @@ module.exports = async function (req, res) {
     const pub = await loadPublic(slug);
     if (!pub) return json(res, 404, { ok: false, error: 'not_found' });
 
-    if (!body.service_id || !body.starts_at || !body.customer_name) {
+    const isHireRequest = !!(body.resource_id || body.booking_type === 'resource_hire');
+    if (!body.service_id || !body.customer_name || (!isHireRequest && !body.starts_at)) {
       return json(res, 400, { ok: false, error: 'missing_fields' });
+    }
+    if (isHireRequest && !(body.pickup_ymd || body.starts_at)) {
+      return json(res, 400, { ok: false, error: 'hire_pickup_required' });
     }
     if (!body.customer_email && !body.customer_phone) {
       return json(res, 400, { ok: false, error: 'contact_required' });
@@ -99,6 +119,82 @@ module.exports = async function (req, res) {
       .eq('status', 'active')
       .maybeSingle();
     if (!service) return json(res, 404, { ok: false, error: 'service_not_found' });
+
+    // Vehicle / equipment hire path
+    if (
+      service.booking_type === 'resource_hire' ||
+      body.booking_type === 'resource_hire' ||
+      body.resource_id
+    ) {
+      if (!body.resource_id || !(body.pickup_ymd || body.starts_at) || !body.customer_name) {
+        return json(res, 400, { ok: false, error: 'hire_fields_required' });
+      }
+      const { data: resource } = await admin
+        .from('booking_resources')
+        .select('*')
+        .eq('id', body.resource_id)
+        .eq('booking_system_id', pub.system.id)
+        .maybeSingle();
+      if (!resource) return json(res, 404, { ok: false, error: 'resource_not_found' });
+
+      let pickupYmd = body.pickup_ymd;
+      let pickupHm = body.pickup_hm || '09:00';
+      if (!pickupYmd && body.starts_at) {
+        const d = new Date(body.starts_at);
+        pickupYmd = d.toISOString().slice(0, 10);
+        pickupHm =
+          String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0');
+      }
+
+      const { createHireBooking } = require('../../lib/bookings/hire/service');
+      const hireResult = await createHireBooking({
+        admin: admin,
+        system: pub.system,
+        service: service,
+        resource: resource,
+        pickupYmd: pickupYmd,
+        pickupHm: pickupHm,
+        durationMode: body.duration_mode || 'single_block',
+        hireDays: body.hire_days || 1,
+        returnYmd: body.return_ymd,
+        returnHm: body.return_hm,
+        extras: body.extras,
+        customerName: body.customer_name,
+        customerEmail: body.customer_email,
+        customerPhone: body.customer_phone,
+        customerNotes: body.customer_notes,
+        paymentAuthorityAccepted: !!body.payment_authority_accepted,
+        cancellationPolicyAccepted: !!body.cancellation_policy_accepted,
+        source: 'public',
+        status: body.status || 'pending',
+        idempotencyKey: body.idempotency_key || null
+      });
+      if (!hireResult.ok) return json(res, 409, hireResult);
+
+      const portal = await issuePortalToken(hireResult.booking, 'manage', 168);
+      return json(res, 200, {
+        ok: true,
+        booking: {
+          id: hireResult.booking.id,
+          reference: hireResult.booking.reference,
+          status: hireResult.booking.status,
+          starts_at: hireResult.booking.starts_at,
+          ends_at: hireResult.booking.ends_at,
+          timezone: hireResult.booking.timezone || pub.system.timezone,
+          total_cents: hireResult.booking.total_cents,
+          deposit_cents: hireResult.booking.deposit_cents,
+          payment_status: hireResult.booking.payment_status,
+          service_name: service.name,
+          booking_type: 'resource_hire'
+        },
+        hire: hireResult.hire,
+        quote: hireResult.quote,
+        window: hireResult.window,
+        portal_token: portal.token,
+        portal_url: '/booking-portal?t=' + encodeURIComponent(portal.token),
+        terminology: hireResult.terminology
+      });
+    }
 
     const quote = quoteBooking({
       system: pub.system,
