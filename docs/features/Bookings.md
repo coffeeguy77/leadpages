@@ -1,7 +1,7 @@
 # Bookings — Native LeadPages scheduling app
 
 **Document:** `features/Bookings`  
-**Status:** Phase 1–4 foundation + payments / waitlist / customers slice  
+**Status:** Phase 1–4 foundation + payments / waitlist / customers + vehicle/equipment hire mode  
 **Audience:** Engineers and AI agents  
 **Prerequisites:** [INDEX](../INDEX.md), [02-DATABASE](../02-DATABASE.md), [Order Engine](Order%20Engine.md), [Marketplace](Marketplace.md)
 
@@ -37,7 +37,7 @@ Native LeadPages **Bookings** app for appointments, classes/events, on-site visi
 | Square payments | Not integrated | Stripe + manual / pay later only; Square boundary stubbed |
 | Fine-grained staff RBAC | Owner/partner/super only | Same access model as Orders for v1; team members may be non-users |
 | Shared CRM customers | Leads ≠ order_customers | Dedicated `booking_customers` with phone/email dedupe (merge UI later) |
-| Google/Outlook sync | None | Schema + connection stubs; sync Phase 5 |
+| Google/Outlook sync | Hire Google Calendar + Contacts OAuth live (Leadpages-authoritative) | Outlook still later |
 | Full automations builder | None | Confirmation + 24h reminder rows enqueued on create |
 | AI naming | Brain exists | Not required for v1 operational release |
 
@@ -118,6 +118,57 @@ Deposit rules: system `payment_rule` / service override → `quoteBooking`.
 Rows land in `booking_notifications` on create (confirmation + optional 24h reminder).  
 Cron `/api/cron/bookings-notify` sends via Resend (`RESEND_API_KEY`, optional `BOOKINGS_FROM`) / Twilio for SMS.
 
+Hire Google reconciliation: `/api/cron/bookings-hire-google-sync` every 15 minutes (Leadpages-authoritative restore).
+
+---
+
+## Vehicle & equipment hire mode
+
+Configurable hire booking type on top of the shared Bookings subsystem (not a truck-only fork).
+
+### Implementation map (extend, don’t duplicate)
+
+| Concern | Existing module | Hire extension |
+|---------|-----------------|----------------|
+| Resources | `booking_resources` | Hire profile columns + `db/bookings_hire.sql` |
+| Availability | `lib/bookings/availability.js` | `lib/bookings/hire/duration.js` + `capacity.js` |
+| Pricing | `lib/bookings/pricing.js` | `lib/bookings/hire/pricing.js` (daily × days, bond, snapshot) |
+| Customers | `booking_customers` | Driver/licence fields on hire details; Google/Xero contact links |
+| Payments | Stripe Checkout | SetupIntent card-on-file (`hire/card-on-file.js`) |
+| Notifications | `booking_notifications` + cron | Same outbox; 72h/24h hire reminders via settings |
+| Audit | `booking_activity` / audit events | Lock, capacity override, reschedule, sync events |
+| Documents | — | Rental agreement templates/versions |
+| Google | — | OAuth + Calendar authoritative sync + Contacts |
+| Xero | — | OAuth + contacts/invoices/payments |
+
+### Defaults (truck-hire customer)
+
+- Terminology: Truck / Trucks / Hire Booking / Hirer (configurable)
+- Single-day duration: **23h 55m** timed event (configurable to 23h 59m)
+- Calendar drag: **off**; unlock + Change dates workflow required
+- Daily fleet capacity: **4** jobs/day (multi-day counts every occupied day)
+- Google Calendar authority: **Leadpages**
+- Cancellation: >48h none · 24–48h $50 · <24h retain rental; reschedule preserves fee floor
+
+### Key APIs
+
+- `POST /api/bookings/hire/quote`
+- `POST /api/bookings/hire/bookings` (`create`, `unlock`, `change_dates`, `cancel_preview`, `setup_card`, `save_card`, `generate_agreement`)
+- `GET /api/bookings/hire/fleet-calendar`
+- `GET|POST /api/bookings/google?action=…`
+- `GET|POST /api/bookings/xero?action=…`
+
+### Env still required for live integrations
+
+- `BOOKINGS_OAUTH_ENCRYPTION_KEY` (or `GOOGLE_ADS_OAUTH_ENCRYPTION_KEY`)
+- `GOOGLE_BOOKINGS_CLIENT_ID` / `GOOGLE_BOOKINGS_CLIENT_SECRET` / redirect URI
+- `XERO_CLIENT_ID` / `XERO_CLIENT_SECRET` / redirect URI
+- Existing `STRIPE_SECRET_KEY` for SetupIntents
+
+### Apply schema
+
+Bootstrap now also runs `db/bookings_hire.sql`, or apply manually after `bookings_schema.sql`.
+
 ---
 
 ## Tests
@@ -135,3 +186,4 @@ node --test tests/bookings-*.test.js
 - Never store card PANs; never add `stripe` npm solely for Checkout — use fetch + HMAC like Order Engine.
 - Soft-delete / archive services and team; keep booking history.
 - AI must not auto-confirm, reprice, or send without explicit automation/user approval.
+- Hire mode must not break appointment/class/visit booking types.

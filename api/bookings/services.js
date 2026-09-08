@@ -105,7 +105,7 @@ module.exports = async function (req, res) {
         booking_system_id: system.id,
         site_id: system.site_id,
         name: name,
-        resource_type: body.resource_type || 'room',
+        resource_type: body.resource_type || 'vehicle',
         description: body.description || '',
         quantity: Math.max(1, Number(body.quantity) || 1)
       }).select('*').single();

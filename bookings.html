@@ -72,6 +72,7 @@ body.embed .nav h1{font-size:13px}
     <h1>Bookings</h1>
     <button type="button" data-view="overview" class="on">Overview</button>
     <button type="button" data-view="calendar">Calendar</button>
+    <button type="button" data-view="fleet">Fleet calendar</button>
     <button type="button" data-view="bookings">Bookings</button>
     <button type="button" data-view="customers">Customers</button>
     <button type="button" data-view="services">Services</button>
@@ -94,6 +95,7 @@ body.embed .nav h1{font-size:13px}
     <p class="msg bad hidden" id="flash"></p>
     <section id="view-overview"></section>
     <section id="view-calendar" class="hidden"></section>
+    <section id="view-fleet" class="hidden"></section>
     <section id="view-bookings" class="hidden"></section>
     <section id="view-customers" class="hidden"></section>
     <section id="view-services" class="hidden"></section>
@@ -136,11 +138,12 @@ body.embed .nav h1{font-size:13px}
   function setView(v){
     state.view=v;
     document.querySelectorAll('.nav [data-view]').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-view')===v); });
-    ['overview','calendar','bookings','customers','services','team','settings','onboarding'].forEach(function(id){
+    ['overview','calendar','fleet','bookings','customers','services','team','settings','onboarding'].forEach(function(id){
       show($('view-'+id), id===v);
     });
     if(v==='overview') loadOverview();
     if(v==='calendar') loadCalendar();
+    if(v==='fleet') loadFleetCalendar();
     if(v==='bookings') loadBookings();
     if(v==='customers') loadCustomers();
     if(v==='services') loadServices();
@@ -252,6 +255,53 @@ body.embed .nav h1{font-size:13px}
     $('view-calendar').innerHTML=html;
   }
 
+  async function loadFleetCalendar(){
+    if(!state.siteId) return;
+    var from=new Date(); from.setHours(0,0,0,0);
+    var to=new Date(from); to.setDate(to.getDate()+7);
+    var j=await api('/api/bookings/hire/fleet-calendar?site_id='+encodeURIComponent(state.siteId)
+      +'&from='+encodeURIComponent(from.toISOString())
+      +'&to='+encodeURIComponent(to.toISOString())).catch(function(err){
+        return { ok:false, error: err.message, resources:[], events:[], terminology:{ singular:'Resource', plural:'Resources' }, settings:{} };
+      });
+    var terms=j.terminology||{ singular:'Truck', plural:'Trucks' };
+    var html='<div class="card"><div class="top"><h2>'+esc(terms.fleet_calendar|| (terms.singular+' calendar'))+'</h2>'
+      +'<div><button class="btn solid" type="button" id="hire-new">New hire booking</button></div></div>'
+      +'<p class="sub">Locked timed hire blocks (default 23h 55m). Drag is '
+      +(j.settings&&j.settings.allow_calendar_drag?'enabled':'off by default')
+      +'. Daily capacity: '+(j.settings&&j.settings.max_daily_hire_jobs||4)+'.</p>';
+    if(j.error) html+='<p class="msg bad">'+esc(j.error)+' — apply <code>db/bookings_hire.sql</code> if hire tables are missing.</p>';
+    html+='<div style="display:grid;gap:10px">';
+    (j.resources||[]).forEach(function(r){
+      var color=r.eventColor||'#155c4a';
+      var items=(j.events||[]).filter(function(e){
+        return (e.resourceIds||[]).indexOf(r.id)>=0 || (e.extendedProps&&e.extendedProps.resource_name===r.title);
+      });
+      html+='<div class="card" style="border-left:6px solid '+esc(color)+'">'
+        +'<div class="top"><strong>'+esc(r.title)+'</strong>'
+        +'<span class="badge">'+esc(r.hire_status||'active')+'</span>'
+        +(r.registration_number?'<span class="sub">'+esc(r.registration_number)+'</span>':'')
+        +'</div>';
+      if(!items.length) html+='<p class="sub">No hire bookings this week</p>';
+      items.forEach(function(e){
+        var xp=e.extendedProps||{};
+        html+='<div class="cal-item" data-open="'+esc(e.id)+'" style="border-left-color:'+esc(color)+'">'
+          +'<strong>'+(xp.locked?'🔒 ':'')+esc(e.title)+'</strong>'
+          +'<div class="sub">'+esc(new Date(e.start).toLocaleString())+' → '+esc(new Date(e.end).toLocaleString())
+          +' · <span class="badge">'+esc(xp.status||'')+'</span>'
+          +' · pay '+esc(xp.payment_status||'')
+          +(xp.capacity_override?' · capacity override':'')
+          +'</div></div>';
+      });
+      html+='</div>';
+    });
+    if(!(j.resources||[]).length){
+      html+='<p class="sub">No hire resources yet. Add vehicles/equipment under Team &amp; Resources, then mark services as resource hire.</p>';
+    }
+    html+='</div></div>';
+    $('view-fleet').innerHTML=html;
+  }
+
   async function loadBookings(){
     if(!state.siteId) return;
     var j=await api('/api/bookings/bookings?site_id='+encodeURIComponent(state.siteId));
@@ -292,6 +342,7 @@ body.embed .nav h1{font-size:13px}
     var j=await api('/api/bookings/services?site_id='+encodeURIComponent(state.siteId));
     state.services=j.services||[];
     state.team=j.team||[];
+    state.resources=j.resources||[];
     $('view-services').innerHTML=
       '<div class="card"><div class="top"><h2>Services</h2><button class="btn solid" type="button" id="add-service">Add service</button></div>'
       +'<table class="table"><thead><tr><th>Name</th><th>Type</th><th>Duration</th><th>Price</th><th>Status</th><th></th></tr></thead><tbody>'
@@ -317,6 +368,8 @@ body.embed .nav h1{font-size:13px}
 
   function paintSettings(){
     var s=state.system||{};
+    var hire=(s.settings&&s.settings.hire)||{};
+    var terms=hire.terminology||{};
     $('view-settings').innerHTML=
       '<div class="card"><h2>Settings</h2>'
       +'<div class="field"><label>Business name</label><input id="set-name" value="'+esc(s.business_name||'')+'"></div>'
@@ -329,7 +382,27 @@ body.embed .nav h1{font-size:13px}
       +'<div class="field"><label>Deposit (cents)</label><input id="set-dep" type="number" value="'+(s.deposit_amount_cents||0)+'"></div>'
       +'<label class="ck"><input type="checkbox" id="set-on"'+(s.enabled?' checked':'')+'> System enabled</label>'
       +'<div style="margin-top:12px"><button class="btn solid" type="button" id="save-settings">Save</button>'
-      +'<button class="btn ghost" type="button" id="seed-hours">Seed Mon–Fri 9–5</button></div></div>';
+      +'<button class="btn ghost" type="button" id="seed-hours">Seed Mon–Fri 9–5</button></div></div>'
+      +'<div class="card"><h2>Vehicle &amp; equipment hire</h2>'
+      +'<p class="sub">Configurable hire mode (trucks, trailers, plant, rooms, etc). Defaults suit truck hire.</p>'
+      +'<div class="grid">'
+      +'<div class="field"><label>Singular label</label><input id="hire-term-s" value="'+esc(terms.singular||'Truck')+'"></div>'
+      +'<div class="field"><label>Plural label</label><input id="hire-term-p" value="'+esc(terms.plural||'Trucks')+'"></div>'
+      +'<div class="field"><label>Customer label</label><input id="hire-term-c" value="'+esc(terms.customer||'Hirer')+'"></div>'
+      +'<div class="field"><label>Default block (minutes)</label><select id="hire-dur">'
+      +[[1435,'23h 55m'],[1439,'23h 59m']].map(function(o){
+        return '<option value="'+o[0]+'"'+((Number(hire.default_duration_minutes)||1435)===o[0]?' selected':'')+'>'+o[1]+'</option>';
+      }).join('')
+      +'</select></div>'
+      +'<div class="field"><label>Max daily hire jobs</label><input id="hire-cap" type="number" min="1" value="'+(hire.max_daily_hire_jobs||4)+'"></div>'
+      +'</div>'
+      +'<label class="ck"><input type="checkbox" id="hire-drag"'+(hire.allow_calendar_drag?' checked':'')+'> Allow calendar drag-and-drop (default off)</label>'
+      +'<div style="margin-top:12px"><button class="btn solid" type="button" id="save-hire-settings">Save hire settings</button></div>'
+      +'<div style="margin-top:16px;display:flex;flex-wrap:wrap;gap:8px">'
+      +'<button class="btn" type="button" id="hire-google-connect">Connect Google</button>'
+      +'<button class="btn ghost" type="button" id="hire-google-sync">Sync Google now</button>'
+      +'<button class="btn" type="button" id="hire-xero-connect">Connect Xero</button>'
+      +'</div><p class="sub" id="hire-integ-status"></p></div>';
   }
 
   function paintOnboarding(){
@@ -377,24 +450,45 @@ body.embed .nav h1{font-size:13px}
     side.dataset.id=b.id;
   }
 
-  function openNewBooking(){
+  function openNewBooking(mode){
+    var hireMode=mode==='hire';
     var side=$('side');
     show(side,true);
+    side.dataset.mode=hireMode?'hire':'appointment';
+    var hireServices=state.services.filter(function(s){
+      return s.status==='active' && (!hireMode || s.booking_type==='resource_hire' || s.booking_type==='resource_hire' || (s.booking_types||[]).indexOf('resource_hire')>=0);
+    });
+    if(hireMode && !hireServices.length) hireServices=state.services.filter(function(s){ return s.status==='active'; });
     side.innerHTML=
       '<button class="btn ghost" type="button" id="side-close">Close</button>'
-      +'<h2>New booking</h2>'
+      +'<h2>'+(hireMode?'New hire booking':'New booking')+'</h2>'
       +'<div class="field"><label>Service</label><select id="nb-svc">'
-      +state.services.filter(function(s){return s.status==='active';}).map(function(s){
+      +hireServices.map(function(s){
         return '<option value="'+esc(s.id)+'">'+esc(s.name)+'</option>';
       }).join('')
       +'</select></div>'
+      +(hireMode
+        ? '<div class="field"><label>Resource / vehicle</label><select id="nb-resource">'
+          +(state.resources||[]).map(function(r){
+            return '<option value="'+esc(r.id)+'">'+esc(r.public_name||r.name)+'</option>';
+          }).join('')
+          +'</select></div>'
+          +'<div class="field"><label>Pickup date</label><input id="nb-pickup-date" type="date"></div>'
+          +'<div class="field"><label>Pickup time</label><input id="nb-pickup-time" type="time" value="09:00"></div>'
+          +'<div class="field"><label>Duration</label><select id="nb-dur-mode">'
+          +'<option value="single_block">Single day (23h 55m)</option>'
+          +'<option value="multi_day">Multiple days</option>'
+          +'</select></div>'
+          +'<div class="field"><label>Hire days</label><input id="nb-hire-days" type="number" min="1" value="1"></div>'
+          +'<label class="ck"><input type="checkbox" id="nb-cap-override"> Override daily capacity (staff)</label>'
+          +'<div class="field"><label>Override reason</label><input id="nb-cap-reason" placeholder="Required when overriding"></div>'
+        : '<div class="field"><label>Start</label><input id="nb-start" type="datetime-local"></div>'
+          +'<div class="field"><label>Team member</label><select id="nb-team"><option value="">First available / unassigned</option>'
+          +state.team.map(function(t){ return '<option value="'+esc(t.id)+'">'+esc(t.display_name)+'</option>'; }).join('')
+          +'</select></div>')
       +'<div class="field"><label>Customer name</label><input id="nb-name"></div>'
       +'<div class="field"><label>Email</label><input id="nb-email" type="email"></div>'
       +'<div class="field"><label>Phone</label><input id="nb-phone"></div>'
-      +'<div class="field"><label>Start</label><input id="nb-start" type="datetime-local"></div>'
-      +'<div class="field"><label>Team member</label><select id="nb-team"><option value="">First available / unassigned</option>'
-      +state.team.map(function(t){ return '<option value="'+esc(t.id)+'">'+esc(t.display_name)+'</option>'; }).join('')
-      +'</select></div>'
       +'<button class="btn solid" type="button" id="nb-save">Save booking</button>'
       +'<p class="msg bad hidden" id="nb-msg"></p>';
   }
@@ -404,6 +498,7 @@ body.embed .nav h1{font-size:13px}
     var open=e.target.closest('[data-open]'); if(open){ openBooking(open.getAttribute('data-open')); return; }
     if(e.target.id==='side-close'){ show($('side'), false); return; }
     if(e.target.id==='btn-new'||e.target.id==='cal-new'){ if(!state.services.length) await loadServices(); openNewBooking(); return; }
+    if(e.target.id==='hire-new'){ if(!state.services.length) await loadServices(); openNewBooking('hire'); return; }
     if(e.target.id==='cal-block'){
       var title=prompt('Block title','Blocked'); if(title==null) return;
       var start=prompt('Start (local ISO or datetime-local style YYYY-MM-DDTHH:MM)'); if(!start) return;
@@ -505,18 +600,40 @@ body.embed .nav h1{font-size:13px}
     if(e.target.id==='nb-save'){
       var msg=$('nb-msg');
       try{
-        var start=new Date($('nb-start').value);
-        var j=await api('/api/bookings/bookings',{ method:'POST', body:JSON.stringify({
-          site_id:state.siteId,
-          service_id:$('nb-svc').value,
-          customer_name:$('nb-name').value.trim(),
-          customer_email:$('nb-email').value.trim(),
-          customer_phone:$('nb-phone').value.trim(),
-          starts_at:start.toISOString(),
-          team_member_id:$('nb-team').value||null,
-          force:true
-        })});
-        flash('Created '+j.booking.reference);
+        var side=$('side');
+        var hireMode=side && side.dataset.mode==='hire';
+        var j;
+        if(hireMode){
+          j=await api('/api/bookings/hire/bookings',{ method:'POST', body:JSON.stringify({
+            site_id:state.siteId,
+            action:'create',
+            service_id:$('nb-svc').value,
+            resource_id:$('nb-resource').value,
+            customer_name:$('nb-name').value.trim(),
+            customer_email:$('nb-email').value.trim(),
+            customer_phone:$('nb-phone').value.trim(),
+            pickup_ymd:$('nb-pickup-date').value,
+            pickup_hm:$('nb-pickup-time').value||'09:00',
+            duration_mode:$('nb-dur-mode').value==='multi_day'?'multi_day':'single_block',
+            hire_days:Number($('nb-hire-days').value)||1,
+            capacity_override:!!$('nb-cap-override').checked,
+            capacity_override_reason:($('nb-cap-reason')&&$('nb-cap-reason').value)||'',
+            idempotency_key:'hire-ui-'+Date.now()
+          })});
+        }else{
+          var start=new Date($('nb-start').value);
+          j=await api('/api/bookings/bookings',{ method:'POST', body:JSON.stringify({
+            site_id:state.siteId,
+            service_id:$('nb-svc').value,
+            customer_name:$('nb-name').value.trim(),
+            customer_email:$('nb-email').value.trim(),
+            customer_phone:$('nb-phone').value.trim(),
+            starts_at:start.toISOString(),
+            team_member_id:$('nb-team').value||null,
+            force:true
+          })});
+        }
+        flash('Created '+((j.booking&& (j.booking.reference||j.booking.id))||'booking'));
         show($('side'), false);
         setView(state.view);
       }catch(err){ msg.textContent=err.message; show(msg,true); }
@@ -541,8 +658,52 @@ body.embed .nav h1{font-size:13px}
     }
     if(e.target.id==='add-resource'){
       var rn=prompt('Resource name'); if(!rn) return;
-      await api('/api/bookings/services',{ method:'POST', body:JSON.stringify({ site_id:state.siteId, kind:'resource', name:rn }) });
+      await api('/api/bookings/services',{ method:'POST', body:JSON.stringify({ site_id:state.siteId, kind:'resource', name:rn, resource_type:'vehicle' }) });
       loadServices(); return;
+    }
+    if(e.target.id==='add-resource'){
+      var rn=prompt('Resource name'); if(!rn) return;
+      await api('/api/bookings/services',{ method:'POST', body:JSON.stringify({ site_id:state.siteId, kind:'resource', name:rn, resource_type:'vehicle' }) });
+      loadServices(); return;
+    }
+    if(e.target.id==='save-hire-settings'){
+      var settings=Object.assign({}, (state.system&&state.system.settings)||{});
+      settings.hire=Object.assign({}, settings.hire||{}, {
+        terminology:{
+          singular:$('hire-term-s').value.trim()||'Truck',
+          plural:$('hire-term-p').value.trim()||'Trucks',
+          customer:$('hire-term-c').value.trim()||'Hirer'
+        },
+        default_duration_minutes:Number($('hire-dur').value)||1435,
+        max_daily_hire_jobs:Number($('hire-cap').value)||4,
+        allow_calendar_drag:!!$('hire-drag').checked
+      });
+      await api('/api/bookings/system',{ method:'POST', body:JSON.stringify({ site_id:state.siteId, settings:settings }) });
+      flash('Hire settings saved'); loadSystem(); return;
+    }
+    if(e.target.id==='hire-google-connect'){
+      try{
+        var g=await api('/api/bookings/google?action=connect',{ method:'POST', body:JSON.stringify({ site_id:state.siteId, contacts:true }) });
+        if(g.auth_url) window.location.href=g.auth_url;
+        else flash(g.message||g.error||'Google connect failed', true);
+      }catch(err){ flash(err.message,true); }
+      return;
+    }
+    if(e.target.id==='hire-google-sync'){
+      try{
+        var gs=await api('/api/bookings/google?action=sync_now',{ method:'POST', body:JSON.stringify({ site_id:state.siteId }) });
+        flash(gs.ok?'Google sync started':'Sync failed');
+        if($('hire-integ-status')) $('hire-integ-status').textContent=JSON.stringify(gs.summary||gs);
+      }catch(err){ flash(err.message,true); }
+      return;
+    }
+    if(e.target.id==='hire-xero-connect'){
+      try{
+        var x=await api('/api/bookings/xero?action=connect',{ method:'POST', body:JSON.stringify({ site_id:state.siteId }) });
+        if(x.auth_url) window.location.href=x.auth_url;
+        else flash(x.message||x.error||'Xero connect failed', true);
+      }catch(err){ flash(err.message,true); }
+      return;
     }
     if(e.target.id==='save-settings'){
       await api('/api/bookings/system',{ method:'POST', body:JSON.stringify({

@@ -91,6 +91,36 @@ module.exports = async function (req, res) {
 
   const admin = getAdmin();
   const already = await schemaPresent(admin);
+
+  // Allow hire-only migration when base bookings schema already exists
+  if (already && body.hire_only) {
+    const url = pgUrl();
+    if (!url) {
+      return json(res, 503, {
+        ok: false,
+        error: 'postgres_url_missing',
+        message: 'POSTGRES_URL is not set. Run db/bookings_hire.sql in Supabase SQL editor.'
+      });
+    }
+    let Client;
+    try {
+      Client = require('pg').Client;
+    } catch (_e) {
+      return json(res, 503, { ok: false, error: 'pg_module_missing' });
+    }
+    const client = new Client({ connectionString: url, ssl: { rejectUnauthorized: false } });
+    try {
+      await client.connect();
+      const sql = readSql('bookings_hire.sql');
+      await client.query(sql);
+      await client.end();
+      return json(res, 200, { ok: true, applied: ['bookings_hire.sql'], hire_only: true });
+    } catch (e) {
+      try { await client.end(); } catch (_e) {}
+      return json(res, 500, { ok: false, error: 'hire_migration_failed', message: String((e && e.message) || e) });
+    }
+  }
+
   if (already && !body.force) {
     const reg = await registerApp(admin).catch(function (e) {
       return { ok: false, error: e.message };
@@ -98,7 +128,7 @@ module.exports = async function (req, res) {
     return json(res, 200, {
       ok: true,
       skipped: true,
-      message: 'booking_systems already present',
+      message: 'booking_systems already present — POST { confirm, hire_only:true } to apply hire tables only, or force:true to re-run all',
       app_registry: reg
     });
   }
@@ -132,7 +162,12 @@ module.exports = async function (req, res) {
   const applied = [];
   try {
     await client.connect();
-    for (const file of ['bookings_schema.sql', 'bookings_rls.sql', 'bookings_phase2.sql']) {
+    for (const file of [
+      'bookings_schema.sql',
+      'bookings_rls.sql',
+      'bookings_phase2.sql',
+      'bookings_hire.sql'
+    ]) {
       const sql = readSql(file);
       await client.query(sql);
       applied.push(file);
