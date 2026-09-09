@@ -111,6 +111,11 @@ describe('Layout Composer Phase 3–5 pipeline', () => {
     assert.match(html, /Loading Themes presets/);
     assert.match(html, /\/api\/layout-composer\/research/);
     assert.match(html, /\/api\/layout-composer\/landings/);
+    assert.match(html, /cataloguePreview/);
+    assert.match(html, /UNIT_PX/);
+    assert.match(html, /data-trust-variant/);
+    assert.match(html, /preview-pane/);
+    assert.match(html, /leadpages\/layout-composer\/stock/);
     assert.match(vercel, /"\/layout-composer"/);
     for (const f of [
       'api/layout-composer/catalogue.js',
@@ -119,8 +124,30 @@ describe('Layout Composer Phase 3–5 pipeline', () => {
       'api/layout-composer/generate.js',
       'api/layout-composer/research.js',
       'api/layout-composer/landings.js',
+      'lib/layout-composer/preview-stock.js',
     ]) {
       assert.ok(fs.existsSync(path.join(root, f)), f);
     }
+  });
+
+  it('preview stock proportions: hero full, trust images 1/3, trust text 1/5', () => {
+    const {
+      previewMetaForSection,
+      HERO_UNITS,
+    } = require('../lib/layout-composer/preview-stock');
+    const hero = previewMetaForSection('hero');
+    const slider = previewMetaForSection('heroSlider');
+    const trustImg = previewMetaForSection({ key: 'trustBar', previewVariant: 'images' });
+    const trustText = previewMetaForSection({ key: 'trustBar', previewVariant: 'text' });
+    assert.equal(hero.units, HERO_UNITS);
+    assert.equal(slider.units, HERO_UNITS);
+    assert.equal(hero.uploadWidth, slider.uploadWidth);
+    assert.equal(trustImg.units, 5);
+    assert.equal(trustText.units, 3);
+    assert.equal(trustImg.uploadHeight, Math.round(hero.uploadHeight / 3));
+    assert.equal(trustText.uploadHeight, Math.round(hero.uploadHeight / 5));
+    assert.ok(hero.imageUrl || hero.placeholderUrl);
+    const cats = listCatalogueSections();
+    assert.ok(cats.every(function (c) { return c.preview && c.preview.units > 0; }));
   });
 });

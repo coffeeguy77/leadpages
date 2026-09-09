@@ -50,9 +50,22 @@
     .sec-item.off{opacity:.55}
     .sec-item.dragging{opacity:.4}
     .handle{color:var(--muted);user-select:none}
-    .preview-stack{display:flex;flex-direction:column;gap:8px}
-    .preview-block{border:1px dashed #cfcabe;border-radius:10px;padding:14px;background:#faf8f2;color:var(--muted);font-size:13px}
-    .preview-block strong{display:block;color:var(--ink);margin-bottom:4px}
+    .preview-stack{display:flex;flex-direction:column;gap:6px;min-height:120px}
+    .preview-hint{font-size:12px;color:var(--muted);margin:0 0 8px;line-height:1.4}
+    .preview-block{position:relative;border:1px solid #cfcabe;border-radius:10px;overflow:hidden;background:#faf8f2;color:var(--muted);font-size:12px;cursor:grab;padding:0}
+    .preview-block.dragging{opacity:.45}
+    .preview-block.drag-over{outline:2px solid var(--accent);outline-offset:1px}
+    .preview-block .pv-media{display:block;width:100%;height:100%;object-fit:cover;background:#e8e4d8}
+    .preview-block .pv-chrome{position:absolute;left:0;right:0;bottom:0;padding:6px 10px;background:linear-gradient(transparent,rgba(23,23,20,.72));color:#fff;display:flex;justify-content:space-between;gap:8px;align-items:flex-end}
+    .preview-block .pv-chrome strong{display:block;font-size:12px;margin:0}
+    .preview-block .pv-meta{font-size:10px;opacity:.9}
+    .preview-block.tier-hero{box-shadow:0 6px 18px rgba(23,23,20,.12)}
+    .preview-block.tier-primary{border-color:#b7d7c8}
+    .preview-block.tier-supporting{border-style:dashed}
+    .preview-block.tier-chrome{opacity:.92;border-style:solid;border-color:#d5d0c4}
+    .builder.preview-focus{grid-template-columns:1fr}
+    .builder.preview-focus .build-controls{display:none}
+    .tier-chip{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 6px;border-radius:999px;background:rgba(255,255,255,.2)}
     .msg{font-size:13px;color:var(--muted);min-height:18px}
     .msg.err{color:var(--err)}
     .msg.ok{color:var(--ok)}
@@ -101,7 +114,7 @@
         <div class="toolbar">
           <div>
             <h2 style="margin:0 0 4px;font-size:1.1rem" id="build-title">Layout</h2>
-            <p class="muted">Drag to reorder. Toggle on/off. Preview shows stack only.</p>
+            <p class="muted" id="build-help">Drag to reorder. Toggle on/off. Preview uses proportional stock examples per app.</p>
           </div>
           <div class="row">
             <div class="mode" role="group" aria-label="View mode">
@@ -111,8 +124,8 @@
             <button type="button" class="btn" id="btn-save">Save to My Designs</button>
           </div>
         </div>
-        <div class="builder">
-          <div>
+        <div class="builder" id="builder-shell">
+          <div class="build-controls" id="build-controls">
             <label class="f" style="margin-bottom:10px"><span>Design name</span><input id="bp-name" class="tin" type="text" placeholder="e.g. Canberra plumber stack" /></label>
             <ul class="sec-list" id="sec-list"></ul>
             <div class="row" style="margin-top:10px">
@@ -256,50 +269,130 @@
         : '<option value="">All sections added</option>';
     }
 
+    var UNIT_PX = 12; // hero 15u ≈ 180px in composer chrome
+
+    function cataloguePreview(key, section) {
+      var cat = null;
+      for (var i = 0; i < state.catalogue.length; i++) {
+        if (state.catalogue[i].key === key) { cat = state.catalogue[i]; break; }
+      }
+      var pv = (cat && cat.preview) || {};
+      var variant = (section && (section.previewVariant || section.trustVariant)) || (key === 'trustBar' ? 'images' : null);
+      // Trust bar text variant is ~1/5 hero (3u); images ~1/3 (5u)
+      var units = pv.units || 7;
+      if (key === 'trustBar') units = variant === 'text' ? 3 : 5;
+      else if (/^hero/i.test(key) || key === 'splitHero') units = 15;
+      var tier = pv.tier || (/^hero/i.test(key) || key === 'splitHero' ? 'hero' : (key === 'emerg' || key === 'footer' || key === 'navMenu' ? 'chrome' : 'primary'));
+      var uploadW = pv.uploadWidth || 1200;
+      var uploadH = pv.uploadHeight || (units * 40);
+      if (key === 'trustBar') uploadH = units * 40;
+      var img = pv.imageUrl || pv.placeholderUrl || '';
+      return {
+        units: units,
+        tier: tier,
+        variant: variant,
+        uploadSizeLabel: uploadW + '×' + uploadH + 'px',
+        imageUrl: img,
+        stockKey: pv.stockKey || (variant ? key + '__' + variant : key),
+        relativeToHero: Math.round((units / 15) * 1000) / 1000
+      };
+    }
+
+    function moveSection(fromIdx, toIdx) {
+      if (fromIdx == null || toIdx == null || fromIdx === toIdx) return;
+      var secs = sectionsOf(state.blueprint).slice();
+      if (fromIdx < 0 || fromIdx >= secs.length || toIdx < 0 || toIdx >= secs.length) return;
+      var moved = secs.splice(fromIdx, 1)[0];
+      secs.splice(toIdx, 0, moved);
+      setSections(secs);
+      renderBuilder();
+    }
+
     function renderBuilder() {
       if (!state.blueprint) return;
       $('bp-name').value = state.blueprint.name || '';
       $('build-title').textContent = state.blueprint.name || 'Layout';
+      var help = $('build-help');
+      if (help) {
+        help.textContent = state.mode === 'preview'
+          ? 'Preview mode: drag blocks to reorder. Heights follow section hierarchy (hero full; trust bar images ≈1/3; trust text ≈1/5).'
+          : 'Layout mode: drag the list to reorder. Live preview on the right uses proportional stock examples.';
+      }
+      var shell = $('builder-shell');
+      if (shell) shell.classList.toggle('preview-focus', state.mode === 'preview');
       var secs = sectionsOf(state.blueprint);
       var list = $('sec-list');
       var preview = $('preview-pane');
       list.innerHTML = secs.map(function (s, idx) {
+        var pv = cataloguePreview(s.key, s);
+        var trustToggle = s.key === 'trustBar'
+          ? '<label class="muted">Trust <select data-trust-variant="' + idx + '">' +
+            '<option value="images"' + ((s.previewVariant || 'images') !== 'text' ? ' selected' : '') + '>Images</option>' +
+            '<option value="text"' + (s.previewVariant === 'text' ? ' selected' : '') + '>Text</option></select></label>'
+          : '';
         return '<li class="sec-item' + (s.enabled === false ? ' off' : '') + '" draggable="true" data-idx="' + idx + '">' +
           '<span class="handle">⋮⋮</span>' +
-          '<span><strong>' + esc(s.label || s.key) + '</strong><div class="muted">' + esc(s.key) + '</div></span>' +
+          '<span><strong>' + esc(s.label || s.key) + '</strong><div class="muted">' + esc(s.key) +
+          ' · ' + esc(pv.uploadSizeLabel) + ' · ' + esc(pv.tier) + '</div></span>' +
+          trustToggle +
           '<label class="muted"><input type="checkbox" data-toggle="' + idx + '"' + (s.enabled === false ? '' : ' checked') + '> On</label>' +
           '<button type="button" class="btn ghost" data-remove="' + idx + '">Remove</button></li>';
       }).join('');
-      preview.innerHTML = secs.filter(function (s) { return s.enabled !== false; }).map(function (s) {
-        return '<div class="preview-block"><strong>' + esc(s.label || s.key) + '</strong>Stack preview — content fills after confirm.</div>';
-      }).join('') || '<div class="preview-block">No sections enabled.</div>';
-      show(list, state.mode === 'layout');
-      show(preview, state.mode === 'preview');
+      var enabled = secs.map(function (s, idx) { return { s: s, idx: idx }; }).filter(function (x) { return x.s.enabled !== false; });
+      preview.innerHTML =
+        '<p class="preview-hint">Stock examples only (one image per app). Upload to Cloudinary <code>leadpages/layout-composer/stock/</code> at the size shown on each block, then set the URL in <code>lib/layout-composer/preview-stock.js</code> → <code>STOCK_IMAGE_URLS</code>.</p>' +
+        (enabled.length ? enabled.map(function (x) {
+          var s = x.s;
+          var pv = cataloguePreview(s.key, s);
+          var h = Math.max(28, Math.round(pv.units * UNIT_PX));
+          var img = pv.imageUrl
+            ? '<img class="pv-media" alt="" src="' + esc(pv.imageUrl) + '" style="height:' + h + 'px" />'
+            : '<div class="pv-media" style="height:' + h + 'px;display:flex;align-items:center;padding:10px">' + esc(s.label || s.key) + '</div>';
+          return '<div class="preview-block tier-' + esc(pv.tier) + '" draggable="true" data-idx="' + x.idx + '" style="height:' + h + 'px" title="Drag to reorder">' +
+            img +
+            '<div class="pv-chrome"><div><strong>' + esc(s.label || s.key) + '</strong>' +
+            '<div class="pv-meta">' + esc(pv.uploadSizeLabel) + ' · ' + (pv.relativeToHero * 100).toFixed(0) + '% of hero height</div></div>' +
+            '<span class="tier-chip">' + esc(pv.tier) + (pv.variant ? ' · ' + esc(pv.variant) : '') + '</span></div></div>';
+        }).join('') : '<div class="preview-block" style="padding:14px">No sections enabled.</div>');
+      show(list.parentElement || list, true);
+      show(preview, true);
       wireDnD();
       fillAddSelect();
     }
 
     function wireDnD() {
       var list = $('sec-list');
+      var preview = $('preview-pane');
       var dragIdx = null;
-      list.querySelectorAll('.sec-item').forEach(function (row) {
-        row.addEventListener('dragstart', function () {
-          dragIdx = Number(row.getAttribute('data-idx'));
-          row.classList.add('dragging');
+
+      function bindDrag(el) {
+        el.addEventListener('dragstart', function (e) {
+          dragIdx = Number(el.getAttribute('data-idx'));
+          el.classList.add('dragging');
+          try { e.dataTransfer.setData('text/plain', String(dragIdx)); e.dataTransfer.effectAllowed = 'move'; } catch (_e) {}
         });
-        row.addEventListener('dragend', function () { row.classList.remove('dragging'); dragIdx = null; });
-        row.addEventListener('dragover', function (e) { e.preventDefault(); });
-        row.addEventListener('drop', function (e) {
+        el.addEventListener('dragend', function () {
+          el.classList.remove('dragging');
+          dragIdx = null;
+          list.querySelectorAll('.drag-over').forEach(function (n) { n.classList.remove('drag-over'); });
+          preview.querySelectorAll('.drag-over').forEach(function (n) { n.classList.remove('drag-over'); });
+        });
+        el.addEventListener('dragover', function (e) {
           e.preventDefault();
-          var to = Number(row.getAttribute('data-idx'));
-          if (dragIdx == null || to === dragIdx) return;
-          var secs = sectionsOf(state.blueprint).slice();
-          var moved = secs.splice(dragIdx, 1)[0];
-          secs.splice(to, 0, moved);
-          setSections(secs);
-          renderBuilder();
+          el.classList.add('drag-over');
         });
-      });
+        el.addEventListener('dragleave', function () { el.classList.remove('drag-over'); });
+        el.addEventListener('drop', function (e) {
+          e.preventDefault();
+          el.classList.remove('drag-over');
+          var to = Number(el.getAttribute('data-idx'));
+          moveSection(dragIdx, to);
+        });
+      }
+
+      list.querySelectorAll('.sec-item').forEach(bindDrag);
+      preview.querySelectorAll('.preview-block[data-idx]').forEach(bindDrag);
+
       list.querySelectorAll('[data-toggle]').forEach(function (cb) {
         cb.addEventListener('change', function () {
           var i = Number(cb.getAttribute('data-toggle'));
@@ -314,6 +407,15 @@
           var i = Number(btn.getAttribute('data-remove'));
           var secs = sectionsOf(state.blueprint).slice();
           secs.splice(i, 1);
+          setSections(secs);
+          renderBuilder();
+        });
+      });
+      list.querySelectorAll('[data-trust-variant]').forEach(function (sel) {
+        sel.addEventListener('change', function () {
+          var i = Number(sel.getAttribute('data-trust-variant'));
+          var secs = sectionsOf(state.blueprint).slice();
+          secs[i].previewVariant = sel.value === 'text' ? 'text' : 'images';
           setSections(secs);
           renderBuilder();
         });
