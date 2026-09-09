@@ -5459,6 +5459,25 @@ function heroCtaCard(c){
     window.LPTradePicker.selectPack(slug);
     return true;
   }
+  function lpCacheCreatedTradePack(gj, loc){
+    if(!gj||!gj.ok||!gj.slug||!gj.pack) return;
+    window.__lpLastCreatedTradePack={
+      slug:gj.slug,
+      variant:gj.variant||1,
+      location:String(loc||gj.targetLocation||'').trim(),
+      pack:gj.pack,
+      label:gj.label,
+      category:gj.category
+    };
+  }
+  function lpPreferredVariantFor(packSlug, loc){
+    var c=window.__lpLastCreatedTradePack;
+    if(!c||!c.slug||c.slug!==packSlug) return null;
+    var a=String(c.location||'').trim().toLowerCase();
+    var b=String(loc||'').trim().toLowerCase();
+    if(a&&b&&a===b) return c.variant||1;
+    return null;
+  }
   async function lpAcquireTradePack(opts){
     var r=await fetch('/api/partner/acquire-trade-pack',{
       method:'POST',
@@ -5504,7 +5523,7 @@ function heroCtaCard(c){
         var confirmNew=false, gj=null, attempts=0;
         while(attempts<3){
           attempts++;
-          gj=await lpAcquireTradePack({packSlug:packSlug,tradeLabel:tradeLabel,category:tradeCat||'General',targetLocation:targetLocation,confirmNewGeneration:confirmNew});
+          gj=await lpAcquireTradePack({packSlug:packSlug,tradeLabel:tradeLabel,category:tradeCat||'General',targetLocation:targetLocation,confirmNewGeneration:confirmNew,preferredVariant:lpPreferredVariantFor(packSlug,targetLocation)});
           if(gj&&gj.needsConfirmation){
             if(!window.confirm(gj.message||'Generate fresh content for this location?')){ loadBtn.disabled=false; loadBtn.textContent=orig; return; }
             confirmNew=true;
@@ -5539,6 +5558,7 @@ function heroCtaCard(c){
         }
         addBtn.disabled=false;
         if(gj&&(gj.ok||gj.alreadyExists)&&gj.slug){
+          lpCacheCreatedTradePack(gj,loc);
           lpApplyCreatedCommunityTrade(gj,cat);
           var search=$('tp-search'); if(search) search.value='';
           var nt=$('tp-new-trade'); if(nt) nt.value='';
@@ -5660,6 +5680,7 @@ function heroCtaCard(c){
         }
         addBtn.disabled=false;
         if(gj&&(gj.ok||gj.alreadyExists)&&gj.slug){
+          lpCacheCreatedTradePack(gj,loc);
           lpApplyCreatedCommunityTrade(gj,cat);
           var search=$('cs-search'); if(search) search.value='';
           var nt=$('cs-new-trade'); if(nt) nt.value='';
@@ -5718,7 +5739,7 @@ function heroCtaCard(c){
         var confirmNew=false, attempts=0;
         while(attempts<3){
           attempts++;
-          gj=await lpAcquireTradePack({packSlug:packSlug,tradeLabel:tradeLabel,category:tradeCat||'General',targetLocation:loc,confirmNewGeneration:confirmNew});
+          gj=await lpAcquireTradePack({packSlug:packSlug,tradeLabel:tradeLabel,category:tradeCat||'General',targetLocation:loc,confirmNewGeneration:confirmNew,preferredVariant:lpPreferredVariantFor(packSlug,loc)});
           if(gj&&gj.needsConfirmation){
             if(!window.confirm(gj.message||'Generate fresh content for this location?')){ btn.disabled=false; btn.textContent='Create site'; return; }
             confirmNew=true;
@@ -10025,6 +10046,17 @@ function heroCtaCard(c){
     if(currentRole==='super' && !$('btn-newsite')){
       const nb=document.createElement('button'); nb.className='btn ghost'; nb.id='btn-newsite';
       nb.textContent='+ New Site'; nb.addEventListener('click',openCreateSite);
+      // Phase 2: optional Layout Composer entry (LAYOUT_COMPOSER=1)
+      (function(){
+        function addLcBtn(){
+          if($('btn-layout-composer')) return;
+          var lb=document.createElement('button'); lb.className='btn ghost'; lb.id='btn-layout-composer';
+          lb.textContent='Layout Composer'; lb.title='Layout-first create (flagged)';
+          lb.addEventListener('click',function(){ window.location.href='/layout-composer'; });
+          if(nb.parentNode) nb.parentNode.insertBefore(lb, nb.nextSibling);
+        }
+        fetch('/api/layout-composer/flags').then(function(r){return r.json();}).then(function(j){ if(j&&j.enabled) addLcBtn(); }).catch(function(){});
+      })();
       bar.appendChild(nb);
     }
     if(!$('btn-billing')){

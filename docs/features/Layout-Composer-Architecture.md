@@ -1,6 +1,6 @@
 # Layout Composer — Phase 1 Discovery & Architecture
 
-**Status:** Discovery complete — awaiting approval before Phase 2+ structural work  
+**Status:** Phase 2 in progress — trade-pack usage fix, blueprint SQL, preset adapter, flagged entry stub  
 **Date:** 2026-09-09  
 **Product goal:** Replace the generic demo-builder **entry experience** with a visual, layout-first website design workflow. AI fills a **confirmed** structure; it never designs or rearranges the layout.
 
@@ -253,3 +253,18 @@ No parallel full builder until Phase 2 foundations land.
 | Section order | `lib/section-order.js` |
 | Studio (On Ice) | `docs/website-studio/`, `theme-studio-v2.html`, `lib/website-composer/` |
 | Site builder docs | `docs/04-SITE-BUILDER.md`, `docs/features/Theme Packs.md`, `docs/features/Pages.md` |
+
+
+## 9. Phase 2 delivery notes
+
+Shipped on branch `cursor/layout-composer-phase2-c9ec`:
+
+1. **Trade pack double-generate fix** — `mode:'create'` no longer writes `pack_location_usage` or bumps use count. Usage is recorded only on bind (`pick` / first pack / regenerate). Optional `preferredVariant` returns `already_bound` for idempotent re-bind. UI caches the created pack and passes `preferredVariant` on the next seed acquire.
+2. **Additive SQL** — `db/design_blueprints.sql` (`design_blueprints`, `design_blueprint_versions`, `user_designs`, optional `sites.blueprint_id` / `blueprint_version`). Does not replace `sites.config` or mutate `positioning_layouts`.
+3. **Preset adapter** — `lib/layout-composer/preset-adapter.js` maps Themes rows → read-only preset blueprint DTOs; customise helper deep-copies into a user-design shell.
+4. **Feature-flagged stub** — `layout-composer.html` + `GET /api/layout-composer/flags` (`LAYOUT_COMPOSER=1`). Existing New Site / Create Demo buttons unchanged; manage may show a soft “Layout Composer” button when the flag is on.
+
+**Not in Phase 2:** full DnD builder, AI fill against blueprints, research, landing recommendations.
+
+
+Create-mode acquire responses set `libraryOnly: true` and omit location usage writes.

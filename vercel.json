@@ -85,6 +85,10 @@
       "destination": "/api/seo-sitemaps/:page"
     },
     {
+      "source": "/layout-composer",
+      "destination": "/layout-composer.html"
+    },
+    {
       "source": "/manage",
       "destination": "/manage.html"
     },

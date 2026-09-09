@@ -4,7 +4,8 @@
 // Body: {
 //   packSlug?, trade?, category?, targetLocation (required),
 //   mode?: 'pick' | 'create',          // create = new trade for community library
-//   confirmNewGeneration?: boolean     // user confirmed AI credits for fresh variant
+//   confirmNewGeneration?: boolean,    // user confirmed AI credits for fresh variant
+//   preferredVariant?: number          // idempotent re-bind of an already-used variant
 // }
 //
 // Returns pack JSON + metadata, or needsConfirmation when a new AI variant is required.
@@ -81,6 +82,7 @@ module.exports = async (req, res) => {
   const packSlug = slugify(body.packSlug || tradeName);
   const category = String(body.category || 'General').trim();
   const confirmNew = body.confirmNewGeneration === true;
+  const preferredVariant = Number(body.preferredVariant) > 0 ? Math.floor(Number(body.preferredVariant)) : null;
   const locSlug = locationSlug(targetLocation);
 
   if (!packSlug && mode === 'pick') {
@@ -116,19 +118,13 @@ module.exports = async (req, res) => {
           trade: tradeName,
         });
       }
+      // Library add only — do NOT record pack_location_usage or bump use count.
+      // Usage is recorded when the pack is bound for a site (pick / first_pack / regenerate).
       const saved = await generateAndSave(tradeName, category, actor.userId, 0);
-      await recordPackLocationUsage(sb, {
-        pack_slug: saved.slug,
-        pack_variant: saved.variant || 1,
-        location_slug: locSlug,
-        location_label: targetLocation,
-        content_hash: contentHash(saved.pack),
-        partner_id: actor.partnerId,
-      });
-      await bumpPackUseCount(sb, saved.slug, saved.variant);
       return res.status(200).json({
         ok: true,
         source: 'new_trade',
+        libraryOnly: true,
         ...packResponse(saved, { targetLocation, communityAdded: true }),
       });
     }
@@ -165,9 +161,25 @@ module.exports = async (req, res) => {
     const usedKeys = await getUsedPackVariants(sb, slug, locSlug);
     const available = variants.filter((v) => !usedKeys.has(packUsageKey(v.slug, v.variant)));
 
+    // Idempotent re-bind: if caller asks for a variant already used at this location, return it.
+    if (preferredVariant && !available.length) {
+      const bound = variants.find((v) => (v.variant || 1) === preferredVariant);
+      if (bound && usedKeys.has(packUsageKey(bound.slug, bound.variant))) {
+        return res.status(200).json({
+          ok: true,
+          source: 'already_bound',
+          ...packResponse(bound, { targetLocation, alreadyBound: true }),
+        });
+      }
+    }
+
     if (available.length) {
       available.sort((a, b) => (a.use_count || 0) - (b.use_count || 0));
-      const pick = available[0];
+      let pick = available[0];
+      if (preferredVariant) {
+        const pref = available.find((v) => (v.variant || 1) === preferredVariant);
+        if (pref) pick = pref;
+      }
       await bumpPackUseCount(sb, pick.slug, pick.variant);
       await recordPackLocationUsage(sb, {
         pack_slug: pick.slug,

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Layout Composer — LeadPages</title>
+  <style>
+    :root {
+      --ink: #1a1a18;
+      --ink-soft: #5c5c56;
+      --line: #e4e2da;
+      --panel: #fffdf8;
+      --accent: #0b6e4f;
+      --accent-soft: #e6f4ef;
+      --bg: #f3f1ea;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #dfece6 0%, transparent 55%),
+        radial-gradient(900px 500px at 100% 0%, #efe6d6 0%, transparent 50%),
+        var(--bg);
+      min-height: 100vh;
+    }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 48px 20px 80px; }
+    .brand {
+      font-size: 14px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 700;
+      margin: 0 0 12px;
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
+    }
+    h1 {
+      font-size: clamp(2rem, 4vw, 2.75rem);
+      line-height: 1.15;
+      margin: 0 0 12px;
+      font-weight: 600;
+    }
+    .lede { font-size: 1.1rem; color: var(--ink-soft); max-width: 38rem; margin: 0 0 28px; }
+    .gate {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 22px 24px;
+      margin-bottom: 28px;
+    }
+    .gate strong { color: var(--accent); }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+    }
+    .card {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 20px 18px 18px;
+      min-height: 150px;
+      transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      border-color: #b9d5c8;
+      box-shadow: 0 10px 28px rgba(26, 26, 24, 0.06);
+    }
+    .card h2 {
+      font-size: 1.15rem;
+      margin: 0 0 8px;
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
+    }
+    .card p { margin: 0; color: var(--ink-soft); font-size: 0.95rem; line-height: 1.4; }
+    .card .soon {
+      display: inline-block;
+      margin-top: 14px;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
+      font-weight: 700;
+    }
+    .actions { margin-top: 28px; display: flex; gap: 12px; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      text-decoration: none;
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <p class="brand">LeadPages · Layout Composer</p>
+    <h1>Start with the layout</h1>
+    <p class="lede">
+      Choose a preset, open one of your designs, start from scratch, or continue an existing site.
+      AI fills the structure you confirm — it does not rearrange it.
+    </p>
+
+    <div id="gate-off" class="gate">
+      <strong>Entry stub is flag-gated.</strong>
+      Set <code>LAYOUT_COMPOSER=1</code> (or open with <code>?preview=1</code>) to explore this Phase&nbsp;2 shell.
+      Existing New Site / Create Demo flows stay unchanged.
+    </div>
+    <div id="gate-on" class="gate hidden">
+      <strong>Phase 2 foundation.</strong>
+      Preset adapter and blueprint tables are in place. Full drag-and-drop builder ships in Phase&nbsp;3.
+      Themes remain the source of Preset Designs (copy-on-customise).
+    </div>
+
+    <div id="choices" class="grid" hidden>
+      <a class="card" href="/manage#themes" id="opt-presets">
+        <h2>Preset Designs</h2>
+        <p>Browse Themes layouts as read-only presets. Customise makes your own copy.</p>
+        <span class="soon">Uses Themes library</span>
+      </a>
+      <a class="card" href="#my-designs" id="opt-mine">
+        <h2>My Designs</h2>
+        <p>Continue a saved blueprint draft. Storage tables are ready; UI list lands next.</p>
+        <span class="soon">Phase 3</span>
+      </a>
+      <a class="card" href="#scratch" id="opt-scratch">
+        <h2>Start from scratch</h2>
+        <p>Empty blueprint: add pages, sections, and apps, then confirm before content fill.</p>
+        <span class="soon">Phase 3</span>
+      </a>
+      <a class="card" href="/manage" id="opt-existing">
+        <h2>Existing site</h2>
+        <p>Open the current editor for sites and demos already in your account.</p>
+        <span class="soon">manage.html</span>
+      </a>
+    </div>
+
+    <div class="actions">
+      <a class="btn primary" href="/manage">Back to editor</a>
+      <a class="btn" href="/partner">Partner dashboard</a>
+    </div>
+  </main>
+  <script>
+    (function () {
+      var params = new URLSearchParams(location.search);
+      var preview = params.get('preview') === '1';
+      function show(enabled) {
+        document.getElementById('gate-off').classList.toggle('hidden', enabled);
+        document.getElementById('gate-on').classList.toggle('hidden', !enabled);
+        document.getElementById('choices').hidden = !enabled;
+      }
+      if (preview) {
+        show(true);
+        return;
+      }
+      fetch('/api/layout-composer/flags')
+        .then(function (r) { return r.json(); })
+        .then(function (j) { show(!!(j && j.enabled)); })
+        .catch(function () { show(false); });
+    })();
+  </script>
+</body>
+</html>

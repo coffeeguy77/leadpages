@@ -1416,6 +1416,25 @@
     var locEl=document.getElementById('m-location');
     if(locEl && !locEl.value) locEl.value=region.split(/[,&]/)[0].trim()||'';
   }
+  function cacheCreatedTradePack(gj, loc){
+    if(!gj||!gj.ok||!gj.slug||!gj.pack) return;
+    window.__lpLastCreatedTradePack={
+      slug:gj.slug,
+      variant:gj.variant||1,
+      location:String(loc||gj.targetLocation||'').trim(),
+      pack:gj.pack,
+      label:gj.label,
+      category:gj.category
+    };
+  }
+  function preferredVariantFor(packSlug, loc){
+    var c=window.__lpLastCreatedTradePack;
+    if(!c||!c.slug||c.slug!==packSlug) return null;
+    var a=String(c.location||'').trim().toLowerCase();
+    var b=String(loc||'').trim().toLowerCase();
+    if(a&&b&&a===b) return c.variant||1;
+    return null;
+  }
   async function acquireTradePack(opts){
     var r=await fetch('/api/partner/acquire-trade-pack',{
       method:'POST',
@@ -1466,7 +1485,7 @@
         var confirmNew=false, done=false, attempts=0;
         while(!done&&attempts<3){
           attempts++;
-          var gj=await acquireTradePack({packSlug:packSlug,tradeLabel:tradeLabel,category:tradeCat||'General',targetLocation:targetLocation,confirmNewGeneration:confirmNew});
+          var gj=await acquireTradePack({packSlug:packSlug,tradeLabel:tradeLabel,category:tradeCat||'General',targetLocation:targetLocation,confirmNewGeneration:confirmNew,preferredVariant:preferredVariantFor(packSlug,targetLocation)});
           if(gj&&gj.needsConfirmation){
             if(window.LPBusy) window.LPBusy.hide();
             if(!window.confirm(gj.message||'Generate fresh content for this location?')){ btn.disabled=false; btn.textContent='Create demo'; return; }
@@ -1539,6 +1558,7 @@
         break;
       }
       if(gj&&(gj.ok||gj.alreadyExists)&&gj.slug){
+        cacheCreatedTradePack(gj,loc);
         applyCreatedCommunityTrade(gj,cat);
         var search=document.getElementById('m-trade-search'); if(search) search.value='';
         document.getElementById('m-new-trade').value='';
