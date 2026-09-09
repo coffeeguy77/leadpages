@@ -220,6 +220,7 @@ Short summary of every engineering document in `docs/`.
 | **Multi-tenant core** | [02-DATABASE](02-DATABASE.md) | `sites`, `sites.config` |
 | **Site editor** | [10-EDITOR](10-EDITOR.md) | `manage.html` |
 | **Site builder** | [04-SITE-BUILDER](04-SITE-BUILDER.md) | Create, trade packs, publish |
+| **Layout Composer (planned)** | [features/Layout-Composer-Architecture](features/Layout-Composer-Architecture.md) | Layout-first creation; Themes as presets; trade-pack bug notes |
 | **Template rendering** | [03-TEMPLATE-SYSTEM](03-TEMPLATE-SYSTEM.md) | `api/render.js`, `*.template.json` |
 | **Suburb SEO** | [08-SEO](08-SEO.md) | `app/[site]/[suburb]`, `lib/seo/*` |
 | **Search Intelligence architecture** | [search-intelligence/](search-intelligence/00-VISION.md) | Docs + stubs; Command Centre UI not shipped yet |
