@@ -1,6 +1,6 @@
 # Layout Composer — Phase 1 Discovery & Architecture
 
-**Status:** Discovery complete — awaiting approval before Phase 2+ structural work  
+**Status:** Phases 2–6 foundations shipped (flagged); full polish/Brain research still iterative — trade-pack usage fix, blueprint SQL, preset adapter, flagged entry stub  
 **Date:** 2026-09-09  
 **Product goal:** Replace the generic demo-builder **entry experience** with a visual, layout-first website design workflow. AI fills a **confirmed** structure; it never designs or rearranges the layout.
 
@@ -253,3 +253,56 @@ No parallel full builder until Phase 2 foundations land.
 | Section order | `lib/section-order.js` |
 | Studio (On Ice) | `docs/website-studio/`, `theme-studio-v2.html`, `lib/website-composer/` |
 | Site builder docs | `docs/04-SITE-BUILDER.md`, `docs/features/Theme Packs.md`, `docs/features/Pages.md` |
+
+
+## 9. Phase 2 delivery notes
+
+Shipped on branch `cursor/layout-composer-phase2-c9ec`:
+
+1. **Trade pack double-generate fix** — `mode:'create'` no longer writes `pack_location_usage` or bumps use count. Usage is recorded only on bind (`pick` / first pack / regenerate). Optional `preferredVariant` returns `already_bound` for idempotent re-bind. UI caches the created pack and passes `preferredVariant` on the next seed acquire.
+2. **Additive SQL** — `db/design_blueprints.sql` (`design_blueprints`, `design_blueprint_versions`, `user_designs`, optional `sites.blueprint_id` / `blueprint_version`). Does not replace `sites.config` or mutate `positioning_layouts`.
+3. **Preset adapter** — `lib/layout-composer/preset-adapter.js` maps Themes rows → read-only preset blueprint DTOs; customise helper deep-copies into a user-design shell.
+4. **Feature-flagged stub** — `layout-composer.html` + `GET /api/layout-composer/flags` (`LAYOUT_COMPOSER=1`). Existing New Site / Create Demo buttons unchanged; manage may show a soft “Layout Composer” button when the flag is on.
+
+**Not in Phase 2:** full DnD builder, AI fill against blueprints, research, landing recommendations.
+
+
+Create-mode acquire responses set `libraryOnly: true` and omit location usage writes.
+
+
+## 10. Phases 3–6 delivery notes
+
+Shipped on the same Phase 2 branch for end-to-end testing:
+
+### Phase 3 — Layout Builder UI
+- `layout-composer.html` multi-step flow: Presets / My Designs / Scratch / Existing.
+- Drag-reorder + enable/disable sections; Layout vs Preview modes.
+- Autosave My Designs to `localStorage` (browser library).
+- Confirm layout before content fill.
+
+### Phase 4 — Layout-aware generation
+- `POST /api/layout-composer/generate` fills copy **inside** a confirmed blueprint only.
+- `assertStructureUnchanged` rejects payloads that add/remove/reorder sections.
+- `lib/layout-composer/compile.js` compiles blueprint → `sites.config` skeleton with Trust Bar pin.
+
+### Phase 5 — Research + landings
+- `POST /api/layout-composer/research` — advisory brief with source confidence (deterministic stub until Brain crawl is wired).
+- `POST /api/layout-composer/landings` — checkbox recommendations; create/edit still uses existing Landing builder + Brain landing-draft.
+
+### Phase 6 — QA / rollout
+- Flag: `LAYOUT_COMPOSER=1` (see `GET /api/layout-composer/flags`).
+- Existing New Site / Create Demo buttons unchanged.
+- Apply `db/design_blueprints.sql` in Supabase when persisting blueprints server-side.
+- Rollback: set `LAYOUT_COMPOSER=0`; remove soft manage button appears only when flag on.
+- Regression checklist: login, site list, create site, trade-pack create→seed once, Themes apply, public render, landing draft flag path.
+
+### APIs added
+| Route | Role |
+|-------|------|
+| `GET /api/layout-composer/flags` | Feature flag |
+| `GET /api/layout-composer/catalogue` | Section catalogue |
+| `GET /api/layout-composer/presets` | Themes → preset blueprints |
+| `POST /api/layout-composer/compile` | Blueprint → config skeleton |
+| `POST /api/layout-composer/generate` | Structure-locked content fill |
+| `POST /api/layout-composer/research` | Advisory research |
+| `POST /api/layout-composer/landings` | Landing recommendations |
