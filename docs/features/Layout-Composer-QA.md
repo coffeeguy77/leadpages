@@ -11,14 +11,32 @@
 
 1. **Flag off** — `/layout-composer` shows gate; manage New Site unchanged.
 2. **Flag on** — entry opens; Presets require auth; Scratch works offline after catalogue load.
-3. **DnD** — reorder sections; toggle off; Preview mode shows stack only.
-4. **Confirm** — Fill step locked until confirm; Generate refuses `confirmed:false`.
-5. **Generate** — returns `structureLocked: true`; section order unchanged.
-6. **Research** — sources include confidence; disclaimer visible.
-7. **Landings** — checkboxes; no automatic page create.
-8. **Trade pack regression** — create missing trade → seed site **once** (no second AI confirm from false location usage).
-9. **Themes** — existing Themes admin/apply still works; presets are copy-on-customise.
-10. **Editor** — open manage after generate; session may hold last config in `sessionStorage.lp_layout_composer_last_config`.
+3. **DnD** — reorder sections in Layout list **and** in Preview mode; toggle off.
+4. **Preview hierarchy** — hero / hero slider full height; Trust Bar images ≈1/3 hero; Trust Bar text ≈1/5; other apps scaled by tier. Stock example images only (not client photos).
+5. **Confirm** — Fill step locked until confirm; Generate refuses `confirmed:false`.
+6. **Generate** — returns `structureLocked: true`; section order unchanged.
+7. **Research** — sources include confidence; disclaimer visible.
+8. **Landings** — checkboxes; no automatic page create.
+9. **Trade pack regression** — create missing trade → seed site **once** (no second AI confirm from false location usage).
+10. **Themes** — existing Themes admin/apply still works; presets are copy-on-customise.
+11. **Editor** — open manage after generate; session may hold last config in `sessionStorage.lp_layout_composer_last_config`.
+
+## Stock preview images (where to add them)
+
+Preview uses **one stock example image per app/section** (not live client content).
+
+1. Export / crop at the size shown on the preview block (also in catalogue `preview.uploadSizeLabel`).
+   - Hero / hero slider / split hero: **1200×600px** (15 units)
+   - Trust Bar with images: **1200×200px** (5 units ≈ 1/3 hero height)
+   - Trust Bar text-only: **1200×120px** (3 units ≈ 1/5 hero height)
+   - Other apps: `1200 × (units × 40)` px — see `lib/layout-composer/preview-stock.js`
+2. Upload to Cloudinary folder **`leadpages/layout-composer/stock/`** (one file per app).
+3. Paste the secure URL into `STOCK_IMAGE_URLS` in `lib/layout-composer/preview-stock.js`
+   - Keys match section keys (`hero`, `heroSlider`, …)
+   - Trust Bar variants: `trustBar__images` and `trustBar__text`
+4. Redeploy. Until a URL is set, the composer shows a labelled SVG placeholder at the correct proportion.
+
+Trust Bar variant (images vs text) is toggled on the section row in Layout mode — preview height updates immediately.
 
 ## Rollback
 
