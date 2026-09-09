@@ -4063,6 +4063,7 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
       data=JSON.parse(JSON.stringify(site.config||{}));
       if(currentSiteTemplate==='trade') lpSeedTrade(data);
       else _vaSeed(data);
+      setTimeout(lpConsumeLayoutComposerHandoff, 0);
     }
     // Phase B: reconcile site_apps -> data.sections + sectionOrder
     if(currentSiteId && currentSiteTemplate==='trade'){
@@ -5606,6 +5607,57 @@ function heroCtaCard(c){
     if(loc && !cfg.region) cfg.region=loc;
     return cfg;
   }
+
+  /* Layout Composer handoff: apply generated config from /layout-composer */
+  function lpConsumeLayoutComposerHandoff(){
+    try{
+      var params=new URLSearchParams(location.search);
+      if(params.get('layoutComposer')!=='1' && params.get('from')!=='layout-composer') return;
+      var raw=sessionStorage.getItem('lp_layout_composer_handoff')||sessionStorage.getItem('lp_layout_composer_last_config');
+      if(!raw) return;
+      var payload=null;
+      try{ payload=JSON.parse(raw); }catch(_e){ return; }
+      var cfg=(payload && payload.config) ? payload.config : payload;
+      if(!cfg || typeof cfg!=='object') return;
+      var apply=window.confirm('Apply Layout Composer result to the current site config?\\n\\nThis merges generated section copy into the open site. Cancel keeps the site unchanged.');
+      if(!apply) return;
+      if(!currentSiteId){
+        toast('Open or create a site first, then return from Layout Composer.');
+        return;
+      }
+      if(!data || typeof data!=='object') data={};
+      // Merge section order + sections without wiping identity fields
+      if(Array.isArray(cfg.sectionOrder) && cfg.sectionOrder.length){
+        data.sectionOrder=cfg.sectionOrder.slice();
+      }
+      if(cfg.sections && typeof cfg.sections==='object'){
+        data.sections=data.sections||{};
+        Object.keys(cfg.sections).forEach(function(k){
+          data.sections[k]=Object.assign({}, data.sections[k]||{}, cfg.sections[k]||{});
+        });
+      }
+      if(cfg.name && !data.name) data.name=cfg.name;
+      if(cfg.businessName && !data.businessName) data.businessName=cfg.businessName;
+      if(cfg.trade && !data.trade) data.trade=cfg.trade;
+      if(cfg.region && !data.region) data.region=cfg.region;
+      data._layoutComposer=Object.assign({}, data._layoutComposer||{}, cfg._layoutComposer||{}, {
+        importedAt:new Date().toISOString(),
+        selectedLandings:(payload && payload.selectedLandings)||[]
+      });
+      try{ if(typeof persist==='function') persist(); }catch(_p){}
+      try{ if(typeof previewApply==='function') previewApply(); }catch(_a){}
+      try{ if(typeof renderDetails==='function') renderDetails(); }catch(_r){}
+      try{ sessionStorage.removeItem('lp_layout_composer_handoff'); sessionStorage.removeItem('lp_layout_composer_last_config'); }catch(_s){}
+      toast('Layout Composer content applied to this site');
+      // Clean query param without reload
+      try{
+        params.delete('layoutComposer'); params.delete('from');
+        var q=params.toString();
+        history.replaceState({},'', location.pathname+(q?('?'+q):'')+location.hash);
+      }catch(_h){}
+    }catch(e){ try{console.warn('[layout-composer handoff]', e&&e.message);}catch(_x){} }
+  }
+
   function openCreateSite(){
     if(currentRole!=='super'){ toast('Only platform admins can create new sites here.'); return; }
     if($('cs-ov'))return;

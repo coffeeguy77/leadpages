@@ -31,3 +31,23 @@
 ```bash
 node --test tests/trade-pack-acquire-policy.test.js tests/layout-composer-phase2.test.js tests/layout-composer-phases-3-5.test.js
 ```
+
+
+## End-to-end smoke (preview)
+
+No env flag required for UI review:
+
+1. Open `/layout-composer?preview=1`
+2. **Start from scratch** → drag sections → Confirm layout
+3. Enter business / trade / location → Generate content
+4. Click **Continue in editor** → `/manage?layoutComposer=1`
+5. Open a site → accept apply prompt → section copy merges into config
+
+With flag:
+
+- Set `LAYOUT_COMPOSER=1` so manage shows the Layout Composer button and `/layout-composer` opens without `?preview=1`.
+
+Auth notes:
+
+- Generate / research / landings work without sign-in (deterministic stubs).
+- Presets list requires sign-in to load Themes; unsigned users get an empty list + scratch path.

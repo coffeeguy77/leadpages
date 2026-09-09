@@ -98,6 +98,12 @@ describe('Layout Composer Phase 3–5 pipeline', () => {
     assert.match(html, /Confirm layout/);
     assert.match(html, /Generate content into layout/);
     assert.match(html, /\/api\/layout-composer\/generate/);
+    assert.match(html, /layoutComposer=1/);
+    assert.match(html, /lp_layout_composer_handoff/);
+    const manage = fs.readFileSync(path.join(root, 'manage.html'), 'utf8');
+    assert.match(manage, /lpConsumeLayoutComposerHandoff/);
+    const genApi = fs.readFileSync(path.join(root, 'api/layout-composer/generate.js'), 'utf8');
+    assert.match(genApi, /Auth optional/);
     assert.match(html, /\/api\/layout-composer\/research/);
     assert.match(html, /\/api\/layout-composer\/landings/);
     assert.match(vercel, /"\/layout-composer"/);

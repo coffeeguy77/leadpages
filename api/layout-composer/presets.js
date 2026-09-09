@@ -18,7 +18,14 @@ module.exports = async function layoutComposerPresets(req, res) {
   if (req.method !== 'GET') return sendJson(res, 405, { ok: false, error: 'GET only' });
 
   const user = await requireUser(req);
-  if (!user) return sendJson(res, 401, { ok: false, error: 'Sign in required' });
+  if (!user) {
+    return sendJson(res, 200, {
+      ok: true,
+      presets: [],
+      signedIn: false,
+      hint: 'Sign in to load Themes presets, or use Start from scratch.',
+    });
+  }
 
   try {
     const { data, error } = await admin

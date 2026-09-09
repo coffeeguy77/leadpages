@@ -144,7 +144,7 @@
         <p class="msg" id="fill-msg"></p>
         <pre id="fill-out" class="panel out hidden"></pre>
         <div class="row" style="margin-top:12px">
-          <a class="btn primary hidden" id="btn-open-manage" href="/manage">Continue in editor</a>
+          <a class="btn primary hidden" id="btn-open-manage" href="/manage?layoutComposer=1">Continue in editor</a>
         </div>
       </section>
     </div>
@@ -542,7 +542,18 @@
       });
       var j = await r.json();
       if (!j || !j.ok) { setMsg('fill-msg', (j && j.error) || 'Generate failed', 'err'); return; }
-      try { sessionStorage.setItem('lp_layout_composer_last_config', JSON.stringify(j.config)); } catch (_e) {}
+      try {
+        sessionStorage.setItem('lp_layout_composer_last_config', JSON.stringify(j.config));
+        sessionStorage.setItem('lp_layout_composer_handoff', JSON.stringify({
+          config: j.config,
+          blueprint: state.blueprint,
+          brief: brief,
+          sectionOrder: j.sectionOrder || j.sectionOrder,
+          filledKeys: j.filledKeys || j.filledKeys,
+          selectedLandings: Object.keys(state.selectedLandings).filter(function (k) { return state.selectedLandings[k]; }),
+          at: new Date().toISOString()
+        }));
+      } catch (_e) {}
       setMsg('fill-msg', j.notice || 'Filled without changing structure.', 'ok');
       var out = $('fill-out');
       show(out, true);
