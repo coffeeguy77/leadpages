@@ -27,7 +27,8 @@
     .card h2{margin:0 0 6px;font-size:1.05rem}
     .card p{margin:0;color:var(--muted);font-size:.92rem;line-height:1.35}
     .pick-card{padding:0;overflow:hidden;display:flex;flex-direction:column}
-    .pick-card .thumb{height:120px;background:#ebe7dc center/cover no-repeat;border-bottom:1px solid var(--line)}
+    .pick-card .thumb{height:120px;background:#ebe7dc;border-bottom:1px solid var(--line);overflow:hidden}
+    .pick-card .thumb img{width:100%;height:100%;object-fit:cover;display:block}
     .pick-card .thumb-empty{background:linear-gradient(135deg,#e5f3ed,#ebe7dc)}
     .pick-card .pick-body{padding:14px 16px 16px}
     .pick-card .pick-meta{margin-top:8px!important;font-size:11.5px!important;color:#7a7a70}
@@ -365,7 +366,7 @@
         if (tagLine && it.description) sub = it.description;
         var img = (it.preview && (it.preview.themeImageUrl || it.preview.layoutImageUrl)) || '';
         var thumb = img
-          ? '<div class="thumb" style="background-image:url(' + esc(img) + ')"></div>'
+          ? '<div class="thumb"><img src="' + esc(img) + '" alt="" loading="lazy" /></div>'
           : '<div class="thumb thumb-empty"></div>';
         var meta = [];
         if (secCount) meta.push(secCount + ' sections');
