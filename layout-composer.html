@@ -6,172 +6,567 @@
   <title>Layout Composer — LeadPages</title>
   <style>
     :root {
-      --ink: #1a1a18;
-      --ink-soft: #5c5c56;
-      --line: #e4e2da;
-      --panel: #fffdf8;
-      --accent: #0b6e4f;
-      --accent-soft: #e6f4ef;
-      --bg: #f3f1ea;
+      --ink:#171714; --muted:#5a5a52; --line:#e2dfd4; --panel:#fffdf7;
+      --accent:#0b6e4f; --accent-soft:#e5f3ed; --bg:#f1eee6; --ok:#0a7a3e; --err:#b42318;
     }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
-      color: var(--ink);
-      background:
-        radial-gradient(1200px 600px at 10% -10%, #dfece6 0%, transparent 55%),
-        radial-gradient(900px 500px at 100% 0%, #efe6d6 0%, transparent 50%),
-        var(--bg);
-      min-height: 100vh;
-    }
-    .wrap { max-width: 960px; margin: 0 auto; padding: 48px 20px 80px; }
-    .brand {
-      font-size: 14px;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--accent);
-      font-weight: 700;
-      margin: 0 0 12px;
-      font-family: "Avenir Next", "Segoe UI", sans-serif;
-    }
-    h1 {
-      font-size: clamp(2rem, 4vw, 2.75rem);
-      line-height: 1.15;
-      margin: 0 0 12px;
-      font-weight: 600;
-    }
-    .lede { font-size: 1.1rem; color: var(--ink-soft); max-width: 38rem; margin: 0 0 28px; }
-    .gate {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 22px 24px;
-      margin-bottom: 28px;
-    }
-    .gate strong { color: var(--accent); }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 14px;
-    }
-    .card {
-      display: block;
-      text-decoration: none;
-      color: inherit;
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 20px 18px 18px;
-      min-height: 150px;
-      transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
-    }
-    .card:hover {
-      transform: translateY(-2px);
-      border-color: #b9d5c8;
-      box-shadow: 0 10px 28px rgba(26, 26, 24, 0.06);
-    }
-    .card h2 {
-      font-size: 1.15rem;
-      margin: 0 0 8px;
-      font-family: "Avenir Next", "Segoe UI", sans-serif;
-    }
-    .card p { margin: 0; color: var(--ink-soft); font-size: 0.95rem; line-height: 1.4; }
-    .card .soon {
-      display: inline-block;
-      margin-top: 14px;
-      font-size: 11px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--accent);
-      font-family: "Avenir Next", "Segoe UI", sans-serif;
-      font-weight: 700;
-    }
-    .actions { margin-top: 28px; display: flex; gap: 12px; flex-wrap: wrap; }
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 10px 16px;
-      border-radius: 10px;
-      border: 1px solid var(--line);
-      background: #fff;
-      color: var(--ink);
-      text-decoration: none;
-      font-family: "Avenir Next", "Segoe UI", sans-serif;
-      font-size: 14px;
-      font-weight: 600;
-    }
-    .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
-    .hidden { display: none !important; }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:"Avenir Next","Segoe UI",sans-serif;color:var(--ink);background:radial-gradient(900px 480px at 0% -10%,#d7ebe2,transparent 55%),radial-gradient(700px 400px at 100% 0%,#efe4d2,transparent 50%),var(--bg);min-height:100vh}
+    .wrap{max-width:1100px;margin:0 auto;padding:28px 18px 72px}
+    .brand{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 8px}
+    h1{font-family:Palatino,Georgia,serif;font-size:clamp(1.8rem,3.5vw,2.4rem);margin:0 0 8px;font-weight:600}
+    .lede{color:var(--muted);margin:0 0 18px;max-width:40rem;line-height:1.45}
+    .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:16px}
+    .hidden{display:none!important}
+    .steps{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+    .pill{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:6px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted);background:#fff}
+    .pill.on{background:var(--accent-soft);color:var(--accent);border-color:#b7d7c8}
+    .pill.done{color:var(--ok)}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+    .card{display:block;width:100%;text-align:left;cursor:pointer;background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;font:inherit;color:inherit;text-decoration:none}
+    .card:hover{border-color:#b7d7c8;box-shadow:0 8px 22px rgba(23,23,20,.06)}
+    .card h2{margin:0 0 6px;font-size:1.05rem}
+    .card p{margin:0;color:var(--muted);font-size:.92rem;line-height:1.35}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 14px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--ink);font-weight:650;font-size:14px;cursor:pointer;text-decoration:none}
+    .btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+    .btn.ghost{background:transparent}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:650;flex:1;min-width:160px}
+    .tin{font:inherit;font-weight:500;padding:9px 10px;border-radius:9px;border:1px solid var(--line);background:#fff}
+    .builder{display:grid;grid-template-columns:1.1fr .9fr;gap:14px}
+    @media(max-width:860px){.builder{grid-template-columns:1fr}}
+    .mode{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+    .mode button{border:0;background:#fff;padding:8px 12px;font-weight:700;cursor:pointer}
+    .mode button.on{background:var(--accent-soft);color:var(--accent)}
+    .sec-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+    .sec-item{display:grid;grid-template-columns:28px 1fr auto auto;gap:8px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;cursor:grab}
+    .sec-item.off{opacity:.55}
+    .sec-item.dragging{opacity:.4}
+    .handle{color:var(--muted);user-select:none}
+    .preview-stack{display:flex;flex-direction:column;gap:8px}
+    .preview-block{border:1px dashed #cfcabe;border-radius:10px;padding:14px;background:#faf8f2;color:var(--muted);font-size:13px}
+    .preview-block strong{display:block;color:var(--ink);margin-bottom:4px}
+    .msg{font-size:13px;color:var(--muted);min-height:18px}
+    .msg.err{color:var(--err)}
+    .msg.ok{color:var(--ok)}
+    .check{display:flex;gap:8px;align-items:flex-start;margin:8px 0;font-size:14px}
+    .landing{display:grid;grid-template-columns:auto 1fr;gap:10px;border:1px solid var(--line);border-radius:10px;padding:12px;background:#fff;margin:8px 0}
+    .muted{color:var(--muted);font-size:12.5px}
+    .toolbar{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+    pre.out{overflow:auto;max-height:280px;font-size:12px}
   </style>
 </head>
 <body>
   <main class="wrap">
     <p class="brand">LeadPages · Layout Composer</p>
-    <h1>Start with the layout</h1>
-    <p class="lede">
-      Choose a preset, open one of your designs, start from scratch, or continue an existing site.
-      AI fills the structure you confirm — it does not rearrange it.
-    </p>
+    <h1>Design the layout first</h1>
+    <p class="lede">Confirm pages and sections, then fill content. AI will not rearrange what you lock in.</p>
 
-    <div id="gate-off" class="gate">
-      <strong>Entry stub is flag-gated.</strong>
-      Set <code>LAYOUT_COMPOSER=1</code> (or open with <code>?preview=1</code>) to explore this Phase&nbsp;2 shell.
-      Existing New Site / Create Demo flows stay unchanged.
-    </div>
-    <div id="gate-on" class="gate hidden">
-      <strong>Phase 2 foundation.</strong>
-      Preset adapter and blueprint tables are in place. Full drag-and-drop builder ships in Phase&nbsp;3.
-      Themes remain the source of Preset Designs (copy-on-customise).
+    <div id="gate-off" class="panel">
+      <strong>Flagged entry.</strong> Set <code>LAYOUT_COMPOSER=1</code> or open with <code>?preview=1</code>.
+      Existing create flows stay in <a href="/manage">manage</a>.
     </div>
 
-    <div id="choices" class="grid" hidden>
-      <a class="card" href="/manage#themes" id="opt-presets">
-        <h2>Preset Designs</h2>
-        <p>Browse Themes layouts as read-only presets. Customise makes your own copy.</p>
-        <span class="soon">Uses Themes library</span>
-      </a>
-      <a class="card" href="#my-designs" id="opt-mine">
-        <h2>My Designs</h2>
-        <p>Continue a saved blueprint draft. Storage tables are ready; UI list lands next.</p>
-        <span class="soon">Phase 3</span>
-      </a>
-      <a class="card" href="#scratch" id="opt-scratch">
-        <h2>Start from scratch</h2>
-        <p>Empty blueprint: add pages, sections, and apps, then confirm before content fill.</p>
-        <span class="soon">Phase 3</span>
-      </a>
-      <a class="card" href="/manage" id="opt-existing">
-        <h2>Existing site</h2>
-        <p>Open the current editor for sites and demos already in your account.</p>
-        <span class="soon">manage.html</span>
-      </a>
+    <div id="app" class="hidden">
+      <div class="steps" id="steps"></div>
+
+      <section id="step-entry" class="panel">
+        <h2 style="margin:0 0 10px;font-size:1.1rem">How do you want to start?</h2>
+        <div class="grid">
+          <button type="button" class="card" data-start="preset"><h2>Preset Designs</h2><p>Copy a Themes layout as a starting blueprint.</p></button>
+          <button type="button" class="card" data-start="mine"><h2>My Designs</h2><p>Continue a saved draft from this browser.</p></button>
+          <button type="button" class="card" data-start="scratch"><h2>Start from scratch</h2><p>Default homepage stack you rearrange yourself.</p></button>
+          <a class="card" href="/manage"><h2>Existing site</h2><p>Open the current editor for sites already in your account.</p></a>
+        </div>
+        <p class="msg" id="entry-msg"></p>
+      </section>
+
+      <section id="step-pick" class="panel hidden">
+        <div class="toolbar">
+          <h2 style="margin:0;font-size:1.1rem" id="pick-title">Choose a design</h2>
+          <button type="button" class="btn ghost" id="pick-back">Back</button>
+        </div>
+        <div class="grid" id="pick-grid"></div>
+        <p class="msg" id="pick-msg"></p>
+      </section>
+
+      <section id="step-build" class="panel hidden">
+        <div class="toolbar">
+          <div>
+            <h2 style="margin:0 0 4px;font-size:1.1rem" id="build-title">Layout</h2>
+            <p class="muted">Drag to reorder. Toggle on/off. Preview shows stack only.</p>
+          </div>
+          <div class="row">
+            <div class="mode" role="group" aria-label="View mode">
+              <button type="button" id="mode-layout" class="on">Layout</button>
+              <button type="button" id="mode-preview">Preview</button>
+            </div>
+            <button type="button" class="btn" id="btn-save">Save to My Designs</button>
+          </div>
+        </div>
+        <div class="builder">
+          <div>
+            <label class="f" style="margin-bottom:10px"><span>Design name</span><input id="bp-name" class="tin" type="text" placeholder="e.g. Canberra plumber stack" /></label>
+            <ul class="sec-list" id="sec-list"></ul>
+            <div class="row" style="margin-top:10px">
+              <label class="f"><span>Add section</span><select id="add-sec" class="tin"></select></label>
+              <button type="button" class="btn" id="btn-add" style="margin-top:18px">Add</button>
+            </div>
+          </div>
+          <div id="preview-pane" class="preview-stack"></div>
+        </div>
+        <div class="row" style="margin-top:14px;justify-content:space-between">
+          <button type="button" class="btn ghost" id="build-back">Back</button>
+          <button type="button" class="btn primary" id="btn-confirm">Confirm layout</button>
+        </div>
+        <p class="msg" id="build-msg"></p>
+      </section>
+
+      <section id="step-fill" class="panel hidden">
+        <h2 style="margin:0 0 8px;font-size:1.1rem">Business brief &amp; fill</h2>
+        <p class="muted" style="margin:0 0 12px">Structure is locked. Content fills confirmed sections only.</p>
+        <div class="row">
+          <label class="f"><span>Business name</span><input id="brief-name" class="tin" type="text" /></label>
+          <label class="f"><span>Trade</span><input id="brief-trade" class="tin" type="text" placeholder="Plumber" /></label>
+          <label class="f"><span>Location</span><input id="brief-loc" class="tin" type="text" placeholder="Canberra" /></label>
+        </div>
+        <label class="check"><input type="checkbox" id="opt-research" checked /><span>Run advisory research (with source confidence)</span></label>
+        <label class="check"><input type="checkbox" id="opt-landings" checked /><span>Recommend landing pages to create next</span></label>
+        <div id="research-box" class="panel hidden" style="margin-top:10px"></div>
+        <div id="landings-box" class="hidden" style="margin-top:10px"></div>
+        <div class="row" style="margin-top:14px;justify-content:space-between">
+          <button type="button" class="btn ghost" id="fill-back">Back to layout</button>
+          <div class="row">
+            <button type="button" class="btn" id="btn-research">Refresh research</button>
+            <button type="button" class="btn primary" id="btn-generate">Generate content into layout</button>
+          </div>
+        </div>
+        <p class="msg" id="fill-msg"></p>
+        <pre id="fill-out" class="panel out hidden"></pre>
+        <div class="row" style="margin-top:12px">
+          <a class="btn primary hidden" id="btn-open-manage" href="/manage">Continue in editor</a>
+        </div>
+      </section>
     </div>
 
-    <div class="actions">
-      <a class="btn primary" href="/manage">Back to editor</a>
-      <a class="btn" href="/partner">Partner dashboard</a>
+    <div class="row" style="margin-top:18px">
+      <a class="btn" href="/manage">Back to editor</a>
+      <a class="btn ghost" href="/partner">Partner dashboard</a>
     </div>
   </main>
+
   <script>
-    (function () {
-      var params = new URLSearchParams(location.search);
-      var preview = params.get('preview') === '1';
-      function show(enabled) {
-        document.getElementById('gate-off').classList.toggle('hidden', enabled);
-        document.getElementById('gate-on').classList.toggle('hidden', !enabled);
-        document.getElementById('choices').hidden = !enabled;
+  (function () {
+    var STORAGE_KEY = 'lp_layout_composer_designs_v1';
+    var state = {
+      step: 'entry',
+      mode: 'layout',
+      catalogue: [],
+      blueprint: null,
+      confirmed: false,
+      startMode: null,
+      token: null,
+      selectedLandings: {}
+    };
+    var STEPS = [
+      { id: 'entry', label: 'Start' },
+      { id: 'pick', label: 'Choose' },
+      { id: 'build', label: 'Arrange' },
+      { id: 'fill', label: 'Fill' }
+    ];
+
+    function $(id) { return document.getElementById(id); }
+    function show(el, on) { if (el) el.classList.toggle('hidden', !on); }
+    function setMsg(id, text, kind) {
+      var el = $(id); if (!el) return;
+      el.textContent = text || '';
+      el.className = 'msg' + (kind ? ' ' + kind : '');
+    }
+    function esc(s) {
+      return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+    function authHeaders() {
+      var h = { 'content-type': 'application/json' };
+      if (state.token) h.Authorization = 'Bearer ' + state.token;
+      return h;
+    }
+    async function resolveToken() {
+      try {
+        if (window.supabase && window.supabase.auth) {
+          var s = await window.supabase.auth.getSession();
+          state.token = s && s.data && s.data.session && s.data.session.access_token || null;
+        }
+      } catch (_e) {}
+      if (!state.token) {
+        try { state.token = localStorage.getItem('sb-access-token') || localStorage.getItem('access_token'); } catch (_e2) {}
       }
-      if (preview) {
-        show(true);
+      return state.token;
+    }
+    function loadDesigns() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch (_e) { return []; }
+    }
+    function saveDesigns(list) { localStorage.setItem(STORAGE_KEY, JSON.stringify(list || [])); }
+
+    function stepIndex(id) {
+      for (var i = 0; i < STEPS.length; i++) if (STEPS[i].id === id) return i;
+      return 0;
+    }
+    function renderSteps() {
+      $('steps').innerHTML = STEPS.map(function (s) {
+        var cls = 'pill' + (s.id === state.step ? ' on' : '') + (stepIndex(s.id) < stepIndex(state.step) ? ' done' : '');
+        return '<span class="' + cls + '">' + s.label + '</span>';
+      }).join('');
+    }
+    function go(step) {
+      state.step = step;
+      show($('step-entry'), step === 'entry');
+      show($('step-pick'), step === 'pick');
+      show($('step-build'), step === 'build');
+      show($('step-fill'), step === 'fill');
+      renderSteps();
+    }
+
+    function sectionsOf(bp) {
+      return (bp && bp.pages && bp.pages[0] && bp.pages[0].sections) || [];
+    }
+    function setSections(list) {
+      if (!state.blueprint.pages || !state.blueprint.pages[0]) {
+        state.blueprint.pages = [{ id: 'home', label: 'Home', path: '/', sections: [] }];
+      }
+      state.blueprint.pages[0].sections = list;
+      state.blueprint.apps = list.map(function (s) {
+        return { sectionKey: s.key, enabled: s.enabled !== false, label: s.label || s.key };
+      });
+      state.confirmed = false;
+    }
+
+    function fillAddSelect() {
+      var used = {};
+      sectionsOf(state.blueprint).forEach(function (s) { used[s.key] = 1; });
+      var opts = state.catalogue.filter(function (c) { return !used[c.key]; });
+      $('add-sec').innerHTML = opts.length
+        ? opts.map(function (c) { return '<option value="' + esc(c.key) + '">' + esc(c.label) + '</option>'; }).join('')
+        : '<option value="">All sections added</option>';
+    }
+
+    function renderBuilder() {
+      if (!state.blueprint) return;
+      $('bp-name').value = state.blueprint.name || '';
+      $('build-title').textContent = state.blueprint.name || 'Layout';
+      var secs = sectionsOf(state.blueprint);
+      var list = $('sec-list');
+      var preview = $('preview-pane');
+      list.innerHTML = secs.map(function (s, idx) {
+        return '<li class="sec-item' + (s.enabled === false ? ' off' : '') + '" draggable="true" data-idx="' + idx + '">' +
+          '<span class="handle">⋮⋮</span>' +
+          '<span><strong>' + esc(s.label || s.key) + '</strong><div class="muted">' + esc(s.key) + '</div></span>' +
+          '<label class="muted"><input type="checkbox" data-toggle="' + idx + '"' + (s.enabled === false ? '' : ' checked') + '> On</label>' +
+          '<button type="button" class="btn ghost" data-remove="' + idx + '">Remove</button></li>';
+      }).join('');
+      preview.innerHTML = secs.filter(function (s) { return s.enabled !== false; }).map(function (s) {
+        return '<div class="preview-block"><strong>' + esc(s.label || s.key) + '</strong>Stack preview — content fills after confirm.</div>';
+      }).join('') || '<div class="preview-block">No sections enabled.</div>';
+      show(list, state.mode === 'layout');
+      show(preview, state.mode === 'preview');
+      wireDnD();
+      fillAddSelect();
+    }
+
+    function wireDnD() {
+      var list = $('sec-list');
+      var dragIdx = null;
+      list.querySelectorAll('.sec-item').forEach(function (row) {
+        row.addEventListener('dragstart', function () {
+          dragIdx = Number(row.getAttribute('data-idx'));
+          row.classList.add('dragging');
+        });
+        row.addEventListener('dragend', function () { row.classList.remove('dragging'); dragIdx = null; });
+        row.addEventListener('dragover', function (e) { e.preventDefault(); });
+        row.addEventListener('drop', function (e) {
+          e.preventDefault();
+          var to = Number(row.getAttribute('data-idx'));
+          if (dragIdx == null || to === dragIdx) return;
+          var secs = sectionsOf(state.blueprint).slice();
+          var moved = secs.splice(dragIdx, 1)[0];
+          secs.splice(to, 0, moved);
+          setSections(secs);
+          renderBuilder();
+        });
+      });
+      list.querySelectorAll('[data-toggle]').forEach(function (cb) {
+        cb.addEventListener('change', function () {
+          var i = Number(cb.getAttribute('data-toggle'));
+          var secs = sectionsOf(state.blueprint).slice();
+          secs[i].enabled = !!cb.checked;
+          setSections(secs);
+          renderBuilder();
+        });
+      });
+      list.querySelectorAll('[data-remove]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var i = Number(btn.getAttribute('data-remove'));
+          var secs = sectionsOf(state.blueprint).slice();
+          secs.splice(i, 1);
+          setSections(secs);
+          renderBuilder();
+        });
+      });
+    }
+
+    function openBuilder(bp) {
+      state.blueprint = bp;
+      state.confirmed = false;
+      go('build');
+      renderBuilder();
+    }
+
+    async function loadCatalogue() {
+      var r = await fetch('/api/layout-composer/catalogue');
+      var j = await r.json();
+      state.catalogue = (j && j.sections) || [];
+    }
+
+    async function loadPresets() {
+      setMsg('pick-msg', 'Loading presets…');
+      await resolveToken();
+      var r = await fetch('/api/layout-composer/presets', { headers: authHeaders() });
+      var j = await r.json();
+      if (!j || !j.ok) {
+        setMsg('pick-msg', (j && j.error) || 'Could not load presets. Sign in via manage, then retry.', 'err');
+        return [];
+      }
+      setMsg('pick-msg', (j.presets && j.presets.length) ? '' : (j.hint || 'No presets yet — try scratch.'));
+      return j.presets || [];
+    }
+
+    function renderPick(items, kind) {
+      var grid = $('pick-grid');
+      if (!items.length) {
+        grid.innerHTML = '<p class="muted">Nothing here yet.</p>';
         return;
       }
-      fetch('/api/layout-composer/flags')
-        .then(function (r) { return r.json(); })
-        .then(function (j) { show(!!(j && j.enabled)); })
-        .catch(function () { show(false); });
+      grid.innerHTML = items.map(function (it, idx) {
+        var title = it.name || it.title || ('Design ' + (idx + 1));
+        var sub = it.description || ((it.pages && it.pages[0] && (it.pages[0].sections || []).length) + ' sections') || '';
+        return '<button type="button" class="card" data-pick="' + idx + '"><h2>' + esc(title) + '</h2><p>' + esc(sub) + '</p></button>';
+      }).join('');
+      grid.querySelectorAll('[data-pick]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var it = items[Number(btn.getAttribute('data-pick'))];
+          if (kind === 'preset') {
+            var copy = JSON.parse(JSON.stringify(it));
+            copy.kind = 'user_design';
+            copy.readOnly = false;
+            copy.source = 'customised_preset';
+            copy.name = (it.name || 'Preset') + ' (custom)';
+            openBuilder(copy);
+          } else {
+            openBuilder(JSON.parse(JSON.stringify(it.blueprint || it)));
+          }
+        });
+      });
+    }
+
+    async function enableApp() {
+      show($('gate-off'), false);
+      show($('app'), true);
+      await loadCatalogue();
+      go('entry');
+    }
+
+    document.querySelectorAll('[data-start]').forEach(function (btn) {
+      btn.addEventListener('click', async function () {
+        var mode = btn.getAttribute('data-start');
+        state.startMode = mode;
+        if (mode === 'scratch') {
+          var defaults = state.catalogue.filter(function (s) { return s.group === 'default' || s.defaultOn; });
+          if (!defaults.length) defaults = state.catalogue.slice(0, 10);
+          openBuilder({
+            kind: 'scratch', readOnly: false, source: 'scratch', name: 'Scratch layout', status: 'draft',
+            pages: [{
+              id: 'home', label: 'Home', path: '/',
+              sections: defaults.map(function (s) {
+                return { key: s.key, enabled: s.defaultOn !== false, label: s.label, origin: 'scratch' };
+              })
+            }]
+          });
+          return;
+        }
+        $('pick-title').textContent = mode === 'mine' ? 'My Designs' : 'Preset Designs';
+        go('pick');
+        if (mode === 'mine') {
+          var mine = loadDesigns();
+          renderPick(mine, 'mine');
+          setMsg('pick-msg', mine.length ? '' : 'No saved designs in this browser yet.');
+        } else {
+          renderPick(await loadPresets(), 'preset');
+        }
+      });
+    });
+
+    $('pick-back').onclick = function () { go('entry'); };
+    $('build-back').onclick = function () { go(state.startMode === 'scratch' ? 'entry' : 'pick'); };
+    $('fill-back').onclick = function () { state.confirmed = false; go('build'); };
+
+    $('mode-layout').onclick = function () {
+      state.mode = 'layout';
+      $('mode-layout').classList.add('on');
+      $('mode-preview').classList.remove('on');
+      renderBuilder();
+    };
+    $('mode-preview').onclick = function () {
+      state.mode = 'preview';
+      $('mode-preview').classList.add('on');
+      $('mode-layout').classList.remove('on');
+      renderBuilder();
+    };
+
+    $('bp-name').addEventListener('input', function () {
+      if (state.blueprint) state.blueprint.name = $('bp-name').value;
+    });
+
+    $('btn-add').onclick = function () {
+      var key = $('add-sec').value; if (!key) return;
+      var cat = state.catalogue.find(function (c) { return c.key === key; });
+      var secs = sectionsOf(state.blueprint).slice();
+      secs.push({ key: key, enabled: true, label: (cat && cat.label) || key, origin: 'user' });
+      setSections(secs);
+      renderBuilder();
+    };
+
+    $('btn-save').onclick = function () {
+      if (!state.blueprint) return;
+      state.blueprint.name = $('bp-name').value || state.blueprint.name || 'Untitled';
+      state.blueprint.updatedAt = new Date().toISOString();
+      if (!state.blueprint.id) state.blueprint.id = 'local_' + Date.now();
+      var list = loadDesigns().filter(function (d) { return d.id !== state.blueprint.id; });
+      list.unshift({
+        id: state.blueprint.id,
+        title: state.blueprint.name,
+        name: state.blueprint.name,
+        description: sectionsOf(state.blueprint).length + ' sections',
+        updatedAt: state.blueprint.updatedAt,
+        blueprint: state.blueprint
+      });
+      saveDesigns(list.slice(0, 40));
+      setMsg('build-msg', 'Saved to My Designs (this browser).', 'ok');
+    };
+
+    $('btn-confirm').onclick = function () {
+      if (!state.blueprint || !sectionsOf(state.blueprint).length) {
+        setMsg('build-msg', 'Add at least one section before confirming.', 'err');
+        return;
+      }
+      state.blueprint.name = $('bp-name').value || state.blueprint.name;
+      state.confirmed = true;
+      state.blueprint.status = 'confirmed';
+      state.blueprint.confirmedAt = new Date().toISOString();
+      setMsg('build-msg', 'Layout confirmed. Structure locked for content fill.', 'ok');
+      go('fill');
+    };
+
+    async function runResearch() {
+      await resolveToken();
+      var brief = {
+        businessName: $('brief-name').value.trim(),
+        trade: $('brief-trade').value.trim(),
+        location: $('brief-loc').value.trim()
+      };
+      var r = await fetch('/api/layout-composer/research', {
+        method: 'POST', headers: authHeaders(), body: JSON.stringify({ brief: brief })
+      });
+      var j = await r.json();
+      var box = $('research-box');
+      show(box, true);
+      if (!j || j.ok === false) {
+        box.innerHTML = '<p class="msg err">' + esc((j && j.error) || 'Research failed') + '</p>';
+        return;
+      }
+      box.innerHTML = '<strong>Research</strong><p>' + esc(j.summary) + '</p>' +
+        '<p class="muted">' + esc(j.disclaimer || '') + '</p><ul>' +
+        (j.sources || []).map(function (s) {
+          return '<li><strong>' + esc(s.title) + '</strong> · confidence ' +
+            Math.round((s.confidence || 0) * 100) + '% — ' + esc(s.note || '') + '</li>';
+        }).join('') + '</ul>';
+    }
+
+    async function runLandings() {
+      await resolveToken();
+      var brief = {
+        businessName: $('brief-name').value.trim(),
+        trade: $('brief-trade').value.trim(),
+        location: $('brief-loc').value.trim()
+      };
+      var r = await fetch('/api/layout-composer/landings', {
+        method: 'POST', headers: authHeaders(), body: JSON.stringify({ brief: brief })
+      });
+      var j = await r.json();
+      var box = $('landings-box');
+      show(box, true);
+      if (!j || !j.ok) {
+        box.innerHTML = '<p class="msg err">' + esc((j && j.error) || 'Could not load recommendations') + '</p>';
+        return;
+      }
+      box.innerHTML = (j.landings || []).map(function (l) {
+        var checked = state.selectedLandings[l.id] != null ? state.selectedLandings[l.id] : !!l.selectedDefault;
+        state.selectedLandings[l.id] = checked;
+        return '<label class="landing"><input type="checkbox" data-landing="' + esc(l.id) + '"' +
+          (checked ? ' checked' : '') + ' /><span><strong>' + esc(l.title) + '</strong>' +
+          '<div class="muted">' + esc(l.path) + ' · ' + Math.round((l.confidence || 0) * 100) + '%</div>' +
+          '<div>' + esc(l.reason) + '</div></span></label>';
+      }).join('') + '<p class="muted">' + esc((j.integration && j.integration.note) || '') + '</p>';
+      box.querySelectorAll('[data-landing]').forEach(function (cb) {
+        cb.addEventListener('change', function () {
+          state.selectedLandings[cb.getAttribute('data-landing')] = !!cb.checked;
+        });
+      });
+    }
+
+    $('btn-research').onclick = function () { runResearch(); };
+    $('btn-generate').onclick = async function () {
+      if (!state.confirmed) { setMsg('fill-msg', 'Confirm the layout before generating.', 'err'); return; }
+      var brief = {
+        businessName: $('brief-name').value.trim(),
+        trade: $('brief-trade').value.trim(),
+        location: $('brief-loc').value.trim()
+      };
+      if (!brief.businessName) { setMsg('fill-msg', 'Business name is required.', 'err'); return; }
+      setMsg('fill-msg', 'Generating into confirmed structure…');
+      await resolveToken();
+      if ($('opt-research').checked) await runResearch();
+      if ($('opt-landings').checked) await runLandings();
+      var r = await fetch('/api/layout-composer/generate', {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ blueprint: state.blueprint, brief: brief, confirmed: true })
+      });
+      var j = await r.json();
+      if (!j || !j.ok) { setMsg('fill-msg', (j && j.error) || 'Generate failed', 'err'); return; }
+      try { sessionStorage.setItem('lp_layout_composer_last_config', JSON.stringify(j.config)); } catch (_e) {}
+      setMsg('fill-msg', j.notice || 'Filled without changing structure.', 'ok');
+      var out = $('fill-out');
+      show(out, true);
+      out.textContent = JSON.stringify({
+        filledKeys: j.filledKeys,
+        sectionOrder: j.sectionOrder,
+        selectedLandings: Object.keys(state.selectedLandings).filter(function (k) { return state.selectedLandings[k]; }),
+        configPreview: { name: j.config && j.config.name, trade: j.config && j.config.trade, sectionOrder: j.sectionOrder }
+      }, null, 2);
+      show($('btn-open-manage'), true);
+    };
+
+    (async function boot() {
+      var params = new URLSearchParams(location.search);
+      var preview = params.get('preview') === '1';
+      try {
+        var r = await fetch('/api/layout-composer/flags');
+        var j = await r.json();
+        if (preview || (j && j.enabled)) await enableApp();
+      } catch (_e) {
+        if (preview) await enableApp();
+      }
     })();
+  })();
   </script>
 </body>
 </html>
