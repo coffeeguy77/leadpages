@@ -50,4 +50,4 @@ With flag:
 Auth notes:
 
 - Generate / research / landings work without sign-in (deterministic stubs).
-- Presets list requires sign-in to load Themes; unsigned users get an empty list + scratch path.
+- Preset Designs load live Themes (`positioning_layouts`, enabled partners+public) without requiring sign-in — same source as Themes Builder / demos. Customise is always a copy.
