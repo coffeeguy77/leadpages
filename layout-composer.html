@@ -26,6 +26,13 @@
     .card:hover{border-color:#b7d7c8;box-shadow:0 8px 22px rgba(23,23,20,.06)}
     .card h2{margin:0 0 6px;font-size:1.05rem}
     .card p{margin:0;color:var(--muted);font-size:.92rem;line-height:1.35}
+    .pick-card{padding:0;overflow:hidden;display:flex;flex-direction:column}
+    .pick-card .thumb{height:120px;background:#ebe7dc;border-bottom:1px solid var(--line);overflow:hidden}
+    .pick-card .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+    .pick-card .thumb-empty{background:linear-gradient(135deg,#e5f3ed,#ebe7dc)}
+    .pick-card .pick-body{padding:14px 16px 16px}
+    .pick-card .pick-meta{margin-top:8px!important;font-size:11.5px!important;color:#7a7a70}
+    .pick-card .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
     .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
     .btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 14px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--ink);font-weight:650;font-size:14px;cursor:pointer;text-decoration:none}
     .btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
@@ -73,7 +80,7 @@
       <section id="step-entry" class="panel">
         <h2 style="margin:0 0 10px;font-size:1.1rem">How do you want to start?</h2>
         <div class="grid">
-          <button type="button" class="card" data-start="preset"><h2>Preset Designs</h2><p>Copy a Themes layout as a starting blueprint.</p></button>
+          <button type="button" class="card" data-start="preset"><h2>Preset Designs</h2><p>Live Themes layouts (cafe, landscaper, mechanic, and any you create). Customise = your copy.</p></button>
           <button type="button" class="card" data-start="mine"><h2>My Designs</h2><p>Continue a saved draft from this browser.</p></button>
           <button type="button" class="card" data-start="scratch"><h2>Start from scratch</h2><p>Default homepage stack you rearrange yourself.</p></button>
           <a class="card" href="/manage"><h2>Existing site</h2><p>Open the current editor for sites already in your account.</p></a>
@@ -327,28 +334,49 @@
     }
 
     async function loadPresets() {
-      setMsg('pick-msg', 'Loading presets…');
+      setMsg('pick-msg', 'Loading Themes presets…');
       await resolveToken();
       var r = await fetch('/api/layout-composer/presets', { headers: authHeaders() });
       var j = await r.json();
       if (!j || !j.ok) {
-        setMsg('pick-msg', (j && j.error) || 'Could not load presets. Sign in via manage, then retry.', 'err');
+        setMsg('pick-msg', (j && j.error) || 'Could not load Themes presets.', 'err');
         return [];
       }
-      setMsg('pick-msg', (j.presets && j.presets.length) ? '' : (j.hint || 'No presets yet — try scratch.'));
+      var n = (j.presets && j.presets.length) || 0;
+      setMsg('pick-msg', n
+        ? ('Showing ' + n + ' Themes layout' + (n === 1 ? '' : 's') + ' (cafe, landscaper, mechanic, and any you create).')
+        : (j.hint || 'No Themes presets yet — create them in Themes Builder, or Start from scratch.'));
       return j.presets || [];
     }
 
     function renderPick(items, kind) {
       var grid = $('pick-grid');
       if (!items.length) {
-        grid.innerHTML = '<p class="muted">Nothing here yet.</p>';
+        grid.innerHTML = kind === 'preset'
+          ? '<p class="muted">No Themes layouts yet. Create cafe / landscaper / mechanic (and future) layouts in Themes Builder — they load here automatically.</p>'
+          : '<p class="muted">Nothing here yet.</p>';
         return;
       }
       grid.innerHTML = items.map(function (it, idx) {
         var title = it.name || it.title || ('Design ' + (idx + 1));
-        var sub = it.description || ((it.pages && it.pages[0] && (it.pages[0].sections || []).length) + ' sections') || '';
-        return '<button type="button" class="card" data-pick="' + idx + '"><h2>' + esc(title) + '</h2><p>' + esc(sub) + '</p></button>';
+        var secCount = (it.pages && it.pages[0] && (it.pages[0].sections || []).length) || 0;
+        var tags = (it.meta && it.meta.industryTags) || [];
+        var tagLine = tags.length ? tags.slice(0, 4).join(' · ') : '';
+        var sub = it.description || (secCount ? (secCount + ' sections') : '') || tagLine || '';
+        if (tagLine && it.description) sub = it.description;
+        var img = (it.preview && (it.preview.themeImageUrl || it.preview.layoutImageUrl)) || '';
+        var thumb = img
+          ? '<div class="thumb"><img src="' + esc(img) + '" alt="" loading="lazy" /></div>'
+          : '<div class="thumb thumb-empty"></div>';
+        var meta = [];
+        if (secCount) meta.push(secCount + ' sections');
+        if (tagLine) meta.push(esc(tagLine));
+        if (it.slug) meta.push('<span class="mono">' + esc(it.slug) + '</span>');
+        return '<button type="button" class="card pick-card" data-pick="' + idx + '">' +
+          thumb +
+          '<div class="pick-body"><h2>' + esc(title) + '</h2><p>' + esc(sub) + '</p>' +
+          (meta.length ? '<p class="pick-meta">' + meta.join(' · ') + '</p>' : '') +
+          '</div></button>';
       }).join('');
       grid.querySelectorAll('[data-pick]').forEach(function (btn) {
         btn.addEventListener('click', function () {
@@ -358,6 +386,8 @@
             copy.kind = 'user_design';
             copy.readOnly = false;
             copy.source = 'customised_preset';
+            copy.sourcePresetId = it.sourceId || null;
+            copy.sourcePresetSlug = it.slug || null;
             copy.name = (it.name || 'Preset') + ' (custom)';
             openBuilder(copy);
           } else {
