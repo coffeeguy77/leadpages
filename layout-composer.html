@@ -46,15 +46,24 @@
     .mode button{border:0;background:#fff;padding:8px 12px;font-weight:700;cursor:pointer}
     .mode button.on{background:var(--accent-soft);color:var(--accent)}
     .sec-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
-    .sec-item{display:grid;grid-template-columns:28px 1fr auto auto;gap:8px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;cursor:grab}
+    .sec-list,.preview-stack{position:relative}
+    .sec-item{display:grid;grid-template-columns:28px minmax(0,1fr) auto auto auto auto;gap:8px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;cursor:grab;position:relative}
     .sec-item.off{opacity:.55}
     .sec-item.dragging{opacity:.4}
     .handle{color:var(--muted);user-select:none}
+    .move-btns{display:inline-flex;flex-direction:column;gap:2px}
+    .move-btns button{border:1px solid var(--line);background:#fff;width:28px;height:22px;border-radius:6px;padding:0;line-height:1;font-size:11px;cursor:pointer;color:var(--ink)}
+    .move-btns button:hover{border-color:var(--accent);color:var(--accent)}
+    .move-btns button:disabled{opacity:.35;cursor:not-allowed}
+    .drop-line{position:absolute;left:4px;right:4px;height:0;border-top:3px solid var(--accent);border-radius:2px;pointer-events:none;z-index:5;box-shadow:0 0 0 1px rgba(11,110,79,.2);display:none}
+    .drop-line.on{display:block}
     .preview-stack{display:flex;flex-direction:column;gap:6px;min-height:120px}
     .preview-hint{font-size:12px;color:var(--muted);margin:0 0 8px;line-height:1.4}
     .preview-block{position:relative;border:1px solid #cfcabe;border-radius:10px;overflow:hidden;background:#faf8f2;color:var(--muted);font-size:12px;cursor:grab;padding:0}
     .preview-block.dragging{opacity:.45}
-    .preview-block.drag-over{outline:2px solid var(--accent);outline-offset:1px}
+    .preview-block .pv-move{position:absolute;top:8px;right:8px;z-index:3;display:inline-flex;flex-direction:column;gap:2px}
+    .preview-block .pv-move button{border:0;background:rgba(255,255,255,.92);width:28px;height:22px;border-radius:6px;padding:0;line-height:1;font-size:11px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.15)}
+    .preview-block .pv-move button:disabled{opacity:.35;cursor:not-allowed}
     .preview-block .pv-media{display:block;width:100%;height:100%;object-fit:cover;background:#e8e4d8}
     .preview-block .pv-chrome{position:absolute;left:0;right:0;bottom:0;padding:6px 10px;background:linear-gradient(transparent,rgba(23,23,20,.72));color:#fff;display:flex;justify-content:space-between;gap:8px;align-items:flex-end}
     .preview-block .pv-chrome strong{display:block;font-size:12px;margin:0}
@@ -127,13 +136,13 @@
         <div class="builder" id="builder-shell">
           <div class="build-controls" id="build-controls">
             <label class="f" style="margin-bottom:10px"><span>Design name</span><input id="bp-name" class="tin" type="text" placeholder="e.g. Canberra plumber stack" /></label>
-            <ul class="sec-list" id="sec-list"></ul>
+            <div style="position:relative"><div class="drop-line" id="sec-drop-line" aria-hidden="true"></div><ul class="sec-list" id="sec-list"></ul></div>
             <div class="row" style="margin-top:10px">
               <label class="f"><span>Add section</span><select id="add-sec" class="tin"></select></label>
               <button type="button" class="btn" id="btn-add" style="margin-top:18px">Add</button>
             </div>
           </div>
-          <div id="preview-pane" class="preview-stack"></div>
+          <div style="position:relative"><div class="drop-line" id="preview-drop-line" aria-hidden="true"></div><div id="preview-pane" class="preview-stack"></div></div>
         </div>
         <div class="row" style="margin-top:14px;justify-content:space-between">
           <button type="button" class="btn ghost" id="build-back">Back</button>
@@ -298,14 +307,54 @@
       };
     }
 
+
     function moveSection(fromIdx, toIdx) {
       if (fromIdx == null || toIdx == null || fromIdx === toIdx) return;
       var secs = sectionsOf(state.blueprint).slice();
-      if (fromIdx < 0 || fromIdx >= secs.length || toIdx < 0 || toIdx >= secs.length) return;
+      if (fromIdx < 0 || fromIdx >= secs.length || toIdx < 0 || toIdx > secs.length) return;
       var moved = secs.splice(fromIdx, 1)[0];
+      if (toIdx > secs.length) toIdx = secs.length;
       secs.splice(toIdx, 0, moved);
       setSections(secs);
       renderBuilder();
+    }
+
+    function nudgeSection(idx, dir) {
+      moveSection(idx, idx + dir);
+    }
+
+    function clearDropLines() {
+      ['sec-drop-line', 'preview-drop-line'].forEach(function (id) {
+        var el = $(id);
+        if (!el) return;
+        el.classList.remove('on');
+        el.style.top = '';
+      });
+      document.querySelectorAll('.drag-over').forEach(function (n) { n.classList.remove('drag-over'); });
+    }
+
+    /** Place indicator line before/after target based on pointer Y. Returns insert index in full section list. */
+    function dropInsertIndex(targetEl, clientY, draggedIdx) {
+      var rect = targetEl.getBoundingClientRect();
+      var before = (clientY - rect.top) < rect.height / 2;
+      var targetIdx = Number(targetEl.getAttribute('data-idx'));
+      if (isNaN(targetIdx)) return null;
+      var insertAt = before ? targetIdx : targetIdx + 1;
+      // When removing dragged item first, adjust if inserting after its old slot
+      if (draggedIdx != null && insertAt > draggedIdx) insertAt -= 1;
+      return { insertAt: insertAt, before: before, targetIdx: targetIdx, rect: rect, host: targetEl.closest('.sec-list, #preview-pane') || targetEl.parentElement };
+    }
+
+    function showDropLine(lineId, host, targetEl, before) {
+      var line = $(lineId);
+      if (!line || !host || !targetEl) return;
+      var hostRect = host.getBoundingClientRect();
+      var rect = targetEl.getBoundingClientRect();
+      var y = before ? (rect.top - hostRect.top) : (rect.bottom - hostRect.top);
+      // account for host scroll
+      y += host.scrollTop || 0;
+      line.style.top = Math.max(0, y - 1) + 'px';
+      line.classList.add('on');
     }
 
     function renderBuilder() {
@@ -315,8 +364,8 @@
       var help = $('build-help');
       if (help) {
         help.textContent = state.mode === 'preview'
-          ? 'Preview mode: drag blocks to reorder. Heights follow section hierarchy (hero full; trust bar images ≈1/3; trust text ≈1/5).'
-          : 'Layout mode: drag the list to reorder. Live preview on the right uses proportional stock examples.';
+          ? 'Preview mode: drag blocks (drop line shows insert point) or use ↑ ↓. Heights follow hierarchy.'
+          : 'Layout mode: drag rows or use ↑ ↓. Drop line marks where the section will land.';
       }
       var shell = $('builder-shell');
       if (shell) shell.classList.toggle('preview-focus', state.mode === 'preview');
@@ -330,32 +379,44 @@
             '<option value="images"' + ((s.previewVariant || 'images') !== 'text' ? ' selected' : '') + '>Images</option>' +
             '<option value="text"' + (s.previewVariant === 'text' ? ' selected' : '') + '>Text</option></select></label>'
           : '';
+        var moves =
+          '<span class="move-btns">' +
+          '<button type="button" data-move-up="' + idx + '" title="Move up" aria-label="Move up"' + (idx === 0 ? ' disabled' : '') + '>▲</button>' +
+          '<button type="button" data-move-down="' + idx + '" title="Move down" aria-label="Move down"' + (idx >= secs.length - 1 ? ' disabled' : '') + '>▼</button>' +
+          '</span>';
         return '<li class="sec-item' + (s.enabled === false ? ' off' : '') + '" draggable="true" data-idx="' + idx + '">' +
-          '<span class="handle">⋮⋮</span>' +
+          '<span class="handle" title="Drag to reorder">⋮⋮</span>' +
           '<span><strong>' + esc(s.label || s.key) + '</strong><div class="muted">' + esc(s.key) +
           ' · ' + esc(pv.uploadSizeLabel) + ' · ' + esc(pv.tier) + '</div></span>' +
           trustToggle +
+          moves +
           '<label class="muted"><input type="checkbox" data-toggle="' + idx + '"' + (s.enabled === false ? '' : ' checked') + '> On</label>' +
           '<button type="button" class="btn ghost" data-remove="' + idx + '">Remove</button></li>';
       }).join('');
       var enabled = secs.map(function (s, idx) { return { s: s, idx: idx }; }).filter(function (x) { return x.s.enabled !== false; });
       preview.innerHTML =
-        '<p class="preview-hint">Stock examples only (one image per app). Upload to Cloudinary <code>leadpages/layout-composer/stock/</code> at the size shown on each block, then set the URL in <code>lib/layout-composer/preview-stock.js</code> → <code>STOCK_IMAGE_URLS</code>.</p>' +
-        (enabled.length ? enabled.map(function (x) {
+        '<p class="preview-hint">Stock examples only (one image per app). Upload to Cloudinary <code>leadpages/layout-composer/stock/</code> at the size shown on each block, then set the URL in <code>lib/layout-composer/preview-stock.js</code> → <code>STOCK_IMAGE_URLS</code>. Drag or use ↑ ↓ — the line shows the drop point.</p>' +
+        (enabled.length ? enabled.map(function (x, visIdx) {
           var s = x.s;
           var pv = cataloguePreview(s.key, s);
           var h = Math.max(28, Math.round(pv.units * UNIT_PX));
           var img = pv.imageUrl
             ? '<img class="pv-media" alt="" src="' + esc(pv.imageUrl) + '" style="height:' + h + 'px" />'
             : '<div class="pv-media" style="height:' + h + 'px;display:flex;align-items:center;padding:10px">' + esc(s.label || s.key) + '</div>';
+          var moves =
+            '<span class="pv-move">' +
+            '<button type="button" data-move-up="' + x.idx + '" title="Move up" aria-label="Move up"' + (visIdx === 0 ? ' disabled' : '') + '>▲</button>' +
+            '<button type="button" data-move-down="' + x.idx + '" title="Move down" aria-label="Move down"' + (visIdx >= enabled.length - 1 ? ' disabled' : '') + '>▼</button>' +
+            '</span>';
           return '<div class="preview-block tier-' + esc(pv.tier) + '" draggable="true" data-idx="' + x.idx + '" style="height:' + h + 'px" title="Drag to reorder">' +
-            img +
+            moves + img +
             '<div class="pv-chrome"><div><strong>' + esc(s.label || s.key) + '</strong>' +
             '<div class="pv-meta">' + esc(pv.uploadSizeLabel) + ' · ' + (pv.relativeToHero * 100).toFixed(0) + '% of hero height</div></div>' +
             '<span class="tier-chip">' + esc(pv.tier) + (pv.variant ? ' · ' + esc(pv.variant) : '') + '</span></div></div>';
         }).join('') : '<div class="preview-block" style="padding:14px">No sections enabled.</div>');
       show(list.parentElement || list, true);
       show(preview, true);
+      clearDropLines();
       wireDnD();
       fillAddSelect();
     }
@@ -364,34 +425,78 @@
       var list = $('sec-list');
       var preview = $('preview-pane');
       var dragIdx = null;
+      var pendingInsert = null;
 
-      function bindDrag(el) {
+      function bindDrag(el, lineId, host) {
         el.addEventListener('dragstart', function (e) {
+          // Don't start row drag from buttons/selects
+          if (e.target && (e.target.closest('button,select,input,label,a'))) {
+            e.preventDefault();
+            return;
+          }
           dragIdx = Number(el.getAttribute('data-idx'));
+          pendingInsert = null;
           el.classList.add('dragging');
           try { e.dataTransfer.setData('text/plain', String(dragIdx)); e.dataTransfer.effectAllowed = 'move'; } catch (_e) {}
         });
         el.addEventListener('dragend', function () {
           el.classList.remove('dragging');
           dragIdx = null;
-          list.querySelectorAll('.drag-over').forEach(function (n) { n.classList.remove('drag-over'); });
-          preview.querySelectorAll('.drag-over').forEach(function (n) { n.classList.remove('drag-over'); });
+          pendingInsert = null;
+          clearDropLines();
         });
         el.addEventListener('dragover', function (e) {
           e.preventDefault();
-          el.classList.add('drag-over');
+          if (dragIdx == null) return;
+          var info = dropInsertIndex(el, e.clientY, dragIdx);
+          if (!info) return;
+          pendingInsert = info.insertAt;
+          var lineHost = ($(lineId) && $(lineId).parentElement) || host;
+          showDropLine(lineId, lineHost, el, info.before);
         });
-        el.addEventListener('dragleave', function () { el.classList.remove('drag-over'); });
+        el.addEventListener('dragleave', function (e) {
+          // keep line if moving between children
+          if (e.relatedTarget && el.contains(e.relatedTarget)) return;
+        });
         el.addEventListener('drop', function (e) {
           e.preventDefault();
-          el.classList.remove('drag-over');
-          var to = Number(el.getAttribute('data-idx'));
+          e.stopPropagation();
+          var info = dropInsertIndex(el, e.clientY, dragIdx);
+          var to = pendingInsert != null ? pendingInsert : (info && info.insertAt);
+          clearDropLines();
+          if (dragIdx == null || to == null) return;
+          // moveSection expects destination index in the post-remove array
           moveSection(dragIdx, to);
+          dragIdx = null;
+          pendingInsert = null;
         });
       }
 
-      list.querySelectorAll('.sec-item').forEach(bindDrag);
-      preview.querySelectorAll('.preview-block[data-idx]').forEach(bindDrag);
+      list.querySelectorAll('.sec-item').forEach(function (el) {
+        bindDrag(el, 'sec-drop-line', list);
+      });
+      preview.querySelectorAll('.preview-block[data-idx]').forEach(function (el) {
+        bindDrag(el, 'preview-drop-line', preview);
+      });
+
+      function bindMoves(root) {
+        root.querySelectorAll('[data-move-up]').forEach(function (btn) {
+          btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            nudgeSection(Number(btn.getAttribute('data-move-up')), -1);
+          });
+        });
+        root.querySelectorAll('[data-move-down]').forEach(function (btn) {
+          btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            nudgeSection(Number(btn.getAttribute('data-move-down')), 1);
+          });
+        });
+      }
+      bindMoves(list);
+      bindMoves(preview);
 
       list.querySelectorAll('[data-toggle]').forEach(function (cb) {
         cb.addEventListener('change', function () {
