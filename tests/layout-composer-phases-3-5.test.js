@@ -116,6 +116,11 @@ describe('Layout Composer Phase 3–5 pipeline', () => {
     assert.match(html, /data-trust-variant/);
     assert.match(html, /preview-pane/);
     assert.match(html, /leadpages\/layout-composer\/stock/);
+    assert.match(html, /data-move-up/);
+    assert.match(html, /data-move-down/);
+    assert.match(html, /drop-line/);
+    assert.match(html, /sec-drop-line/);
+    assert.match(html, /showDropLine/);
     assert.match(vercel, /"\/layout-composer"/);
     for (const f of [
       'api/layout-composer/catalogue.js',
