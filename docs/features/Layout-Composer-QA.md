@@ -12,7 +12,7 @@
 1. **Flag off** — `/layout-composer` shows gate; manage New Site unchanged.
 2. **Flag on** — entry opens; Presets require auth; Scratch works offline after catalogue load.
 3. **DnD** — reorder in Layout list **and** Preview (drop line shows insert point); also ↑ ↓ arrows; toggle off.
-4. **Preview hierarchy** — hero / hero slider full height; Trust Bar images ≈1/3 hero; Trust Bar text ≈1/5; other apps scaled by tier. Stock example images only (not client photos).
+4. **Preview hierarchy** — proportional stack with spacing between blocks; short chrome bars (≈80px upload) use a compact readable row (no overlapping labels); no “% of hero height” copy. Stock example images only.
 5. **Confirm** — Fill step locked until confirm; Generate refuses `confirmed:false`.
 6. **Generate** — returns `structureLocked: true`; section order unchanged.
 7. **Research** — sources include confidence; disclaimer visible.
