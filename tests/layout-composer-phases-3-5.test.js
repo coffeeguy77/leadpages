@@ -121,6 +121,9 @@ describe('Layout Composer Phase 3–5 pipeline', () => {
     assert.match(html, /drop-line/);
     assert.match(html, /sec-drop-line/);
     assert.match(html, /showDropLine/);
+    assert.match(html, /is-compact/);
+    assert.match(html, /COMPACT_MIN_H/);
+    assert.doesNotMatch(html, /% of hero height/);
     assert.match(vercel, /"\/layout-composer"/);
     for (const f of [
       'api/layout-composer/catalogue.js',
