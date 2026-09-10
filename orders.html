@@ -218,6 +218,17 @@ input,select,textarea{
 .prod-img-preview.hide{display:none}
 .prod-img-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .prod-cat-bar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px;align-items:center}
+.cat-manage-list{display:flex;flex-direction:column;gap:8px}
+.cat-manage-row{
+  display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;
+  padding:10px 12px;border:1px solid var(--line);border-radius:10px;
+  background:color-mix(in srgb,var(--ink) 2%,transparent)
+}
+.cat-manage-row.is-inactive{opacity:.78}
+.cat-manage-meta{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.cat-manage-meta strong{font-size:var(--fs-base)}
+.cat-manage-meta .muted{font-size:var(--fs-sm);color:var(--ink-soft)}
+.cat-manage-actions{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .card-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start;margin-bottom:8px}
 .card-head .sub{margin:4px 0 0}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px}
@@ -856,6 +867,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
                 <button class="btn ghost" type="button" id="prod-more" aria-haspopup="true" aria-expanded="false">More actions</button>
                 <div class="prod-more-menu hide" id="prod-more-panel" hidden role="menu" style="position:absolute;right:0;top:100%;z-index:30;min-width:220px;padding:8px;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow)">
                   <button class="btn ghost" type="button" id="prod-auto-cat" role="menuitem" style="width:100%;justify-content:flex-start">Match categories</button>
+                  <button class="btn ghost" type="button" id="prod-manage-cats" role="menuitem" style="width:100%;justify-content:flex-start">Manage categories</button>
                   <button class="btn ghost" type="button" id="prod-pies-extra" role="menuitem" style="width:100%;justify-content:flex-start">Add Pies from titles</button>
                   <button class="btn ghost" type="button" id="prod-migrate-weight" role="menuitem" style="width:100%;justify-content:flex-start">Apply weight &amp; turkey rules</button>
                   <button class="btn ghost" type="button" id="prod-deactivate-unsized-hams" role="menuitem" style="width:100%;justify-content:flex-start">Deactivate unsized hams</button>
@@ -1927,6 +1939,21 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     <div class="modal-foot">
       <button class="btn ghost" type="button" id="void-cancel">Cancel</button>
       <button class="btn danger solid" type="button" id="void-confirm">Void order</button>
+    </div>
+  </div>
+</div>
+
+<div id="cat-manage-modal" class="modal-back sub hide" role="dialog" aria-modal="true" aria-labelledby="cat-manage-title">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-head"><h3 id="cat-manage-title">Manage categories</h3><button class="btn ghost" type="button" id="cat-manage-close">✕</button></div>
+    <div class="modal-body">
+      <p class="notice">Hide unused categories from the storefront and product picker. Products keep their assignment so you can restore later. Permanently delete only when no products use the category.</p>
+      <div class="cat-manage-list" id="cat-manage-list"></div>
+      <p class="notice" id="cat-manage-msg"></p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" type="button" id="cat-manage-add">+ New category</button>
+      <button class="btn solid" type="button" id="cat-manage-done">Done</button>
     </div>
   </div>
 </div>
@@ -5482,17 +5509,171 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     var curForm = formSel ? formSel.value : '';
     if (filter) {
       filter.innerHTML = '<option value="">All categories</option>' + cats.map(function(c){
-        return '<option value="' + esc(c.id) + '">' + esc(c.name) + '</option>';
+        var label = c.name + (c.active === false ? ' (hidden)' : '');
+        return '<option value="' + esc(c.id) + '">' + esc(label) + '</option>';
       }).join('');
       try { filter.value = curFilter; } catch (_e) {}
     }
     if (formSel) {
-      formSel.innerHTML = '<option value="">Uncategorised</option>' + cats.map(function(c){
-        return '<option value="' + esc(c.id) + '">' + esc(c.name) + '</option>';
+      formSel.innerHTML = '<option value="">Uncategorised</option>' + cats.filter(function(c){
+        return c.active !== false || String(c.id) === String(curForm);
+      }).map(function(c){
+        var label = c.name + (c.active === false ? ' (hidden)' : '');
+        return '<option value="' + esc(c.id) + '">' + esc(label) + '</option>';
       }).join('');
       try { formSel.value = curForm; } catch (_e) {}
     }
     renderExtraCategoryChecks(readExtraCategoryIds());
+  }
+
+  function categoryUsageLocal(categoryId){
+    var id = String(categoryId || '');
+    var primary = 0;
+    var additional = 0;
+    (state.products || []).forEach(function(p){
+      if (!p) return;
+      if (String(p.category_id || '') === id) primary += 1;
+      else if (productCategoryIdsLocal(p).indexOf(id) >= 0) additional += 1;
+    });
+    return { primary: primary, additional: additional, total: primary + additional };
+  }
+
+  function closeManageCategories(){
+    var modal = $('cat-manage-modal');
+    if (modal) modal.classList.add('hide');
+  }
+
+  function renderManageCategories(){
+    var host = $('cat-manage-list');
+    var msg = $('cat-manage-msg');
+    if (!host) return;
+    var cats = (state.categories || []).slice().sort(function(a, b){
+      var aa = a.active === false ? 1 : 0;
+      var bb = b.active === false ? 1 : 0;
+      if (aa !== bb) return aa - bb;
+      return String(a.name || '').localeCompare(String(b.name || ''), undefined, { sensitivity: 'base' });
+    });
+    if (!cats.length) {
+      host.innerHTML = '<p class="muted">No categories yet. Add one or run Match categories.</p>';
+      if (msg) msg.textContent = '';
+      return;
+    }
+    host.innerHTML = cats.map(function(c){
+      var usage = categoryUsageLocal(c.id);
+      var inactive = c.active === false;
+      var usageLabel = usage.total
+        ? (usage.primary + ' product' + (usage.primary === 1 ? '' : 's') +
+          (usage.additional ? (' · ' + usage.additional + ' also listed') : ''))
+        : 'No products';
+      var actions = inactive
+        ? '<button class="btn ghost" type="button" data-cat-restore="' + esc(c.id) + '">Restore</button>' +
+          '<button class="btn danger" type="button" data-cat-hard="' + esc(c.id) + '"' +
+          (usage.total ? ' disabled title="Reassign or remove products first"' : '') + '>Delete forever</button>'
+        : '<button class="btn danger" type="button" data-cat-hide="' + esc(c.id) + '">Hide</button>';
+      return '<div class="cat-manage-row' + (inactive ? ' is-inactive' : '') + '">' +
+        '<div class="cat-manage-meta">' +
+        '<strong>' + esc(c.name) + (inactive ? ' <span class="badge muted">Hidden</span>' : '') + '</strong>' +
+        '<span class="muted">' + esc(usageLabel) + (c.slug ? ' · ' + esc(c.slug) : '') + '</span>' +
+        '</div><div class="cat-manage-actions">' + actions + '</div></div>';
+    }).join('');
+    if (msg) msg.textContent = '';
+    host.querySelectorAll('[data-cat-hide]').forEach(function(btn){
+      btn.addEventListener('click', function(){ hideProductCategory(btn.getAttribute('data-cat-hide')); });
+    });
+    host.querySelectorAll('[data-cat-restore]').forEach(function(btn){
+      btn.addEventListener('click', function(){ restoreProductCategory(btn.getAttribute('data-cat-restore')); });
+    });
+    host.querySelectorAll('[data-cat-hard]').forEach(function(btn){
+      btn.addEventListener('click', function(){ hardDeleteProductCategory(btn.getAttribute('data-cat-hard')); });
+    });
+  }
+
+  async function openManageCategories(){
+    if (!requireSite()) return;
+    var panel = $('prod-more-panel');
+    if (panel) { panel.setAttribute('hidden', 'hidden'); panel.classList.add('hide'); }
+    if ($('prod-more')) $('prod-more').setAttribute('aria-expanded', 'false');
+    try {
+      await loadProductsCache();
+      renderManageCategories();
+      var modal = $('cat-manage-modal');
+      if (modal) modal.classList.remove('hide');
+    } catch (e) {
+      toast((e && e.message) || String(e), 'err');
+    }
+  }
+
+  async function hideProductCategory(categoryId){
+    if (!requireSite() || !categoryId) return;
+    var cat = (state.categories || []).find(function(c){ return String(c.id) === String(categoryId); });
+    var usage = categoryUsageLocal(categoryId);
+    var name = (cat && cat.name) || 'this category';
+    var msg = 'Hide “' + name + '” from the storefront and product picker?';
+    if (usage.total) {
+      msg += ' ' + usage.total + ' product(s) stay assigned and can still be filtered — restore anytime.';
+    }
+    if (!confirm(msg)) return;
+    var note = $('cat-manage-msg');
+    if (note) note.textContent = 'Hiding…';
+    try {
+      await api('/api/order/products', {
+        method: 'POST',
+        body: { site_id: state.siteId, action: 'delete_category', id: categoryId }
+      });
+      await loadProductsCache();
+      fillCategorySelects();
+      renderManageCategories();
+      toast('Category hidden', 'ok');
+    } catch (e) {
+      if (note) note.textContent = (e && e.message) || String(e);
+      toast((e && e.message) || String(e), 'err');
+    }
+  }
+
+  async function restoreProductCategory(categoryId){
+    if (!requireSite() || !categoryId) return;
+    var note = $('cat-manage-msg');
+    if (note) note.textContent = 'Restoring…';
+    try {
+      await api('/api/order/products', {
+        method: 'POST',
+        body: { site_id: state.siteId, action: 'restore_category', id: categoryId }
+      });
+      await loadProductsCache();
+      fillCategorySelects();
+      renderManageCategories();
+      toast('Category restored', 'ok');
+    } catch (e) {
+      if (note) note.textContent = (e && e.message) || String(e);
+      toast((e && e.message) || String(e), 'err');
+    }
+  }
+
+  async function hardDeleteProductCategory(categoryId){
+    if (!requireSite() || !categoryId) return;
+    var cat = (state.categories || []).find(function(c){ return String(c.id) === String(categoryId); });
+    var usage = categoryUsageLocal(categoryId);
+    if (usage.total) {
+      toast('Reassign or remove products before permanently deleting', 'err');
+      return;
+    }
+    var name = (cat && cat.name) || 'this category';
+    if (!confirm('Permanently delete “' + name + '”? This cannot be undone.')) return;
+    var note = $('cat-manage-msg');
+    if (note) note.textContent = 'Deleting…';
+    try {
+      await api('/api/order/products', {
+        method: 'POST',
+        body: { site_id: state.siteId, action: 'delete_category', id: categoryId, hard: true }
+      });
+      await loadProductsCache();
+      fillCategorySelects();
+      renderManageCategories();
+      toast('Category deleted', 'ok');
+    } catch (e) {
+      if (note) note.textContent = (e && e.message) || String(e);
+      toast((e && e.message) || String(e), 'err');
+    }
   }
 
   function productCategoryIdsLocal(p){
@@ -6791,6 +6972,9 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       });
       await loadProductsCache();
       fillCategorySelects();
+      if ($('cat-manage-modal') && !$('cat-manage-modal').classList.contains('hide')) {
+        renderManageCategories();
+      }
       toast('Category added', 'ok');
     } catch (e) {
       toast((e && e.message) || String(e), 'err');
@@ -9082,6 +9266,13 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
   });
   if ($('prod-cat-add')) $('prod-cat-add').addEventListener('click', addProductCategory);
   if ($('prod-auto-cat')) $('prod-auto-cat').addEventListener('click', autoCategoriseProducts);
+  if ($('prod-manage-cats')) $('prod-manage-cats').addEventListener('click', openManageCategories);
+  if ($('cat-manage-close')) $('cat-manage-close').addEventListener('click', closeManageCategories);
+  if ($('cat-manage-done')) $('cat-manage-done').addEventListener('click', closeManageCategories);
+  if ($('cat-manage-add')) $('cat-manage-add').addEventListener('click', addProductCategory);
+  if ($('cat-manage-modal')) $('cat-manage-modal').addEventListener('click', function(ev){
+    if (ev.target === $('cat-manage-modal')) closeManageCategories();
+  });
   if ($('prod-pies-extra')) $('prod-pies-extra').addEventListener('click', assignPiesFromTitles);
   if ($('prod-migrate-weight')) $('prod-migrate-weight').addEventListener('click', migrateWeightSettings);
   if ($('prod-deactivate-unsized-hams')) $('prod-deactivate-unsized-hams').addEventListener('click', deactivateUnsizedHams);
