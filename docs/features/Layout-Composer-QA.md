@@ -14,12 +14,14 @@
 3. **DnD** — reorder in Layout list **and** Preview (drop line shows insert point); also ↑ ↓ arrows; toggle off.
 4. **Preview hierarchy** — proportional stack with spacing between blocks; short chrome bars (≈80px upload) use a compact readable row (no overlapping labels); no “% of hero height” copy. Stock example images only.
 5. **Confirm** — Fill step locked until confirm; Generate refuses `confirmed:false`.
-6. **Generate** — returns `structureLocked: true`; section order unchanged.
-7. **Research** — sources include confidence; disclaimer visible.
-8. **Landings** — checkboxes; no automatic page create.
-9. **Trade pack regression** — create missing trade → seed site **once** (no second AI confirm from false location usage).
-10. **Themes** — existing Themes admin/apply still works; presets are copy-on-customise.
-11. **Editor** — open manage after generate; session may hold last config in `sessionStorage.lp_layout_composer_last_config`.
+6. **Briefing** — Enter business name + trade → **Start briefing** → answer recommended chips (or type your own) until confident → layout auto-fills.
+7. **Generate / Fill every app** — returns structure locked; every enabled section has SEO copy from the briefing; order unchanged.
+8. **Create site** — signed-in partner/admin; creates `sites` row and opens manage.
+9. **Research** — sources include confidence; disclaimer visible.
+10. **Landings** — checkboxes; no automatic page create.
+11. **Trade pack regression** — create missing trade → seed site **once** (no second AI confirm from false location usage).
+12. **Themes** — existing Themes admin/apply still works; presets are copy-on-customise.
+13. **Editor** — open manage after generate; session may hold last config in `sessionStorage.lp_layout_composer_last_config`.
 
 ## Stock preview images (where to add them)
 
