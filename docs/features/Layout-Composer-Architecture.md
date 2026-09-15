@@ -165,6 +165,7 @@ AI must never add/remove/reorder pages or sections after confirm.
 
 **Shipped in Phase 3 (this branch):**
 - `POST /api/layout-composer/interview` — start/answer briefing turns
+- OpenAI optional: `lib/layout-composer/ai-brief.js` polishes interview copy + research when `OPENAI_API_KEY` is set (deterministic fallback otherwise)
 - Rich fill via `lib/layout-composer/rich-fill.js` (every enabled section)
 - `POST /api/layout-composer/create-site` — partner/admin creates `sites` row from filled config
 - Fill UI: Start briefing → chips / own words → Fill every app → Create site
