@@ -188,9 +188,45 @@ describe('Layout Composer interview + rich fill', () => {
     const researchApi = fs.readFileSync(path.join(root, 'api/layout-composer/research.js'), 'utf8');
     assert.match(interviewApi, /startInterview/);
     assert.match(interviewApi, /generateInterviewTurn/);
+    assert.match(interviewApi, /ai\.options/);
+    assert.match(interviewApi, /understandingPatch/);
     assert.match(createApi, /fillConfigFromUnderstanding/);
     assert.match(generateApi, /understanding/);
     assert.match(generateApi, /generateResearchBrief/);
     assert.match(researchApi, /generateResearchBrief/);
+  });
+
+  it('never seeds roof-repair/gutter chips for roof ventilation manufacturers', () => {
+    const { defaultServices } = require('../lib/layout-composer/interview');
+    const started = startInterview({
+      businessName: 'Corrugated Roof Vents',
+      trade: 'Roof Ventilation Products',
+      location: 'Australia',
+    });
+    const labels = (started.turn.options || []).map(function (o) { return o.label; });
+    assert.ok(labels.length >= 3);
+    labels.forEach(function (label) {
+      assert.equal(/roof repairs|re-roofing|guttering|leak detection|skylights/i.test(label), false, label);
+    });
+    assert.ok(labels.some(function (l) { return /vent/i.test(l); }));
+    assert.ok(/ventilation products/i.test(started.turn.question));
+
+    // Free-text product line must refresh upcoming chips away from roofing-contractor defaults.
+    const next = answerInterview(started.session, {
+      freeText: 'We manufacture metal roof ventilators - a roof ventilation product.',
+    });
+    assert.ok(next.understanding.services.some(function (s) { return /ventilat/i.test(s); }));
+    const q2 = (next.turn.options || []).map(function (o) { return o.label; }).join(' | ');
+    assert.equal(/guttering|re-roofing|leak detection/i.test(q2), false, q2);
+
+    const seeded = defaultServices({
+      businessName: 'Corrugated Roof Vents',
+      trade: 'Roof Ventilation Products',
+      location: 'Australia',
+      services: ['We manufacture metal roof ventilators'],
+    });
+    assert.ok(seeded.every(function (l) {
+      return !/roof repairs|re-roofing|guttering|leak detection|skylights/i.test(l);
+    }));
   });
 });

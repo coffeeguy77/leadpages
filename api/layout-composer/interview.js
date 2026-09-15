@@ -51,6 +51,11 @@ async function maybePolishTurn(turn, session, brief) {
         }
       }
     }
+    // Merge AI understanding patches (e.g. free-text product lines) into the session.
+    if (session && ai.understandingPatch && typeof ai.understandingPatch === 'object') {
+      session.understanding = Object.assign({}, session.understanding || {}, ai.understandingPatch);
+      out.understanding = session.understanding;
+    }
     out.aiSource = 'openai';
     return out;
   } catch (_e) {
