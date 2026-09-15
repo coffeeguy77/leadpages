@@ -1511,6 +1511,17 @@ html[data-lp-site-theme="electric-blue"] #site-label .lp-sitepick-sel{
   background: color-mix(in srgb, var(--accent) 22%, transparent);
   border-color: var(--accent);
 }
+.lpl-create-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+@media (max-width: 640px) {
+  .lpl-create-row { grid-template-columns: 1fr; }
+}
 .lpl-newcard {
   display: flex;
   align-items: center;
@@ -1519,7 +1530,7 @@ html[data-lp-site-theme="electric-blue"] #site-label .lp-sitepick-sel{
   width: 100%;
   box-sizing: border-box;
   padding: 12px;
-  margin-top: 8px;
+  margin-top: 0;
   border: 1.5px dashed color-mix(in srgb, var(--accent) 45%, transparent);
   border-radius: var(--radius-sm, 10px);
   background: transparent;
@@ -1530,6 +1541,14 @@ html[data-lp-site-theme="electric-blue"] #site-label .lp-sitepick-sel{
 .lpl-newcard:hover {
   background: color-mix(in srgb, var(--accent) 8%, transparent);
   border-color: var(--accent);
+}
+.lpl-composer-card {
+  border-style: solid;
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent-hover);
+}
+.lpl-composer-card:hover {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
 }
 #lp-landing .lpl-help {
   text-align: center;
