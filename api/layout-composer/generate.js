@@ -9,6 +9,7 @@ const {
 } = require('../../lib/layout-composer/generate');
 const { fillConfigFromUnderstanding, mergeBrief } = require('../../lib/layout-composer/rich-fill');
 const { suggestApps } = require('../../lib/layout-composer/interview');
+const { openaiKey, generateResearchBrief } = require('../../lib/layout-composer/ai-brief');
 
 /**
  * POST /api/layout-composer/generate
@@ -94,7 +95,15 @@ module.exports = async function layoutComposerGenerate(req, res) {
     };
 
     if (body.includeResearch) {
-      out.research = buildResearchBrief(effectiveBrief);
+      let research = null;
+      if (openaiKey()) {
+        try {
+          research = await generateResearchBrief(effectiveBrief, understanding || effectiveBrief);
+        } catch (_e) {
+          research = null;
+        }
+      }
+      out.research = research || buildResearchBrief(effectiveBrief);
     }
     if (body.includeLandings) {
       out.landings = recommendLandingPages(effectiveBrief);

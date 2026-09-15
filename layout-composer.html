@@ -100,6 +100,15 @@
     .conf-bar>i{display:block;height:100%;background:var(--accent);width:0;transition:width .25s ease}
     .understanding{font-size:12.5px;color:var(--muted);line-height:1.45;margin:8px 0 0}
     .app-ideas{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
+    .app-idea{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:8px 0;background:#fff}
+    .app-idea-head{display:flex;gap:10px;align-items:flex-start}
+    .app-idea-head label{display:flex;gap:8px;align-items:flex-start;flex:1;cursor:pointer;font-size:13px;line-height:1.35}
+    .app-idea .seo{margin:8px 0 0 26px;padding:8px 10px;background:#f7f5ef;border-radius:8px;font-size:12.5px;line-height:1.4;color:var(--muted)}
+    .app-idea .seo strong{color:var(--ink);display:block;margin-bottom:4px}
+    .app-idea .seo ul{margin:4px 0 0;padding-left:16px}
+    .auth-line{font-size:12.5px;color:var(--muted);margin:8px 0 0}
+    .auth-line.ok{color:var(--ok)}
+    .auth-line.err{color:var(--err)}
     .app-ideas li{margin:6px 0;font-size:13px;line-height:1.35}
     .check{display:flex;gap:8px;align-items:flex-start;margin:8px 0;font-size:14px}
     .landing{display:grid;grid-template-columns:auto 1fr;gap:10px;border:1px solid var(--line);border-radius:10px;padding:12px;background:#fff;margin:8px 0}
@@ -209,6 +218,7 @@
             <button type="button" class="btn" id="btn-research">Refresh research</button>
             <button type="button" class="btn primary" id="btn-generate" disabled>Fill every app with content</button>
             <button type="button" class="btn primary" id="btn-create-site" disabled>Create site</button>
+            <p class="auth-line" id="auth-status">Checking sign-in…</p>
           </div>
         </div>
         <p class="msg" id="fill-msg"></p>
@@ -225,6 +235,8 @@
     </div>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
   <script>
   (function () {
     var STORAGE_KEY = 'lp_layout_composer_designs_v1';
@@ -243,7 +255,8 @@
       interviewReady: false,
       selectedChipIds: {},
       lastConfig: null,
-      appSuggestions: []
+      appSuggestions: [],
+      selectedAppKeys: {}
     };
     var STEPS = [
       { id: 'entry', label: 'Start' },
@@ -267,16 +280,61 @@
       if (state.token) h.Authorization = 'Bearer ' + state.token;
       return h;
     }
-    async function resolveToken() {
+    var sbClient = null;
+    function getSb() {
+      if (sbClient) return sbClient;
       try {
-        if (window.supabase && window.supabase.auth) {
-          var s = await window.supabase.auth.getSession();
-          state.token = s && s.data && s.data.session && s.data.session.access_token || null;
+        if (window.supabase && window.supabase.createClient && window.__LP) {
+          sbClient = window.supabase.createClient(window.__LP.url, window.__LP.anon);
+        }
+      } catch (_e) {}
+      return sbClient;
+    }
+    function updateAuthStatus() {
+      var el = $('auth-status');
+      if (!el) return;
+      if (state.token) {
+        el.textContent = state.userEmail
+          ? ('Signed in as ' + state.userEmail + ' — Create site ready')
+          : 'Signed in — Create site ready';
+        el.className = 'auth-line ok';
+      } else {
+        el.innerHTML = 'Not signed in on this page. Open <a href="/manage">Manage</a>, sign in, then refresh here.';
+        el.className = 'auth-line err';
+      }
+    }
+    async function resolveToken() {
+      state.token = null;
+      state.userEmail = null;
+      try {
+        var sb = getSb();
+        if (sb) {
+          var s = await sb.auth.getSession();
+          var sess = s && s.data && s.data.session;
+          state.token = (sess && sess.access_token) || null;
+          state.userEmail = (sess && sess.user && sess.user.email) || null;
         }
       } catch (_e) {}
       if (!state.token) {
-        try { state.token = localStorage.getItem('sb-access-token') || localStorage.getItem('access_token'); } catch (_e2) {}
+        try {
+          for (var i = 0; i < localStorage.length; i++) {
+            var k = localStorage.key(i);
+            if (!k || !/^sb-.*-auth-token$/.test(k)) continue;
+            var raw = JSON.parse(localStorage.getItem(k) || 'null');
+            var tok = raw && (raw.access_token || (raw.currentSession && raw.currentSession.access_token));
+            var email = raw && ((raw.user && raw.user.email) || (raw.currentSession && raw.currentSession.user && raw.currentSession.user.email));
+            if (tok) {
+              state.token = tok;
+              state.userEmail = email || state.userEmail;
+              break;
+            }
+          }
+        } catch (_e2) {}
       }
+      if (!state.token) {
+        try { state.token = localStorage.getItem('sb-access-token') || localStorage.getItem('access_token'); } catch (_e3) {}
+      }
+      updateAuthStatus();
       return state.token;
     }
     function loadDesigns() {
@@ -805,12 +863,67 @@
       var box = $('interview-apps');
       if (!box) return;
       if (!list || !list.length) { show(box, false); box.innerHTML = ''; return; }
-      box.innerHTML = '<strong>App ideas for this business</strong><ul>' + list.map(function (a) {
-        var tag = a.inLayout ? 'already in layout' : 'suggested add';
-        return '<li><strong>' + esc(a.title || a.key) + '</strong> — ' + esc(a.reason || '') +
-          ' <span class="muted">(' + esc(tag) + ')</span></li>';
-      }).join('') + '</ul>';
+      state.appSuggestions = list;
+      box.innerHTML = '<strong>App ideas for this business</strong>' +
+        '<p class="muted" style="margin:6px 0 0">Tick to add suggested apps (confirmed layout sections stay locked). Expand for SEO samples.</p>' +
+        list.map(function (a, idx) {
+          var key = a.key || ('app-' + idx);
+          var inLayout = !!(a.inLayout || a.in_layout);
+          var checked = state.selectedAppKeys[key] != null
+            ? state.selectedAppKeys[key]
+            : ((a.defaultSelected != null ? a.defaultSelected : a.default_selected) !== false && !inLayout);
+          state.selectedAppKeys[key] = checked;
+          var seo = a.sampleSeo || a.sample_seo || null;
+          var seoHtml = '';
+          if (seo) {
+            var bullets = seo.bullets || seo.points || [];
+            seoHtml = '<details class="seo"><summary>Sample SEO</summary><strong>' + esc(seo.h1 || seo.title || '') + '</strong>' +
+              '<div>' + esc(seo.intro || seo.summary || '') + '</div>' +
+              (bullets.length ? '<ul>' + bullets.map(function (b) { return '<li>' + esc(b) + '</li>'; }).join('') + '</ul>' : '') +
+              '</details>';
+          }
+          return '<div class="app-idea">' +
+            '<div class="app-idea-head"><label><input type="checkbox" data-app-key="' + esc(key) + '"' +
+            (checked ? ' checked' : '') + (inLayout ? ' disabled' : '') + ' />' +
+            '<span><strong>' + esc(a.title || key) + '</strong> — ' + esc(a.reason || '') +
+            ' <span class="muted">(' + (inLayout ? 'already in layout' : 'suggested add') + ')</span></span></label></div>' +
+            seoHtml + '</div>';
+        }).join('');
+      box.querySelectorAll('[data-app-key]').forEach(function (cb) {
+        cb.addEventListener('change', function () {
+          state.selectedAppKeys[cb.getAttribute('data-app-key')] = !!cb.checked;
+        });
+      });
       show(box, true);
+    }
+
+    function applySelectedAppsToBlueprint() {
+      if (!state.blueprint || !state.blueprint.pages || !state.blueprint.pages[0]) return;
+      var sections = state.blueprint.pages[0].sections || [];
+      var have = {};
+      sections.forEach(function (s) { if (s && s.key) have[s.key] = true; });
+      var catalogue = state.catalogue || [];
+      Object.keys(state.selectedAppKeys || {}).forEach(function (key) {
+        if (!state.selectedAppKeys[key] || have[key]) return;
+        var cat = null;
+        for (var i = 0; i < catalogue.length; i++) {
+          if (catalogue[i].key === key) { cat = catalogue[i]; break; }
+        }
+        // Additive only — append before footer-like chrome when possible
+        var row = {
+          key: key,
+          enabled: true,
+          origin: 'briefing_suggestion',
+          label: (cat && cat.label) || key
+        };
+        var insertAt = sections.length;
+        for (var j = sections.length - 1; j >= 0; j--) {
+          if (sections[j] && /footer|mobileBar|navMenu/i.test(sections[j].key)) insertAt = j;
+        }
+        sections.splice(insertAt, 0, row);
+        have[key] = true;
+      });
+      state.blueprint.pages[0].sections = sections;
     }
 
     function renderInterviewTurn(turn) {
@@ -932,7 +1045,7 @@
       await resolveToken();
       var brief = currentBrief();
       var r = await fetch('/api/layout-composer/research', {
-        method: 'POST', headers: authHeaders(), body: JSON.stringify({ brief: brief })
+        method: 'POST', headers: authHeaders(), body: JSON.stringify({ brief: brief, understanding: state.understanding || null })
       });
       var j = await r.json();
       var box = $('research-box');
@@ -941,12 +1054,18 @@
         box.innerHTML = '<p class="msg err">' + esc((j && j.error) || 'Research failed') + '</p>';
         return;
       }
-      box.innerHTML = '<strong>Research</strong><p>' + esc(j.summary) + '</p>' +
-        '<p class="muted">' + esc(j.disclaimer || '') + '</p><ul>' +
+      var ideas = j.contentIdeas || j.content_ideas || [];
+      box.innerHTML = '<strong>Research' + (j.mode === 'openai' || j.source === 'openai' ? ' (AI)' : '') + '</strong><p>' + esc(j.summary) + '</p>' +
+        '<p class="muted">' + esc(j.disclaimer || j.notice || '') + '</p><ul>' +
         (j.sources || []).map(function (s) {
           return '<li><strong>' + esc(s.title) + '</strong> · confidence ' +
             Math.round((s.confidence || 0) * 100) + '% — ' + esc(s.note || '') + '</li>';
-        }).join('') + '</ul>';
+        }).join('') + '</ul>' +
+        (ideas.length
+          ? ('<p style="margin-top:10px"><strong>Content ideas</strong></p><ul>' + ideas.map(function (c) {
+              return '<li><strong>' + esc(c.title || c.sampleH1 || '') + '</strong> — ' + esc(c.angle || c.sampleIntro || '') + '</li>';
+            }).join('') + '</ul>')
+          : '');
     }
 
     async function runLandings() {
@@ -982,6 +1101,7 @@
       var brief = currentBrief();
       if (!brief.businessName) { setMsg('fill-msg', 'Business name is required.', 'err'); return; }
       setMsg('fill-msg', 'Filling every app in the confirmed layout…');
+      applySelectedAppsToBlueprint();
       await resolveToken();
       if ($('opt-research') && $('opt-research').checked) await runResearch();
       if ($('opt-landings') && $('opt-landings').checked) await runLandings();
@@ -1107,6 +1227,7 @@
     (async function boot() {
       var params = new URLSearchParams(location.search);
       var preview = params.get('preview') === '1';
+      await resolveToken();
       try {
         var r = await fetch('/api/layout-composer/flags');
         var j = await r.json();

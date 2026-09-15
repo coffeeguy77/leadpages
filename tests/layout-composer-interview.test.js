@@ -97,18 +97,100 @@ describe('Layout Composer interview + rich fill', () => {
     assert.ok(suggestions.some(function (s) { return s.inLayout === false; }));
   });
 
-  it('UI wires briefing chips, generate, and create-site', () => {
+  it('prefers free-text answers over chips on single-select steps', () => {
+    let cur = startInterview({
+      businessName: 'Metal Roof Vents',
+      trade: 'Roof Ventilation',
+      location: 'Australia',
+    });
+    // services (multi) — free text splits
+    cur = answerInterview(cur.session, {
+      freeText: 'Ridge vents, turbine vents, custom flashings',
+    });
+    assert.ok(cur.understanding.services.indexOf('Ridge vents') >= 0);
+    assert.ok(cur.understanding.services.indexOf('turbine vents') >= 0);
+    // skip to differentiator
+    while (cur.turn.stepId !== 'differentiator' && !cur.turn.terminal) {
+      const opts = cur.turn.options || [];
+      const pick = opts.filter(function (o) { return o.recommended; }).slice(0, cur.turn.multi ? 2 : 1);
+      cur = answerInterview(cur.session, {
+        selectedIds: (pick.length ? pick : opts.slice(0, 1)).map(function (o) { return o.id; }),
+      });
+    }
+    cur = answerInterview(cur.session, {
+      selectedIds: [(cur.turn.options[0] || {}).id],
+      freeText: 'Custom metal vents made in Australia',
+    });
+    assert.equal(cur.understanding.differentiator, 'Custom metal vents made in Australia');
+  });
+
+  it('ready "one more thing" asks a single follow-up then returns to ready', () => {
+    const done = driveToReady({
+      businessName: 'Metal Roof Vents',
+      trade: 'Roof Ventilation',
+      location: 'Australia',
+    });
+    // driveToReady confirms ready-yes — restart to ready terminal without completing
+    let cur = startInterview({
+      businessName: 'Metal Roof Vents',
+      trade: 'Roof Ventilation',
+      location: 'Australia',
+    });
+    while (!cur.turn.terminal) {
+      const opts = cur.turn.options || [];
+      const pick = opts.filter(function (o) { return o.recommended; }).slice(0, cur.turn.multi ? 2 : 1);
+      cur = answerInterview(cur.session, {
+        selectedIds: (pick.length ? pick : opts.slice(0, 1)).map(function (o) { return o.id; }),
+      });
+    }
+    assert.equal(cur.turn.stepId, 'ready');
+    cur = answerInterview(cur.session, { selectedIds: ['ready-more'] });
+    assert.match(cur.turn.stepId, /^followup-/);
+    assert.equal(cur.ready, false);
+    const step = cur.session.steps.find(function (s) { return s.id === cur.turn.stepId; });
+    assert.equal(step.oneShot, true);
+    cur = answerInterview(cur.session, { freeText: 'Colorbond ridge vents' });
+    assert.equal(cur.turn.stepId, 'ready');
+    assert.equal(cur.ready, false);
+    assert.ok(cur.understanding.services.indexOf('Colorbond ridge vents') >= 0);
+    assert.ok(done.ready);
+  });
+
+  it('suggestApps includes sample SEO for expand UI', () => {
+    const suggestions = suggestApps(
+      {
+        businessName: 'Metal Roof Vents',
+        trade: 'Roof Ventilation',
+        location: 'Australia',
+        services: ['Ridge vents'],
+      },
+      ['hero']
+    );
+    assert.ok(suggestions[0].sampleSeo);
+    assert.ok(suggestions[0].sampleSeo.h1);
+    assert.equal(typeof suggestions[0].defaultSelected, 'boolean');
+  });
+
+  it('UI wires briefing chips, generate, create-site, auth, and app toggles', () => {
     assert.match(html, /id="btn-start-brief"/);
     assert.match(html, /id="interview-chips"/);
     assert.match(html, /id="btn-create-site"/);
+    assert.match(html, /id="auth-status"/);
+    assert.match(html, /createClient/);
+    assert.match(html, /data-app-key/);
+    assert.match(html, /Sample SEO/);
     assert.match(html, /\/api\/layout-composer\/interview/);
     assert.match(html, /\/api\/layout-composer\/create-site/);
     assert.match(html, /understanding/);
     const interviewApi = fs.readFileSync(path.join(root, 'api/layout-composer/interview.js'), 'utf8');
     const createApi = fs.readFileSync(path.join(root, 'api/layout-composer/create-site.js'), 'utf8');
     const generateApi = fs.readFileSync(path.join(root, 'api/layout-composer/generate.js'), 'utf8');
+    const researchApi = fs.readFileSync(path.join(root, 'api/layout-composer/research.js'), 'utf8');
     assert.match(interviewApi, /startInterview/);
+    assert.match(interviewApi, /generateInterviewTurn/);
     assert.match(createApi, /fillConfigFromUnderstanding/);
     assert.match(generateApi, /understanding/);
+    assert.match(generateApi, /generateResearchBrief/);
+    assert.match(researchApi, /generateResearchBrief/);
   });
 });
