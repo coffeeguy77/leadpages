@@ -3188,6 +3188,8 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       var ls=document.getElementById('lpl-search'); if(ls) ls.oninput=function(){ LPL.q=ls.value; renderLanding(); };
       var so=document.getElementById('lpl-sort'); if(so){ so.value=LPL.sort||'updated'; so.onchange=function(){ LPL.sort=so.value; renderLanding(); }; }
       var sob=document.getElementById('lpl-signout'); if(sob) sob.onclick=function(e){ e.preventDefault(); signOutLP(); };
+      var lct=document.getElementById('lpl-layout-composer-top');
+      if(lct) lct.style.display=(role==='super')?'':'none';
       var toprow=document.querySelector('#lp-landing .lpl-toprow');
       var laa=document.getElementById('lpl-appearance');
       if(!laa&&toprow){
