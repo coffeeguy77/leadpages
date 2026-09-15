@@ -29,6 +29,28 @@ async function maybePolishTurn(turn, session, brief) {
     if (ai.question && !turn.terminal) {
       out.question = ai.question;
     }
+    // Apply AI chips (previously discarded — left briefing feeling hardcoded).
+    if (Array.isArray(ai.options) && ai.options.length && !turn.terminal) {
+      out.options = ai.options.map(function (o, i) {
+        return {
+          id: String((o && o.id) || ('opt-' + i)).slice(0, 40),
+          label: String((o && o.label) || ('Option ' + (i + 1))).slice(0, 120),
+          recommended: !!(o && o.recommended) || i === 0
+        };
+      });
+      if (typeof ai.multi === 'boolean') out.multi = ai.multi;
+      // Keep session step options in sync so answerInterview can resolve labels.
+      if (session && Array.isArray(session.steps)) {
+        const idx = Number(session.stepIndex) || 0;
+        const step = session.steps[idx];
+        if (step && (!turn.stepId || step.id === turn.stepId)) {
+          step.options = out.options.map(function (o) {
+            return { id: o.id, label: o.label, recommended: !!o.recommended };
+          });
+          if (typeof ai.multi === 'boolean') step.multi = ai.multi;
+        }
+      }
+    }
     out.aiSource = 'openai';
     return out;
   } catch (_e) {

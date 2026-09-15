@@ -859,6 +859,9 @@
       el.textContent = bits.join(' · ');
     }
 
+    // Before/after family — do not stack gallery BA on a BA hero (or vice versa).
+    var BEFORE_AFTER_FAMILY = ['heroBeforeAfter', 'beforeAfter', 'beforeAfterFeed'];
+
     function renderAppIdeas(list) {
       var box = $('interview-apps');
       if (!box) return;
@@ -869,10 +872,16 @@
         list.map(function (a, idx) {
           var key = a.key || ('app-' + idx);
           var inLayout = !!(a.inLayout || a.in_layout);
+          var related = a.status === 'related_in_layout' || !!(a.related);
+          var blocked = inLayout || related;
+          var defSel = a.defaultSelected != null ? a.defaultSelected : a.default_selected;
           var checked = state.selectedAppKeys[key] != null
-            ? state.selectedAppKeys[key]
-            : ((a.defaultSelected != null ? a.defaultSelected : a.default_selected) !== false && !inLayout);
+            ? !!state.selectedAppKeys[key] && !blocked
+            : (!!defSel && !blocked);
           state.selectedAppKeys[key] = checked;
+          var statusLabel = inLayout
+            ? 'already in layout'
+            : (related ? 'covered by your layout' : 'suggested add');
           var seo = a.sampleSeo || a.sample_seo || null;
           var seoHtml = '';
           if (seo) {
@@ -884,9 +893,9 @@
           }
           return '<div class="app-idea">' +
             '<div class="app-idea-head"><label><input type="checkbox" data-app-key="' + esc(key) + '"' +
-            (checked ? ' checked' : '') + (inLayout ? ' disabled' : '') + ' />' +
+            (checked ? ' checked' : '') + (blocked ? ' disabled' : '') + ' />' +
             '<span><strong>' + esc(a.title || key) + '</strong> — ' + esc(a.reason || '') +
-            ' <span class="muted">(' + (inLayout ? 'already in layout' : 'suggested add') + ')</span></span></label></div>' +
+            ' <span class="muted">(' + statusLabel + ')</span></span></label></div>' +
             seoHtml + '</div>';
         }).join('');
       box.querySelectorAll('[data-app-key]').forEach(function (cb) {
@@ -905,6 +914,11 @@
       var catalogue = state.catalogue || [];
       Object.keys(state.selectedAppKeys || {}).forEach(function (key) {
         if (!state.selectedAppKeys[key] || have[key]) return;
+        // Skip BA gallery when a BA hero (or feed) is already present.
+        if (BEFORE_AFTER_FAMILY.indexOf(key) >= 0 &&
+            BEFORE_AFTER_FAMILY.some(function (k) { return !!have[k]; })) {
+          return;
+        }
         var cat = null;
         for (var i = 0; i < catalogue.length; i++) {
           if (catalogue[i].key === key) { cat = catalogue[i]; break; }

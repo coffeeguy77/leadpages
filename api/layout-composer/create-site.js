@@ -1,7 +1,7 @@
 'use strict';
 
 const { sendJson, readBody, requireUser, admin } = require('../../lib/layout-composer/http');
-const { compileBlueprintToConfig } = require('../../lib/layout-composer/compile');
+const { compileBlueprintToConfig, stubSectionsOutsideOrder } = require('../../lib/layout-composer/compile');
 const { fillConfigFromUnderstanding } = require('../../lib/layout-composer/rich-fill');
 
 function slugify(s) {
@@ -107,6 +107,20 @@ module.exports = async function layoutComposerCreateSite(req, res) {
     config.businessName = businessName;
     if (brief.trade) config.trade = brief.trade;
     if (brief.location) config.region = brief.location;
+
+    // Re-assert structure lock so manage/render cannot expand into the classic stack.
+    var lockedOrder = (config._layoutComposer && Array.isArray(config._layoutComposer.lockedOrder) &&
+      config._layoutComposer.lockedOrder.length)
+      ? config._layoutComposer.lockedOrder.slice()
+      : (Array.isArray(config.sectionOrder) ? config.sectionOrder.slice() : []);
+    stubSectionsOutsideOrder(config, lockedOrder);
+    config.sectionOrder = lockedOrder.slice();
+    config._layoutComposer = Object.assign({}, config._layoutComposer || {}, {
+      structureLocked: true,
+      lockedOrder: lockedOrder,
+      createdFromComposer: true,
+      createdAt: new Date().toISOString()
+    });
 
     const baseSlug = slugify(body.slug || businessName);
     const slug = await uniqueSlug(baseSlug);

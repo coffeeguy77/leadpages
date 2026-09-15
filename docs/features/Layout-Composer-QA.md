@@ -17,6 +17,9 @@
 6. **Briefing** — Enter business name + trade → **Start briefing** → answer recommended chips **or type your own** (typed answers win). “Ask me one more thing” asks a **single** follow-up then returns to confirm — it must not restart the whole interview.
 7. **App ideas** — personalized suggestions with tick-to-add (additive only; confirmed sections stay locked) and expandable Sample SEO from the brief.
 8. **Generate / Fill every app** — returns structure locked; every enabled section has SEO copy from the briefing; order unchanged.
+8b. **Structure lock (critical)** — after Create site, public render + Manage Position must show **only** the confirmed composer sections (plus Trust Bar pin). Classic trade stack (`emerg` / default `hero` / `crew` / `area` …) must **not** reappear. Config must have `_layoutComposer.structureLocked: true`.
+8c. **Before & after** — if the layout already has `heroBeforeAfter`, do not auto-tick or append a second gallery `beforeAfter`.
+8d. **Briefing chips** — with `OPENAI_API_KEY`, each interview turn should show **fresh** option labels (not the same hardcoded set every step). Without the key, deterministic chips still work.
 9. **Create site** — uses the same Supabase session as Manage (sign in on Manage, then open Layout Composer). Partner/admin only; creates `sites` row and opens manage. Auth status line shows signed-in email.
 10. **Research** — when `OPENAI_API_KEY` is set, research + interview polish use OpenAI; otherwise deterministic stubs. Sources include confidence; disclaimer visible. Content ideas may appear under research.
 11. **Landings** — checkboxes; no automatic page create.
@@ -50,7 +53,7 @@ Trust Bar variant (images vs text) is toggled on the section row in Layout mode 
 ## Automated tests
 
 ```bash
-node --test tests/trade-pack-acquire-policy.test.js tests/layout-composer-phase2.test.js tests/layout-composer-phases-3-5.test.js tests/layout-composer-interview.test.js
+node --test tests/trade-pack-acquire-policy.test.js tests/layout-composer-phase2.test.js tests/layout-composer-phases-3-5.test.js tests/layout-composer-interview.test.js tests/layout-composer-structure-lock.test.js
 ```
 
 
