@@ -159,9 +159,15 @@ Related (not primary): `alreadyExists` 409 when trade slug exists — messaging 
 ## 4. Compatibility strategy for Layout Composer
 
 ### Product rule
-**Customer chooses structure → confirm blueprint → Business Brief / research → optional landing recommendations → AI fills fields → create demo/client → continue in `manage.html`.**
+**Customer chooses structure → confirm blueprint → Business Brief interview (recommended chips + free text) → AI fills every app in the locked layout → Create site → continue in `manage.html`.**
 
 AI must never add/remove/reorder pages or sections after confirm.
+
+**Shipped in Phase 3 (this branch):**
+- `POST /api/layout-composer/interview` — start/answer briefing turns
+- Rich fill via `lib/layout-composer/rich-fill.js` (every enabled section)
+- `POST /api/layout-composer/create-site` — partner/admin creates `sites` row from filled config
+- Fill UI: Start briefing → chips / own words → Fill every app → Create site
 
 ### Reuse, don’t fork
 

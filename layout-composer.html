@@ -88,6 +88,19 @@
     .msg{font-size:13px;color:var(--muted);min-height:18px}
     .msg.err{color:var(--err)}
     .msg.ok{color:var(--ok)}
+    .interview{margin-top:14px;border:1px solid var(--line);border-radius:12px;background:#fff;padding:14px 16px}
+    .interview h3{margin:0 0 6px;font-size:1rem}
+    .interview .help{margin:0 0 12px;color:var(--muted);font-size:13px;line-height:1.4}
+    .chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+    .chip{border:1px solid var(--line);background:#f7f5ef;border-radius:999px;padding:8px 12px;font:inherit;font-size:13px;font-weight:650;cursor:pointer;color:var(--ink)}
+    .chip:hover{border-color:#b7d7c8}
+    .chip.on{background:var(--accent-soft);border-color:#b7d7c8;color:var(--accent)}
+    .chip .rec{display:inline-block;margin-left:6px;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;opacity:.75}
+    .conf-bar{height:6px;border-radius:999px;background:#ebe7dc;overflow:hidden;margin:8px 0 4px}
+    .conf-bar>i{display:block;height:100%;background:var(--accent);width:0;transition:width .25s ease}
+    .understanding{font-size:12.5px;color:var(--muted);line-height:1.45;margin:8px 0 0}
+    .app-ideas{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
+    .app-ideas li{margin:6px 0;font-size:13px;line-height:1.35}
     .check{display:flex;gap:8px;align-items:flex-start;margin:8px 0;font-size:14px}
     .landing{display:grid;grid-template-columns:auto 1fr;gap:10px;border:1px solid var(--line);border-radius:10px;padding:12px;background:#fff;margin:8px 0}
     .muted{color:var(--muted);font-size:12.5px}
@@ -163,11 +176,28 @@
 
       <section id="step-fill" class="panel hidden">
         <h2 style="margin:0 0 8px;font-size:1.1rem">Business brief &amp; fill</h2>
-        <p class="muted" style="margin:0 0 12px">Structure is locked. Content fills confirmed sections only.</p>
+        <p class="muted" style="margin:0 0 12px">Enter the business, then answer a few questions (recommended chips or your own words). When you are confident we understand the business, we fill every app in the confirmed layout with SEO-ready content — then create the site.</p>
         <div class="row">
-          <label class="f"><span>Business name</span><input id="brief-name" class="tin" type="text" /></label>
+          <label class="f"><span>Business name</span><input id="brief-name" class="tin" type="text" placeholder="Acme Plumbing" autocomplete="organization" /></label>
           <label class="f"><span>Trade</span><input id="brief-trade" class="tin" type="text" placeholder="Plumber" /></label>
           <label class="f"><span>Location</span><input id="brief-loc" class="tin" type="text" placeholder="Canberra" /></label>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <button type="button" class="btn primary" id="btn-start-brief">Start briefing</button>
+          <span class="muted" id="brief-hint">Name + trade unlock the interview.</span>
+        </div>
+        <div id="interview-box" class="interview hidden" aria-live="polite">
+          <div class="conf-bar" aria-hidden="true"><i id="interview-conf"></i></div>
+          <p class="muted" id="interview-conf-label" style="margin:0 0 10px"></p>
+          <h3 id="interview-q"></h3>
+          <p class="help" id="interview-help"></p>
+          <div class="chips" id="interview-chips"></div>
+          <div class="row">
+            <label class="f" style="flex:1"><span>Or type your own</span><input id="interview-free" class="tin" type="text" placeholder="Add detail…" /></label>
+            <button type="button" class="btn primary" id="btn-interview-next" style="margin-top:18px">Continue</button>
+          </div>
+          <p class="understanding" id="interview-summary"></p>
+          <div class="app-ideas hidden" id="interview-apps"></div>
         </div>
         <label class="check"><input type="checkbox" id="opt-research" checked /><span>Run advisory research (with source confidence)</span></label>
         <label class="check"><input type="checkbox" id="opt-landings" checked /><span>Recommend landing pages to create next</span></label>
@@ -177,7 +207,8 @@
           <button type="button" class="btn ghost" id="fill-back">Back to layout</button>
           <div class="row">
             <button type="button" class="btn" id="btn-research">Refresh research</button>
-            <button type="button" class="btn primary" id="btn-generate">Generate content into layout</button>
+            <button type="button" class="btn primary" id="btn-generate" disabled>Fill every app with content</button>
+            <button type="button" class="btn primary" id="btn-create-site" disabled>Create site</button>
           </div>
         </div>
         <p class="msg" id="fill-msg"></p>
@@ -205,7 +236,14 @@
       confirmed: false,
       startMode: null,
       token: null,
-      selectedLandings: {}
+      selectedLandings: {},
+      interviewSession: null,
+      interviewTurn: null,
+      understanding: null,
+      interviewReady: false,
+      selectedChipIds: {},
+      lastConfig: null,
+      appSuggestions: []
     };
     var STEPS = [
       { id: 'entry', label: 'Start' },
@@ -742,13 +780,157 @@
       go('fill');
     };
 
+    function currentBrief() {
+      return {
+        businessName: ($('brief-name') && $('brief-name').value.trim()) || '',
+        trade: ($('brief-trade') && $('brief-trade').value.trim()) || '',
+        location: ($('brief-loc') && $('brief-loc').value.trim()) || ''
+      };
+    }
+
+    function renderUnderstanding(u) {
+      var el = $('interview-summary');
+      if (!el || !u) { if (el) el.textContent = ''; return; }
+      var bits = [];
+      if (u.services && u.services.length) bits.push('Services: ' + u.services.join(', '));
+      if (u.customers && u.customers.length) bits.push('Customers: ' + u.customers.join(', '));
+      if (u.differentiator) bits.push('Edge: ' + u.differentiator);
+      if (u.serviceAreas && u.serviceAreas.length) bits.push('Areas: ' + u.serviceAreas.join(', '));
+      if (u.preferredCta) bits.push('CTA: ' + u.preferredCta);
+      if (u.tone) bits.push('Tone: ' + u.tone);
+      el.textContent = bits.join(' · ');
+    }
+
+    function renderAppIdeas(list) {
+      var box = $('interview-apps');
+      if (!box) return;
+      if (!list || !list.length) { show(box, false); box.innerHTML = ''; return; }
+      box.innerHTML = '<strong>App ideas for this business</strong><ul>' + list.map(function (a) {
+        var tag = a.inLayout ? 'already in layout' : 'suggested add';
+        return '<li><strong>' + esc(a.title || a.key) + '</strong> — ' + esc(a.reason || '') +
+          ' <span class="muted">(' + esc(tag) + ')</span></li>';
+      }).join('') + '</ul>';
+      show(box, true);
+    }
+
+    function renderInterviewTurn(turn) {
+      if (!turn) return;
+      state.interviewTurn = turn;
+      state.selectedChipIds = {};
+      show($('interview-box'), true);
+      var conf = Number(turn.confidence || 0);
+      if ($('interview-conf')) $('interview-conf').style.width = Math.round(conf * 100) + '%';
+      if ($('interview-conf-label')) {
+        $('interview-conf-label').textContent =
+          (turn.confidenceLabel || 'Understanding') + ' · ' + Math.round(conf * 100) + '%';
+      }
+      if ($('interview-q')) $('interview-q').textContent = turn.question || '';
+      if ($('interview-help')) $('interview-help').textContent = turn.help || '';
+      if ($('interview-free')) {
+        $('interview-free').value = '';
+        $('interview-free').placeholder = turn.freeTextPlaceholder || 'Or type your own…';
+      }
+      var chips = $('interview-chips');
+      if (chips) {
+        chips.innerHTML = (turn.options || []).map(function (o) {
+          return '<button type="button" class="chip" data-chip="' + esc(o.id) + '">' +
+            esc(o.label) + (o.recommended ? '<span class="rec">Recommended</span>' : '') + '</button>';
+        }).join('');
+        chips.querySelectorAll('[data-chip]').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var id = btn.getAttribute('data-chip');
+            var multi = !!(state.interviewTurn && state.interviewTurn.multi);
+            if (!multi) {
+              state.selectedChipIds = {};
+              chips.querySelectorAll('.chip').forEach(function (c) { c.classList.remove('on'); });
+            }
+            if (state.selectedChipIds[id]) {
+              delete state.selectedChipIds[id];
+              btn.classList.remove('on');
+            } else {
+              state.selectedChipIds[id] = true;
+              btn.classList.add('on');
+            }
+          });
+        });
+      }
+      renderUnderstanding(turn.understanding || state.understanding);
+      renderAppIdeas(turn.appSuggestions || state.appSuggestions || []);
+      if ($('btn-interview-next')) {
+        $('btn-interview-next').textContent = turn.terminal ? 'Confirm & fill layout' : 'Continue';
+      }
+    }
+
+    async function startBriefing() {
+      var brief = currentBrief();
+      if (!brief.businessName || !brief.trade) {
+        setMsg('fill-msg', 'Enter a business name and trade to start the briefing.', 'err');
+        return;
+      }
+      setMsg('fill-msg', 'Starting briefing…');
+      await resolveToken();
+      var r = await fetch('/api/layout-composer/interview', {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ action: 'start', brief: brief, blueprint: state.blueprint })
+      });
+      var j = await r.json();
+      if (!j || !j.ok) {
+        setMsg('fill-msg', (j && j.error) || 'Could not start briefing', 'err');
+        return;
+      }
+      state.interviewSession = j.session;
+      state.interviewReady = false;
+      state.understanding = (j.turn && j.turn.understanding) || null;
+      renderInterviewTurn(j.turn);
+      setMsg('fill-msg', 'Answer with a recommended option or your own words.', 'ok');
+      if ($('brief-hint')) $('brief-hint').textContent = 'Briefing in progress — chips are recommended answers.';
+    }
+
+    async function submitInterviewAnswer() {
+      if (!state.interviewSession) {
+        setMsg('fill-msg', 'Start the briefing first.', 'err');
+        return;
+      }
+      var selectedIds = Object.keys(state.selectedChipIds);
+      var freeText = ($('interview-free') && $('interview-free').value.trim()) || '';
+      if (!selectedIds.length && !freeText) {
+        setMsg('fill-msg', 'Pick a recommended option or type your own answer.', 'err');
+        return;
+      }
+      setMsg('fill-msg', 'Updating understanding…');
+      await resolveToken();
+      var r = await fetch('/api/layout-composer/interview', {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({
+          action: 'answer',
+          session: state.interviewSession,
+          answer: { selectedIds: selectedIds, freeText: freeText }
+        })
+      });
+      var j = await r.json();
+      if (!j || !j.ok) {
+        setMsg('fill-msg', (j && j.error) || 'Could not save answer', 'err');
+        return;
+      }
+      state.interviewSession = j.session;
+      state.understanding = j.understanding || (j.turn && j.turn.understanding) || state.understanding;
+      state.interviewReady = !!j.ready;
+      state.appSuggestions = j.appSuggestions || (j.turn && j.turn.appSuggestions) || [];
+      renderInterviewTurn(j.turn);
+      if (j.ready) {
+        if ($('btn-generate')) $('btn-generate').disabled = false;
+        setMsg('fill-msg', 'Looking good — filling every app in your layout…', 'ok');
+        await runGenerateFill();
+      } else {
+        setMsg('fill-msg', 'Got it — next question.', 'ok');
+      }
+    }
+
     async function runResearch() {
       await resolveToken();
-      var brief = {
-        businessName: $('brief-name').value.trim(),
-        trade: $('brief-trade').value.trim(),
-        location: $('brief-loc').value.trim()
-      };
+      var brief = currentBrief();
       var r = await fetch('/api/layout-composer/research', {
         method: 'POST', headers: authHeaders(), body: JSON.stringify({ brief: brief })
       });
@@ -769,11 +951,7 @@
 
     async function runLandings() {
       await resolveToken();
-      var brief = {
-        businessName: $('brief-name').value.trim(),
-        trade: $('brief-trade').value.trim(),
-        location: $('brief-loc').value.trim()
-      };
+      var brief = currentBrief();
       var r = await fetch('/api/layout-composer/landings', {
         method: 'POST', headers: authHeaders(), body: JSON.stringify({ brief: brief })
       });
@@ -799,49 +977,132 @@
       });
     }
 
-    $('btn-research').onclick = function () { runResearch(); };
-    $('btn-generate').onclick = async function () {
+    async function runGenerateFill() {
       if (!state.confirmed) { setMsg('fill-msg', 'Confirm the layout before generating.', 'err'); return; }
-      var brief = {
-        businessName: $('brief-name').value.trim(),
-        trade: $('brief-trade').value.trim(),
-        location: $('brief-loc').value.trim()
-      };
+      var brief = currentBrief();
       if (!brief.businessName) { setMsg('fill-msg', 'Business name is required.', 'err'); return; }
-      setMsg('fill-msg', 'Generating into confirmed structure…');
+      setMsg('fill-msg', 'Filling every app in the confirmed layout…');
       await resolveToken();
-      if ($('opt-research').checked) await runResearch();
-      if ($('opt-landings').checked) await runLandings();
+      if ($('opt-research') && $('opt-research').checked) await runResearch();
+      if ($('opt-landings') && $('opt-landings').checked) await runLandings();
       var r = await fetch('/api/layout-composer/generate', {
         method: 'POST',
         headers: authHeaders(),
-        body: JSON.stringify({ blueprint: state.blueprint, brief: brief, confirmed: true })
+        body: JSON.stringify({
+          blueprint: state.blueprint,
+          brief: brief,
+          understanding: state.understanding || null,
+          confirmed: true,
+          includeResearch: !!( $('opt-research') && $('opt-research').checked ),
+          includeLandings: !!( $('opt-landings') && $('opt-landings').checked )
+        })
       });
       var j = await r.json();
       if (!j || !j.ok) { setMsg('fill-msg', (j && j.error) || 'Generate failed', 'err'); return; }
+      state.lastConfig = j.config;
+      state.appSuggestions = j.appSuggestions || state.appSuggestions || [];
+      renderAppIdeas(state.appSuggestions);
       try {
         sessionStorage.setItem('lp_layout_composer_last_config', JSON.stringify(j.config));
         sessionStorage.setItem('lp_layout_composer_handoff', JSON.stringify({
           config: j.config,
           blueprint: state.blueprint,
           brief: brief,
-          sectionOrder: j.sectionOrder || j.sectionOrder,
-          filledKeys: j.filledKeys || j.filledKeys,
+          understanding: state.understanding,
+          sectionOrder: j.sectionOrder,
+          filledKeys: j.filledKeys,
           selectedLandings: Object.keys(state.selectedLandings).filter(function (k) { return state.selectedLandings[k]; }),
           at: new Date().toISOString()
         }));
       } catch (_e) {}
-      setMsg('fill-msg', j.notice || 'Filled without changing structure.', 'ok');
+      setMsg('fill-msg', j.notice || 'Filled every app without changing structure.', 'ok');
       var out = $('fill-out');
       show(out, true);
       out.textContent = JSON.stringify({
+        fillMode: j.fillMode,
         filledKeys: j.filledKeys,
         sectionOrder: j.sectionOrder,
+        appSuggestions: state.appSuggestions,
         selectedLandings: Object.keys(state.selectedLandings).filter(function (k) { return state.selectedLandings[k]; }),
         configPreview: { name: j.config && j.config.name, trade: j.config && j.config.trade, sectionOrder: j.sectionOrder }
       }, null, 2);
+      if ($('btn-generate')) $('btn-generate').disabled = false;
+      if ($('btn-create-site')) $('btn-create-site').disabled = false;
       show($('btn-open-manage'), true);
-    };
+    }
+
+    async function createSiteFromComposer() {
+      if (!state.confirmed) { setMsg('fill-msg', 'Confirm the layout first.', 'err'); return; }
+      var brief = currentBrief();
+      if (!brief.businessName) { setMsg('fill-msg', 'Business name is required.', 'err'); return; }
+      if (!state.lastConfig) {
+        setMsg('fill-msg', 'Fill content into the layout before creating the site.', 'err');
+        return;
+      }
+      setMsg('fill-msg', 'Creating site…');
+      await resolveToken();
+      if (!state.token) {
+        setMsg('fill-msg', 'Sign in to create a site (partner or admin).', 'err');
+        return;
+      }
+      var r = await fetch('/api/layout-composer/create-site', {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({
+          confirmed: true,
+          blueprint: state.blueprint,
+          brief: brief,
+          understanding: state.understanding,
+          config: state.lastConfig
+        })
+      });
+      var j = await r.json();
+      if (!j || !j.ok) {
+        setMsg('fill-msg', (j && j.error) || 'Could not create site', 'err');
+        return;
+      }
+      setMsg('fill-msg', j.notice || 'Site created.', 'ok');
+      var link = $('btn-open-manage');
+      if (link && j.manageUrl) {
+        link.href = j.manageUrl;
+        link.textContent = 'Open ' + ((j.site && j.site.slug) || 'site') + ' in editor';
+        show(link, true);
+      }
+      if (j.manageUrl) {
+        setTimeout(function () { location.href = j.manageUrl; }, 600);
+      }
+    }
+
+    if ($('btn-research')) $('btn-research').onclick = function () { runResearch(); };
+    if ($('btn-start-brief')) $('btn-start-brief').onclick = function () { startBriefing(); };
+    if ($('btn-interview-next')) $('btn-interview-next').onclick = function () { submitInterviewAnswer(); };
+    if ($('btn-generate')) $('btn-generate').onclick = function () { runGenerateFill(); };
+    if ($('btn-create-site')) $('btn-create-site').onclick = function () { createSiteFromComposer(); };
+
+    function maybeAutoBriefHint() {
+      var brief = currentBrief();
+      var hint = $('brief-hint');
+      if (!hint) return;
+      if (brief.businessName && brief.trade) {
+        hint.textContent = 'Ready — click Start briefing (or answer chips after it opens).';
+        if ($('btn-start-brief')) $('btn-start-brief').disabled = false;
+      } else {
+        hint.textContent = 'Name + trade unlock the interview.';
+      }
+    }
+    ['brief-name', 'brief-trade', 'brief-loc'].forEach(function (id) {
+      var el = $(id);
+      if (!el) return;
+      el.addEventListener('change', maybeAutoBriefHint);
+      el.addEventListener('blur', maybeAutoBriefHint);
+      el.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Enter') {
+          ev.preventDefault();
+          maybeAutoBriefHint();
+          if (currentBrief().businessName && currentBrief().trade) startBriefing();
+        }
+      });
+    });
 
     (async function boot() {
       var params = new URLSearchParams(location.search);

@@ -7,11 +7,13 @@ const {
   recommendLandingPages,
   buildResearchBrief,
 } = require('../../lib/layout-composer/generate');
+const { fillConfigFromUnderstanding, mergeBrief } = require('../../lib/layout-composer/rich-fill');
+const { suggestApps } = require('../../lib/layout-composer/interview');
 
 /**
  * POST /api/layout-composer/generate
  * Fills content into a confirmed blueprint structure only (no layout mutation).
- * Body: { blueprint, brief, config?, fillEmptyOnly?, includeResearch?, includeLandings? }
+ * Body: { blueprint, brief, understanding?, config?, fillEmptyOnly?, includeResearch?, includeLandings? }
  */
 module.exports = async function layoutComposerGenerate(req, res) {
   if (req.method === 'OPTIONS') {
@@ -21,7 +23,7 @@ module.exports = async function layoutComposerGenerate(req, res) {
   if (req.method !== 'POST') return sendJson(res, 405, { ok: false, error: 'POST only' });
 
   // Auth optional for flagged preview / local testing — deterministic stubs do not mutate DB.
-  const user = await requireUser(req);
+  await requireUser(req);
 
   const body = await readBody(req);
   const blueprint = body.blueprint;
@@ -42,21 +44,39 @@ module.exports = async function layoutComposerGenerate(req, res) {
   }
 
   try {
+    const understanding = body.understanding || null;
+    const effectiveBrief = mergeBrief(brief, understanding);
+
     const compiled = compileBlueprintToConfig(blueprint, {
       baseConfig: body.config || null,
       identity: {
-        name: brief.businessName,
-        trade: brief.trade,
-        location: brief.location,
+        name: effectiveBrief.businessName,
+        trade: effectiveBrief.trade,
+        location: effectiveBrief.location,
         phone: brief.phone,
         email: brief.email,
       },
       confirmedAt: new Date().toISOString(),
     });
 
-    const filled = fillConfigFromBrief(compiled.config, blueprint, brief, {
-      fillEmptyOnly: body.fillEmptyOnly === true,
-    });
+    const useRich =
+      understanding &&
+      ((understanding.services && understanding.services.length) ||
+        understanding.differentiator ||
+        (understanding.serviceAreas && understanding.serviceAreas.length));
+
+    const filled = useRich
+      ? fillConfigFromUnderstanding(compiled.config, blueprint, brief, understanding, {
+          fillEmptyOnly: body.fillEmptyOnly === true,
+        })
+      : fillConfigFromBrief(compiled.config, blueprint, effectiveBrief, {
+          fillEmptyOnly: body.fillEmptyOnly === true,
+        });
+
+    const home = (blueprint.pages && blueprint.pages[0]) || {};
+    const enabledKeys = (home.sections || [])
+      .filter(function (s) { return s && s.key && s.enabled !== false; })
+      .map(function (s) { return s.key; });
 
     const out = {
       ok: true,
@@ -65,14 +85,19 @@ module.exports = async function layoutComposerGenerate(req, res) {
       skippedKeys: filled.skippedKeys,
       sectionOrder: compiled.sectionOrder,
       structureLocked: true,
-      notice: 'Content filled inside the confirmed layout only — structure was not changed.',
+      understanding: effectiveBrief,
+      appSuggestions: suggestApps(effectiveBrief, enabledKeys),
+      fillMode: useRich ? 'interview_rich' : 'brief_placeholder',
+      notice: useRich
+        ? 'SEO content filled into every app in your confirmed layout from the briefing — structure unchanged.'
+        : 'Content filled inside the confirmed layout only — structure was not changed. Complete the briefing for richer SEO copy.',
     };
 
     if (body.includeResearch) {
-      out.research = buildResearchBrief(brief);
+      out.research = buildResearchBrief(effectiveBrief);
     }
     if (body.includeLandings) {
-      out.landings = recommendLandingPages(brief);
+      out.landings = recommendLandingPages(effectiveBrief);
     }
     return sendJson(res, 200, out);
   } catch (e) {
