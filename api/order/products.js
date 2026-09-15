@@ -152,6 +152,78 @@ module.exports = async function (req, res) {
       return json(res, 200, { category: data });
     }
 
+    if (req.method === 'POST' && body.action === 'delete_category') {
+      const categoryId = clean(body.id || body.category_id, 80);
+      if (!categoryId) return json(res, 400, { error: 'id_required' });
+      const hard = body.hard === true || body.mode === 'hard';
+      const {
+        deactivateCategory,
+        hardDeleteCategory
+      } = require('../../lib/order/category-delete');
+      try {
+        var result;
+        if (hard) {
+          result = await hardDeleteCategory(admin, {
+            site_id: siteId,
+            order_system_id: system.id,
+            category_id: categoryId
+          });
+        } else {
+          result = await deactivateCategory(admin, {
+            site_id: siteId,
+            order_system_id: system.id,
+            category_id: categoryId
+          });
+        }
+        await writeAudit({
+          order_system_id: system.id,
+          site_id: siteId,
+          event_type: hard ? 'category_deleted' : 'category_deactivated',
+          actor_user_id: user.id,
+          source: 'admin',
+          payload: {
+            category_id: categoryId,
+            hard: !!hard,
+            usage: result.usage || null,
+            name: result.category && result.category.name
+          }
+        });
+        return json(res, 200, Object.assign({ ok: true }, result));
+      } catch (err) {
+        var code = (err && err.code) || 500;
+        if (code === 409) {
+          return json(res, 409, {
+            error: 'category_in_use',
+            usage: err.usage || null,
+            message: 'Category still has products — remove or reassign them first, or delete without hard mode to hide it.'
+          });
+        }
+        if (code === 404) return json(res, 404, { error: 'not_found' });
+        if (code === 400) return json(res, 400, { error: String((err && err.message) || err) });
+        throw err;
+      }
+    }
+
+    if (req.method === 'POST' && body.action === 'restore_category') {
+      const categoryId = clean(body.id || body.category_id, 80);
+      if (!categoryId) return json(res, 400, { error: 'id_required' });
+      const { restoreCategory } = require('../../lib/order/category-delete');
+      const restored = await restoreCategory(admin, {
+        site_id: siteId,
+        order_system_id: system.id,
+        category_id: categoryId
+      });
+      await writeAudit({
+        order_system_id: system.id,
+        site_id: siteId,
+        event_type: 'category_restored',
+        actor_user_id: user.id,
+        source: 'admin',
+        payload: { category_id: categoryId, name: restored.category && restored.category.name }
+      });
+      return json(res, 200, Object.assign({ ok: true }, restored));
+    }
+
     if (req.method === 'POST' && body.action === 'auto_categorise') {
       const { autoCategoriseProducts } = require('../../lib/order/butcher-categories');
       const result = await autoCategoriseProducts(admin, system, access.site, {

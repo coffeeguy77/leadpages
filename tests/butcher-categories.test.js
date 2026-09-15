@@ -46,3 +46,10 @@ test('products API exposes auto_categorise action', function () {
   assert.match(html, /prod-auto-cat/);
   assert.match(html, /Match categories/);
 });
+
+test('auto_categorise skips inactive categories in source', function () {
+  const fs = require('fs');
+  const path = require('path');
+  const src = fs.readFileSync(path.join(__dirname, '..', 'lib/order/butcher-categories.js'), 'utf8');
+  assert.match(src, /active === false/);
+});
