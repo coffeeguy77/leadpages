@@ -171,6 +171,7 @@ module.exports = async function brainControl(req, res) {
         tradePackEnv: process.env.BRAIN_TRADE_PACK || '',
         themeStudioEnv: process.env.BRAIN_THEME_STUDIO || '1',
         marketingHubEnv: process.env.BRAIN_MARKETING_HUB || '1',
+        appContentEnv: process.env.BRAIN_APP_CONTENT || '1',
         disableTasksEnv: process.env.BRAIN_DISABLE_TASKS || '',
         landingDraftProvider: landingProvider
       }),
