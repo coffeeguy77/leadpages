@@ -76,6 +76,7 @@ Roadmap detail: [17-IMPLEMENTATION-ROADMAP](17-IMPLEMENTATION-ROADMAP.md).
 | `SITE_BRAIN_TEST` | unset | `1` forces test harness behaviour for Site Brain |
 | `SITE_BRAIN_ENV` | unset | Optional `staging`/`preview`/`production` marker to force database mode |
 | `BRAIN_MARKETING_HUB` | on (`1`) | `0` disables Marketing Hub APIs |
+| `BRAIN_APP_CONTENT` | on (`1`) | `0` disables per-app section copy (`POST /api/brain/app-content`) |
 | `BRAIN_DOMAIN_FINDER` | on (`1`) | `0` disables AI Domain Finder APIs |
 | `BRAIN_LANDING_PROVIDER` | — | Optional env override; prefer **AI Control Centre → Save provider** (durable `brain_settings`) |
 | `ANTHROPIC_API_KEY` | — | Anthropic adapter / legacy callers |
@@ -92,6 +93,7 @@ Roadmap detail: [17-IMPLEMENTATION-ROADMAP](17-IMPLEMENTATION-ROADMAP.md).
 | Feature | Path | Through Brain? |
 |---------|------|----------------|
 | Landing page AI draft | `POST /api/brain/landing-draft` | **Yes** when `BRAIN_LANDING_DRAFT=1` |
+| App section copy | `POST /api/brain/app-content` | **Yes** (default on; `BRAIN_APP_CONTENT=0` disables). One app at a time from keyword, exclusions, and notes. No page title, FAQ, or slider. |
 | Help assist | `api/assist.js` | **Yes** when `BRAIN_HELP_ASSIST=1` (else Anthropic) |
 | Suburb intros | `lib/seo/suburbIntro.js` | **Yes** when `BRAIN_SUBURB_INTRO=1` (else Anthropic) |
 | Trade packs | `lib/trade-pack-utils.js` `callClaude` | **Yes** when `BRAIN_TRADE_PACK=1` (else Anthropic) |
@@ -108,7 +110,7 @@ Order / rollback: [16-MIGRATION-PLAN](16-MIGRATION-PLAN.md).
 ## Rules for AI agents working on AI features
 
 1. **New AI features call Brain** — never import provider SDKs; never call Anthropic/OpenAI/Gemini from the browser.  
-2. **Migration flags default off** until soak; Colour Assistant / Website Studio / Marketing Hub default on (set `=0` to disable).  
+2. **Migration flags default off** until soak; Colour Assistant / Website Studio / Marketing Hub / app section copy default on (set `=0` to disable).  
 3. **AI suggests → user approves → publish/config write** — Marketing Hub approve **stores** suggestions only; never mutates Google Ads.  
 4. **Control Centre / Website Studio / Colour Assistant / Marketing Hub** — never expose keys; Ads context is redacted.  
 5. **Usage ledger** — prefer durable `ai_requests` (run `db/ai_requests.sql`).  

@@ -711,6 +711,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 <script src="/assets/lp-quote-display.js?v=oq-portal-style-1"></script>
 <script src="/assets/lp-quote-planning.js?v=oq-portal-style-1"></script>
 <script src="/assets/lp-quote-builder.js?v=oq-portal-style-1"></script>
+<script src="/assets/js/app-content-ai.js"></script>
 </head>
 <body data-lp-admin-page="manage">
 <script>
@@ -7907,6 +7908,40 @@ function heroCtaCard(c){
   async function anaRefresh(){ anaRender(); await anaFetchSite(); if(ANA.active==='global'){ await anaFetchGlobal(); } anaRender(); }
   function anaInit(){ var el=document.getElementById('lp-analytics'); if(el)return el; var nav=document.querySelector('.adminnav'); if(!nav||!nav.parentNode)return null; el=document.createElement('div'); el.id='lp-analytics'; nav.parentNode.insertBefore(el,nav); el.addEventListener('click',anaClick); document.addEventListener('click',function(ev){ if(ANA.active && !el.contains(ev.target)){ ANA.active=null; anaRender(); } }); return el; }
   async function renderSiteAnalytics(){ if(!anaInit())return; if(currentSiteTemplate==='trade'){ var ael=document.getElementById('lp-analytics'); if(ael) ael.style.display='none'; /* fall through to load data */ } try{ lpBillingGate(); }catch(_e){ try{console.error('[mm wiring]',_e&&_e.message);}catch(_x){} } ANA.active=null; ANA.globalData=null; anaRender(); lpExtrasInit(); LPDOM.open=null; renderMyDomains(); renderLeadsCRM(); await anaFetchSite(); anaRender(); if(LPLEADS.timeline) lpLeadsPaint(); }
+  async function _appContentGenerate(payload){
+    payload=payload||{};
+    if(!currentSiteId) throw new Error('Select a site first');
+    var se=await sb.auth.getSession();
+    var tok=se&&se.data&&se.data.session&&se.data.session.access_token;
+    if(!tok) throw new Error('Sign in to generate AI drafts');
+    var res=await fetch('/api/brain/app-content',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},
+      body:JSON.stringify({
+        siteId:currentSiteId,
+        template:currentSiteTemplate||'trade',
+        appKey:payload.appKey,
+        primaryKeyword:payload.primaryKeyword||'',
+        location:payload.location||'',
+        negativeKeywords:payload.negativeKeywords||'',
+        extraInfo:payload.extraInfo||'',
+        targets:payload.targets||''
+      })
+    });
+    var j=await res.json().catch(function(){ return {}; });
+    if(res.status===503) throw new Error(j.message||'App content AI is turned off.');
+    if(res.status===422) throw new Error(j.message||'Draft mentioned a banned topic.');
+    if(!res.ok||!j.ok) throw new Error(j.message||j.error||('Draft failed ('+res.status+')'));
+    return j.draft;
+  }
+  function _appContentApply(c, appKey, draft){
+    if(!window.LP_APP_AI) return;
+    window.LP_APP_AI.applyAppContent(c, appKey, draft);
+    try{ persist(); }catch(_e){}
+    try{ previewApply(); }catch(_e2){}
+    try{ renderLandingSub(c); }catch(_e3){}
+    if(typeof toast==='function') toast('Draft applied \u2014 review the fields, then save');
+  }
   function renderLandingSub(c, opts){
     opts=opts||{};
     var body=opts.host||$('lsub-body'); if(!body) return; var sub=(opts.sub!=null)?opts.sub:landingSub;
@@ -9380,6 +9415,15 @@ function heroCtaCard(c){
       body.innerHTML='<div class="card" style="margin-bottom:22px;"><div class="card-head" style="display:flex;justify-content:space-between;align-items:center;gap:12px;"><h2 style="margin:0;">Position \u2014 section order</h2><button class="btn ghost" id="ord-reset" type="button">Reset to default</button></div><p class="lede" style="margin:0 0 12px;">Drag the sections into the order you want them on the page \u2014 including <strong>Online Quote</strong>, <strong>How It Works Steps</strong> and <strong>Team Members</strong>. Switch other components on in Page Content, then drag them into position here.</p><div id="ord-list"></div></div>';
       wireOrder(c);
     }
+    try {
+      if (window.LP_APP_AI && window.LP_APP_AI.spec(sub)) {
+        window.LP_APP_AI.mount(body, sub, {
+          siteId: currentSiteId,
+          generate: function (payload) { return _appContentGenerate(payload); },
+          apply: function (appKey, draft) { _appContentApply(c, appKey, draft); }
+        });
+      }
+    } catch (_appAi) {}
   }
   function _faviconCard(c){
     var fav=c.favicon||'';
