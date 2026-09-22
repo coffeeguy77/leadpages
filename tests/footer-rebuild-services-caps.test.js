@@ -42,6 +42,15 @@ describe('Services split column structure fixes', () => {
     assert.match(html, /svcs-split \.svc-cta\{[^}]*width:100%/);
   });
 
+  it('intro is not hidden by .svc > p rule and uses body-sized type', () => {
+    const html = JSON.parse(fs.readFileSync(path.join(root, 'trade.template.json'), 'utf8')).html;
+    assert.match(html, /\.svc > p:not\(\.svc-intro\)\{display:none\}/);
+    assert.match(html, /\.svc > p\.svc-intro/);
+    assert.match(html, /svc-intro\{[^}]*font-size:17px/);
+    assert.match(html, /svc-bullets li\{[^}]*font-size:17px/);
+    assert.doesNotMatch(html, /\.svcs-split \.svc > p\{display:none\}/);
+  });
+
   it('manage editor has intro, list title and caps toggles', () => {
     const manage = fs.readFileSync(path.join(root, 'manage.html'), 'utf8');
     assert.match(manage, /svc-intro/);
@@ -49,6 +58,29 @@ describe('Services split column structure fixes', () => {
     assert.match(manage, /svc-title-caps/);
     assert.match(manage, /svc-sub-caps/);
     assert.match(manage, /ALL CAPS/);
+  });
+});
+
+describe('Footer polish (width, colours, logo)', () => {
+  it('footer wrap uses site --maxw (1440)', () => {
+    const html = JSON.parse(fs.readFileSync(path.join(root, 'trade.template.json'), 'utf8')).html;
+    assert.match(html, /footer\.site \.wrap,footer\.site \.wrap-wide\{[^}]*var\(--maxw,1440px\)/);
+    assert.doesNotMatch(html, /footer\.site \.wrap,footer\.site \.wrap-wide\{[^}]*1220px/);
+  });
+
+  it('footer map and muted ink use white opacities for brand backgrounds', () => {
+    const html = JSON.parse(fs.readFileSync(path.join(root, 'trade.template.json'), 'utf8')).html;
+    assert.match(html, /--mkt-foot-map:rgba\(255,255,255/);
+    assert.match(html, /--mkt-foot-muted:rgba\(255,255,255/);
+    assert.match(html, /f-ico-au\{[^}]*var\(--mkt-foot-map/);
+  });
+
+  it('footer logo height applies on img and offsets use px defaults', () => {
+    const html = JSON.parse(fs.readFileSync(path.join(root, 'trade.template.json'), 'utf8')).html;
+    assert.match(html, /foot-logo-wrap img\{[^}]*height:var\(--foot-logo-h/);
+    assert.match(html, /translate\(var\(--foot-logo-x,0px\),var\(--foot-logo-y,0px\)\)/);
+    assert.match(html, /logoWrap\.style\.setProperty\('--foot-logo-h'/);
+    assert.match(html, /removeAttribute\('hidden'\)/);
   });
 });
 
