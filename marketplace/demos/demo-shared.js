@@ -2047,12 +2047,15 @@ function applyCfg(C){
         ft.style.setProperty('--foot-support-case', F.supportTitleCaps===true?'uppercase':'none');
         var showBrand=F.showBrand!==false, showNav=F.showNav!==false, showSupport=F.showSupport!==false;
         var showTagline=F.showTagline!==false, showLegal=F.showLegal!==false, showLinks=F.showLegalLinks!==false;
+        var siteFooterOn=F.on!==false;
+        var lpInFooter=siteFooterOn && (F.leadpagesLogoInFooter===true || F.lpLogoInFooter===true);
         ft.classList.toggle('foot-hide-brand', !showBrand);
         ft.classList.toggle('foot-hide-nav', !showNav);
         ft.classList.toggle('foot-hide-support', !showSupport);
         ft.classList.toggle('foot-hide-tagline', !showTagline);
-        ft.classList.toggle('foot-hide-legal', !showLegal);
-        ft.classList.toggle('foot-hide-links', !showLinks);
+        ft.classList.toggle('foot-hide-legal', !showLegal && !(lpInFooter && showLinks));
+        ft.classList.toggle('foot-hide-links', !showLinks && !lpInFooter);
+        ft.classList.toggle('foot-lp-logo-slot', lpInFooter);
         // Logo
         var brandA=ft.querySelector('.f-brand a.brand')||ft.querySelector('.f-brand .brand')||ft.querySelector('footer a.brand');
         if(brandA){ brandA.classList.add('foot-logo-link'); }
@@ -2147,17 +2150,43 @@ function applyCfg(C){
         }
         var legalText=F.legal!=null?String(tok(F.legal)).trim():'';
         var fl=ft.querySelector('.f-legal');
-        if(fl){
-          if(legalText) fl.innerHTML='<span class="f-copy">'+esc(legalText)+'</span>';
-          else fl.innerHTML='';
-          fl.hidden=!legalText;
-        }
         var linksNav=ft.querySelector('.f-links');
-        if(linksNav){
-          var ll=Array.isArray(F.legalLinks)?F.legalLinks.filter(function(l){return l&&l.on!==false&&l.label;}):[];
-          if(!ll.length){ ll=[{label:'Privacy',href:'https://leadpages.com.au/privacy-policy.html',on:true}]; }
-          linksNav.innerHTML=ll.map(function(l){return '<a href="'+esc(l.href||'#')+'"'+(String(l.href||'').indexOf('http')===0?' target="_blank" rel="noopener"':'')+'>'+esc(l.label)+'</a>';}).join('');
+        var ll=Array.isArray(F.legalLinks)?F.legalLinks.filter(function(l){return l&&l.on!==false&&l.label;}):[];
+        if(!ll.length){ ll=[{label:'Privacy',href:'https://leadpages.com.au/privacy-policy.html',on:true},{label:'Terms',href:'https://leadpages.com.au/terms-of-use.html',on:true}]; }
+        function _fLegalLinkHtml(l){
+          return '<a href="'+esc(l.href||'#')+'"'+(String(l.href||'').indexOf('http')===0?' target="_blank" rel="noopener"':'')+'>'+esc(l.label)+'</a>';
         }
+        if(fl){
+          var parts=[];
+          if(legalText) parts.push('<span class="f-copy">'+esc(legalText)+'</span>');
+          if(lpInFooter && showLinks && ll.length){
+            ll.forEach(function(l){ parts.push(_fLegalLinkHtml(l)); });
+          }
+          fl.innerHTML=parts.join('<span class="f-pipe" aria-hidden="true"> | </span>');
+          fl.classList.toggle('f-legal-piped', lpInFooter && parts.length>1);
+          fl.hidden=!parts.length;
+        }
+        if(linksNav){
+          if(lpInFooter){
+            linksNav.classList.add('f-links-lp-logo');
+            linksNav.setAttribute('aria-label','LeadPages');
+            if(!linksNav.querySelector('.foot-lp-logo-host')){
+              linksNav.innerHTML='<a class="foot-lp-logo-host" href="https://www.leadpages.com.au" target="_blank" rel="noopener noreferrer" aria-label="LeadPages"></a>';
+            }
+            try{ if(typeof _lpMountFooterLogoInto==='function') _lpMountFooterLogoInto(linksNav.querySelector('.foot-lp-logo-host'), C); }catch(_eLp){}
+          } else {
+            linksNav.classList.remove('f-links-lp-logo');
+            linksNav.setAttribute('aria-label','Legal');
+            linksNav.innerHTML=showLinks?ll.map(_fLegalLinkHtml).join(''):'';
+          }
+        }
+        try{
+          var _lpfNode=document.getElementById('lpFooter');
+          if(_lpfNode){
+            if(lpInFooter){ _lpfNode.style.setProperty('display','none','important'); _lpfNode.setAttribute('data-lp-moved','1'); }
+            else { _lpfNode.style.removeProperty('display'); _lpfNode.removeAttribute('data-lp-moved'); }
+          }
+        }catch(_eHide){}
       }
     })();
     (function(){ var S=C.sections||{};
@@ -2297,11 +2326,69 @@ function applyCfg(C){
       } else { base.sections[k]=JSON.parse(JSON.stringify(home)); } } else if(Object.keys(home).length){ base.sections[k]=JSON.parse(JSON.stringify(home)); } if(!base.sections[k]) base.sections[k]={}; base.sections[k].on=true; }); base.sectionOrder=_lpPageLayoutOrder(p); return base; }
   function _lpRenderPageHybrid(p){ var main=document.getElementById('top')||document.querySelector('main'); if(!main) return; _lpPageMeta(p); var tpl=_lpTopTemplate(); if(!tpl){ main.innerHTML='<section data-sec=\"navMenu\"></section>'+_lpArticleBlock(p); try{_navMenuRender(_lpMergedPageConfig(p));}catch(e){} try{ window.scrollTo(0,0); }catch(e){} return; } var tmp=document.createElement('div'); tmp.innerHTML=tpl; var html=''; var nm=tmp.querySelector('[data-sec=\"navMenu\"]'); if(nm) html+=nm.outerHTML; _lpPageLayoutOrder(p).forEach(function(id){ if(id==='__lpArticle'){ if(p.h1||p.body) html+=_lpArticleBlock(p); } else { var node=tmp.querySelector('[data-sec=\"'+id+'\"]'); if(node){ node.removeAttribute('hidden'); node.style.removeProperty('display'); if(id==='customHtml') _lpResetCustomHtmlClone(node); html+=node.outerHTML; } } }); var _osKeep=_lpDetachLiveOrderStorefront(); main.innerHTML=html||tpl; _lpReattachLiveOrderStorefront(_osKeep); var C=_lpMergedPageConfig(p); window.__lpLiveCfg=C; applyCfg(C); try{_navMenuRender(C);}catch(e){} try{ applySectionAppearances(C); }catch(e){} try{ window.scrollTo(0,0); }catch(e){} }
   function _lpRenderPage(p){ var main=document.getElementById('top')||document.querySelector('main'); if(!main) return; _lpPageMeta(p); if(_lpPageHasApps(p)) return _lpRenderPageHybrid(p); main.innerHTML='<section data-sec=\"navMenu\"></section>'+_lpArticleBlock(p); try{ _navMenuRender(_lpLiveCfg()); }catch(e){} try{ window.scrollTo(0,0); }catch(e){} }
+  function _lpMountFooterLogoInto(host, C){
+    if(!host) return;
+    var F=(C&&C.sections&&C.sections.lpFooter)||{};
+    var accent='';
+    if(/^#[0-9a-fA-F]{6}$/.test(F.accent||'')) accent=F.accent;
+    else {
+      accent=((C&&C.theme&&(C.theme.hivis||C.theme.pipe))||'')+'';
+      if(!/^#[0-9a-fA-F]{6}$/.test(accent)) accent='';
+    }
+    if(!accent) accent='#ff6a1f';
+    var bg=(/^#[0-9a-fA-F]{6}$/.test(F.bg||''))?F.bg:'#0e1217';
+    var op=(F.bgOpacity!=null?+F.bgOpacity:100); if(isNaN(op))op=100; op=Math.max(0,Math.min(100,op))/100;
+    function _lpfLightBg(hex,opacity){
+      var h=(/^#[0-9a-fA-F]{6}$/.test(hex||''))?hex:'#0e1217';
+      var r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);
+      var bgL=(0.2126*r+0.7152*g+0.0722*b)/255;
+      return (bgL*opacity+0.96*(1-opacity))>0.62;
+    }
+    var inkExplicit=(/^#[0-9a-fA-F]{6}$/.test(F.ink||''));
+    // Inside site footer (usually dark), default to light ink unless set.
+    var ink=inkExplicit?F.ink:(F.inkInSiteFooter||'#ffffff');
+    if(!inkExplicit && !_lpfLightBg(bg,op) && !F.inkInSiteFooter) ink='#ffffff';
+    var src='/assets/leadpages-logo.svg';
+    var sz=(F.size!=null?+F.size:28); if(isNaN(sz))sz=28; sz=Math.max(10,Math.min(120,sz));
+    var logo=host.querySelector('.lp-foot-logo, .lp-logo-wrap, img');
+    if(!logo){
+      var img=document.createElement('img');
+      img.className='lp-foot-logo'; img.alt='LeadPages'; img.src=src;
+      img.setAttribute('data-lp-logo','auto'); img.setAttribute('data-lp-logo-pulse','');
+      host.appendChild(img); logo=img;
+    }
+    function _paint(el){
+      if(!el) return;
+      el.classList.add('lp-foot-logo');
+      el.setAttribute('data-lp-logo-accent',accent);
+      el.setAttribute('data-lp-logo-ink',inkExplicit?'custom':'light');
+      el.style.setProperty('--lp-logo-accent',accent,'important');
+      el.style.setProperty('--lp-logo-ink',ink,'important');
+      el.style.height=sz+'px'; el.style.width='auto'; el.style.maxHeight=sz+'px';
+    }
+    _paint(logo);
+    if(window.LPLogo&&window.LPLogo.mountLogo){
+      try{ if(logo.tagName==='IMG') delete logo.dataset.lpLogoMounted; }catch(_e){}
+      window.LPLogo.mountLogo(logo,{pulse:true,ink:ink,accent:accent}).then(function(wrap){
+        _paint(wrap||host.querySelector('.lp-logo-wrap, .lp-foot-logo'));
+      });
+    }
+  }
   function _lpFooterApply(C){
     var F=(C&&C.sections&&C.sections.lpFooter)||{};
     var fn=document.getElementById('lpFooter'); if(!fn) return;
     // LeadPages branded strip is always on — logo cannot be removed.
     if(C&&C.sections){ if(!C.sections.lpFooter) C.sections.lpFooter={}; C.sections.lpFooter.on=true; }
+    var siteFoot=(C&&C.sections&&C.sections.footer)||{};
+    var siteFooterOn=siteFoot.on!==false;
+    var moved=siteFooterOn && (siteFoot.leadpagesLogoInFooter===true || siteFoot.lpLogoInFooter===true);
+    if(moved){
+      fn.style.setProperty('display','none','important');
+      fn.setAttribute('data-lp-moved','1');
+      return;
+    }
+    fn.style.removeProperty('display');
+    fn.removeAttribute('data-lp-moved');
     fn.style.display='';
     var accent='';
     if(/^#[0-9a-fA-F]{6}$/.test(F.accent||'')) accent=F.accent;

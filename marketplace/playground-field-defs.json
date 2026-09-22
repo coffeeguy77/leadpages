@@ -184,7 +184,7 @@
     {
       "type": "number",
       "key": "sections.heroSlider.overlayStrength",
-      "label": "Overlay darkness (0\u2013100)"
+      "label": "Overlay darkness (0–100)"
     },
     {
       "type": "color",
@@ -2698,7 +2698,7 @@
         },
         {
           "value": "wrap",
-          "label": "Wrap \u2014 text flows around it"
+          "label": "Wrap — text flows around it"
         }
       ]
     },
@@ -2794,7 +2794,7 @@
     {
       "type": "text",
       "key": "sections.emergencyAvailability.availableLabel",
-      "label": "\u201cAvailable\u201d label"
+      "label": "“Available” label"
     },
     {
       "type": "text",
@@ -2804,7 +2804,7 @@
     {
       "type": "text",
       "key": "sections.emergencyAvailability.afterHoursLabel",
-      "label": "\u201cAfter hours\u201d label"
+      "label": "“After hours” label"
     },
     {
       "type": "textarea",
@@ -2954,7 +2954,7 @@
     {
       "type": "number",
       "key": "sections.instaGallery.columns",
-      "label": "Columns (2\u20135)"
+      "label": "Columns (2–5)"
     },
     {
       "type": "checkbox",
@@ -2991,7 +2991,7 @@
     {
       "type": "number",
       "key": "sections.igProjectFeed.columns",
-      "label": "Columns (2\u20135)"
+      "label": "Columns (2–5)"
     },
     {
       "type": "text",
@@ -4413,7 +4413,7 @@
       "type": "text",
       "key": "sections.promotions.items.0.cta.url",
       "label": "Button URL (opens in new tab)",
-      "placeholder": "https://booking.example.com/\u2026"
+      "placeholder": "https://booking.example.com/…"
     }
   ],
   "bookingCta": [
@@ -4501,9 +4501,10 @@
       "label": "Eyebrow"
     },
     {
-      "type": "text",
+      "type": "textarea",
       "key": "sections.aboutUs.heading",
-      "label": "Heading"
+      "label": "Heading",
+      "hint": "Line breaks allowed"
     },
     {
       "type": "textarea",
@@ -4549,9 +4550,10 @@
       "label": "Show blue bottom band"
     },
     {
-      "type": "text",
+      "type": "textarea",
       "key": "sections.aboutUs.bandHeading",
-      "label": "Band heading"
+      "label": "Band heading",
+      "hint": "Line breaks allowed"
     },
     {
       "type": "text",
@@ -4572,6 +4574,72 @@
       "type": "color",
       "key": "sections.aboutUs.bandBg",
       "label": "Band background"
+    },
+    {
+      "key": "sections.aboutUs.imageFit",
+      "label": "Image fit",
+      "type": "select",
+      "options": [
+        {
+          "value": "cover",
+          "label": "Cover"
+        },
+        {
+          "value": "contain",
+          "label": "Contain"
+        },
+        {
+          "value": "fill",
+          "label": "Stretch"
+        }
+      ]
+    },
+    {
+      "key": "sections.aboutUs.imagePos",
+      "label": "Image position",
+      "type": "select",
+      "options": [
+        {
+          "value": "center",
+          "label": "Centre"
+        },
+        {
+          "value": "top",
+          "label": "Top"
+        },
+        {
+          "value": "bottom",
+          "label": "Bottom"
+        },
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "key": "sections.aboutUs.quoteOn",
+      "label": "Show quote",
+      "type": "boolean"
+    },
+    {
+      "key": "sections.aboutUs.quoteStyle",
+      "label": "Quote style",
+      "type": "select",
+      "options": [
+        {
+          "value": "handwriting",
+          "label": "Handwriting"
+        },
+        {
+          "value": "plain",
+          "label": "Plain text"
+        }
+      ]
     }
   ]
 }
