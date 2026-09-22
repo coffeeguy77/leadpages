@@ -87,6 +87,7 @@
     var on = sec.on === true;
     node.classList.toggle('au-on', on);
     if (on) {
+      node.removeAttribute('hidden');
       node.style.setProperty('display', 'block', 'important');
     } else {
       node.style.setProperty('display', 'none', 'important');

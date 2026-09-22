@@ -44,7 +44,78 @@ test('resolveSectionOrder places aboutUs near hero when on', function () {
   assert.ok(on.indexOf('aboutUs') > on.indexOf('hero'));
 });
 
-test('manage _orderList includes aboutUs when enabled', function () {
+test('resolveSectionOrder inserts aboutUs under Trust Bar when saved Position exists', function () {
+  const ord = resolveSectionOrder({
+    sections: {
+      emerg: {},
+      hero: {},
+      trustBar: {},
+      services: {},
+      serviceProcess: {},
+      why: {},
+      quote: {},
+      faq: {},
+      footer: {},
+      aboutUs: { on: true }
+    },
+    sectionOrder: [
+      'emerg',
+      'hero',
+      'trustBar',
+      'services',
+      'serviceProcess',
+      'why',
+      'quote',
+      'faq',
+      'footer'
+    ]
+  });
+  assert.ok(ord.indexOf('aboutUs') >= 0, 'aboutUs present');
+  assert.ok(ord.indexOf('aboutUs') < ord.indexOf('footer'), 'aboutUs before footer');
+  assert.equal(ord.indexOf('aboutUs'), ord.indexOf('trustBar') + 1, 'aboutUs immediately after trustBar');
+});
+
+test('resolveSectionOrder repairs aboutUs parked after footer', function () {
+  const ord = resolveSectionOrder({
+    sections: {
+      hero: {},
+      trustBar: {},
+      services: {},
+      footer: {},
+      aboutUs: { on: true }
+    },
+    sectionOrder: ['hero', 'trustBar', 'services', 'footer', 'aboutUs']
+  });
+  assert.ok(ord.indexOf('aboutUs') < ord.indexOf('footer'));
+  assert.equal(ord.indexOf('aboutUs'), ord.indexOf('trustBar') + 1);
+});
+
+test('resolveSectionOrder keeps manual mid-page aboutUs placement', function () {
+  const ord = resolveSectionOrder({
+    sections: {
+      hero: {},
+      trustBar: {},
+      services: {},
+      aboutUs: { on: true },
+      why: {},
+      footer: {}
+    },
+    sectionOrder: ['hero', 'trustBar', 'services', 'aboutUs', 'why', 'footer']
+  });
+  assert.equal(ord.indexOf('aboutUs'), ord.indexOf('services') + 1);
+});
+
+test('manage enables About Us with seed, Position slot, and preview reload', function () {
+  assert.match(manage, /function _lpDefaultAboutUsSlot/);
+  assert.match(manage, /function _lpRepairAboutUsAfterFooter/);
+  assert.match(manage, /function _lpEnsureAboutUsPosition/);
+  assert.match(manage, /_lpEnsureAboutUsPosition\(c,\s*true\)/);
+  assert.match(manage, /lpSeedComponent\(c,\s*secKey\)/);
+  assert.match(manage, /secKey==='aboutUs'[\s\S]{0,220}previewLoad/);
+  assert.match(manage, /sub==='aboutUs'[\s\S]{0,400}_lpEnsureAboutUsPosition/);
+});
+
+test('manage _orderList places aboutUs under Trust Bar with saved Position', function () {
   const layoutsMatch = manage.match(/const LAYOUTS\s*=\s*(\{[\s\S]*?\});\s*\n\s*function getLayout/);
   assert.ok(layoutsMatch, 'LAYOUTS present');
   const optMatch = manage.match(/const OPTIONAL_COMPONENTS\s*=\s*(\[[^\]]+\])/);
@@ -67,9 +138,24 @@ test('manage _orderList includes aboutUs when enabled', function () {
 
   const ord = sandbox._orderList({
     layout: 'classic',
-    sections: { aboutUs: { on: true }, hero: {} }
+    sections: { aboutUs: { on: true }, hero: {}, trustBar: {}, services: {}, footer: {} },
+    sectionOrder: ['emerg', 'hero', 'trustBar', 'services', 'footer']
   });
   assert.ok(ord.indexOf('aboutUs') >= 0);
+  assert.ok(ord.indexOf('aboutUs') < ord.indexOf('footer'));
+  assert.equal(ord.indexOf('aboutUs'), ord.indexOf('trustBar') + 1);
+
+  const repaired = sandbox._orderList({
+    layout: 'classic',
+    sections: { aboutUs: { on: true }, hero: {}, trustBar: {}, footer: {} },
+    sectionOrder: ['hero', 'trustBar', 'footer', 'aboutUs']
+  });
+  assert.ok(repaired.indexOf('aboutUs') < repaired.indexOf('footer'));
+});
+
+test('lpApplyAboutUs clears hidden when turning section on', function () {
+  const src = fs.readFileSync(path.join(root, 'assets/lp-about-us.js'), 'utf8');
+  assert.match(src, /removeAttribute\('hidden'\)/);
 });
 
 test('marketplace catalog + demo coverage for aboutUs', function () {
