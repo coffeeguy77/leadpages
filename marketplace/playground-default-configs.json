@@ -2627,5 +2627,37 @@
         ]
       }
     }
+  },
+  "aboutUs": {
+    "business": "Ace Plumbing Co.",
+    "trade": "plumber",
+    "phone": "0261000000",
+    "theme": {
+      "pipe": "#1f7bb8",
+      "hivis": "#ff6a1f"
+    },
+    "aboutUs": {
+      "on": true,
+      "layout": "story",
+      "eyebrow": "About {{businessName}}",
+      "heading": "Built on trade skills. Driven by people.",
+      "intro": "We were founded by a tradesperson with a passion for helping people through life's big home transitions.",
+      "body": "From renovation and maintenance through to specialist work, we bring the right people to every job.\n\nWe take pride in honest advice and quality workmanship for homeowners in our local area.",
+      "ctaLabel": "Our Story",
+      "ctaAction": "scroll",
+      "ctaTarget": "quote",
+      "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=1000&fit=crop",
+      "quote": "Good work helps people move forward.",
+      "quoteAttr": "Founder",
+      "bandOn": true,
+      "bandBg": "#0a2744",
+      "bandHeading": "You don't have to manage it all yourself.",
+      "bandSub": "Let's talk about how we can help with your next step.",
+      "bandCtaLabel": "Start the Conversation",
+      "bandCtaAction": "scroll",
+      "bandCtaTarget": "quote",
+      "bandTagline": "Same home. New possibilities.",
+      "bandDecor": true
+    }
   }
 }

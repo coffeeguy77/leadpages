@@ -184,7 +184,7 @@
     {
       "type": "number",
       "key": "sections.heroSlider.overlayStrength",
-      "label": "Overlay darkness (0–100)"
+      "label": "Overlay darkness (0\u2013100)"
     },
     {
       "type": "color",
@@ -2698,7 +2698,7 @@
         },
         {
           "value": "wrap",
-          "label": "Wrap — text flows around it"
+          "label": "Wrap \u2014 text flows around it"
         }
       ]
     },
@@ -2794,7 +2794,7 @@
     {
       "type": "text",
       "key": "sections.emergencyAvailability.availableLabel",
-      "label": "“Available” label"
+      "label": "\u201cAvailable\u201d label"
     },
     {
       "type": "text",
@@ -2804,7 +2804,7 @@
     {
       "type": "text",
       "key": "sections.emergencyAvailability.afterHoursLabel",
-      "label": "“After hours” label"
+      "label": "\u201cAfter hours\u201d label"
     },
     {
       "type": "textarea",
@@ -2954,7 +2954,7 @@
     {
       "type": "number",
       "key": "sections.instaGallery.columns",
-      "label": "Columns (2–5)"
+      "label": "Columns (2\u20135)"
     },
     {
       "type": "checkbox",
@@ -2991,7 +2991,7 @@
     {
       "type": "number",
       "key": "sections.igProjectFeed.columns",
-      "label": "Columns (2–5)"
+      "label": "Columns (2\u20135)"
     },
     {
       "type": "text",
@@ -4387,18 +4387,33 @@
       "key": "sections.promotions.items.0.cta.action",
       "label": "Button action",
       "options": [
-        { "value": "quote", "label": "Quote form" },
-        { "value": "call", "label": "Call" },
-        { "value": "scroll", "label": "Scroll to form" },
-        { "value": "url", "label": "External URL (new tab)" },
-        { "value": "none", "label": "No button" }
+        {
+          "value": "quote",
+          "label": "Quote form"
+        },
+        {
+          "value": "call",
+          "label": "Call"
+        },
+        {
+          "value": "scroll",
+          "label": "Scroll to form"
+        },
+        {
+          "value": "url",
+          "label": "External URL (new tab)"
+        },
+        {
+          "value": "none",
+          "label": "No button"
+        }
       ]
     },
     {
       "type": "text",
       "key": "sections.promotions.items.0.cta.url",
       "label": "Button URL (opens in new tab)",
-      "placeholder": "https://booking.example.com/…"
+      "placeholder": "https://booking.example.com/\u2026"
     }
   ],
   "bookingCta": [
@@ -4466,6 +4481,97 @@
         "cards",
         "editorial-split"
       ]
+    }
+  ],
+  "aboutUs": [
+    {
+      "type": "select",
+      "key": "sections.aboutUs.layout",
+      "label": "Layout",
+      "options": [
+        {
+          "value": "story",
+          "label": "Story (3-column)"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "key": "sections.aboutUs.eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "key": "sections.aboutUs.heading",
+      "label": "Heading"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.aboutUs.intro",
+      "label": "Intro",
+      "rows": 4
+    },
+    {
+      "type": "textarea",
+      "key": "sections.aboutUs.body",
+      "label": "Body",
+      "rows": 10
+    },
+    {
+      "type": "image",
+      "key": "sections.aboutUs.image",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "key": "sections.aboutUs.ctaLabel",
+      "label": "Story button"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.aboutUs.quote",
+      "label": "Quote",
+      "rows": 3
+    },
+    {
+      "type": "text",
+      "key": "sections.aboutUs.quoteAttr",
+      "label": "Quote attribution"
+    },
+    {
+      "type": "color",
+      "key": "sections.aboutUs.accent",
+      "label": "Accent colour"
+    },
+    {
+      "type": "toggle",
+      "key": "sections.aboutUs.bandOn",
+      "label": "Show blue bottom band"
+    },
+    {
+      "type": "text",
+      "key": "sections.aboutUs.bandHeading",
+      "label": "Band heading"
+    },
+    {
+      "type": "text",
+      "key": "sections.aboutUs.bandSub",
+      "label": "Band subtext"
+    },
+    {
+      "type": "text",
+      "key": "sections.aboutUs.bandCtaLabel",
+      "label": "Band button"
+    },
+    {
+      "type": "text",
+      "key": "sections.aboutUs.bandTagline",
+      "label": "Band tagline"
+    },
+    {
+      "type": "color",
+      "key": "sections.aboutUs.bandBg",
+      "label": "Band background"
     }
   ]
 }

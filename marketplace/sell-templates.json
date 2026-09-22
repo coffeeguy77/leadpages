@@ -2,14 +2,14 @@
   "activityCounter": {
     "name": "Activity Counter",
     "tagline": "Live-style numeric counters",
-    "summary": "\"47 jobs this month\" — animated busy counters.",
+    "summary": "\"47 jobs this month\" \u2014 animated busy counters.",
     "hero_image_url": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Activity Counter",
-          "text": "Three large counters with value and label — jobs this month, active teams, years serving. Pairs with Split Hero and Activity Timeline."
+          "text": "Three large counters with value and label \u2014 jobs this month, active teams, years serving. Pairs with Split Hero and Activity Timeline."
         }
       },
       {
@@ -17,7 +17,7 @@
         "payload": {
           "url": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=720&fit=crop&q=80",
           "alt": "Social proof sections",
-          "caption": "Portfolio, team and live job feeds — the proof stack partners sell."
+          "caption": "Portfolio, team and live job feeds \u2014 the proof stack partners sell."
         }
       },
       {
@@ -55,7 +55,7 @@
             },
             {
               "title": "Quick edit",
-              "text": "Change three numbers — done."
+              "text": "Change three numbers \u2014 done."
             }
           ]
         }
@@ -81,7 +81,7 @@
         "block_type": "rich_text",
         "payload": {
           "heading": "Activity Timeline",
-          "text": "Vertical timeline with events — job started, quote sent, review received. Shows the business is active today, not a static brochure."
+          "text": "Vertical timeline with events \u2014 job started, quote sent, review received. Shows the business is active today, not a static brochure."
         }
       },
       {
@@ -89,7 +89,7 @@
         "payload": {
           "url": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=720&fit=crop&q=80",
           "alt": "Social proof sections",
-          "caption": "Portfolio, team and live job feeds — the proof stack partners sell."
+          "caption": "Portfolio, team and live job feeds \u2014 the proof stack partners sell."
         }
       },
       {
@@ -153,7 +153,7 @@
         "block_type": "rich_text",
         "payload": {
           "heading": "Service Area Copy",
-          "text": "Combines a short area paragraph with a suburb list — critical for local SEO and paid search quality scores. Visitors self-qualify before they call."
+          "text": "Combines a short area paragraph with a suburb list \u2014 critical for local SEO and paid search quality scores. Visitors self-qualify before they call."
         }
       },
       {
@@ -171,11 +171,11 @@
           "items": [
             {
               "title": "Suburb list",
-              "text": "Editable list of suburbs — one per line in the Command Centre."
+              "text": "Editable list of suburbs \u2014 one per line in the Command Centre."
             },
             {
               "title": "Intro paragraph",
-              "text": "Set the geographic story — ACT-wide, metro, or hyper-local."
+              "text": "Set the geographic story \u2014 ACT-wide, metro, or hyper-local."
             },
             {
               "title": "Eyebrow + heading",
@@ -199,7 +199,7 @@
             },
             {
               "title": "Quick wins",
-              "text": "Defaults include Canberra suburbs — swap for any market."
+              "text": "Defaults include Canberra suburbs \u2014 swap for any market."
             }
           ]
         }
@@ -225,7 +225,7 @@
         "block_type": "rich_text",
         "payload": {
           "heading": "Before & After Gallery",
-          "text": "Photo Proof layout centrepiece. Multiple before/after pairs with title, caption and optional image URLs — ideal when you have great job photos."
+          "text": "Photo Proof layout centrepiece. Multiple before/after pairs with title, caption and optional image URLs \u2014 ideal when you have great job photos."
         }
       },
       {
@@ -251,7 +251,7 @@
             },
             {
               "title": "Image URLs",
-              "text": "Optional before and after images — Cloudinary or external URLs."
+              "text": "Optional before and after images \u2014 Cloudinary or external URLs."
             }
           ]
         }
@@ -297,7 +297,7 @@
         "block_type": "rich_text",
         "payload": {
           "heading": "Before/After Feed",
-          "text": "Feed-style before/after cards with title, location, time, caption and image pair — more entries than the static gallery, optimised for proof layouts."
+          "text": "Feed-style before/after cards with title, location, time, caption and image pair \u2014 more entries than the static gallery, optimised for proof layouts."
         }
       },
       {
@@ -305,7 +305,7 @@
         "payload": {
           "url": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=720&fit=crop&q=80",
           "alt": "Social proof sections",
-          "caption": "Portfolio, team and live job feeds — the proof stack partners sell."
+          "caption": "Portfolio, team and live job feeds \u2014 the proof stack partners sell."
         }
       },
       {
@@ -369,7 +369,7 @@
         "block_type": "rich_text",
         "payload": {
           "heading": "Certifications",
-          "text": "Three accreditation cards with name, body, number and expiry — Master Plumbers, public liability, trade licence. Critical for regulated trades."
+          "text": "Three accreditation cards with name, body, number and expiry \u2014 Master Plumbers, public liability, trade licence. Critical for regulated trades."
         }
       },
       {
@@ -434,14 +434,14 @@
   "crew": {
     "name": "Meet the Team",
     "tagline": "Team member cards with photo and role",
-    "summary": "Put faces to the business — owner and crew.",
+    "summary": "Put faces to the business \u2014 owner and crew.",
     "hero_image_url": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Meet the Team",
-          "text": "Team member cards with name, role, specialty and photo — builds trust for residential clients who want to know who is coming to their door."
+          "text": "Team member cards with name, role, specialty and photo \u2014 builds trust for residential clients who want to know who is coming to their door."
         }
       },
       {
@@ -449,7 +449,7 @@
         "payload": {
           "url": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&h=720&fit=crop&q=80",
           "alt": "Meet the team section",
-          "caption": "Team cards with photos, roles and specialties — builds residential trust."
+          "caption": "Team cards with photos, roles and specialties \u2014 builds residential trust."
         }
       },
       {
@@ -459,15 +459,15 @@
           "items": [
             {
               "title": "Three member slots",
-              "text": "Add owner, senior tradie, apprentice — or whole crew."
+              "text": "Add owner, senior tradie, apprentice \u2014 or whole crew."
             },
             {
               "title": "Photo per member",
-              "text": "Square headshots — optional but recommended."
+              "text": "Square headshots \u2014 optional but recommended."
             },
             {
               "title": "Role & specialty",
-              "text": "\"Master plumber · Bathroom renovations\" style detail."
+              "text": "\"Master plumber \u00b7 Bathroom renovations\" style detail."
             }
           ]
         }
@@ -506,14 +506,14 @@
   "customerReactions": {
     "name": "Customer Reactions",
     "tagline": "Short reaction quotes in a feed format",
-    "summary": "Quick customer reactions — lighter than full reviews.",
+    "summary": "Quick customer reactions \u2014 lighter than full reviews.",
     "hero_image_url": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Customer Reactions",
-          "text": "Short reaction cards — \"Called at 7am, fixed by 9\" — designed for feed layouts where full review walls feel too heavy."
+          "text": "Short reaction cards \u2014 \"Called at 7am, fixed by 9\" \u2014 designed for feed layouts where full review walls feel too heavy."
         }
       },
       {
@@ -521,7 +521,7 @@
         "payload": {
           "url": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=720&fit=crop&q=80",
           "alt": "Social proof sections",
-          "caption": "Portfolio, team and live job feeds — the proof stack partners sell."
+          "caption": "Portfolio, team and live job feeds \u2014 the proof stack partners sell."
         }
       },
       {
@@ -578,14 +578,14 @@
   "emerg": {
     "name": "Emergency CTA",
     "tagline": "24/7 urgent call-to-action bar",
-    "summary": "A sticky top bar that puts your emergency phone line front and centre — message, colours and call link match the App Command Centre Top bar.",
+    "summary": "A sticky top bar that puts your emergency phone line front and centre \u2014 message, colours and call link match the App Command Centre Top bar.",
     "hero_image_url": "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Emergency CTA",
-          "text": "The top emergency bar used on trade landing pages — urgent message, optional call link, sticky layout and brand colours. Same Top bar controls as the App Command Centre."
+          "text": "The top emergency bar used on trade landing pages \u2014 urgent message, optional call link, sticky layout and brand colours. Same Top bar controls as the App Command Centre."
         }
       },
       {
@@ -634,7 +634,7 @@
         "block_type": "rich_text",
         "payload": {
           "heading": "Emergency Availability",
-          "text": "Displays weekday and weekend hours, after-hours messaging and emergency CTA — critical for plumbers, locksmiths and electricians running 24/7 ads."
+          "text": "Displays weekday and weekend hours, after-hours messaging and emergency CTA \u2014 critical for plumbers, locksmiths and electricians running 24/7 ads."
         }
       },
       {
@@ -642,7 +642,7 @@
         "payload": {
           "url": "https://images.unsplash.com/photo-1580894732444-8ecded7900cd?w=1200&h=720&fit=crop&q=80",
           "alt": "Emergency availability banner",
-          "caption": "After-hours status and schedule — pairs with 24/7 ad campaigns."
+          "caption": "After-hours status and schedule \u2014 pairs with 24/7 ad campaigns."
         }
       },
       {
@@ -680,7 +680,7 @@
             },
             {
               "title": "Emergency CTA",
-              "text": "Optional button — call or quote action."
+              "text": "Optional button \u2014 call or quote action."
             }
           ]
         }
@@ -706,7 +706,7 @@
         "block_type": "rich_text",
         "payload": {
           "heading": "Estimate Builder",
-          "text": "Multi-step estimate wizard with configurable options and min/max ranges per answer — blocked drains, hot water, urgency surcharges. Sets price expectations early."
+          "text": "Multi-step estimate wizard with configurable options and min/max ranges per answer \u2014 blocked drains, hot water, urgency surcharges. Sets price expectations early."
         }
       },
       {
@@ -714,7 +714,7 @@
         "payload": {
           "url": "https://images.unsplash.com/photo-1554224311-beee415c201f?w=1200&h=720&fit=crop&q=80",
           "alt": "Estimate builder wizard",
-          "caption": "Interactive ballpark pricing — qualifies leads before they call."
+          "caption": "Interactive ballpark pricing \u2014 qualifies leads before they call."
         }
       },
       {
@@ -724,7 +724,7 @@
           "items": [
             {
               "title": "Configurable steps",
-              "text": "Group options by step — \"What do you need?\", \"How urgent?\""
+              "text": "Group options by step \u2014 \"What do you need?\", \"How urgent?\""
             },
             {
               "title": "Min/max ranges",
@@ -752,7 +752,7 @@
             },
             {
               "title": "Nine default options",
-              "text": "Seeded for plumbing — swap options per trade."
+              "text": "Seeded for plumbing \u2014 swap options per trade."
             }
           ]
         }
@@ -778,7 +778,7 @@
         "block_type": "rich_text",
         "payload": {
           "heading": "FAQ Accordion",
-          "text": "Accordion FAQ reduces phone time spent on pricing, licensing, areas and hours. Each item is a question plus answer — expandable on click."
+          "text": "Accordion FAQ reduces phone time spent on pricing, licensing, areas and hours. Each item is a question plus answer \u2014 expandable on click."
         }
       },
       {
@@ -796,7 +796,7 @@
           "items": [
             {
               "title": "Accordion UI",
-              "text": "Native details/summary accordion — accessible and mobile-friendly."
+              "text": "Native details/summary accordion \u2014 accessible and mobile-friendly."
             },
             {
               "title": "Unlimited Q&As",
@@ -824,7 +824,7 @@
             },
             {
               "title": "Fast defaults",
-              "text": "Seed four common plumbing FAQs — swap for any trade."
+              "text": "Seed four common plumbing FAQs \u2014 swap for any trade."
             }
           ]
         }
@@ -850,7 +850,7 @@
         "block_type": "rich_text",
         "payload": {
           "heading": "Project Portfolio",
-          "text": "Premium Showcase layout feature. Large project cards with title, type tag, location, description and optional gallery — built for builders, landscapers and renovators."
+          "text": "Premium Showcase layout feature. Large project cards with title, type tag, location, description and optional gallery \u2014 built for builders, landscapers and renovators."
         }
       },
       {
@@ -858,7 +858,7 @@
         "payload": {
           "url": "https://res.cloudinary.com/dzx6x1hou/image/upload/c_fill,w_1200,h_720,q_80/leadpages/391656d6-1148-48f2-9ac6-a938595c7449/featuredprojects/image/mqx6b5b7542qs.jpg",
           "alt": "Project portfolio grid",
-          "caption": "Large project cards with gallery lightbox — from a real builder site (AAM1)."
+          "caption": "Large project cards with gallery lightbox \u2014 from a real builder site (AAM1)."
         }
       },
       {
@@ -923,7 +923,7 @@
         "block_type": "rich_text",
         "payload": {
           "heading": "Finance Options",
-          "text": "Finance section with eyebrow, heading, weekly amount, period and disclaimer — pairs with third-party finance providers for kitchens, solar and renovations."
+          "text": "Finance section with eyebrow, heading, weekly amount, period and disclaimer \u2014 pairs with third-party finance providers for kitchens, solar and renovations."
         }
       },
       {
@@ -995,7 +995,7 @@
         "block_type": "rich_text",
         "payload": {
           "heading": "Hero Banner",
-          "text": "Every trade site lives or dies on the first screen. LeadPages heroes pair a bold headline with highlighted urgency text, supporting sub-copy and icon badges — built for local service searches on mobile."
+          "text": "Every trade site lives or dies on the first screen. LeadPages heroes pair a bold headline with highlighted urgency text, supporting sub-copy and icon badges \u2014 built for local service searches on mobile."
         }
       },
       {
@@ -1041,7 +1041,7 @@
             },
             {
               "title": "Client self-service",
-              "text": "Owners update their own headline after launch — fewer post-launch edits for partners."
+              "text": "Owners update their own headline after launch \u2014 fewer post-launch edits for partners."
             }
           ]
         }
@@ -1085,7 +1085,7 @@
           "items": [
             {
               "title": "Drag-to-reveal wipe",
-              "text": "Visitors interact with a before/after slider — higher engagement than static images."
+              "text": "Visitors interact with a before/after slider \u2014 higher engagement than static images."
             },
             {
               "title": "Labels & caption",
@@ -1093,7 +1093,7 @@
             },
             {
               "title": "Hero placement",
-              "text": "Sits in the primary viewport — not buried halfway down the page."
+              "text": "Sits in the primary viewport \u2014 not buried halfway down the page."
             }
           ]
         }
@@ -1109,7 +1109,7 @@
             },
             {
               "title": "Interactive demo",
-              "text": "Playground shows the real wipe component — not a screenshot."
+              "text": "Playground shows the real wipe component \u2014 not a screenshot."
             },
             {
               "title": "Differentiator",
@@ -1132,7 +1132,7 @@
   "heroSlider": {
     "name": "Hero Image Slider",
     "tagline": "Rotating image hero with overlay copy and CTAs",
-    "summary": "A full-width slider for visual trades — roofing, landscaping, building.",
+    "summary": "A full-width slider for visual trades \u2014 roofing, landscaping, building.",
     "hero_image_url": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
@@ -1147,7 +1147,7 @@
         "payload": {
           "url": "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=1200&h=720&fit=crop&q=80",
           "alt": "Solar rooftop hero slider demo",
-          "caption": "Rotating slides with overlay copy — marketplace demo uses Prestige Solar imagery."
+          "caption": "Rotating slides with overlay copy \u2014 marketplace demo uses Prestige Solar imagery."
         }
       },
       {
@@ -1157,7 +1157,7 @@
           "items": [
             {
               "title": "Multiple slides",
-              "text": "Add, reorder and edit slides — each with its own image, copy and button actions."
+              "text": "Add, reorder and edit slides \u2014 each with its own image, copy and button actions."
             },
             {
               "title": "Overlay controls",
@@ -1177,7 +1177,7 @@
           "items": [
             {
               "title": "Premium upsell",
-              "text": "Visual trades pay more for slider heroes — easy margin for partners."
+              "text": "Visual trades pay more for slider heroes \u2014 easy margin for partners."
             },
             {
               "title": "Image-led selling",
@@ -1211,7 +1211,7 @@
         "block_type": "rich_text",
         "payload": {
           "heading": "Instagram Project Feed",
-          "text": "Like Project Feed but sourced from Instagram — the marketplace demo uses Bean Culture’s live connection (beanculture.com.au). Title from caption, tag label, call and quote buttons with custom colours. See our Instagram Data Use & Deletion policy (/instagram-data-policy) for how connection data is used and deleted."
+          "text": "Like Project Feed but sourced from Instagram \u2014 the marketplace demo uses Bean Culture\u2019s live connection (beanculture.com.au). Title from caption, tag label, call and quote buttons with custom colours. See our Instagram Data Use & Deletion policy (/instagram-data-policy) for how connection data is used and deleted."
         }
       },
       {
@@ -1219,7 +1219,7 @@
         "payload": {
           "url": "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=1200&h=720&fit=crop&q=80",
           "alt": "Bean Culture Instagram project feed",
-          "caption": "Instagram posts as project cards — marketplace demo powered by Bean Culture’s connection."
+          "caption": "Instagram posts as project cards \u2014 marketplace demo powered by Bean Culture\u2019s connection."
         }
       },
       {
@@ -1253,7 +1253,7 @@
             },
             {
               "title": "Conversion focused",
-              "text": "Unlike a plain grid — every card drives action."
+              "text": "Unlike a plain grid \u2014 every card drives action."
             },
             {
               "title": "Brand colours",
@@ -1299,7 +1299,7 @@
         "block_type": "rich_text",
         "payload": {
           "heading": "Instagram Gallery",
-          "text": "Pulls from a connected Instagram account — the marketplace demo uses Bean Culture’s live connection (beanculture.com.au). Eyebrow, heading, post count and column layout keep the site fresh with social content. See our Instagram Data Use & Deletion policy (/instagram-data-policy) for how connection data is used and deleted."
+          "text": "Pulls from a connected Instagram account \u2014 the marketplace demo uses Bean Culture\u2019s live connection (beanculture.com.au). Eyebrow, heading, post count and column layout keep the site fresh with social content. See our Instagram Data Use & Deletion policy (/instagram-data-policy) for how connection data is used and deleted."
         }
       },
       {
@@ -1307,7 +1307,7 @@
         "payload": {
           "url": "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=1200&h=720&fit=crop&q=80",
           "alt": "Bean Culture style Instagram gallery",
-          "caption": "Live Instagram grid — marketplace demo powered by Bean Culture’s connection."
+          "caption": "Live Instagram grid \u2014 marketplace demo powered by Bean Culture\u2019s connection."
         }
       },
       {
@@ -1317,7 +1317,7 @@
           "items": [
             {
               "title": "Column control",
-              "text": "4-column desktop grid — responsive on mobile."
+              "text": "4-column desktop grid \u2014 responsive on mobile."
             },
             {
               "title": "Post count",
@@ -1325,7 +1325,7 @@
             },
             {
               "title": "Instagram OAuth",
-              "text": "Connect once in Command Centre — auto-sync path."
+              "text": "Connect once in Command Centre \u2014 auto-sync path."
             }
           ]
         }
@@ -1337,7 +1337,7 @@
           "items": [
             {
               "title": "Fresh content",
-              "text": "Site updates when they post — no manual uploads."
+              "text": "Site updates when they post \u2014 no manual uploads."
             },
             {
               "title": "Visual trades",
@@ -1387,7 +1387,7 @@
         "block_type": "rich_text",
         "payload": {
           "heading": "Jobs Feed",
-          "text": "Compact job entries with title, location, time and quick result line — designed for high-velocity social proof layouts."
+          "text": "Compact job entries with title, location, time and quick result line \u2014 designed for high-velocity social proof layouts."
         }
       },
       {
@@ -1395,7 +1395,7 @@
         "payload": {
           "url": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=720&fit=crop&q=80",
           "alt": "Social proof sections",
-          "caption": "Portfolio, team and live job feeds — the proof stack partners sell."
+          "caption": "Portfolio, team and live job feeds \u2014 the proof stack partners sell."
         }
       },
       {
@@ -1405,7 +1405,7 @@
           "items": [
             {
               "title": "Quick result line",
-              "text": "One-line outcome per job — \"Cleared in 45 min\"."
+              "text": "One-line outcome per job \u2014 \"Cleared in 45 min\"."
             },
             {
               "title": "Image optional",
@@ -1451,7 +1451,7 @@
   },
   "navMenu": {
     "name": "Navigation Menu",
-    "tagline": "Custom nav links — pills or underline style",
+    "tagline": "Custom nav links \u2014 pills or underline style",
     "summary": "Add a secondary navigation row to any page.",
     "hero_image_url": "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=1400&h=560&fit=crop&q=80",
     "blocks": [
@@ -1459,7 +1459,7 @@
         "block_type": "rich_text",
         "payload": {
           "heading": "Navigation Menu",
-          "text": "Configurable nav with pill or underline style, left or centre alignment and custom link items — useful for multi-page sites and anchor links."
+          "text": "Configurable nav with pill or underline style, left or centre alignment and custom link items \u2014 useful for multi-page sites and anchor links."
         }
       },
       {
@@ -1481,7 +1481,7 @@
             },
             {
               "title": "Custom links",
-              "text": "Add label + URL pairs — internal anchors or external pages."
+              "text": "Add label + URL pairs \u2014 internal anchors or external pages."
             },
             {
               "title": "Off by default",
@@ -1505,7 +1505,7 @@
             },
             {
               "title": "Partner control",
-              "text": "No menu builder coding — list editor only."
+              "text": "No menu builder coding \u2014 list editor only."
             }
           ]
         }
@@ -1531,7 +1531,7 @@
         "block_type": "rich_text",
         "payload": {
           "heading": "Project Feed",
-          "text": "Manual or Instagram-sourced project cards with title, location, service, date and image — core of the Social Proof Feed layout."
+          "text": "Manual or Instagram-sourced project cards with title, location, service, date and image \u2014 core of the Social Proof Feed layout."
         }
       },
       {
@@ -1596,14 +1596,14 @@
   "projectStats": {
     "name": "Project Stats",
     "tagline": "Big-number credibility bar",
-    "summary": "Lead with \"2,400+ jobs\" or \"15 years\" — authority at a glance.",
+    "summary": "Lead with \"2,400+ jobs\" or \"15 years\" \u2014 authority at a glance.",
     "hero_image_url": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Project Stats",
-          "text": "Authority Builder layout centrepiece. Large stat values with labels — jobs completed, years operating, review count, emergency availability."
+          "text": "Authority Builder layout centrepiece. Large stat values with labels \u2014 jobs completed, years operating, review count, emergency availability."
         }
       },
       {
@@ -1649,7 +1649,7 @@
             },
             {
               "title": "Minimal maintenance",
-              "text": "Numbers update once a year — set and forget."
+              "text": "Numbers update once a year \u2014 set and forget."
             }
           ]
         }
@@ -1667,7 +1667,7 @@
   },
   "proofStream": {
     "name": "Proof Stream",
-    "tagline": "Mixed proof cards — jobs, reviews, video, before/after",
+    "tagline": "Mixed proof cards \u2014 jobs, reviews, video, before/after",
     "summary": "The all-in-one social proof feed.",
     "hero_image_url": "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1400&h=560&fit=crop&q=80",
     "blocks": [
@@ -1675,7 +1675,7 @@
         "block_type": "rich_text",
         "payload": {
           "heading": "Proof Stream",
-          "text": "Single feed mixing job cards, photos, reviews, videos and before/afters — each with CTA. The centrepiece of the Social Proof Feed layout."
+          "text": "Single feed mixing job cards, photos, reviews, videos and before/afters \u2014 each with CTA. The centrepiece of the Social Proof Feed layout."
         }
       },
       {
@@ -1693,7 +1693,7 @@
           "items": [
             {
               "title": "Six card types",
-              "text": "Job, photo, review, video, before/after — per card."
+              "text": "Job, photo, review, video, before/after \u2014 per card."
             },
             {
               "title": "Per-card CTA",
@@ -1721,7 +1721,7 @@
             },
             {
               "title": "CTA on every card",
-              "text": "No dead-end proof — every item drives action."
+              "text": "No dead-end proof \u2014 every item drives action."
             }
           ]
         }
@@ -1740,7 +1740,7 @@
   "quote": {
     "name": "Quote Form",
     "tagline": "Lead capture form with configurable fields",
-    "summary": "Turn visitors into callbacks — the primary conversion point.",
+    "summary": "Turn visitors into callbacks \u2014 the primary conversion point.",
     "hero_image_url": "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
@@ -1755,7 +1755,7 @@
         "payload": {
           "url": "https://images.unsplash.com/photo-1423666639041-f56000c27a9a?w=1200&h=720&fit=crop&q=80",
           "alt": "Quote form section",
-          "caption": "Lead capture form with configurable fields — submissions go to CRM."
+          "caption": "Lead capture form with configurable fields \u2014 submissions go to CRM."
         }
       },
       {
@@ -1765,11 +1765,11 @@
           "items": [
             {
               "title": "Field labels",
-              "text": "Rename every label — Name, Phone, Suburb, Job type — per client."
+              "text": "Rename every label \u2014 Name, Phone, Suburb, Job type \u2014 per client."
             },
             {
               "title": "Job type options",
-              "text": "Dropdown options editable as a list — blocked drain, hot water, etc."
+              "text": "Dropdown options editable as a list \u2014 blocked drain, hot water, etc."
             },
             {
               "title": "Success state",
@@ -1819,7 +1819,7 @@
         "block_type": "rich_text",
         "payload": {
           "heading": "Response Cards",
-          "text": "Emergency Response layout feature. Icon cards like \"24/7 Emergency\", \"Same Day Service\" and \"Upfront Pricing\" — reduces anxiety on urgent searches."
+          "text": "Emergency Response layout feature. Icon cards like \"24/7 Emergency\", \"Same Day Service\" and \"Upfront Pricing\" \u2014 reduces anxiety on urgent searches."
         }
       },
       {
@@ -1837,11 +1837,11 @@
           "items": [
             {
               "title": "Editable icons",
-              "text": "Pick an LP icon for each card in Customise — title and body wrap cleanly."
+              "text": "Pick an LP icon for each card in Customise \u2014 title and body wrap cleanly."
             },
             {
               "title": "Six default cards",
-              "text": "Seed six urgency promises in a tidy 3×2 grid."
+              "text": "Seed six urgency promises in a tidy 3\u00d72 grid."
             },
             {
               "title": "Emergency layout",
@@ -1865,7 +1865,7 @@
             },
             {
               "title": "Simple copy",
-              "text": "Partners edit icons and lines — no design work."
+              "text": "Partners edit icons and lines \u2014 no design work."
             }
           ]
         }
@@ -1891,7 +1891,7 @@
         "block_type": "rich_text",
         "payload": {
           "heading": "Review Highlights",
-          "text": "Short quote snippets with star rating and name — three cards designed for the zone directly under the hero on Reviews First pages."
+          "text": "Short quote snippets with star rating and name \u2014 three cards designed for the zone directly under the hero on Reviews First pages."
         }
       },
       {
@@ -1913,7 +1913,7 @@
             },
             {
               "title": "Short quotes",
-              "text": "Punchy one-liners — not full review walls."
+              "text": "Punchy one-liners \u2014 not full review walls."
             },
             {
               "title": "Reviews First layout",
@@ -1985,7 +1985,7 @@
             },
             {
               "title": "Unlimited list",
-              "text": "Add as many reviews as needed — list editor in Command Centre."
+              "text": "Add as many reviews as needed \u2014 list editor in Command Centre."
             },
             {
               "title": "Long-form quotes",
@@ -2035,7 +2035,7 @@
         "block_type": "rich_text",
         "payload": {
           "heading": "Service Area Map",
-          "text": "Eyebrow, heading and intro for a map-style coverage block — pair with suburb lists and area copy for geographic dominance."
+          "text": "Eyebrow, heading and intro for a map-style coverage block \u2014 pair with suburb lists and area copy for geographic dominance."
         }
       },
       {
@@ -2107,7 +2107,7 @@
         "block_type": "rich_text",
         "payload": {
           "heading": "Service Areas Grid",
-          "text": "Service Area Dominator layout feature. Six or more suburb names in a grid — tells Google and visitors exactly where you operate."
+          "text": "Service Area Dominator layout feature. Six or more suburb names in a grid \u2014 tells Google and visitors exactly where you operate."
         }
       },
       {
@@ -2129,7 +2129,7 @@
             },
             {
               "title": "List editor",
-              "text": "Add suburbs one by one — no comma-separated paste errors."
+              "text": "Add suburbs one by one \u2014 no comma-separated paste errors."
             },
             {
               "title": "SEO layout",
@@ -2179,7 +2179,7 @@
         "block_type": "rich_text",
         "payload": {
           "heading": "How It Works",
-          "text": "Five-step timeline — call, inspect, quote, complete, guarantee. Reduces anxiety for first-time customers who have not hired a tradie before."
+          "text": "Five-step timeline \u2014 call, inspect, quote, complete, guarantee. Reduces anxiety for first-time customers who have not hired a tradie before."
         }
       },
       {
@@ -2197,7 +2197,7 @@
           "items": [
             {
               "title": "Five steps",
-              "text": "Title and body per step — reorderable list."
+              "text": "Title and body per step \u2014 reorderable list."
             },
             {
               "title": "Process clarity",
@@ -2251,7 +2251,7 @@
         "block_type": "rich_text",
         "payload": {
           "heading": "Services Grid",
-          "text": "The workhorse section for every trade site. Icon cards with title and short body copy — visitors scan services in seconds and jump to quote or call."
+          "text": "The workhorse section for every trade site. Icon cards with title and short body copy \u2014 visitors scan services in seconds and jump to quote or call."
         }
       },
       {
@@ -2269,11 +2269,11 @@
           "items": [
             {
               "title": "Icon per service",
-              "text": "Choose from the shared icon library — no image hunting required."
+              "text": "Choose from the shared icon library \u2014 no image hunting required."
             },
             {
               "title": "Toggle individual cards",
-              "text": "Turn services on/off without deleting content — handy for seasonal offers."
+              "text": "Turn services on/off without deleting content \u2014 handy for seasonal offers."
             },
             {
               "title": "Grid layout",
@@ -2297,7 +2297,7 @@
             },
             {
               "title": "Pairs with quote form",
-              "text": "Works with every layout — usually sits below the hero."
+              "text": "Works with every layout \u2014 usually sits below the hero."
             }
           ]
         }
@@ -2323,7 +2323,7 @@
         "block_type": "rich_text",
         "payload": {
           "heading": "Special Offer Banner",
-          "text": "Offer Funnel layout centrepiece. Eyebrow, heading, intro, bullet points and CTA — designed to pair with paid ads promoting a specific deal."
+          "text": "Offer Funnel layout centrepiece. Eyebrow, heading, intro, bullet points and CTA \u2014 designed to pair with paid ads promoting a specific deal."
         }
       },
       {
@@ -2403,7 +2403,7 @@
         "payload": {
           "url": "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=1200&h=720&fit=crop&q=80",
           "alt": "Split hero with activity feed",
-          "caption": "Headline plus live activity feed — built for social proof layouts."
+          "caption": "Headline plus live activity feed \u2014 built for social proof layouts."
         }
       },
       {
@@ -2437,7 +2437,7 @@
             },
             {
               "title": "Urgency without hype",
-              "text": "Shows activity, not fake countdown timers — authentic for tradies."
+              "text": "Shows activity, not fake countdown timers \u2014 authentic for tradies."
             },
             {
               "title": "Quick setup",
@@ -2460,7 +2460,7 @@
   "textBox": {
     "name": "Text Box",
     "tagline": "Flexible text block with optional side image",
-    "summary": "Long-form copy with optional image — about us, story, methodology.",
+    "summary": "Long-form copy with optional image \u2014 about us, story, methodology.",
     "hero_image_url": "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
@@ -2539,7 +2539,7 @@
         "block_type": "rich_text",
         "payload": {
           "heading": "Trust Bar",
-          "text": "Show your services, guarantees, credentials or visual options in a clear strip that supports the rest of your page. Included with LeadPages — try real business examples, then edit with the same controls used in the platform."
+          "text": "Show your services, guarantees, credentials or visual options in a clear strip that supports the rest of your page. Included with LeadPages \u2014 try real business examples, then edit with the same controls used in the platform."
         }
       },
       {
@@ -2547,7 +2547,7 @@
         "payload": {
           "url": "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=1200&h=720&fit=crop&q=80",
           "alt": "Trust Bar on a live trade website",
-          "caption": "A finished Trust Bar on a live LeadPages trade site — before you open the editor."
+          "caption": "A finished Trust Bar on a live LeadPages trade site \u2014 before you open the editor."
         }
       },
       {
@@ -2577,11 +2577,11 @@
           "items": [
             {
               "title": "Instant credibility",
-              "text": "Trades, cafés and clinics all need trust above the fold."
+              "text": "Trades, caf\u00e9s and clinics all need trust above the fold."
             },
             {
               "title": "Industry presets",
-              "text": "Start from carpenter, plumber, café, beauty and more."
+              "text": "Start from carpenter, plumber, caf\u00e9, beauty and more."
             },
             {
               "title": "Included with LeadPages",
@@ -2620,7 +2620,7 @@
         "block_type": "rich_text",
         "payload": {
           "heading": "Video Reels",
-          "text": "Vertical video cards with title, duration tag, thumbnail and optional external video URL — opens in a new tab. Perfect for Instagram Reels and YouTube Shorts."
+          "text": "Vertical video cards with title, duration tag, thumbnail and optional external video URL \u2014 opens in a new tab. Perfect for Instagram Reels and YouTube Shorts."
         }
       },
       {
@@ -2638,7 +2638,7 @@
           "items": [
             {
               "title": "Thumbnail per reel",
-              "text": "Upload or pick a poster image — demo ships with three sample clips."
+              "text": "Upload or pick a poster image \u2014 demo ships with three sample clips."
             },
             {
               "title": "External video link",
@@ -2666,7 +2666,7 @@
             },
             {
               "title": "No video hosting",
-              "text": "Links out — no storage costs for partners."
+              "text": "Links out \u2014 no storage costs for partners."
             }
           ]
         }
@@ -2692,7 +2692,7 @@
         "block_type": "rich_text",
         "payload": {
           "heading": "Why Choose Us",
-          "text": "Four proof points with icons or numbers — upfront pricing, on-time arrival, reviews count, years in business. Reduces bounce from comparison shoppers."
+          "text": "Four proof points with icons or numbers \u2014 upfront pricing, on-time arrival, reviews count, years in business. Reduces bounce from comparison shoppers."
         }
       },
       {
@@ -2714,7 +2714,7 @@
             },
             {
               "title": "Four-up grid",
-              "text": "Clean responsive grid — two columns on tablet, one on phone."
+              "text": "Clean responsive grid \u2014 two columns on tablet, one on phone."
             },
             {
               "title": "Token support",
@@ -2764,7 +2764,7 @@
         "block_type": "rich_text",
         "payload": {
           "heading": "Premium Gallery",
-          "text": "Beautifully arrange mixed portrait and landscape images using premium responsive layouts, optional filtering, album navigation and controlled image expansion — without replacing Project Portfolio."
+          "text": "Beautifully arrange mixed portrait and landscape images using premium responsive layouts, optional filtering, album navigation and controlled image expansion \u2014 without replacing Project Portfolio."
         }
       },
       {
@@ -2782,7 +2782,7 @@
           "items": [
             {
               "title": "Structure modes",
-              "text": "Simple, filtered, categories, or categories → albums → images."
+              "text": "Simple, filtered, categories, or categories \u2192 albums \u2192 images."
             },
             {
               "title": "Premium layouts",
@@ -2809,14 +2809,14 @@
   "seoCommand": {
     "name": "SEO Command Centre",
     "tagline": "Local SEO workflows inside Manage",
-    "summary": "Plan titles, local pages, keywords and next actions from one Command Centre — not a page section you toggle on.",
+    "summary": "Plan titles, local pages, keywords and next actions from one Command Centre \u2014 not a page section you toggle on.",
     "hero_image_url": "https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "What it is",
-          "text": "Plan titles, local pages, keywords and next actions from one Command Centre — not a page section you toggle on."
+          "text": "Plan titles, local pages, keywords and next actions from one Command Centre \u2014 not a page section you toggle on."
         }
       },
       {
@@ -2830,7 +2830,7 @@
             },
             {
               "title": "Next Best Actions",
-              "text": "Prioritised queue — optimise pages, fix titles, create location pages, or hand off to Brain drafts."
+              "text": "Prioritised queue \u2014 optimise pages, fix titles, create location pages, or hand off to Brain drafts."
             },
             {
               "title": "Competition & Local",
@@ -2838,7 +2838,7 @@
             },
             {
               "title": "Human-in-the-loop",
-              "text": "No silent AI publish — preview, confirm, then apply."
+              "text": "No silent AI publish \u2014 preview, confirm, then apply."
             }
           ]
         }
@@ -2847,7 +2847,7 @@
         "block_type": "rich_text",
         "payload": {
           "heading": "Where to find it",
-          "text": "Open **Manage → SEO Command**. Home shows visibility and Next Best Actions; use Pages, Keywords, Competition, Local and Authority tabs for deeper work. Homepage Google title/meta stay in SEO Command → Home; on-page article copy uses the SEO Text app."
+          "text": "Open **Manage \u2192 SEO Command**. Home shows visibility and Next Best Actions; use Pages, Keywords, Competition, Local and Authority tabs for deeper work. Homepage Google title/meta stay in SEO Command \u2192 Home; on-page article copy uses the SEO Text app."
         }
       },
       {
@@ -2893,7 +2893,7 @@
             },
             {
               "title": "Partner-safe secrets",
-              "text": "Developer token and encryption keys stay server-side — never in the browser."
+              "text": "Developer token and encryption keys stay server-side \u2014 never in the browser."
             }
           ]
         }
@@ -2902,7 +2902,7 @@
         "block_type": "rich_text",
         "payload": {
           "heading": "Where to find it",
-          "text": "Open **Manage → Advertising** (or Settings → Integrations → Google Ads on app.leadpages.com.au). Connect with Google OAuth, then use Overview / Campaigns / health tools. Secrets never ship to the browser."
+          "text": "Open **Manage \u2192 Advertising** (or Settings \u2192 Integrations \u2192 Google Ads on app.leadpages.com.au). Connect with Google OAuth, then use Overview / Campaigns / health tools. Secrets never ship to the browser."
         }
       },
       {
@@ -2919,7 +2919,7 @@
   "seoText": {
     "name": "SEO Text",
     "tagline": "On-page article copy with H1/H2 structure",
-    "summary": "Long-form SEO article block with eyebrow, H1, optional H2, supporting copy, image and colours — sits above FAQ by default.",
+    "summary": "Long-form SEO article block with eyebrow, H1, optional H2, supporting copy, image and colours \u2014 sits above FAQ by default.",
     "hero_image_url": "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
@@ -2940,7 +2940,7 @@
             },
             {
               "title": "Bold toolbar",
-              "text": "Select text and Bold (Ctrl/⌘B) or mark a Heading line in the editor."
+              "text": "Select text and Bold (Ctrl/\u2318B) or mark a Heading line in the editor."
             },
             {
               "title": "Colour controls",
@@ -2974,7 +2974,7 @@
         "block_type": "rich_text",
         "payload": {
           "heading": "Highlight differentiators",
-          "text": "Feature Strip turns three to six selling points into a scannable row — ideal under heroes and trust bars."
+          "text": "Feature Strip turns three to six selling points into a scannable row \u2014 ideal under heroes and trust bars."
         }
       },
       {
@@ -3056,7 +3056,7 @@
   },
   "customHtml": {
     "name": "Custom HTML",
-    "tagline": "Embed HTML, CSS and JS — not an iframe",
+    "tagline": "Embed HTML, CSS and JS \u2014 not an iframe",
     "summary": "Drop custom HTML onto any page with optional stylesheet and script URLs. Fully responsive and repositionable like any other app.",
     "category": "Platform Tools",
     "badge": "Included",
@@ -3066,7 +3066,7 @@
         "block_type": "rich_text",
         "payload": {
           "heading": "Your code, in the page flow",
-          "text": "Custom HTML mounts inline (not inside an iframe) so tools stay fully responsive and match your site layout. Attach CSS and JS URLs when you need them — including the Transfer Matcher starter pack."
+          "text": "Custom HTML mounts inline (not inside an iframe) so tools stay fully responsive and match your site layout. Attach CSS and JS URLs when you need them \u2014 including the Transfer Matcher starter pack."
         }
       },
       {
@@ -3076,7 +3076,7 @@
           "items": [
             {
               "title": "Inline embed",
-              "text": "Renders in the page — not locked in an iframe."
+              "text": "Renders in the page \u2014 not locked in an iframe."
             },
             {
               "title": "Attach CSS & JS",
@@ -3103,7 +3103,7 @@
   "promotions": {
     "name": "Promotions & Offers",
     "tagline": "Seasonal offers, front and centre",
-    "summary": "Urgency offers with types, placements and styles — weekly windows, deadlines, limited spots, finance, suburb specials and more.",
+    "summary": "Urgency offers with types, placements and styles \u2014 weekly windows, deadlines, limited spots, finance, suburb specials and more.",
     "hero_image_url": "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1400&h=560&fit=crop&q=80",
     "badge": null,
     "blocks": [
@@ -3111,7 +3111,7 @@
         "block_type": "rich_text",
         "payload": {
           "heading": "Promotions Engine",
-          "text": "Create urgency and offers with the same Promotions Engine used in the App Command Centre. Pick a type, placement and style — Call / Quote buttons reuse existing actions."
+          "text": "Create urgency and offers with the same Promotions Engine used in the App Command Centre. Pick a type, placement and style \u2014 Call / Quote buttons reuse existing actions."
         }
       },
       {
@@ -3284,7 +3284,7 @@
         "block_type": "rich_text",
         "payload": {
           "heading": "Scrolling Sponsor Banner",
-          "text": "Show sponsors, partners, accreditations and brands in a seamless horizontal loop — or a static wrapping grid. Multiple named banners per site (Major Sponsors, Community Partners, Brands We Stock)."
+          "text": "Show sponsors, partners, accreditations and brands in a seamless horizontal loop \u2014 or a static wrapping grid. Multiple named banners per site (Major Sponsors, Community Partners, Brands We Stock)."
         }
       },
       {
@@ -3313,6 +3313,78 @@
           "section_key": "scrollingSponsorBanner",
           "presets": [
             "ssb-veterans-cycling"
+          ]
+        }
+      }
+    ]
+  },
+  "aboutUs": {
+    "name": "About Us",
+    "tagline": "Three-column founder story with optional CTA band",
+    "summary": "Lead column, body copy, photo and quote \u2014 plus an optional navy bottom band.",
+    "hero_image_url": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1400&h=560&fit=crop&q=80",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "About Us",
+          "text": "Tell the business story with a three-column layout: lead, body, and photo/quote \u2014 with an optional navy CTA band."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1200&h=720&fit=crop&q=80",
+          "alt": "Founder portrait",
+          "caption": "Photo and quote sit beside the story copy."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "Key features",
+          "items": [
+            {
+              "title": "Story layout",
+              "text": "Three columns matching the design mockup."
+            },
+            {
+              "title": "Optional blue band",
+              "text": "Navy CTA strip under the story."
+            },
+            {
+              "title": "Accent colour",
+              "text": "Eyebrow, rule and buttons use brand hi-vis or a custom accent."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "Why partners sell it",
+          "items": [
+            {
+              "title": "Founder story",
+              "text": "Drop in a real photo and quote without custom code."
+            },
+            {
+              "title": "Conversion strip",
+              "text": "Optional band drives visitors to enquire."
+            },
+            {
+              "title": "Token support",
+              "text": "{{businessName}} fills automatically."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "section_key": "aboutUs",
+          "presets": [
+            "default"
           ]
         }
       }

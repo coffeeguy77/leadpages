@@ -3,7 +3,7 @@
     "name": "Hero Banner",
     "tagline": "First impression above the fold",
     "summary": "The hero sets tone, urgency and trust before the visitor scrolls.",
-    "pitch": "Every trade site lives or dies on the first screen. LeadPages heroes pair a bold headline with highlighted urgency text, supporting sub-copy and icon badges — built for local service searches on mobile.",
+    "pitch": "Every trade site lives or dies on the first screen. LeadPages heroes pair a bold headline with highlighted urgency text, supporting sub-copy and icon badges \u2014 built for local service searches on mobile.",
     "features": [
       {
         "title": "Highlight text support",
@@ -29,7 +29,7 @@
       },
       {
         "title": "Client self-service",
-        "text": "Owners update their own headline after launch — fewer post-launch edits for partners."
+        "text": "Owners update their own headline after launch \u2014 fewer post-launch edits for partners."
       }
     ],
     "presets": [
@@ -39,12 +39,12 @@
   "heroSlider": {
     "name": "Hero Image Slider",
     "tagline": "Rotating image hero with overlay copy and CTAs",
-    "summary": "A full-width slider for visual trades — roofing, landscaping, building.",
+    "summary": "A full-width slider for visual trades \u2014 roofing, landscaping, building.",
     "pitch": "Show multiple jobs or offers in rotation without rebuilding the page. Each slide carries its own headline, highlight, sub-text and dual CTAs with fade or slide transitions.",
     "features": [
       {
         "title": "Multiple slides",
-        "text": "Add, reorder and edit slides — each with its own image, copy and button actions."
+        "text": "Add, reorder and edit slides \u2014 each with its own image, copy and button actions."
       },
       {
         "title": "Overlay controls",
@@ -58,7 +58,7 @@
     "partnerBenefits": [
       {
         "title": "Premium upsell",
-        "text": "Visual trades pay more for slider heroes — easy margin for partners."
+        "text": "Visual trades pay more for slider heroes \u2014 easy margin for partners."
       },
       {
         "title": "Image-led selling",
@@ -86,7 +86,7 @@
     "features": [
       {
         "title": "Drag-to-reveal wipe",
-        "text": "Visitors interact with a before/after slider — higher engagement than static images."
+        "text": "Visitors interact with a before/after slider \u2014 higher engagement than static images."
       },
       {
         "title": "Labels & caption",
@@ -94,7 +94,7 @@
       },
       {
         "title": "Hero placement",
-        "text": "Sits in the primary viewport — not buried halfway down the page."
+        "text": "Sits in the primary viewport \u2014 not buried halfway down the page."
       }
     ],
     "partnerBenefits": [
@@ -104,7 +104,7 @@
       },
       {
         "title": "Interactive demo",
-        "text": "Playground shows the real wipe component — not a screenshot."
+        "text": "Playground shows the real wipe component \u2014 not a screenshot."
       },
       {
         "title": "Differentiator",
@@ -141,7 +141,7 @@
       },
       {
         "title": "Urgency without hype",
-        "text": "Shows activity, not fake countdown timers — authentic for tradies."
+        "text": "Shows activity, not fake countdown timers \u2014 authentic for tradies."
       },
       {
         "title": "Quick setup",
@@ -156,15 +156,15 @@
     "name": "Services Grid",
     "tagline": "Icon cards for every service you offer",
     "summary": "List what you fix, install or maintain in scannable cards.",
-    "pitch": "The workhorse section for every trade site. Icon cards with title and short body copy — visitors scan services in seconds and jump to quote or call.",
+    "pitch": "The workhorse section for every trade site. Icon cards with title and short body copy \u2014 visitors scan services in seconds and jump to quote or call.",
     "features": [
       {
         "title": "Icon per service",
-        "text": "Choose from the shared icon library — no image hunting required."
+        "text": "Choose from the shared icon library \u2014 no image hunting required."
       },
       {
         "title": "Toggle individual cards",
-        "text": "Turn services on/off without deleting content — handy for seasonal offers."
+        "text": "Turn services on/off without deleting content \u2014 handy for seasonal offers."
       },
       {
         "title": "Grid layout",
@@ -182,7 +182,7 @@
       },
       {
         "title": "Pairs with quote form",
-        "text": "Works with every layout — usually sits below the hero."
+        "text": "Works with every layout \u2014 usually sits below the hero."
       }
     ],
     "presets": [
@@ -193,7 +193,7 @@
     "name": "Why Choose Us",
     "tagline": "Numbered reasons or icon points that build trust",
     "summary": "Answer \"why you?\" before the visitor compares competitors.",
-    "pitch": "Four proof points with icons or numbers — upfront pricing, on-time arrival, reviews count, years in business. Reduces bounce from comparison shoppers.",
+    "pitch": "Four proof points with icons or numbers \u2014 upfront pricing, on-time arrival, reviews count, years in business. Reduces bounce from comparison shoppers.",
     "features": [
       {
         "title": "Icon or number mode",
@@ -201,7 +201,7 @@
       },
       {
         "title": "Four-up grid",
-        "text": "Clean responsive grid — two columns on tablet, one on phone."
+        "text": "Clean responsive grid \u2014 two columns on tablet, one on phone."
       },
       {
         "title": "Token support",
@@ -230,15 +230,15 @@
     "name": "Service Area Copy",
     "tagline": "Paragraph plus suburb list for local SEO",
     "summary": "Tell visitors exactly where you work.",
-    "pitch": "Combines a short area paragraph with a suburb list — critical for local SEO and paid search quality scores. Visitors self-qualify before they call.",
+    "pitch": "Combines a short area paragraph with a suburb list \u2014 critical for local SEO and paid search quality scores. Visitors self-qualify before they call.",
     "features": [
       {
         "title": "Suburb list",
-        "text": "Editable list of suburbs — one per line in the Command Centre."
+        "text": "Editable list of suburbs \u2014 one per line in the Command Centre."
       },
       {
         "title": "Intro paragraph",
-        "text": "Set the geographic story — ACT-wide, metro, or hyper-local."
+        "text": "Set the geographic story \u2014 ACT-wide, metro, or hyper-local."
       },
       {
         "title": "Eyebrow + heading",
@@ -256,7 +256,7 @@
       },
       {
         "title": "Quick wins",
-        "text": "Defaults include Canberra suburbs — swap for any market."
+        "text": "Defaults include Canberra suburbs \u2014 swap for any market."
       }
     ],
     "presets": [
@@ -275,7 +275,7 @@
       },
       {
         "title": "Unlimited list",
-        "text": "Add as many reviews as needed — list editor in Command Centre."
+        "text": "Add as many reviews as needed \u2014 list editor in Command Centre."
       },
       {
         "title": "Long-form quotes",
@@ -304,11 +304,11 @@
     "name": "FAQ Accordion",
     "tagline": "Collapsible questions that cut support calls",
     "summary": "Answer the questions every visitor asks before they call.",
-    "pitch": "Accordion FAQ reduces phone time spent on pricing, licensing, areas and hours. Each item is a question plus answer — expandable on click.",
+    "pitch": "Accordion FAQ reduces phone time spent on pricing, licensing, areas and hours. Each item is a question plus answer \u2014 expandable on click.",
     "features": [
       {
         "title": "Accordion UI",
-        "text": "Native details/summary accordion — accessible and mobile-friendly."
+        "text": "Native details/summary accordion \u2014 accessible and mobile-friendly."
       },
       {
         "title": "Unlimited Q&As",
@@ -330,7 +330,7 @@
       },
       {
         "title": "Fast defaults",
-        "text": "Seed four common plumbing FAQs — swap for any trade."
+        "text": "Seed four common plumbing FAQs \u2014 swap for any trade."
       }
     ],
     "presets": [
@@ -340,16 +340,16 @@
   "quote": {
     "name": "Quote Form",
     "tagline": "Lead capture form with configurable fields",
-    "summary": "Turn visitors into callbacks — the primary conversion point.",
+    "summary": "Turn visitors into callbacks \u2014 the primary conversion point.",
     "pitch": "Configurable quote form with field labels, job-type options and success message. Submissions flow to the partner CRM and site owner inbox.",
     "features": [
       {
         "title": "Field labels",
-        "text": "Rename every label — Name, Phone, Suburb, Job type — per client."
+        "text": "Rename every label \u2014 Name, Phone, Suburb, Job type \u2014 per client."
       },
       {
         "title": "Job type options",
-        "text": "Dropdown options editable as a list — blocked drain, hot water, etc."
+        "text": "Dropdown options editable as a list \u2014 blocked drain, hot water, etc."
       },
       {
         "title": "Success state",
@@ -378,7 +378,7 @@
     "name": "Before & After Gallery",
     "tagline": "Side-by-side or stacked transformation gallery",
     "summary": "Static before/after pairs for proof-heavy pages.",
-    "pitch": "Photo Proof layout centrepiece. Multiple before/after pairs with title, caption and optional image URLs — ideal when you have great job photos.",
+    "pitch": "Photo Proof layout centrepiece. Multiple before/after pairs with title, caption and optional image URLs \u2014 ideal when you have great job photos.",
     "features": [
       {
         "title": "Multiple pairs",
@@ -390,7 +390,7 @@
       },
       {
         "title": "Image URLs",
-        "text": "Optional before and after images — Cloudinary or external URLs."
+        "text": "Optional before and after images \u2014 Cloudinary or external URLs."
       }
     ],
     "partnerBenefits": [
@@ -415,7 +415,7 @@
     "name": "Response Cards",
     "tagline": "Urgency cards for emergency trades",
     "summary": "Three bold cards that answer \"what happens when I call?\"",
-    "pitch": "Emergency Response layout feature. Cards like \"60-min response\", \"Answer every call\" and \"Quote before we start\" — reduces anxiety on urgent searches.",
+    "pitch": "Emergency Response layout feature. Cards like \"60-min response\", \"Answer every call\" and \"Quote before we start\" \u2014 reduces anxiety on urgent searches.",
     "features": [
       {
         "title": "Icon cards",
@@ -441,7 +441,7 @@
       },
       {
         "title": "Simple copy",
-        "text": "Partners edit three lines — no design work."
+        "text": "Partners edit three lines \u2014 no design work."
       }
     ],
     "presets": [
@@ -451,8 +451,8 @@
   "projectStats": {
     "name": "Project Stats",
     "tagline": "Big-number credibility bar",
-    "summary": "Lead with \"2,400+ jobs\" or \"15 years\" — authority at a glance.",
-    "pitch": "Authority Builder layout centrepiece. Large stat values with labels — jobs completed, years operating, review count, emergency availability.",
+    "summary": "Lead with \"2,400+ jobs\" or \"15 years\" \u2014 authority at a glance.",
+    "pitch": "Authority Builder layout centrepiece. Large stat values with labels \u2014 jobs completed, years operating, review count, emergency availability.",
     "features": [
       {
         "title": "Six stat slots",
@@ -478,7 +478,7 @@
       },
       {
         "title": "Minimal maintenance",
-        "text": "Numbers update once a year — set and forget."
+        "text": "Numbers update once a year \u2014 set and forget."
       }
     ],
     "presets": [
@@ -489,7 +489,7 @@
     "name": "Service Areas Grid",
     "tagline": "Suburb grid for geographic dominance",
     "summary": "Large suburb grid under the hero for local SEO.",
-    "pitch": "Service Area Dominator layout feature. Six or more suburb names in a grid — tells Google and visitors exactly where you operate.",
+    "pitch": "Service Area Dominator layout feature. Six or more suburb names in a grid \u2014 tells Google and visitors exactly where you operate.",
     "features": [
       {
         "title": "Grid layout",
@@ -497,7 +497,7 @@
       },
       {
         "title": "List editor",
-        "text": "Add suburbs one by one — no comma-separated paste errors."
+        "text": "Add suburbs one by one \u2014 no comma-separated paste errors."
       },
       {
         "title": "SEO layout",
@@ -526,7 +526,7 @@
     "name": "Review Highlights",
     "tagline": "Star-rated snippets directly under the hero",
     "summary": "Hit social proof before services on Reviews First layout.",
-    "pitch": "Short quote snippets with star rating and name — three cards designed for the zone directly under the hero on Reviews First pages.",
+    "pitch": "Short quote snippets with star rating and name \u2014 three cards designed for the zone directly under the hero on Reviews First pages.",
     "features": [
       {
         "title": "Star display",
@@ -534,7 +534,7 @@
       },
       {
         "title": "Short quotes",
-        "text": "Punchy one-liners — not full review walls."
+        "text": "Punchy one-liners \u2014 not full review walls."
       },
       {
         "title": "Reviews First layout",
@@ -563,7 +563,7 @@
     "name": "Project Portfolio",
     "tagline": "Large image cards for premium project showcase",
     "summary": "Mini portfolio under the hero for high-end visual trades.",
-    "pitch": "Premium Showcase layout feature. Large project cards with title, type tag, location, description and optional gallery — built for builders, landscapers and renovators.",
+    "pitch": "Premium Showcase layout feature. Large project cards with title, type tag, location, description and optional gallery \u2014 built for builders, landscapers and renovators.",
     "features": [
       {
         "title": "Project cards",
@@ -606,7 +606,7 @@
     "name": "Special Offer Banner",
     "tagline": "Limited-time offer strip for ad landing pages",
     "summary": "Bold offer between hero and quote on Offer Funnel layout.",
-    "pitch": "Offer Funnel layout centrepiece. Eyebrow, heading, intro, bullet points and CTA — designed to pair with paid ads promoting a specific deal.",
+    "pitch": "Offer Funnel layout centrepiece. Eyebrow, heading, intro, bullet points and CTA \u2014 designed to pair with paid ads promoting a specific deal.",
     "features": [
       {
         "title": "Bullet points",
@@ -655,7 +655,7 @@
       },
       {
         "title": "Industry presets",
-        "text": "Start from trades, cafés, clinics and more — then make it yours."
+        "text": "Start from trades, caf\u00e9s, clinics and more \u2014 then make it yours."
       }
     ],
     "partnerBenefits": [
@@ -684,11 +684,11 @@
     "name": "How It Works",
     "tagline": "Step-by-step process timeline",
     "summary": "Show the journey from call to completed job.",
-    "pitch": "Five-step timeline — call, inspect, quote, complete, guarantee. Reduces anxiety for first-time customers who have not hired a tradie before.",
+    "pitch": "Five-step timeline \u2014 call, inspect, quote, complete, guarantee. Reduces anxiety for first-time customers who have not hired a tradie before.",
     "features": [
       {
         "title": "Five steps",
-        "text": "Title and body per step — reorderable list."
+        "text": "Title and body per step \u2014 reorderable list."
       },
       {
         "title": "Process clarity",
@@ -721,7 +721,7 @@
     "name": "Certifications",
     "tagline": "License and accreditation cards",
     "summary": "Prove you are licensed, insured and industry-accredited.",
-    "pitch": "Three accreditation cards with name, body, number and expiry — Master Plumbers, public liability, trade licence. Critical for regulated trades.",
+    "pitch": "Three accreditation cards with name, body, number and expiry \u2014 Master Plumbers, public liability, trade licence. Critical for regulated trades.",
     "features": [
       {
         "title": "Three card slots",
@@ -758,7 +758,7 @@
     "name": "Finance Options",
     "tagline": "Weekly payment callout for larger jobs",
     "summary": "Let customers spread the cost of big jobs.",
-    "pitch": "Finance section with eyebrow, heading, weekly amount, period and disclaimer — pairs with third-party finance providers for kitchens, solar and renovations.",
+    "pitch": "Finance section with eyebrow, heading, weekly amount, period and disclaimer \u2014 pairs with third-party finance providers for kitchens, solar and renovations.",
     "features": [
       {
         "title": "Weekly amount display",
@@ -795,11 +795,11 @@
     "name": "Estimate Builder",
     "tagline": "Interactive ballpark pricing wizard",
     "summary": "Visitors self-serve a price range before they call.",
-    "pitch": "Multi-step estimate wizard with configurable options and min/max ranges per answer — blocked drains, hot water, urgency surcharges. Sets price expectations early.",
+    "pitch": "Multi-step estimate wizard with configurable options and min/max ranges per answer \u2014 blocked drains, hot water, urgency surcharges. Sets price expectations early.",
     "features": [
       {
         "title": "Configurable steps",
-        "text": "Group options by step — \"What do you need?\", \"How urgent?\""
+        "text": "Group options by step \u2014 \"What do you need?\", \"How urgent?\""
       },
       {
         "title": "Min/max ranges",
@@ -821,7 +821,7 @@
       },
       {
         "title": "Nine default options",
-        "text": "Seeded for plumbing — swap options per trade."
+        "text": "Seeded for plumbing \u2014 swap options per trade."
       }
     ],
     "presets": [
@@ -832,7 +832,7 @@
     "name": "Emergency Availability",
     "tagline": "After-hours status and schedule display",
     "summary": "Show when you are available for emergencies.",
-    "pitch": "Displays weekday and weekend hours, after-hours messaging and emergency CTA — critical for plumbers, locksmiths and electricians running 24/7 ads.",
+    "pitch": "Displays weekday and weekend hours, after-hours messaging and emergency CTA \u2014 critical for plumbers, locksmiths and electricians running 24/7 ads.",
     "features": [
       {
         "title": "Schedule mode",
@@ -858,7 +858,7 @@
       },
       {
         "title": "Emergency CTA",
-        "text": "Optional button — call or quote action."
+        "text": "Optional button \u2014 call or quote action."
       }
     ],
     "presets": [
@@ -869,7 +869,7 @@
     "name": "Service Area Map",
     "tagline": "Map section with coverage intro",
     "summary": "Visual service area section for geographic trust.",
-    "pitch": "Eyebrow, heading and intro for a map-style coverage block — pair with suburb lists and area copy for geographic dominance.",
+    "pitch": "Eyebrow, heading and intro for a map-style coverage block \u2014 pair with suburb lists and area copy for geographic dominance.",
     "features": [
       {
         "title": "Coverage intro",
@@ -904,9 +904,9 @@
   },
   "navMenu": {
     "name": "Navigation Menu",
-    "tagline": "Custom nav links — pills or underline style",
+    "tagline": "Custom nav links \u2014 pills or underline style",
     "summary": "Add a secondary navigation row to any page.",
-    "pitch": "Configurable nav with pill or underline style, left or centre alignment and custom link items — useful for multi-page sites and anchor links.",
+    "pitch": "Configurable nav with pill or underline style, left or centre alignment and custom link items \u2014 useful for multi-page sites and anchor links.",
     "features": [
       {
         "title": "Style options",
@@ -914,7 +914,7 @@
       },
       {
         "title": "Custom links",
-        "text": "Add label + URL pairs — internal anchors or external pages."
+        "text": "Add label + URL pairs \u2014 internal anchors or external pages."
       },
       {
         "title": "Off by default",
@@ -932,7 +932,7 @@
       },
       {
         "title": "Partner control",
-        "text": "No menu builder coding — list editor only."
+        "text": "No menu builder coding \u2014 list editor only."
       }
     ],
     "presets": [
@@ -942,12 +942,12 @@
   "textBox": {
     "name": "Text Box",
     "tagline": "Flexible text block with optional side image",
-    "summary": "Long-form copy with optional image — about us, story, methodology.",
+    "summary": "Long-form copy with optional image \u2014 about us, story, methodology.",
     "pitch": "Full-width or image-side text block with eyebrow, heading, intro and rich paragraph. Place after hero for \"our story\" or methodology content.",
     "features": [
       {
         "title": "Image optional",
-        "text": "Right or left image — or text-only full width."
+        "text": "Right or left image \u2014 or text-only full width."
       },
       {
         "title": "Alignment control",
@@ -980,7 +980,7 @@
     "name": "Project Feed",
     "tagline": "Card feed of latest completed jobs",
     "summary": "Social-style feed of recent projects with photos.",
-    "pitch": "Manual or Instagram-sourced project cards with title, location, service, date and image — core of the Social Proof Feed layout.",
+    "pitch": "Manual or Instagram-sourced project cards with title, location, service, date and image \u2014 core of the Social Proof Feed layout.",
     "features": [
       {
         "title": "Manual entries",
@@ -1017,11 +1017,11 @@
     "name": "Jobs Feed",
     "tagline": "Compact \"fresh off the tools\" job list",
     "summary": "Shorter job cards optimised for the proof stream.",
-    "pitch": "Compact job entries with title, location, time and quick result line — designed for high-velocity social proof layouts.",
+    "pitch": "Compact job entries with title, location, time and quick result line \u2014 designed for high-velocity social proof layouts.",
     "features": [
       {
         "title": "Quick result line",
-        "text": "One-line outcome per job — \"Cleared in 45 min\"."
+        "text": "One-line outcome per job \u2014 \"Cleared in 45 min\"."
       },
       {
         "title": "Image optional",
@@ -1054,7 +1054,7 @@
     "name": "Before/After Feed",
     "tagline": "Scrolling feed of transformation pairs",
     "summary": "Multiple before/after cards in a social feed format.",
-    "pitch": "Feed-style before/after cards with title, location, time, caption and image pair — more entries than the static gallery, optimised for proof layouts.",
+    "pitch": "Feed-style before/after cards with title, location, time, caption and image pair \u2014 more entries than the static gallery, optimised for proof layouts.",
     "features": [
       {
         "title": "Feed format",
@@ -1091,7 +1091,7 @@
     "name": "Video Reels",
     "tagline": "Short-form video cards from the job site",
     "summary": "Reel-style video thumbnails with links.",
-    "pitch": "Video cards with title, duration tag, thumbnail and external video URL — opens in new tab. Perfect for Instagram Reels and YouTube Shorts.",
+    "pitch": "Video cards with title, duration tag, thumbnail and external video URL \u2014 opens in new tab. Perfect for Instagram Reels and YouTube Shorts.",
     "features": [
       {
         "title": "Thumbnail per reel",
@@ -1117,7 +1117,7 @@
       },
       {
         "title": "No video hosting",
-        "text": "Links out — no storage costs for partners."
+        "text": "Links out \u2014 no storage costs for partners."
       }
     ],
     "presets": [
@@ -1128,7 +1128,7 @@
     "name": "Activity Timeline",
     "tagline": "Chronological \"what we are working on\" feed",
     "summary": "Timeline of current and recent activity.",
-    "pitch": "Vertical timeline with events — job started, quote sent, review received. Shows the business is active today, not a static brochure.",
+    "pitch": "Vertical timeline with events \u2014 job started, quote sent, review received. Shows the business is active today, not a static brochure.",
     "features": [
       {
         "title": "Event list",
@@ -1164,8 +1164,8 @@
   "customerReactions": {
     "name": "Customer Reactions",
     "tagline": "Short reaction quotes in a feed format",
-    "summary": "Quick customer reactions — lighter than full reviews.",
-    "pitch": "Short reaction cards — \"Called at 7am, fixed by 9\" — designed for feed layouts where full review walls feel too heavy.",
+    "summary": "Quick customer reactions \u2014 lighter than full reviews.",
+    "pitch": "Short reaction cards \u2014 \"Called at 7am, fixed by 9\" \u2014 designed for feed layouts where full review walls feel too heavy.",
     "features": [
       {
         "title": "Compact quotes",
@@ -1200,13 +1200,13 @@
   },
   "proofStream": {
     "name": "Proof Stream",
-    "tagline": "Mixed proof cards — jobs, reviews, video, before/after",
+    "tagline": "Mixed proof cards \u2014 jobs, reviews, video, before/after",
     "summary": "The all-in-one social proof feed.",
-    "pitch": "Single feed mixing job cards, photos, reviews, videos and before/afters — each with CTA. The centrepiece of the Social Proof Feed layout.",
+    "pitch": "Single feed mixing job cards, photos, reviews, videos and before/afters \u2014 each with CTA. The centrepiece of the Social Proof Feed layout.",
     "features": [
       {
         "title": "Six card types",
-        "text": "Job, photo, review, video, before/after — per card."
+        "text": "Job, photo, review, video, before/after \u2014 per card."
       },
       {
         "title": "Per-card CTA",
@@ -1228,7 +1228,7 @@
       },
       {
         "title": "CTA on every card",
-        "text": "No dead-end proof — every item drives action."
+        "text": "No dead-end proof \u2014 every item drives action."
       }
     ],
     "presets": [
@@ -1238,8 +1238,8 @@
   "activityCounter": {
     "name": "Activity Counter",
     "tagline": "Live-style numeric counters",
-    "summary": "\"47 jobs this month\" — animated busy counters.",
-    "pitch": "Three large counters with value and label — jobs this month, active teams, years serving. Pairs with Split Hero and Activity Timeline.",
+    "summary": "\"47 jobs this month\" \u2014 animated busy counters.",
+    "pitch": "Three large counters with value and label \u2014 jobs this month, active teams, years serving. Pairs with Split Hero and Activity Timeline.",
     "features": [
       {
         "title": "Three counters",
@@ -1265,7 +1265,7 @@
       },
       {
         "title": "Quick edit",
-        "text": "Change three numbers — done."
+        "text": "Change three numbers \u2014 done."
       }
     ],
     "presets": [
@@ -1275,20 +1275,20 @@
   "crew": {
     "name": "Meet the Team",
     "tagline": "Team member cards with photo and role",
-    "summary": "Put faces to the business — owner and crew.",
-    "pitch": "Team member cards with name, role, specialty and photo — builds trust for residential clients who want to know who is coming to their door.",
+    "summary": "Put faces to the business \u2014 owner and crew.",
+    "pitch": "Team member cards with name, role, specialty and photo \u2014 builds trust for residential clients who want to know who is coming to their door.",
     "features": [
       {
         "title": "Three member slots",
-        "text": "Add owner, senior tradie, apprentice — or whole crew."
+        "text": "Add owner, senior tradie, apprentice \u2014 or whole crew."
       },
       {
         "title": "Photo per member",
-        "text": "Square headshots — optional but recommended."
+        "text": "Square headshots \u2014 optional but recommended."
       },
       {
         "title": "Role & specialty",
-        "text": "\"Master plumber · Bathroom renovations\" style detail."
+        "text": "\"Master plumber \u00b7 Bathroom renovations\" style detail."
       }
     ],
     "partnerBenefits": [
@@ -1315,7 +1315,7 @@
             "on": true,
             "name": "Steve Mitchell",
             "role": "Owner & Master Plumber",
-            "detail": "15 years across Canberra — bathrooms, hot water and emergency callouts.",
+            "detail": "15 years across Canberra \u2014 bathrooms, hot water and emergency callouts.",
             "photo": "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&h=400&fit=crop&crop=faces"
           },
           {
@@ -1329,7 +1329,7 @@
             "on": true,
             "name": "Matt Nguyen",
             "role": "Apprentice Plumber",
-            "detail": "Third-year apprentice — quality workmanship on every job.",
+            "detail": "Third-year apprentice \u2014 quality workmanship on every job.",
             "photo": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&h=400&fit=crop&crop=faces"
           }
         ]
@@ -1340,11 +1340,11 @@
     "name": "Instagram Gallery",
     "tagline": "Grid of Instagram posts on your site",
     "summary": "Embed your Instagram grid without manual image uploads.",
-    "pitch": "Pulls from connected Instagram or manual grid — eyebrow, heading, post count and column layout. Keeps the site fresh with social content.",
+    "pitch": "Pulls from connected Instagram or manual grid \u2014 eyebrow, heading, post count and column layout. Keeps the site fresh with social content.",
     "features": [
       {
         "title": "Column control",
-        "text": "4-column desktop grid — responsive on mobile."
+        "text": "4-column desktop grid \u2014 responsive on mobile."
       },
       {
         "title": "Post count",
@@ -1352,13 +1352,13 @@
       },
       {
         "title": "Instagram OAuth",
-        "text": "Connect once in Command Centre — auto-sync path."
+        "text": "Connect once in Command Centre \u2014 auto-sync path."
       }
     ],
     "partnerBenefits": [
       {
         "title": "Fresh content",
-        "text": "Site updates when they post — no manual uploads."
+        "text": "Site updates when they post \u2014 no manual uploads."
       },
       {
         "title": "Visual trades",
@@ -1377,7 +1377,7 @@
     "name": "Instagram Project Feed",
     "tagline": "Instagram grid styled as project cards",
     "summary": "Instagram posts rendered as project cards with CTAs.",
-    "pitch": "Like Project Feed but sourced from Instagram — title from caption, tag label, call and quote buttons with custom colours.",
+    "pitch": "Like Project Feed but sourced from Instagram \u2014 title from caption, tag label, call and quote buttons with custom colours.",
     "features": [
       {
         "title": "Card styling",
@@ -1399,7 +1399,7 @@
       },
       {
         "title": "Conversion focused",
-        "text": "Unlike a plain grid — every card drives action."
+        "text": "Unlike a plain grid \u2014 every card drives action."
       },
       {
         "title": "Brand colours",
@@ -1418,7 +1418,7 @@
     "features": [
       {
         "title": "Structure modes",
-        "text": "Simple, filtered, categories, or categories → albums → images."
+        "text": "Simple, filtered, categories, or categories \u2192 albums \u2192 images."
       },
       {
         "title": "Premium layouts",
@@ -1447,7 +1447,7 @@
   "seoCommand": {
     "name": "SEO Command Centre",
     "tagline": "Local SEO workflows inside Manage",
-    "summary": "Plan titles, local pages, keywords and next actions from one Command Centre — not a page section you toggle on.",
+    "summary": "Plan titles, local pages, keywords and next actions from one Command Centre \u2014 not a page section you toggle on.",
     "pitch": "SEO Command Centre answers how visible a trade site is, what search is creating, what is broken, and what to do next. Partners sell SEO setup without leaving LeadPages.",
     "features": [
       {
@@ -1456,7 +1456,7 @@
       },
       {
         "title": "Next Best Actions",
-        "text": "Prioritised queue — optimise pages, fix titles, create location pages, or hand off to Brain drafts."
+        "text": "Prioritised queue \u2014 optimise pages, fix titles, create location pages, or hand off to Brain drafts."
       },
       {
         "title": "Competition & Local",
@@ -1464,7 +1464,7 @@
       },
       {
         "title": "Human-in-the-loop",
-        "text": "No silent AI publish — preview, confirm, then apply."
+        "text": "No silent AI publish \u2014 preview, confirm, then apply."
       }
     ],
     "partnerBenefits": [
@@ -1504,7 +1504,7 @@
       },
       {
         "title": "Partner-safe secrets",
-        "text": "Developer token and encryption keys stay server-side — never in the browser."
+        "text": "Developer token and encryption keys stay server-side \u2014 never in the browser."
       }
     ],
     "partnerBenefits": [
@@ -1527,7 +1527,7 @@
   "seoText": {
     "name": "SEO Text",
     "tagline": "On-page article copy with H1/H2 structure",
-    "summary": "Long-form SEO article block with eyebrow, H1, optional H2, supporting copy, image and colours — sits above FAQ by default.",
+    "summary": "Long-form SEO article block with eyebrow, H1, optional H2, supporting copy, image and colours \u2014 sits above FAQ by default.",
     "pitch": "Give every trade homepage a proper SEO article: one H1, clear section headings, paragraphs that keep line breaks, and colours that match the brand container.",
     "features": [
       {
@@ -1536,7 +1536,7 @@
       },
       {
         "title": "Bold toolbar",
-        "text": "Select text and Bold (Ctrl/⌘B) or mark a Heading line in the editor."
+        "text": "Select text and Bold (Ctrl/\u2318B) or mark a Heading line in the editor."
       },
       {
         "title": "Colour controls",
@@ -1569,7 +1569,7 @@
     "name": "Feature Strip",
     "tagline": "Icon highlights under the hero",
     "summary": "A compact strip of icon + title + detail cards for what sets the business apart.",
-    "pitch": "Feature Strip turns three to six selling points into a scannable row — ideal under heroes and trust bars.",
+    "pitch": "Feature Strip turns three to six selling points into a scannable row \u2014 ideal under heroes and trust bars.",
     "features": [
       {
         "title": "Icon + copy cards",
@@ -1601,7 +1601,7 @@
   "onlineQuote": {
     "name": "Online Quote",
     "tagline": "Verified quote flow on the site",
-    "summary": "Guided online quote with eyebrow, heading and intro — email verify before totals.",
+    "summary": "Guided online quote with eyebrow, heading and intro \u2014 email verify before totals.",
     "pitch": "Online Quote captures structured job details and verifies the lead before showing a price path.",
     "features": [
       {
@@ -1634,7 +1634,7 @@
   "promotions": {
     "name": "Promotions & Offers",
     "tagline": "Seasonal offers, front and centre",
-    "summary": "Urgency offers with types, placements and styles — weekly windows, deadlines, limited spots, finance, suburb specials and more.",
+    "summary": "Urgency offers with types, placements and styles \u2014 weekly windows, deadlines, limited spots, finance, suburb specials and more.",
     "pitch": "Create urgency and offers with the same Promotions Engine used in the App Command Centre.",
     "features": [
       {
@@ -1675,13 +1675,13 @@
   },
   "customHtml": {
     "name": "Custom HTML",
-    "tagline": "Embed HTML, CSS and JS — not an iframe",
+    "tagline": "Embed HTML, CSS and JS \u2014 not an iframe",
     "summary": "Drop custom HTML onto any page with optional stylesheet and script URLs. Fully responsive and repositionable.",
     "pitch": "Use Custom HTML for calculators, tools and one-off widgets that need to live inside your site layout.",
     "features": [
       {
         "title": "Inline embed",
-        "text": "Renders in the page flow — not locked inside an iframe."
+        "text": "Renders in the page flow \u2014 not locked inside an iframe."
       },
       {
         "title": "Attach CSS & JS",
@@ -1706,7 +1706,7 @@
     "name": "SearchCanvas",
     "tagline": "Visual SEO Content",
     "summary": "Turn search-focused content into an attractive tabbed section with images, icons and structured service information.",
-    "pitch": "SearchCanvas takes AI or manual SEO copy and lays it onto a designed visual canvas — eyebrow, heading, intro, service tabs, stroke icons and images — instead of one long text block.",
+    "pitch": "SearchCanvas takes AI or manual SEO copy and lays it onto a designed visual canvas \u2014 eyebrow, heading, intro, service tabs, stroke icons and images \u2014 instead of one long text block.",
     "badge": "SEO READY",
     "bestFor": "Service businesses, local businesses, trades, professional services and location landing pages.",
     "features": [
@@ -1716,7 +1716,7 @@
       },
       {
         "title": "Theme-aware design",
-        "text": "Master accent colour and theme defaults — no hardcoded greens or greys."
+        "text": "Master accent colour and theme defaults \u2014 no hardcoded greens or greys."
       },
       {
         "title": "Mobile accordion",
@@ -1760,6 +1760,43 @@
       {
         "title": "Multi-banner",
         "text": "Major Sponsors and Community Partners as separate instances."
+      }
+    ],
+    "presets": [
+      "default"
+    ]
+  },
+  "aboutUs": {
+    "name": "About Us",
+    "tagline": "Three-column founder story with optional CTA band",
+    "summary": "Lead column, body copy, photo and quote \u2014 plus an optional navy bottom band.",
+    "pitch": "Tell the business story the way a premium brochure would: eyebrow, serif heading, intro, longer body, outline button, founder photo and quote. Optionally add a navy call-to-action band underneath.",
+    "features": [
+      {
+        "title": "Story layout",
+        "text": "First option is the three-column story layout from the design mockup."
+      },
+      {
+        "title": "Optional blue band",
+        "text": "Navy CTA strip with heading, button and tagline \u2014 turn on when you need it."
+      },
+      {
+        "title": "Theme accent",
+        "text": "Eyebrow, rule and buttons follow brand hi-vis, or pick a custom accent."
+      }
+    ],
+    "partnerBenefits": [
+      {
+        "title": "Founder story",
+        "text": "Partners can drop in a real photo and quote without custom HTML."
+      },
+      {
+        "title": "Conversion strip",
+        "text": "Optional band drives visitors to the quote form."
+      },
+      {
+        "title": "Token support",
+        "text": "{{businessName}} fills eyebrow and copy automatically."
       }
     ],
     "presets": [
