@@ -17,6 +17,7 @@ const cssSnippet =
   + '@media(max-width:760px){html.site-width-capped section[data-sec="heroSlider"] .hsl{max-height:var(--hsl-mh-m,560px)}}'
   + 'html.site-width-capped [data-sec="trustBar"].tb-images .tb-band{max-width:var(--site-maxw,1920px);margin-left:auto;margin-right:auto;width:100%}'
   + 'html.site-width-capped [data-sec="trustBar"].tb-images .tb-band>.wrap{max-width:100%}'
+  + 'html.site-width-capped [data-sec="trustBar"].tb-sideCards .tb-band{max-width:var(--site-maxw,1920px);margin-left:auto;margin-right:auto;width:100%}'
   + 'html.site-width-full .wrap{max-width:none}';
 
 const cssAnchor = '@media(max-width:760px){.hsl{height:var(--hsl-mh-m,560px)}.hsl-arrow{width:38px;height:38px;font-size:22px}.hsl-prev{left:10px}.hsl-next{right:10px}}';

@@ -12,6 +12,7 @@
   var DEFAULT_ITEM = {
     on: true,
     label: 'New item',
+    text: '',
     image: '',
     imageFit: 'cover',
     imagePos: 'center',
@@ -24,7 +25,7 @@
 
   var TB_LINK_ACTIONS = [
     ['none', 'None (not clickable)'],
-    ['scroll', 'Scroll to section'],
+    ['scroll', 'App / section on this page'],
     ['page', 'Landing page on this site'],
     ['url', 'External URL (new tab)']
   ];
@@ -50,6 +51,13 @@
     var d = document.createElement('div');
     d.textContent = s == null ? '' : String(s);
     return d.innerHTML;
+  }
+
+  function tbModeOf(TB) {
+    var m = TB && TB.mode;
+    if (m === 'images') return 'images';
+    if (m === 'sideCards' || m === 'sideImages') return 'sideCards';
+    return 'badges';
   }
 
   function ens(cfg) {
@@ -169,8 +177,10 @@
 
     function render() {
       var TB = tb();
-      var tbMode = TB.mode === 'images' ? 'images' : 'badges';
+      var tbMode = tbModeOf(TB);
       var h = TB.imageHeight != null ? TB.imageHeight : 280;
+      var ch = TB.cardHeight != null ? TB.cardHeight : 140;
+      var gap = TB.cardGap != null ? TB.cardGap : 16;
       var hideAdmin = mode === 'marketplace-playground';
       /* Playground dual studio uses a half-width editor — always stack like Instagram Gallery */
       var stack = hideAdmin;
@@ -198,17 +208,26 @@
         + '<select id="tb-mode" class="tin">'
         + '<option value="badges"' + (tbMode === 'badges' ? ' selected' : '') + '>Classic badges</option>'
         + '<option value="images"' + (tbMode === 'images' ? ' selected' : '') + '>Image tiles</option>'
+        + '<option value="sideCards"' + (tbMode === 'sideCards' ? ' selected' : '') + '>Side image cards</option>'
         + '</select></div>'
-        + '<div class="f" id="tb-classic-opts"' + (tbMode === 'images' ? ' style="display:none"' : '') + '>'
+        + '<div class="f" id="tb-classic-opts"' + (tbMode === 'badges' ? '' : ' style="display:none"') + '>'
         + '<label for="tb-sep">Separator</label>'
         + '<select id="tb-sep" class="tin"><option value="none">Spacing only</option><option value="pipe">Vertical line</option></select>'
         + '</div>'
         + '<div class="f" id="tb-h-wrap"' + (tbMode === 'images' ? '' : ' style="display:none"') + '>'
         + '<label for="tb-h">Height <span id="tb-h-v">' + esc(h) + 'px</span></label>'
         + '<input type="range" id="tb-h" min="160" max="520" step="1" value="' + esc(h) + '">'
+        + '</div>'
+        + '<div class="f" id="tb-ch-wrap"' + (tbMode === 'sideCards' ? '' : ' style="display:none"') + '>'
+        + '<label for="tb-ch">Card height <span id="tb-ch-v">' + esc(ch) + 'px</span></label>'
+        + '<input type="range" id="tb-ch" min="96" max="280" step="2" value="' + esc(ch) + '">'
+        + '</div>'
+        + '<div class="f" id="tb-gap-wrap"' + (tbMode === 'sideCards' ? '' : ' style="display:none"') + '>'
+        + '<label for="tb-gap">Gap <span id="tb-gap-v">' + esc(gap) + 'px</span></label>'
+        + '<input type="range" id="tb-gap" min="0" max="40" step="2" value="' + esc(gap) + '">'
         + '</div></div>'
 
-        + '<div id="tb-classic-colors" class="tb-ed-color-grid"' + (tbMode === 'images' ? ' style="display:none"' : '') + '>'
+        + '<div id="tb-classic-colors" class="tb-ed-color-grid"' + (tbMode === 'badges' ? '' : ' style="display:none"') + '>'
         + colorRow('tb-bg', 'Background', TB.bg, '')
         + colorRow('tb-fg', 'Font', TB.fg, '')
         + '<div class="f tb-ed-check-f"><label class="ck"><input type="checkbox" id="tb-lineon"' + (TB.lineOn !== false ? ' checked' : '') + '> Divider lines</label></div>'
@@ -221,6 +240,13 @@
         + '<div class="f tb-ed-check-f"><label class="ck"><input type="checkbox" id="tb-edgeon"' + (TB.edgeOn !== false ? ' checked' : '') + '> Edge stroke</label></div>'
         + colorRow('tb-edge', 'Edge', TB.edgeColour || TB.edge || '#ffffff', '#ffffff')
         + colorRow('tb-img-fg', 'Caption', TB.fg || '#ffffff', '#ffffff')
+        + '</div>'
+        + '<div id="tb-side-opts" class="tb-ed-color-grid"' + (tbMode === 'sideCards' ? '' : ' style="display:none"') + '>'
+        + colorRow('tb-cardbg', 'Card background', TB.cardBg || TB.bg || '#ffffff', '#ffffff')
+        + colorRow('tb-side-fg', 'Text', TB.fg || '#1a2230', '#1a2230')
+        + colorRow('tb-side-ic', 'Icon & arrow', TB.iconColour || '', 'Theme')
+        + colorRow('tb-bandbg', 'Section background', TB.bandBg || '', 'Clear')
+        + '<div class="f tb-ed-check-f"><label class="ck"><input type="checkbox" id="tb-arrowon"' + (TB.showArrow !== false ? ' checked' : '') + '> Show arrow</label></div>'
         + '</div>'
         + appearanceBoxHtml(TB.appearance)
         + '</div>'
@@ -240,14 +266,14 @@
       drawItems();
     }
 
-    function itemPanelHtml(it, i, images) {
-      if (images && window.LPLocalImage) window.LPLocalImage.rememberSample(it, 'image');
+    function itemPanelHtml(it, i, images, side) {
+      if ((images || side) && window.LPLocalImage) window.LPLocalImage.rememberSample(it, 'image');
       var sample = (it && it._pgSample) || '';
-      var localImg = images && mode === 'marketplace-playground' && window.LPLocalImage;
+      var localImg = (images || side) && mode === 'marketplace-playground' && window.LPLocalImage;
       var imageField = '';
-      if (images) {
+      if (images || side) {
         if (localImg) {
-          imageField = '<div class="f tb-ed-img-f"><label>Tile image</label>'
+          imageField = '<div class="f tb-ed-img-f"><label>' + (side ? 'Side image' : 'Tile image') + '</label>'
             + window.LPLocalImage.controlHtml(it.image || '', {
               sample: sample || ((window.LPLocalImage.isRemote(it.image) ? it.image : '') || ''),
               inputAttrs: 'data-k="image"'
@@ -280,8 +306,9 @@
           ? window.LPIconPicker.controlHtml(it.icon || '', { inputAttrs: 'data-k="icon"' })
           : '<input type="text" data-k="icon" value="' + esc(it.icon || '') + '" placeholder="e.g. shield-check">')
         + '</div>'
-        + '<div class="f tb-ed-text-f"><label>Text</label><textarea data-k="label" rows="2">' + esc(it.label || '') + '</textarea></div>'
+        + '<div class="f tb-ed-text-f"><label>' + (side ? 'Title' : 'Text') + '</label><textarea data-k="label" rows="2">' + esc(it.label || '') + '</textarea></div>'
         + '</div>'
+        + (side ? '<div class="f tb-ed-text-f"><label>Info</label><textarea data-k="text" rows="2">' + esc(it.text || '') + '</textarea></div>' : '')
         + '<div class="tb-ed-link-row">'
         + '<div class="f"><label>When clicked</label><select data-k="linkAction">'
         + TB_LINK_ACTIONS.map(function (o) {
@@ -313,7 +340,9 @@
       var box = host.querySelector('#tb-items');
       if (!box) return;
       var items = tb().badges;
-      var images = tb().mode === 'images';
+      var modeKey = tbModeOf(tb());
+      var images = modeKey === 'images';
+      var side = modeKey === 'sideCards';
       clampActive();
 
       if (!items.length) {
@@ -330,7 +359,7 @@
       }).join('');
 
       box.innerHTML = '<div class="tb-ed-tabs" role="tablist" aria-label="Items">' + tabs + '</div>'
-        + itemPanelHtml(items[activeIdx], activeIdx, images);
+        + itemPanelHtml(items[activeIdx], activeIdx, images, side);
 
       if (window.LPIconPicker) window.LPIconPicker.refresh(box);
       if (window.LPLocalImage) {
@@ -344,15 +373,21 @@
     }
 
     function syncModeUi() {
-      var images = tb().mode === 'images';
+      var modeKey = tbModeOf(tb());
       var co = host.querySelector('#tb-classic-opts');
       var cc = host.querySelector('#tb-classic-colors');
       var io = host.querySelector('#tb-image-opts');
+      var so = host.querySelector('#tb-side-opts');
       var hw = host.querySelector('#tb-h-wrap');
-      if (co) co.style.display = images ? 'none' : '';
-      if (cc) cc.style.display = images ? 'none' : '';
-      if (io) io.style.display = images ? '' : 'none';
-      if (hw) hw.style.display = images ? '' : 'none';
+      var chw = host.querySelector('#tb-ch-wrap');
+      var gw = host.querySelector('#tb-gap-wrap');
+      if (co) co.style.display = modeKey === 'badges' ? '' : 'none';
+      if (cc) cc.style.display = modeKey === 'badges' ? '' : 'none';
+      if (io) io.style.display = modeKey === 'images' ? '' : 'none';
+      if (so) so.style.display = modeKey === 'sideCards' ? '' : 'none';
+      if (hw) hw.style.display = modeKey === 'images' ? '' : 'none';
+      if (chw) chw.style.display = modeKey === 'sideCards' ? '' : 'none';
+      if (gw) gw.style.display = modeKey === 'sideCards' ? '' : 'none';
     }
 
     function wireColor(id, apply, clearVal) {
@@ -384,23 +419,25 @@
     function wire() {
       var md = host.querySelector('#tb-mode');
       if (md) {
-        md.value = tb().mode === 'images' ? 'images' : 'badges';
+        md.value = tbModeOf(tb());
         md.addEventListener('change', function () {
           tb().mode = md.value;
-          if (md.value === 'images') {
-            // Make sure each tile has fit/pos defaults when switching from badges.
+          if (md.value === 'images' || md.value === 'sideCards') {
             (tb().badges || []).forEach(function (b) {
               if (!b || typeof b !== 'object') return;
               if (!b.imageFit) b.imageFit = 'cover';
               if (!b.imagePos) b.imagePos = 'center';
               if (b.image == null) b.image = '';
+              if (md.value === 'sideCards' && b.text == null) b.text = '';
             });
           }
           syncModeUi();
           drawItems();
           var msg = md.value === 'images'
             ? 'Image tiles — pick an image for each item'
-            : 'Layout changed to text and icons';
+            : (md.value === 'sideCards'
+              ? 'Side image cards — photo, icon, title and info'
+              : 'Layout changed to text and icons');
           emit(msg);
         });
       }
@@ -417,6 +454,36 @@
       wireColor('tb-stroke', function (v) { tb().strokeColour = v || '#ffffff'; }, '#ffffff');
       wireColor('tb-edge', function (v) { tb().edgeColour = v || '#ffffff'; }, '#ffffff');
       wireColor('tb-img-fg', function (v) { tb().fg = v || '#ffffff'; }, '#ffffff');
+      wireColor('tb-cardbg', function (v) { tb().cardBg = v || '#ffffff'; }, '#ffffff');
+      wireColor('tb-side-fg', function (v) { tb().fg = v || '#1a2230'; }, '#1a2230');
+      wireColor('tb-side-ic', function (v) { tb().iconColour = v; }, '');
+      wireColor('tb-bandbg', function (v) { tb().bandBg = v; }, '');
+      var ao = host.querySelector('#tb-arrowon');
+      if (ao) {
+        ao.checked = tb().showArrow !== false;
+        ao.addEventListener('change', function () { tb().showArrow = ao.checked; emit('Preview updated'); });
+      }
+      var ch = host.querySelector('#tb-ch');
+      var chv = host.querySelector('#tb-ch-v');
+      if (ch) {
+        ch.addEventListener('input', function () {
+          var val = +ch.value;
+          tb().cardHeight = val;
+          if (chv) chv.textContent = val + 'px';
+          if (typeof options.onHeight === 'function') options.onHeight(val);
+          else emit('Preview updated');
+        });
+      }
+      var gp = host.querySelector('#tb-gap');
+      var gpv = host.querySelector('#tb-gap-v');
+      if (gp) {
+        gp.addEventListener('input', function () {
+          var val = +gp.value;
+          tb().cardGap = val;
+          if (gpv) gpv.textContent = val + 'px';
+          emit('Preview updated');
+        });
+      }
 
       function ensureApp() {
         var TB = tb();
