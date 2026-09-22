@@ -1285,7 +1285,7 @@ section[data-sec="featureStrip"] .section-head{text-align:var(--fstr-head-align,
 .sp-step.align-right{flex-direction:row-reverse;align-items:flex-start;text-align:right}
 .sp-media{display:flex;flex-direction:column;align-items:center;gap:10px;flex:0 0 auto}
 .sp-step.align-left .sp-media,.sp-step.align-right .sp-media{padding-top:2px}
-.sp-num{width:var(--sp-num-size,48px);height:var(--sp-num-size,48px);border-radius:50%;margin:0;display:flex;align-items:center;justify-content:center;background:var(--sp-num-bg,var(--pipe,#1f7bb8));color:var(--sp-num-fg,#fff);font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:calc(var(--sp-num-size,48px) * .48);line-height:1;box-shadow:0 8px 20px rgba(20,30,45,.16)}
+.sp-num{width:var(--sp-num-size,48px);height:var(--sp-num-size,48px);border-radius:50%;margin:0;display:flex;align-items:center;justify-content:center;background:var(--sp-num-bg,var(--pipe,#1f7bb8));color:var(--sp-num-fg,#fff);font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:calc(var(--sp-num-size,48px) * .42);line-height:1;box-shadow:none;border:var(--sp-num-stroke-w,0px) solid var(--sp-num-stroke,transparent);box-sizing:border-box}.sp-num.sp-num-shadow,.sp-steps.sp-circle-shadow .sp-num{box-shadow:0 8px 20px rgba(20,30,45,.16)}
 .sp-ic{display:flex;align-items:center;justify-content:center;color:var(--sp-icon,var(--pipe,#1f7bb8));line-height:0;height:var(--sp-ic-size,36px)}
 .sp-ic .lp-ic{width:var(--sp-ic-size,36px);height:var(--sp-ic-size,36px);stroke-width:1.75}
 .sp-ic:empty{display:none}
@@ -1303,11 +1303,12 @@ section[data-sec="serviceProcess"] .section-head p{color:var(--sp-intro,inherit)
 section[data-sec="serviceProcess"].sp-sec-stroke-on{border-top:4px solid var(--sp-sec-stroke,var(--pipe,#1f7bb8))}
 section[data-sec="serviceProcess"]:not(.sp-sec-stroke-on){border-top:0}
 @media(max-width:900px){
-  /* Mobile How It Works: numbers + copy only — hide icons/arrows and tighten gaps */
+  /* Mobile How It Works: stack steps; keep arrows (smaller); hide icons for space */
   .sp-steps{flex-wrap:wrap;gap:10px 0;margin-top:16px}
   .sp-steps.sp-no-arrows{gap:10px 0}
   .sp-step{flex:1 1 100%;gap:10px}
-  .sp-arrow{display:none!important}
+  .sp-arrow{display:flex!important;padding:4px 0;width:100%;justify-content:center}
+  .sp-arrow svg{width:20px;height:20px;transform:rotate(90deg)}
   .sp-ic{display:none!important}
   .sp-media{gap:0}
   .sp-num{width:min(var(--sp-num-size,48px),40px);height:min(var(--sp-num-size,48px),40px);font-size:calc(min(var(--sp-num-size,48px),40px) * .48);box-shadow:0 4px 12px rgba(20,30,45,.12)}
