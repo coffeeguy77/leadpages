@@ -7007,6 +7007,20 @@ function heroCtaCard(c){
         can_reposition:true,
         hero_exclusive:false,
         sort_order:96
+      },
+      {
+        name:'About Us',
+        slug:'about-us',
+        section_key:'aboutUs',
+        tier:'free',
+        tagline:'Three-column founder story with optional CTA band',
+        description:'Lead column, body copy, photo and quote — plus an optional navy call-to-action band.',
+        default_position:'upper',
+        marketplace_status:'live',
+        builder_visible:true,
+        can_reposition:true,
+        hero_exclusive:false,
+        sort_order:74
       }
     ];
     builtins.forEach(function(b){
@@ -7025,6 +7039,14 @@ function heroCtaCard(c){
         if(existing.section_key!=='promotions') existing.section_key='promotions';
         if(existing.slug!=='promotions') existing.slug='promotions';
         if(existing.marketplace_status!=='live') existing.marketplace_status='live';
+      }
+      if(b.section_key==='aboutUs'){
+        if(existing.name!==b.name) existing.name=b.name;
+        if(existing.section_key!=='aboutUs') existing.section_key='aboutUs';
+        if(existing.slug!=='about-us') existing.slug='about-us';
+        if(existing.marketplace_status!=='live') existing.marketplace_status='live';
+        if(existing.builder_visible===false) existing.builder_visible=true;
+        if(!existing.default_position) existing.default_position='upper';
       }
       if(b.section_key==='scrollingSponsorBanner'){
         if(existing.name!==b.name) existing.name=b.name;

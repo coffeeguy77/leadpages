@@ -230,6 +230,30 @@ test('manage editor exposes layout + optional band controls', function () {
   assert.match(manage, /id="au-quote"/);
 });
 
+test('api-apps auto-registers About Us for App Marketplace', function () {
+  const apiApps = fs.readFileSync(path.join(root, 'api/api-apps.js'), 'utf8');
+  assert.match(apiApps, /ensureAboutUsApp/);
+  assert.match(apiApps, /section_key:\s*'aboutUs'/);
+  assert.match(apiApps, /slug:\s*'about-us'/);
+  assert.match(apiApps, /builder_visible:\s*true/);
+  assert.match(apiApps, /await ensureAboutUsApp\(\)/);
+  assert.match(apiApps, /default_position:\s*'upper'/);
+});
+
+test('manage injects About Us builtin for Apps picker fallback', function () {
+  assert.match(manage, /function _aaInjectBuiltinApps/);
+  assert.match(manage, /section_key:'aboutUs'/);
+  assert.match(manage, /slug:'about-us'/);
+  assert.match(manage, /name:'About Us'/);
+});
+
+test('register script exists for ops', function () {
+  assert.ok(fs.existsSync(path.join(root, 'scripts/register-about-us-app.js')));
+  const reg = fs.readFileSync(path.join(root, 'scripts/register-about-us-app.js'), 'utf8');
+  assert.match(reg, /section_key:\s*SECTION_KEY|section_key:\s*'aboutUs'|SECTION_KEY\s*=\s*'aboutUs'/);
+  assert.match(reg, /about-us/);
+});
+
 test('demo-aboutUs enables story + band by default', function () {
   const demo = fs.readFileSync(path.join(root, 'marketplace/demos/demo-aboutUs.html'), 'utf8');
   assert.match(demo, /"aboutUs"\s*:\s*\{[\s\S]*"on"\s*:\s*true/);

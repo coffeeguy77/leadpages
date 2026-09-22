@@ -118,6 +118,27 @@ const SCROLLING_SPONSOR_BANNER_APP = {
   updated_at: new Date().toISOString()
 };
 
+const ABOUT_US_APP = {
+  name: 'About Us',
+  slug: 'about-us',
+  section_key: 'aboutUs',
+  tier: 'free',
+  price_monthly_aud: 0,
+  price_annual_aud: 0,
+  tagline: 'Three-column founder story with optional CTA band',
+  description:
+    'Tell the business story with a lead column, body copy, photo and quote — '
+    + 'plus an optional navy call-to-action band underneath. Off by default; '
+    + 'enable from App Marketplace or Page editor.',
+  default_position: 'upper',
+  marketplace_status: 'live',
+  builder_visible: true,
+  can_reposition: true,
+  hero_exclusive: false,
+  sort_order: 74,
+  updated_at: new Date().toISOString()
+};
+
 const STALE_PROMOTIONS_SECTION_KEYS = ['promotions-hero', 'promotions-inline'];
 
 async function ensureLpAccessibilityApp() {
@@ -265,6 +286,42 @@ async function ensureScrollingSponsorBannerApp() {
   }
 }
 
+async function ensureAboutUsApp() {
+  const row = Object.assign({}, ABOUT_US_APP, { updated_at: new Date().toISOString() });
+  const { data: existing } = await sb.from('app_registry')
+    .select('id,marketplace_status,builder_visible,default_position,name,slug')
+    .eq('section_key', 'aboutUs')
+    .maybeSingle();
+  if (!existing) {
+    await sb.from('app_registry').upsert(row, { onConflict: 'slug' });
+    return;
+  }
+  if (
+    existing.marketplace_status !== 'live' ||
+    existing.builder_visible !== true ||
+    existing.default_position !== row.default_position ||
+    existing.slug !== row.slug ||
+    existing.name !== row.name
+  ) {
+    await sb.from('app_registry').update({
+      name: row.name,
+      slug: row.slug,
+      tagline: row.tagline,
+      description: row.description,
+      tier: row.tier,
+      price_monthly_aud: row.price_monthly_aud,
+      price_annual_aud: row.price_annual_aud,
+      default_position: row.default_position,
+      marketplace_status: 'live',
+      builder_visible: true,
+      can_reposition: true,
+      hero_exclusive: false,
+      sort_order: row.sort_order,
+      updated_at: row.updated_at
+    }).eq('id', existing.id);
+  }
+}
+
 /**
  * Register / heal Promotions & Offers (sections.promotions).
  * Production historically had split promotions-hero / promotions-inline rows that
@@ -374,6 +431,7 @@ module.exports = async (req, res) => {
       await ensureCustomHtmlApp();
       await ensurePromotionsApp();
       await ensureScrollingSponsorBannerApp();
+      await ensureAboutUsApp();
     }
     // Public marketplace list should also auto-register SearchCanvas / Custom HTML / Promotions once.
     if (!all && !slug) {
@@ -381,6 +439,7 @@ module.exports = async (req, res) => {
       try { await ensureCustomHtmlApp(); } catch (_e) { /* non-fatal */ }
       try { await ensurePromotionsApp(); } catch (_e) { /* non-fatal */ }
       try { await ensureScrollingSponsorBannerApp(); } catch (_e) { /* non-fatal */ }
+      try { await ensureAboutUsApp(); } catch (_e) { /* non-fatal */ }
     }
     const {data:apps,error:ae} = await q;
     if (ae) return res.status(500).json({error:ae.message});
