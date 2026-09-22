@@ -633,6 +633,62 @@ body.lp-dock-split.lp-prev-open .lp-prev {
 }
 
 /*
+ * Form / list editors in a narrow pane (side or split live preview).
+ * Viewport media queries alone leave 2-col .row grids tiny beside preview.
+ */
+@container lp-editor (max-width: 900px) {
+  .row,
+  .lp-row,
+  .lp-ch-grid,
+  .appr-grid,
+  .bro-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .row3 {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+@container lp-editor (max-width: 620px) {
+  .row3 {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.le-row .le-fields {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 10px 12px;
+  width: 100%;
+  align-items: start;
+}
+.le-row .f {
+  min-width: 0 !important;
+  max-width: 100%;
+}
+.le-row .f input[type="text"],
+.le-row .f select,
+.le-row .f textarea {
+  width: 100% !important;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.le-row .f .le-color-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  min-width: 0;
+  width: 100%;
+}
+.le-row .f .le-color-row input[type="text"] {
+  flex: 1 1 auto;
+  min-width: 0 !important;
+  width: auto !important;
+}
+.le-row .f.le-f-full {
+  grid-column: 1 / -1;
+}
+
+/*
  * Side / split live preview: always stack main builder tabs.
  * Do not gate on viewport width — desktop 50/50 still needs a grid.
  */
