@@ -3402,7 +3402,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     certifications:{eyebrow:'Accredited & insured',heading:'Licensed, insured & accredited',intro:'Fully qualified and backed by recognised industry accreditations — so you know the job is done right.'},
     finance:{eyebrow:'Flexible payments',heading:'Finance options available',amount:'38',period:'week',description:'Spread the cost of larger jobs with approved finance — get the work done now and pay it off over time.',disclaimer:'Finance is subject to approval. Terms and conditions apply.',cta:{text:'Ask about finance',action:'quote'}},
     trustBar:{},
-    serviceProcess:{eyebrow:'How it works', heading:'How It Works', intro:''},
+    serviceProcess:{eyebrow:'How it works', heading:'How It Works', intro:'', circleShadowOn:false, numberFormat:'plain', circleStrokeOn:false, circleStrokeWidth:2, circleStrokeColor:'', arrowsOn:true},
     featureStrip:{eyebrow:'Why choose us', heading:'What sets us apart', intro:''},
     projectFeed:{eyebrow:'Latest work', heading:'Latest Work', intro:'', source:'manual', postsToShow:12, sortOrder:'newest'},
     instaGallery:{eyebrow:'Instagram', heading:'Follow us on Instagram', intro:'', count:8, columns:4},
@@ -4924,13 +4924,17 @@ function wireQuoteStyle(c){
 
   function processStyleCard(c){
     var SP=(c.sections&&c.sections.serviceProcess)||{};
-    var DEF={ eyebrowColor:'#1f7bb8', titleColor:'#1a2230', introColor:'#5b6878', stepTitleColor:'#1a2230', textColor:'#55606e', numBg:'#1f7bb8', numFg:'#ffffff', iconColor:'#1f7bb8', arrowColor:'#1f7bb8', sectionStroke:'#84cc16' };
+    var DEF={ eyebrowColor:'#1f7bb8', titleColor:'#1a2230', introColor:'#5b6878', stepTitleColor:'#1a2230', textColor:'#55606e', numBg:'#1f7bb8', numFg:'#ffffff', iconColor:'#1f7bb8', arrowColor:'#1f7bb8', sectionStroke:'#84cc16', circleStrokeColor:'#1a2230' };
     var col=function(id,key,label,sample){ var dv=DEF[key]||'#1a2230'; var v=(SP[key]&&/^#[0-9a-fA-F]{6}$/.test(SP[key]))?SP[key]:''; return '<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:220px;"><label style="font-weight:600;">'+label+'</label><p class="hint" style="margin:2px 0 6px;font-size:12px;">Sample: <span style="font-weight:700;color:'+(v||dv)+';">'+sample+'</span></p><div style="display:flex;align-items:center;gap:8px;"><input type="color" id="'+id+'-clr" value="'+(v||dv)+'" style="width:46px;height:34px;padding:0;border:1px solid var(--line);border-radius:8px;cursor:pointer;flex:0 0 auto;"><input type="text" id="'+id+'-tx" value="'+v+'" placeholder="'+dv+' (default)" style="flex:1;min-width:0;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;"><button type="button" class="btn ghost" id="'+id+'-def" style="padding:6px 10px;">Default</button></div></div>'; };
     var align=(SP.textAlign==='center'||SP.textAlign==='right')?SP.textAlign:'left';
     var iconSize=SP.iconSize||'';
     var sc=(SP.iconScale!=null&&SP.iconScale!=='')?+SP.iconScale:100; if(isNaN(sc)) sc=100;
     var arrowsOn=SP.arrowsOn!==false;
     var secStrokeOn=SP.sectionStrokeOn===true;
+    var circleStrokeOn=SP.circleStrokeOn===true;
+    var circleShadowOn=SP.circleShadowOn===true;
+    var numberFormat=(SP.numberFormat==='padded'||SP.numberFormat==='01')?'padded':'plain';
+    var strokeW=parseInt(SP.circleStrokeWidth,10); if(isNaN(strokeW)||strokeW<0) strokeW=2;
     var SZ=[['compact','Compact 32'],['standard','Standard 42'],['large','Large 56'],['hero','Hero 72']];
     var h='<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Colours</h2><p class="lede" style="margin:0 0 12px;">Style the How it works heading and each step.</p><div style="display:flex;flex-wrap:wrap;gap:14px;">';
     h+=col('sp-eyebrow','eyebrowColor','Eyebrow colour','HOW IT WORKS');
@@ -4947,6 +4951,16 @@ function wireQuoteStyle(c){
     h+=col('sp-icon','iconColor','Icon colour','Icon');
     h+=col('sp-arrow','arrowColor','Arrow colour','\u2192');
     h+='</div>';
+    h+='<div style="display:flex;flex-wrap:wrap;gap:14px;margin-top:14px;">';
+    h+='<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:220px;"><label>Number style</label><select id="sp-numfmt" class="tin"><option value="plain"'+(numberFormat==='plain'?' selected':'')+'>1, 2, 3</option><option value="padded"'+(numberFormat==='padded'?' selected':'')+'>01, 02, 03</option></select><p class="hint" style="margin:6px 0 0;">How step numbers appear in the circle.</p></div>';
+    h+='<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:220px;"><label style="display:flex;gap:8px;align-items:center;font-weight:600;"><input type="checkbox" id="sp-circle-shadow"'+(circleShadowOn?' checked':'')+'> Drop shadow on circles</label><p class="hint" style="margin:6px 0 0;">Off by default — tick to add a soft shadow under each number badge.</p></div>';
+    h+='</div>';
+    h+='<div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line);">';
+    h+='<label style="display:flex;gap:8px;align-items:center;font-weight:600;"><input type="checkbox" id="sp-circle-stroke-on"'+(circleStrokeOn?' checked':'')+'> Stroke around number circle</label>';
+    h+='<div id="sp-circle-stroke-wrap" style="display:'+(circleStrokeOn?'flex':'none')+';flex-wrap:wrap;gap:14px;margin-top:10px;">';
+    h+=col('sp-circle-stroke','circleStrokeColor','Circle stroke colour','Ring');
+    h+='<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:220px;"><label>Stroke size <span id="sp-circle-stroke-w-v" style="font-weight:700;color:var(--accent);">'+strokeW+'px</span></label><input type="range" id="sp-circle-stroke-w" min="1" max="12" step="1" value="'+strokeW+'" style="width:100%;"><p class="hint" style="margin:6px 0 0;">Border thickness around the number badge.</p></div>';
+    h+='</div></div>';
     h+='<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:16px 0 0;"><input type="checkbox" id="sp-arrowson"'+(arrowsOn?' checked':'')+'> Show arrows between steps</label>';
     h+='<div style="display:flex;flex-wrap:wrap;gap:14px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line);">';
     h+='<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:220px;"><label>Text justification</label><select id="sp-align" class="tin"><option value="left"'+(align==='left'?' selected':'')+'>Left</option><option value="center"'+(align==='center'?' selected':'')+'>Centre</option><option value="right"'+(align==='right'?' selected':'')+'>Right</option></select><p class="hint" style="margin:6px 0 0;">Aligns the number, icon and step copy.</p></div>';
@@ -4959,8 +4973,12 @@ function wireQuoteStyle(c){
   function wireProcessStyle(c){
     function SP(){ if(!c.sections)c.sections={}; if(!c.sections.serviceProcess)c.sections.serviceProcess={}; return c.sections.serviceProcess; }
     function colWire(id,key){ var clr=$(id+'-clr'),tx=$(id+'-tx'),df=$(id+'-def'); if(clr) clr.addEventListener('input',function(){ SP()[key]=clr.value; if(tx)tx.value=clr.value; persist(); previewApply(); }); if(tx) tx.addEventListener('input',function(){ var v=tx.value.trim(); if(v===''){ SP()[key]=''; } else { if(v[0]!=='#')v='#'+v; if(/^#[0-9a-fA-F]{6}$/.test(v)){ SP()[key]=v; if(clr)clr.value=v; } } persist(); previewApply(); }); if(df) df.addEventListener('click',function(){ SP()[key]=''; if(tx)tx.value=''; persist(); previewApply(); }); }
-    colWire('sp-eyebrow','eyebrowColor'); colWire('sp-title','titleColor'); colWire('sp-intro','introColor'); colWire('sp-step','stepTitleColor'); colWire('sp-detail','textColor'); colWire('sp-numbg','numBg'); colWire('sp-numfg','numFg'); colWire('sp-icon','iconColor'); colWire('sp-arrow','arrowColor'); colWire('sp-sec-stroke','sectionStroke');
+    colWire('sp-eyebrow','eyebrowColor'); colWire('sp-title','titleColor'); colWire('sp-intro','introColor'); colWire('sp-step','stepTitleColor'); colWire('sp-detail','textColor'); colWire('sp-numbg','numBg'); colWire('sp-numfg','numFg'); colWire('sp-icon','iconColor'); colWire('sp-arrow','arrowColor'); colWire('sp-sec-stroke','sectionStroke'); colWire('sp-circle-stroke','circleStrokeColor');
     var sso=$('sp-sec-stroke-on'), ssw=$('sp-sec-stroke-wrap'); if(sso) sso.addEventListener('change',function(){ SP().sectionStrokeOn=sso.checked; if(ssw) ssw.style.display=sso.checked?'':'none'; persist(); previewApply(); });
+    var cso=$('sp-circle-stroke-on'), csw=$('sp-circle-stroke-wrap'); if(cso) cso.addEventListener('change',function(){ SP().circleStrokeOn=!!cso.checked; if(csw) csw.style.display=cso.checked?'flex':'none'; persist(); previewApply(); });
+    var cswRange=$('sp-circle-stroke-w'), cswV=$('sp-circle-stroke-w-v'); if(cswRange) cswRange.addEventListener('input',function(){ SP().circleStrokeWidth=+cswRange.value; if(cswV) cswV.textContent=cswRange.value+'px'; persist(); previewApply(); });
+    var csh=$('sp-circle-shadow'); if(csh) csh.addEventListener('change',function(){ SP().circleShadowOn=!!csh.checked; persist(); previewApply(); });
+    var nf=$('sp-numfmt'); if(nf) nf.addEventListener('change',function(){ SP().numberFormat=nf.value; persist(); previewApply(); });
     var ao=$('sp-arrowson'); if(ao) ao.addEventListener('change',function(){ SP().arrowsOn=ao.checked; persist(); previewApply(); });
     var al=$('sp-align'); if(al) al.addEventListener('change',function(){ SP().textAlign=al.value; persist(); previewApply(); });
     var sc=$('sp-sc'), scv=$('sp-sc-v'); if(sc) sc.addEventListener('input',function(){ SP().iconScale=+sc.value; if(scv) scv.textContent=sc.value+'%'; persist(); previewApply(); });

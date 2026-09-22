@@ -103,16 +103,26 @@ function patchFile(tplPath) {
     if (html.includes('lp-custom-html.js')) {
       html = html.replace(
         '<script src="/assets/lp-custom-html.js"',
-        '<link rel="stylesheet" href="/assets/lp-about-us.css">\n<script src="/assets/lp-about-us.js" defer></script>\n<script src="/assets/lp-custom-html.js"'
+        '<link rel="stylesheet" href="/assets/lp-about-us.css">\n<script src="/assets/lp-about-us.js"></script>\n<script src="/assets/lp-custom-html.js"'
       );
     } else {
       html = html.replace(
         '</body>',
-        '<link rel="stylesheet" href="/assets/lp-about-us.css">\n<script src="/assets/lp-about-us.js" defer></script>\n</body>'
+        '<link rel="stylesheet" href="/assets/lp-about-us.css">\n<script src="/assets/lp-about-us.js"></script>\n</body>'
       );
     }
     changed = true;
     console.log(label + ': Added about-us CSS/JS');
+  }
+
+  const inlineCss = 'section[data-sec="aboutUs"]{display:none}section[data-sec="aboutUs"].au-on{display:block}';
+  if (!html.includes('section[data-sec="aboutUs"]{display:none}')) {
+    const cssAnchor = 'section[data-sec="textBox"]{display:none}';
+    if (html.includes(cssAnchor)) {
+      html = html.replace(cssAnchor, inlineCss + cssAnchor);
+      changed = true;
+      console.log(label + ': Added aboutUs inline hide CSS');
+    }
   }
 
   // Visibility toggle lists

@@ -1772,14 +1772,17 @@ function applyCfg(C){
         var _spArrowSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>';
         if(_spg){
           var _spVis=_spit.filter(function(s){return s&&s.on!==false&&((s.title&&String(s.title).trim())||(s.text&&String(s.text).trim())||(s.icon&&String(s.icon).trim()));});
+          var _spPad=(SP.numberFormat==='padded'||SP.numberFormat==='01');
+          var _spNumLabel=function(i){ var n=i+1; return _spPad?(n<10?('0'+n):String(n)):String(n); };
           var _spParts=[];
           _spVis.forEach(function(s,i){
             var _ic=lpIcon(s.icon);
-            _spParts.push('<div class="sp-step align-'+_spAlign+'"><div class="sp-media"><div class="sp-num">'+(i+1)+'</div>'+(_ic?'<div class="sp-ic">'+_ic+'</div>':'')+'</div><div class="sp-body">'+(s.title?'<h3 class="sp-title">'+esc(s.title)+'</h3>':'')+(s.text?'<p class="sp-text">'+esc(s.text)+'</p>':'')+'</div></div>');
+            _spParts.push('<div class="sp-step align-'+_spAlign+'"><div class="sp-media"><div class="sp-num">'+_spNumLabel(i)+'</div>'+(_ic?'<div class="sp-ic">'+_ic+'</div>':'')+'</div><div class="sp-body">'+(s.title?'<h3 class="sp-title">'+esc(s.title)+'</h3>':'')+(s.text?'<p class="sp-text">'+esc(s.text)+'</p>':'')+'</div></div>');
             if(_spArrowOn&&i<_spVis.length-1) _spParts.push('<div class="sp-arrow" aria-hidden="true">'+_spArrowSvg+'</div>');
           });
           _spg.innerHTML=_spParts.join('');
           _spg.classList.toggle('sp-no-arrows', !_spArrowOn);
+          _spg.classList.toggle('sp-circle-shadow', SP.circleShadowOn===true);
         }
         function _spHex(v){ v=String(v||'').trim(); if(/^#?[0-9a-fA-F]{3}$/.test(v)){ v=v.charAt(0)==='#'?v:'#'+v; return '#'+v.charAt(1)+v.charAt(1)+v.charAt(2)+v.charAt(2)+v.charAt(3)+v.charAt(3); } if(/^#?[0-9a-fA-F]{6}$/.test(v)) return v.charAt(0)==='#'?v:'#'+v; return ''; }
         function _spSet(name,val){ if(val) spNode.style.setProperty(name,val); else spNode.style.removeProperty(name); }
@@ -1791,7 +1794,14 @@ function applyCfg(C){
         _spSet('--sp-num-bg', _spHex(SP.numBg));
         _spSet('--sp-num-fg', _spHex(SP.numFg));
         _spSet('--sp-icon', _spHex(SP.iconColor));
-        _spSet('--sp-arrow', _spHex(SP.arrowColor)||_spHex(SP.iconColor));
+        var _spArrowCol=_spHex(SP.arrowColor)||_spHex(SP.iconColor)||'';
+        if(_spArrowCol){ spNode.style.setProperty('--sp-arrow',_spArrowCol); }
+        else { spNode.style.removeProperty('--sp-arrow'); }
+        var _spStrokeOn=SP.circleStrokeOn===true; var _spStrokeCol=_spHex(SP.circleStrokeColor)||_spHex(SP.numBg)||'';
+        var _spStrokeW=parseInt(SP.circleStrokeWidth,10); if(isNaN(_spStrokeW)||_spStrokeW<0) _spStrokeW=2;
+        if(_spStrokeOn&&_spStrokeCol){ spNode.style.setProperty('--sp-num-stroke',_spStrokeCol); spNode.style.setProperty('--sp-num-stroke-w',_spStrokeW+'px'); }
+        else { spNode.style.setProperty('--sp-num-stroke','transparent'); spNode.style.setProperty('--sp-num-stroke-w','0px'); }
+        try{ spNode.querySelectorAll('.sp-arrow svg').forEach(function(sv){ if(_spArrowCol){ sv.setAttribute('stroke',_spArrowCol); sv.style.color=_spArrowCol; } }); }catch(_e){}
         spNode.style.setProperty('--sp-align', _spAlign);
         var _spSizes={compact:32,standard:42,large:56,hero:72}; var _spBase=_spSizes[SP.iconSize]||42; var _spSc=parseInt(SP.iconScale,10); if(isNaN(_spSc)) _spSc=100; var _spPx=Math.round(_spBase*Math.max(50,Math.min(250,_spSc))/100);
         spNode.style.setProperty('--sp-num-size', _spPx+'px');
