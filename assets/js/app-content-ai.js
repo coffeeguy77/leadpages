@@ -37,10 +37,10 @@
     trustBar: {
       label: 'Trust Bar',
       depth: 'line',
-      purpose: 'A row of specific trust claims (licensed, local, how you price). Each label is a short phrase, not a paragraph.',
+      purpose: 'Trust Bar items. For classic badges: short label phrases. For image tiles: caption in title. For side image cards: title plus a one-line info sentence in text. Specific claims only — not slogans.',
       apply: {
         section: 'trustBar',
-        list: { key: 'badges', map: { title: 'label' } }
+        list: { key: 'badges', map: { title: 'label', text: 'text' } }
       }
     },
     services: {
