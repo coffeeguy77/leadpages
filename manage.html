@@ -3985,6 +3985,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     quoteExtraFields:{secId:'quote',key:'extraFields',addLabel:'Add field',item:[{k:'label',label:'Field title'},{k:'placeholder',label:'Sample / placeholder text',ph:'e.g. Acme Pty Ltd'}],defaultItem:{on:true,label:'',placeholder:''}},
     footerServices:{secId:'footer',key:'services',addLabel:'Add link',item:[{k:'label',label:'Label'},{k:'href',label:'Link',w:'170px',ph:'#quote'}],defaultItem:{label:'',href:'#quote'}},
     footerCall:{secId:'footer',key:'callItems',addLabel:'Add contact line',item:[{k:'label',label:'Label'},{k:'href',label:'Link',w:'170px',ph:'tel: or mailto:'}],defaultItem:{label:'',href:''}},
+    footerLegalLinks:{secId:'footer',key:'legalLinks',addLabel:'Add legal link',item:[{k:'label',label:'Label'},{k:'href',label:'URL',w:'1 1 220px',ph:'https://\u2026'}],defaultItem:{label:'',href:''}},
     jobOptions:{secId:'quote',key:'jobOptions',addLabel:'Add option',item:[{k:'text',label:'Option'}],defaultItem:{text:''}},
     beforeAfterItems:{secId:'beforeAfter',key:'items',addLabel:'Add before / after',item:[{k:'title',label:'Title'},{k:'caption',label:'Caption',type:'ta'},{k:'beforeImage',type:'image',label:'Before image URL',ph:'https://\u2026 (optional)'},{k:'afterImage',type:'image',label:'After image URL',ph:'https://\u2026 (optional)'}],defaultItem:{title:'New result',caption:'',beforeImage:'',afterImage:''}},
     responseCards:{secId:'responseCards',key:'cards',addLabel:'Add card',item:[{k:'icon',label:'Icon',type:'icon',ph:'\u26a1'},{k:'title',label:'Title'},{k:'text',label:'Supporting line',type:'ta'}],defaultItem:{icon:'\u2605',title:'New card',text:''}},
@@ -4395,9 +4396,13 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
     fields.forEach(function(f){ var key=f[0],label=f[1],ta=f[2]==='ta'; var _full=(ta||f[2]==='image'); var fst=' style="margin:0;'+(_full?'flex:1 1 100%;':'flex:1 1 calc(50% - 6px);min-width:190px;')+'"'; var ph=String(def[key]||'').replace(/\{\{\s*businessName\s*\}\}/g,currentBusinessName||'').replace(/"/g,'&quot;');
       var _rows=(ta&&f[3]&&+f[3]>0)?(+f[3]):(ta?2:0);
       var _taStyle=ta?' style="min-height:'+Math.max(72,_rows*22)+'px;resize:vertical;width:100%;box-sizing:border-box;"':'';
-      if(ta) h+='<div class="f"'+fst+'><label>'+label+'</label><textarea class="tin" id="sec-'+id+'-'+key+'" rows="'+_rows+'"'+_taStyle+' placeholder="'+ph+'"></textarea></div>';
+      var _capsKey=(key==='eyebrow')?'eyebrowCaps':((key==='heading'||key==='title')?'headingCaps':'');
+      var _capsDefault=(key==='eyebrow'); // eyebrows default ON (uppercase)
+      var _capsOn=_capsKey?((_capsDefault)?(s[_capsKey]!==false):(s[_capsKey]===true)):false;
+      var _capsHtml=_capsKey?('<label style="display:inline-flex;gap:6px;align-items:center;font-weight:600;font-size:12px;margin-top:6px;cursor:pointer;"><input type="checkbox" id="sec-'+id+'-'+_capsKey+'"'+(_capsOn?' checked':'')+'> ALL CAPS</label>'):'';
+      if(ta) h+='<div class="f"'+fst+'><label>'+label+'</label><textarea class="tin" id="sec-'+id+'-'+key+'" rows="'+_rows+'"'+_taStyle+' placeholder="'+ph+'"></textarea>'+_capsHtml+'</div>';
       else if(f[2]==='image') h+='<div class="f"'+fst+'><label>'+label+'</label>'+cwImgHTML('id="sec-'+id+'-'+key+'"',ph,f[3])+'<input type="hidden" id="sec-'+id+'-'+key+'-pid"></div>';
-      else h+='<div class="f"'+fst+'><label>'+label+'</label><input type="text" class="tin" id="sec-'+id+'-'+key+'" placeholder="'+ph+'"></div>';
+      else h+='<div class="f"'+fst+'><label>'+label+'</label><input type="text" class="tin" id="sec-'+id+'-'+key+'" placeholder="'+ph+'">'+_capsHtml+'</div>';
     });
     h+='</div>';
     h+=secAppearancePanel(id, c);
@@ -4409,6 +4414,8 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
     fields.forEach(function(f){ var key=f[0], el=$('sec-'+id+'-'+key); if(!el) return; var cur=(c.sections&&c.sections[id]&&c.sections[id][key]); el.value=(cur==null?'':cur);
       el.addEventListener('input',function(){ var o=ensure(); o[key]=el.value; persist(); previewApply(); });
       if(f[2]==='image'){ var pidEl=$('sec-'+id+'-'+key+'-pid'); if(pidEl) pidEl.value=(c.sections&&c.sections[id]&&c.sections[id][key+'_pid'])||''; var rowEl=el.closest('.cw-row'); var up=rowEl&&rowEl.querySelector('.cw-up'); if(up) up.addEventListener('click',function(){ var prev=pidEl?pidEl.value:''; cwPick(function(file){ cwBusy(up,true); cwUpload(file,[id,key]).then(function(r){ var o=ensure(); o[key]=r.url; o[key+'_pid']=r.publicId; el.value=r.url; if(pidEl)pidEl.value=r.publicId; persist(); previewApply(); if(prev&&prev!==r.publicId) cwDelete(prev); }).catch(function(err){ toast('Upload failed: '+((err&&err.message)||err)); }).then(function(){ cwBusy(up,false); }); }); }); var clr=rowEl&&rowEl.querySelector('.cw-clr'); if(clr) clr.addEventListener('click',function(){ var o=ensure(); if(o[key+'_pid']){ cwDelete(o[key+'_pid']); delete o[key+'_pid']; } delete o[key]; el.value=''; if(pidEl)pidEl.value=''; persist(); previewApply(); }); }
+      var capsKey=(key==='eyebrow')?'eyebrowCaps':((key==='heading'||key==='title')?'headingCaps':'');
+      if(capsKey){ var capEl=$('sec-'+id+'-'+capsKey); if(capEl){ capEl.addEventListener('change',function(){ ensure()[capsKey]=capEl.checked; persist(); previewApply(); }); } }
     });
     wireSecAppearance(c, id);
   }
@@ -9191,22 +9198,162 @@ function heroCtaCard(c){
       wireSec(c,'quote',true,[['eyebrow'],['heading'],['sub'],['button'],['formTitle'],['lblName'],['lblPhone'],['lblJob'],['lblSuburb'],['lblDetail'],['successTitle'],['successSub'],['namePh'],['phonePh'],['suburbPh'],['detailPh'],['fineText'],['callText']]); listEditor($('le-quotePoints'),c,'quotePoints'); listEditor($('le-quoteExtraFields'),c,'quoteExtraFields'); wireQuoteStyle(c); wireReqFields(c); wireShowFields(c); (function(){ function ens(){ if(!c.sections)c.sections={}; if(!c.sections.quote)c.sections.quote={}; return c.sections.quote; } var qc=(c.sections&&c.sections.quote)||{}; var fs=$('q-formstyle'); if(fs){ fs.value=(qc.formStyle==='feature')?'feature':'default'; fs.addEventListener('change',function(){ ens().formStyle=fs.value; persist(); previewApply(); }); } var co=$('q-callon'); if(co){ co.checked=(qc.callOn!==false); co.addEventListener('change',function(){ ens().callOn=co.checked; persist(); previewApply(); }); } var nm=$('q-notifymode'), nrow=$('q-notifyemail-row'), ne=$('q-notifyemail'); if(nm){ nm.value=(qc.notifyMode==='custom')?'custom':'onfile'; if(nrow) nrow.style.display=(nm.value==='custom')?'':'none'; nm.addEventListener('change',function(){ ens().notifyMode=nm.value; if(nrow) nrow.style.display=(nm.value==='custom')?'':'none'; persist(); previewApply(); }); } if(ne){ ne.value=qc.notifyEmail||''; ne.addEventListener('input',function(){ ens().notifyEmail=ne.value.trim(); persist(); previewApply(); }); } })();
       wireSec(c,'quote',false,[['lblName'],['lblPhone'],['lblJob'],['lblSuburb'],['lblDetail'],['successTitle'],['successSub']]); listEditor($('le-jobOptions'),c,'jobOptions');
         } else if(sub==='footer'){
-      (function(){ if(!c.sections)c.sections={}; if(!c.sections.footer)c.sections.footer={}; var F=c.sections.footer; if(!Array.isArray(F.callItems)||!F.callItems.length){ var ph=(c.phoneText||c.phone||''); var em=(c.email||''); var seed=[]; if(ph) seed.push({on:true,label:String(ph),href:'tel:'+String(ph).replace(/\s+/g,'')}); if(em) seed.push({on:true,label:String(em),href:'mailto:'+em}); F.callItems=seed; if(!F.callTitle) F.callTitle='Call us'; } if(F.servicesTitle==null) F.servicesTitle='Services'; if(F.showBrand==null) F.showBrand=true; if(F.showCall==null) F.showCall=true; if(F.showServices==null) F.showServices=true; })();
-      var _F=(c.sections&&c.sections.footer)||{};
-      body.innerHTML=secCard(c,'footer','Footer',true,[['blurb','About blurb','ta'],['legal','Legal line (licence, ABN, copyright)','ta'],['callTitle','Call us heading'],['servicesTitle','Services column heading']])
-        +'<p class="hint" style="margin:-8px 0 16px;">Leave About blurb and Legal line empty to hide them. Reorder contact lines and service links with drag handles or arrows.</p>'
-        +'<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 8px;">Columns</h2><p class="lede" style="margin:0 0 10px;">Turn columns on or off without deleting their content.</p>'
-        +'<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 8px;"><input type="checkbox" id="ft-showbrand"'+(_F.showBrand!==false?' checked':'')+'> Brand / about column</label>'
-        +'<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 8px;"><input type="checkbox" id="ft-showcall"'+(_F.showCall!==false?' checked':'')+'> Call us column</label>'
-        +'<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0;"><input type="checkbox" id="ft-showsvc"'+(_F.showServices!==false?' checked':'')+'> Services column</label></div>'
-        +listCard('footerCall','Call us column','Phone, email and other lines. Drag to reorder, or use the arrows.')
-        +listCard('footerServices','Service links','Links in the Services column. Drag to reorder, or use the arrows.');
-      wireSec(c,'footer',true,[['blurb'],['legal'],['callTitle'],['servicesTitle']]); listEditor($('le-footerCall'),c,'footerCall'); listEditor($('le-footerServices'),c,'footerServices');
-      (function(){ function ens(){ if(!c.sections)c.sections={}; if(!c.sections.footer)c.sections.footer={}; return c.sections.footer; }
-        var sb=$('ft-showbrand'); if(sb) sb.addEventListener('change',function(){ ens().showBrand=sb.checked; persist(); previewApply(); });
-        var sc=$('ft-showcall'); if(sc) sc.addEventListener('change',function(){ ens().showCall=sc.checked; persist(); previewApply(); });
-        var ss=$('ft-showsvc'); if(ss) ss.addEventListener('change',function(){ ens().showServices=ss.checked; persist(); previewApply(); });
+      (function(){
+        if(!c.sections)c.sections={}; if(!c.sections.footer)c.sections.footer={};
+        var F=c.sections.footer;
+        if(F.showBrand==null) F.showBrand=true;
+        if(F.showNav==null) F.showNav=true;
+        if(F.showSupport==null) F.showSupport=true;
+        if(F.showTagline==null) F.showTagline=true;
+        if(F.showLegal==null) F.showLegal=true;
+        if(F.showLegalLinks==null) F.showLegalLinks=true;
+        if(F.showSupportMap==null) F.showSupportMap=true;
+        if(!F.logoMode) F.logoMode='site';
+        if(F.logoHeight==null) F.logoHeight=72;
+        if(!Array.isArray(F.callItems)||!F.callItems.length){
+          var ph=(c.phoneText||c.phone||''); var em=(c.email||''); var seed=[];
+          if(ph) seed.push({on:true,label:String(ph),href:'tel:'+String(ph).replace(/\s+/g,'')});
+          if(em) seed.push({on:true,label:String(em),href:'mailto:'+em});
+          F.callItems=seed;
+        }
+        if(!Array.isArray(F.columns)||!F.columns.length){
+          var svcLinks=Array.isArray(F.services)?F.services:[];
+          F.columns=[
+            {on:true,title:(F.servicesTitle||'Services'),links:svcLinks.length?svcLinks:[{on:true,label:'Get a quote',href:'#quote'}]},
+            {on:true,title:'Company',links:[{on:true,label:'Privacy',href:'https://leadpages.com.au/privacy-policy.html'}]}
+          ];
+        }
+        if(!Array.isArray(F.legalLinks)||!F.legalLinks.length){
+          F.legalLinks=[{on:true,label:'Privacy',href:'https://leadpages.com.au/privacy-policy.html'},{on:true,label:'Terms',href:'https://leadpages.com.au/terms-of-use.html'}];
+        }
+        if(F.supportTitle==null) F.supportTitle='Australian support';
+        if(F.supportHelp==null) F.supportHelp="We're here to help.";
+        if(F.taglineLead==null) F.taglineLead='The One website.';
+        if(F.taglineAccent==null) F.taglineAccent='Everything connected.';
       })();
+      var _F=(c.sections&&c.sections.footer)||{};
+      var _logoH=(_F.logoHeight!=null?+_F.logoHeight:72); if(isNaN(_logoH)) _logoH=72;
+      var _lx=(_F.logoOffsetX!=null?+_F.logoOffsetX:0)||0;
+      var _ly=(_F.logoOffsetY!=null?+_F.logoOffsetY:0)||0;
+      function _ftCol(id,key,label,defv){
+        var v=(_F[key]&&/^#[0-9a-fA-F]{6}$/.test(_F[key]))?_F[key]:'';
+        return '<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:200px;"><label>'+label+'</label><div style="display:flex;align-items:center;gap:8px;"><input type="color" id="'+id+'-clr" value="'+(v||defv)+'" style="width:46px;height:34px;padding:0;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="'+id+'-tx" class="tin" value="'+v+'" placeholder="'+defv+' (default)" style="flex:1;min-width:0;"><button type="button" class="btn ghost" id="'+id+'-def" style="padding:6px 10px;">Default</button></div></div>';
+      }
+      body.innerHTML=
+        '<div class="card" style="margin-bottom:22px;"><div class="card-head" style="display:flex;justify-content:space-between;align-items:center;gap:12px;"><h2 style="margin:0;">Footer</h2><label style="display:flex;gap:8px;align-items:center;font-weight:600;font-size:14px;"><input type="checkbox" id="sec-on-footer"'+((_F.on!==false)?' checked':'')+'> Show on page</label></div>'
+        +'<p class="lede" style="margin:8px 0 0;">LeadPages-style footer: brand, link columns, support card, tagline and legal. Turn each block on or off below.</p></div>'
+        +'<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 8px;">Blocks</h2>'
+        +'<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 8px;"><input type="checkbox" id="ft-showbrand"'+(_F.showBrand!==false?' checked':'')+'> Brand / logo column</label>'
+        +'<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 8px;"><input type="checkbox" id="ft-shownav"'+(_F.showNav!==false?' checked':'')+'> Link columns</label>'
+        +'<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 8px;"><input type="checkbox" id="ft-showsupport"'+(_F.showSupport!==false?' checked':'')+'> Support card</label>'
+        +'<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 8px;"><input type="checkbox" id="ft-showtagline"'+(_F.showTagline!==false?' checked':'')+'> Bottom tagline</label>'
+        +'<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 8px;"><input type="checkbox" id="ft-showlegal"'+(_F.showLegal!==false?' checked':'')+'> Copyright / legal line</label>'
+        +'<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0;"><input type="checkbox" id="ft-showlinks"'+(_F.showLegalLinks!==false?' checked':'')+'> Legal links (Privacy, Terms\u2026)</label></div>'
+        +'<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 8px;">Brand &amp; logo</h2><p class="lede" style="margin:0 0 12px;">Use the site logo, upload a footer-only logo (e.g. inverted for dark backgrounds), or text only. Size and placement are independent of the header logo.</p>'
+        +'<div class="row"><div class="f"><label>Logo source</label><select id="ft-logomode" class="tin"><option value="site"'+(_F.logoMode!=='custom'&&_F.logoMode!=='text'?' selected':'')+'>Site logo</option><option value="custom"'+(_F.logoMode==='custom'?' selected':'')+'>Custom footer logo</option><option value="text"'+(_F.logoMode==='text'?' selected':'')+'>Text / mark only</option></select></div><div class="f"></div></div>'
+        +'<div id="ft-custom-logo" style="'+(_F.logoMode==='custom'?'':'display:none;')+'margin-top:10px;"><label style="font-weight:600;font-size:13px;">Custom logo image</label>'+cwImgHTML('id="ft-logoimg" class="tin"','https://\u2026 or upload','Inverted / light logo for dark footer')+'<input type="hidden" id="ft-logoimg-pid"></div>'
+        +'<div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;">'
+        +'<div class="f" style="margin:0;flex:1 1 200px;"><label>Logo height <span id="ft-logoh-v" style="font-weight:700;color:var(--accent);">'+_logoH+'px</span></label><input type="range" id="ft-logoh" min="28" max="140" step="2" value="'+_logoH+'" style="width:100%;"></div>'
+        +'<div class="f" style="margin:0;flex:1 1 160px;"><label>Offset X <span id="ft-logox-v">'+_lx+'px</span></label><input type="range" id="ft-logox" min="-40" max="40" step="1" value="'+_lx+'" style="width:100%;"></div>'
+        +'<div class="f" style="margin:0;flex:1 1 160px;"><label>Offset Y <span id="ft-logoy-v">'+_ly+'px</span></label><input type="range" id="ft-logoy" min="-40" max="40" step="1" value="'+_ly+'" style="width:100%;"></div>'
+        +'</div>'
+        +'<div class="row" style="margin-top:12px;"><div class="f"><label>Brand tagline (optional)</label><input type="text" id="ft-brandtag" class="tin" value="'+esc(_F.brandTagline||'')+'" placeholder="Smart sites."></div>'
+        +'<div class="f"><label>Tagline accent words</label><input type="text" id="ft-brandtagacc" class="tin" value="'+esc(_F.brandTaglineAccent||'')+'" placeholder="More leads."></div></div>'
+        +'<div class="f" style="margin-top:10px;"><label>About blurb</label><textarea id="ft-blurb" class="tin" rows="2" placeholder="Websites and growth tools for Australian small business.">'+esc(_F.blurb||'')+'</textarea></div></div>'
+        +'<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 8px;">Link columns</h2><p class="lede" style="margin:0 0 12px;">Up to four columns (like Product / Partners / Resources / Company). Add, rename, and toggle each column.</p>'
+        +'<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 12px;"><input type="checkbox" id="ft-colcaps"'+(_F.columnTitleCaps===true?' checked':'')+'> Column titles ALL CAPS</label>'
+        +'<div id="ft-cols"></div><button type="button" class="btn ghost" id="ft-col-add" style="margin-top:8px;">+ Add column</button></div>'
+        +'<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 8px;">Support card</h2>'
+        +'<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 10px;"><input type="checkbox" id="ft-supportmap"'+(_F.showSupportMap!==false?' checked':'')+'> Show Australia map</label>'
+        +'<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 12px;"><input type="checkbox" id="ft-supportcaps"'+(_F.supportTitleCaps===true?' checked':'')+'> Support title ALL CAPS</label>'
+        +'<div class="row"><div class="f"><label>Title</label><input type="text" id="ft-supporttitle" class="tin" value="'+esc(_F.supportTitle||'')+'"></div>'
+        +'<div class="f"><label>Help line</label><input type="text" id="ft-supporthelp" class="tin" value="'+esc(_F.supportHelp||'')+'"></div></div>'
+        +listCard('footerCall','Contact lines','Phone, email and other lines shown in the support card.').replace('margin-bottom:22px','margin-bottom:0;border:0;padding:0;box-shadow:none')
+        +'</div>'
+        +'<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 8px;">Bottom tagline &amp; legal</h2>'
+        +'<div class="row"><div class="f"><label>Tagline (lead)</label><input type="text" id="ft-taglead" class="tin" value="'+esc(_F.taglineLead||'')+'"></div>'
+        +'<div class="f"><label>Tagline (accent colour)</label><input type="text" id="ft-tagacc" class="tin" value="'+esc(_F.taglineAccent||'')+'"></div></div>'
+        +'<div class="f" style="margin-top:10px;"><label>Copyright / legal line</label><textarea id="ft-legal" class="tin" rows="2">'+esc(_F.legal||'')+'</textarea></div>'
+        +listCard('footerLegalLinks','Legal links','Privacy, Terms, etc.')
+        +'</div>'
+        +'<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 8px;">Colours</h2><div style="display:flex;flex-wrap:wrap;gap:12px;">'
+        +_ftCol('ft-bg','bg','Footer background','#0b1b2a')
+        +_ftCol('ft-accent','accentColor','Accent (tagline)', '#C85A2C')
+        +'</div></div>';
+
+      // wire
+      (function(){
+        function ens(){ if(!c.sections)c.sections={}; if(!c.sections.footer)c.sections.footer={}; return c.sections.footer; }
+        var onb=$('sec-on-footer'); if(onb) onb.addEventListener('change',function(){ ens().on=onb.checked; persist(); previewApply(); });
+        [['ft-showbrand','showBrand'],['ft-shownav','showNav'],['ft-showsupport','showSupport'],['ft-showtagline','showTagline'],['ft-showlegal','showLegal'],['ft-showlinks','showLegalLinks'],['ft-supportmap','showSupportMap'],['ft-colcaps','columnTitleCaps'],['ft-supportcaps','supportTitleCaps']].forEach(function(p){
+          var el=$(p[0]); if(el) el.addEventListener('change',function(){ ens()[p[1]]=el.checked; persist(); previewApply(); });
+        });
+        var lm=$('ft-logomode'); if(lm){ lm.addEventListener('change',function(){ ens().logoMode=lm.value; var box=$('ft-custom-logo'); if(box) box.style.display=lm.value==='custom'?'':'none'; persist(); previewApply(); }); }
+        var limg=$('ft-logoimg'); if(limg){ limg.value=_F.logoImage||''; limg.addEventListener('input',function(){ ens().logoImage=limg.value.trim(); if(!ens().logoImage) delete ens().logoImage; persist(); previewApply(); }); }
+        var lpid=$('ft-logoimg-pid'); if(lpid) lpid.value=_F.logoImage_pid||'';
+        var up=document.querySelector('#ft-custom-logo .cw-up');
+        if(up) up.addEventListener('click',function(){ var prev=lpid?lpid.value:''; cwPick(function(file){ cwBusy(up,true); cwUpload(file,['footer','logo']).then(function(r){ ens().logoImage=r.url; ens().logoImage_pid=r.publicId; if(limg)limg.value=r.url; if(lpid)lpid.value=r.publicId; persist(); previewApply(); if(prev&&prev!==r.publicId) cwDelete(prev); }).catch(function(err){ toast('Upload failed: '+((err&&err.message)||err)); }).then(function(){ cwBusy(up,false); }); }); });
+        var clr=document.querySelector('#ft-custom-logo .cw-clr');
+        if(clr) clr.addEventListener('click',function(){ if(lpid&&lpid.value){ cwDelete(lpid.value); lpid.value=''; } delete ens().logoImage; delete ens().logoImage_pid; if(limg)limg.value=''; persist(); previewApply(); });
+        function range(id,key,labelId,suf){ var el=$(id), lb=$(labelId); if(!el) return; el.addEventListener('input',function(){ ens()[key]=+el.value; if(lb) lb.textContent=el.value+(suf||'px'); persist(); previewApply(); }); }
+        range('ft-logoh','logoHeight','ft-logoh-v'); range('ft-logox','logoOffsetX','ft-logox-v'); range('ft-logoy','logoOffsetY','ft-logoy-v');
+        [['ft-brandtag','brandTagline'],['ft-brandtagacc','brandTaglineAccent'],['ft-blurb','blurb'],['ft-supporttitle','supportTitle'],['ft-supporthelp','supportHelp'],['ft-taglead','taglineLead'],['ft-tagacc','taglineAccent'],['ft-legal','legal']].forEach(function(p){
+          var el=$(p[0]); if(el) el.addEventListener('input',function(){ ens()[p[1]]=el.value; persist(); previewApply(); });
+        });
+        function colWire(id,key){ var cEl=$(id+'-clr'), tEl=$(id+'-tx'), dEl=$(id+'-def'); if(cEl) cEl.addEventListener('input',function(){ ens()[key]=cEl.value; if(tEl)tEl.value=cEl.value; persist(); previewApply(); }); if(tEl) tEl.addEventListener('input',function(){ var v=tEl.value.trim(); if(v===''){ delete ens()[key]; } else { if(v[0]!=='#')v='#'+v; if(/^#[0-9a-fA-F]{6}$/.test(v)){ ens()[key]=v; if(cEl)cEl.value=v; } } persist(); previewApply(); }); if(dEl) dEl.addEventListener('click',function(){ delete ens()[key]; if(tEl)tEl.value=''; persist(); previewApply(); }); }
+        colWire('ft-bg','bg'); colWire('ft-accent','accentColor');
+
+        function drawCols(){
+          var box=$('ft-cols'); if(!box) return;
+          var cols=ens().columns||[];
+          box.innerHTML=cols.map(function(col,ci){
+            var links=Array.isArray(col.links)?col.links:[];
+            var linkRows=links.map(function(l,li){
+              return '<div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;"><label style="display:flex;gap:4px;align-items:center;"><input type="checkbox" class="ft-link-on" data-ci="'+ci+'" data-li="'+li+'"'+(l.on===false?'':' checked')+'></label>'
+                +'<input type="text" class="tin ft-link-label" data-ci="'+ci+'" data-li="'+li+'" value="'+esc(l.label||'')+'" placeholder="Label" style="flex:1;">'
+                +'<input type="text" class="tin ft-link-href" data-ci="'+ci+'" data-li="'+li+'" value="'+esc(l.href||'')+'" placeholder="#quote or URL" style="flex:1;">'
+                +'<button type="button" class="btn ghost sm ft-link-rm" data-ci="'+ci+'" data-li="'+li+'">\u00d7</button></div>';
+            }).join('');
+            return '<div class="ft-col-ed" style="border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px;background:#fff;">'
+              +'<div style="display:flex;gap:10px;align-items:center;margin-bottom:8px;flex-wrap:wrap;">'
+              +'<label style="display:flex;gap:6px;align-items:center;font-weight:600;font-size:13px;"><input type="checkbox" class="ft-col-on" data-ci="'+ci+'"'+(col.on===false?'':' checked')+'> Shown</label>'
+              +'<input type="text" class="tin ft-col-title" data-ci="'+ci+'" value="'+esc(col.title||'')+'" placeholder="Column title" style="flex:1;min-width:140px;">'
+              +'<button type="button" class="btn ghost sm ft-col-rm" data-ci="'+ci+'">Remove</button></div>'
+              +linkRows
+              +'<button type="button" class="btn ghost sm ft-link-add" data-ci="'+ci+'">+ Add link</button></div>';
+          }).join('');
+        }
+        drawCols();
+        var colsHost=$('ft-cols');
+        if(colsHost && !colsHost.__wired){
+          colsHost.__wired=1;
+          colsHost.addEventListener('input',function(e){
+            var t=e.target, ci=+t.getAttribute('data-ci'), li=+t.getAttribute('data-li');
+            var cols=ens().columns||[]; if(!cols[ci]) return;
+            if(t.classList.contains('ft-col-title')){ cols[ci].title=t.value; persist(); previewApply(); }
+            else if(t.classList.contains('ft-link-label')){ if(!cols[ci].links[li]) return; cols[ci].links[li].label=t.value; persist(); previewApply(); }
+            else if(t.classList.contains('ft-link-href')){ if(!cols[ci].links[li]) return; cols[ci].links[li].href=t.value; persist(); previewApply(); }
+          });
+          colsHost.addEventListener('change',function(e){
+            var t=e.target, ci=+t.getAttribute('data-ci'), li=+t.getAttribute('data-li');
+            var cols=ens().columns||[]; if(isNaN(ci)||!cols[ci]) return;
+            if(t.classList.contains('ft-col-on')){ cols[ci].on=t.checked; persist(); previewApply(); }
+            else if(t.classList.contains('ft-link-on')){ if(!cols[ci].links[li]) return; cols[ci].links[li].on=t.checked; persist(); previewApply(); }
+          });
+          colsHost.addEventListener('click',function(e){
+            var t=e.target; if(!t.classList) return;
+            var cols=ens().columns||[];
+            if(t.classList.contains('ft-col-rm')){ cols.splice(+t.getAttribute('data-ci'),1); ens().columns=cols; persist(); previewApply(); drawCols(); }
+            else if(t.classList.contains('ft-link-add')){ var ci=+t.getAttribute('data-ci'); if(!cols[ci].links) cols[ci].links=[]; cols[ci].links.push({on:true,label:'New link',href:'#'}); persist(); previewApply(); drawCols(); }
+            else if(t.classList.contains('ft-link-rm')){ var ci2=+t.getAttribute('data-ci'), li=+t.getAttribute('data-li'); cols[ci2].links.splice(li,1); persist(); previewApply(); drawCols(); }
+          });
+        }
+        var addCol=$('ft-col-add');
+        if(addCol) addCol.addEventListener('click',function(){ var cols=ens().columns||(ens().columns=[]); if(cols.length>=4){ toast('Maximum 4 columns'); return; } cols.push({on:true,title:'New column',links:[{on:true,label:'Link',href:'#'}]}); persist(); previewApply(); drawCols(); });
+        listEditor($('le-footerCall'),c,'footerCall');
+        listEditor($('le-footerLegalLinks'),c,'footerLegalLinks');
+      })();
+    
     } else if(sub==='searchCanvas'){
       if(!c.sections) c.sections={};
       if(!c.sections.searchCanvas) c.sections.searchCanvas=JSON.parse(JSON.stringify(DEFAULT_TRADE_SECTIONS.searchCanvas||{}));
@@ -10115,7 +10262,11 @@ function heroCtaCard(c){
           +'<input type="text" class="svc-t tin" data-i="'+i+'" style="flex:1;min-width:140px;" placeholder="Title">'
           +'<button type="button" class="btn ghost sm svc-rm" data-i="'+i+'" style="margin-left:auto;">Remove</button>'
           +'</div>'
-          +'<input type="text" class="svc-sub tin svc-split-only" data-i="'+i+'" style="width:100%;margin-bottom:8px;" placeholder="Sub title (e.g. RESIDENTIAL &amp; COMMERCIAL)" value="'+esc(sub)+'">'
+          +'<div class="svc-split-only" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px;"><input type="text" class="svc-t-caps-wrap" style="display:none"><label style="display:inline-flex;gap:6px;align-items:center;font-weight:600;font-size:12px;cursor:pointer;"><input type="checkbox" class="svc-title-caps" data-i="'+i+'"'+(s.titleCaps===true?' checked':'')+'> Title ALL CAPS</label></div>'
+          +'<input type="text" class="svc-sub tin svc-split-only" data-i="'+i+'" style="width:100%;margin-bottom:6px;" placeholder="Sub text (e.g. QUALITY WORK AROUND YOUR HOME)" value="'+esc(sub)+'">'
+          +'<label class="svc-split-only" style="display:inline-flex;gap:6px;align-items:center;font-weight:600;font-size:12px;margin:0 0 8px;cursor:pointer;"><input type="checkbox" class="svc-sub-caps" data-i="'+i+'"'+(s.subtitleCaps!==false?' checked':'')+'> Sub text ALL CAPS</label>'
+          +'<textarea class="svc-intro tin svc-split-only" data-i="'+i+'" rows="2" style="width:100%;resize:vertical;margin-bottom:8px;" placeholder="Intro text (optional paragraph under the sub text)">'+esc(s.intro||'')+'</textarea>'
+          +'<div class="svc-split-only" style="display:flex;gap:8px;align-items:center;margin-bottom:6px;flex-wrap:wrap;"><input type="text" class="svc-list-title tin" data-i="'+i+'" style="flex:1;min-width:160px;" placeholder="List title (optional)" value="'+esc(s.listTitle||'')+'"><label style="display:inline-flex;gap:6px;align-items:center;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap;"><input type="checkbox" class="svc-list-caps" data-i="'+i+'"'+(s.listTitleCaps===true?' checked':'')+'> ALL CAPS</label></div>'
           +'<textarea class="svc-b tin svc-not-split" data-i="'+i+'" rows="2" style="width:100%;resize:vertical;" placeholder="Description"></textarea>'
           +bulletsHtml(i,s)
           +'<div style="margin-top:12px;"><label style="font-weight:600;font-size:13px;">Image <span class="svc-cards-only" style="font-weight:500;color:var(--ink-soft);">(top of card)</span><span class="svc-grid-only" style="font-weight:500;color:var(--ink-soft);"> / large icon</span></label>'
@@ -10180,6 +10331,8 @@ function heroCtaCard(c){
       if(el.classList.contains('svc-ic')) s.icon=el.value;
       else if(el.classList.contains('svc-t')) s.title=el.value;
       else if(el.classList.contains('svc-sub')) s.subtitle=el.value;
+      else if(el.classList.contains('svc-intro')) s.intro=el.value;
+      else if(el.classList.contains('svc-list-title')) s.listTitle=el.value;
       else if(el.classList.contains('svc-b')) s.body=el.value;
       else if(el.classList.contains('svc-bull-tx')){
         var bi=+el.getAttribute('data-bi'); ensureBullets(s);
@@ -10209,6 +10362,9 @@ function heroCtaCard(c){
       if(el.classList.contains('svc-fit')){ s.imageFit=el.value; persist(); previewApply(); return; }
       if(el.classList.contains('svc-link-act')){ ensureCta(s).linkAction=el.value; syncLinkVisibility(); persist(); previewApply(); return; }
       if(el.classList.contains('svc-link-tgt')){ ensureCta(s).linkTarget=el.value; persist(); previewApply(); return; }
+      if(el.classList.contains('svc-title-caps')){ s.titleCaps=el.checked; persist(); previewApply(); return; }
+      if(el.classList.contains('svc-sub-caps')){ s.subtitleCaps=el.checked; persist(); previewApply(); return; }
+      if(el.classList.contains('svc-list-caps')){ s.listTitleCaps=el.checked; persist(); previewApply(); return; }
     });
     box.addEventListener('click',function(e){
       var t=e.target; if(!t||!t.classList) return;
