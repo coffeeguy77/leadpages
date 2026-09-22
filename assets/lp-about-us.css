@@ -31,7 +31,7 @@ section[data-sec="aboutUs"].au-on{display:block}
   display:inline-block;margin:0 0 14px;
   font-family:"Barlow Condensed",system-ui,sans-serif;font-weight:700;font-size:13px;
   letter-spacing:.08em;text-transform:uppercase;
-  color:var(--au-accent,var(--hivis,#ff6a1f));
+  color:var(--au-eyebrow,var(--au-accent,var(--hivis,#ff6a1f)));
   white-space:pre-line;
 }
 .au-section .au-heading{
@@ -46,18 +46,18 @@ section[data-sec="aboutUs"].au-on{display:block}
   white-space:pre-line;
 }
 .au-section .au-rule{width:48px;height:3px;margin:0 0 18px;background:var(--au-accent,var(--hivis,#ff6a1f));border-radius:2px}
-.au-section .au-intro{margin:0;font-size:16.5px;line-height:1.65;color:var(--muted,#5b6878);max-width:34ch;white-space:pre-line}
-.au-section .au-body{font-size:15.5px;line-height:1.7;color:var(--muted,#5b6878)}
+.au-section .au-intro{margin:0;font-size:16.5px;line-height:1.65;color:var(--au-intro,var(--muted,#5b6878));max-width:34ch;white-space:pre-line}
+.au-section .au-body{font-size:15.5px;line-height:1.7;color:var(--au-body,var(--muted,#5b6878))}
 .au-section .au-body p{margin:0 0 1.05em}
 .au-section .au-body p:last-child{margin-bottom:0}
 .au-section .au-cta{
   display:inline-flex;align-items:center;gap:10px;margin-top:22px;padding:11px 20px;
-  border:1.5px solid var(--au-accent,var(--hivis,#ff6a1f));border-radius:2px;
-  color:var(--au-accent,var(--hivis,#ff6a1f));text-decoration:none;
+  border:1.5px solid var(--au-cta-border,var(--au-accent,var(--hivis,#ff6a1f)));border-radius:2px;
+  color:var(--au-cta,var(--au-accent,var(--hivis,#ff6a1f)));text-decoration:none;
   font-family:"Barlow Condensed",system-ui,sans-serif;font-weight:700;font-size:15px;
   letter-spacing:.04em;text-transform:uppercase;transition:background .15s,color .15s;align-self:flex-start;
 }
-.au-section .au-cta:hover{background:var(--au-accent,var(--hivis,#ff6a1f));color:#fff}
+.au-section .au-cta:hover{background:var(--au-cta-border,var(--au-accent,var(--hivis,#ff6a1f)));color:var(--au-cta-hover,#fff)}
 .au-section .au-cta[hidden],.au-section .au-cta.au-hide{display:none!important}
 .au-section .au-cta-arrow{font-size:16px;line-height:1;transform:translateY(-1px)}
 
@@ -84,20 +84,33 @@ section[data-sec="aboutUs"].au-on{display:block}
 }
 .au-section .au-media-wrap.au-no-img .au-img{display:none}
 
-/* Quote over image (handwriting / plain) */
+/* Quote over image — free size / position via CSS vars */
 .au-section .au-quote{
-  position:absolute;left:0;right:0;bottom:0;z-index:2;
-  margin:0;padding:28px 22px 26px;
+  position:absolute;
+  left:var(--au-quote-x,50%);
+  top:var(--au-quote-y,78%);
+  right:auto;bottom:auto;
+  z-index:2;
+  margin:0;
+  padding:calc(14px * var(--au-quote-size,1)) calc(16px * var(--au-quote-size,1));
+  max-width:min(var(--au-quote-maxw,86%),calc(100% - 24px));
+  width:max-content;
+  transform:translate(-50%,-50%);
   border:0;
-  background:linear-gradient(180deg,transparent 0%,rgba(255,255,255,.92) 38%,#fff 100%);
-  color:var(--au-heading,var(--steel,#0f172a));
+  border-radius:2px;
+  background:rgba(255,255,255,var(--au-quote-scrim,.86));
+  color:var(--au-quote-color,var(--au-heading,var(--steel,#0f172a)));
+  text-align:var(--au-quote-align,left);
+  box-sizing:border-box;
+  pointer-events:none;
 }
 .au-section .au-quote-text{
-  margin:0 0 10px;
-  font-size:clamp(22px,2.2vw,30px);
+  margin:0 0 calc(8px * var(--au-quote-size,1));
+  font-size:calc(clamp(22px,2.2vw,30px) * var(--au-quote-size,1));
   line-height:1.2;
   white-space:pre-line;
   color:inherit;
+  text-shadow:var(--au-quote-shadow,none);
 }
 .au-section .au-quote[data-au-quote-style="handwriting"] .au-quote-text,
 .au-section .au-quote.au-quote-hand .au-quote-text{
@@ -111,14 +124,16 @@ section[data-sec="aboutUs"].au-on{display:block}
   font-family:Barlow,system-ui,sans-serif;
   font-weight:500;
   font-style:normal;
-  font-size:clamp(16px,1.5vw,18px);
+  font-size:calc(clamp(16px,1.5vw,18px) * var(--au-quote-size,1));
   line-height:1.45;
 }
 .au-section .au-quote-attr{
   display:block;
   font-family:"Barlow Condensed",system-ui,sans-serif;
-  font-style:normal;font-weight:600;font-size:12px;
-  letter-spacing:.06em;text-transform:uppercase;color:var(--muted,#5b6878);
+  font-style:normal;font-weight:600;
+  font-size:calc(12px * var(--au-quote-size,1));
+  letter-spacing:.06em;text-transform:uppercase;
+  color:var(--au-quote-attr,var(--muted,#5b6878));
 }
 .au-section .au-quote[hidden],
 .au-section .au-quote.au-hide,
@@ -139,15 +154,15 @@ section[data-sec="aboutUs"].au-on{display:block}
   line-height:.98;
   text-transform:uppercase;
   letter-spacing:.01em;
-  color:#fff;
+  color:var(--au-band-heading,#fff);
   white-space:pre-line;
 }
-.au-section .au-band-sub{margin:0;font-size:15.5px;line-height:1.5;color:rgba(255,255,255,.82);max-width:42ch;white-space:pre-line}
+.au-section .au-band-sub{margin:0;font-size:15.5px;line-height:1.5;color:var(--au-band-sub,rgba(255,255,255,.82));max-width:42ch;white-space:pre-line}
 .au-section .au-band-cta{display:inline-flex;align-items:center;gap:10px;justify-self:start;padding:14px 22px;background:var(--au-accent,var(--hivis,#ff6a1f));color:#fff;text-decoration:none;font-family:"Barlow Condensed",system-ui,sans-serif;font-weight:700;font-size:15px;letter-spacing:.04em;text-transform:uppercase;border-radius:2px;border:0;white-space:nowrap;transition:filter .15s}
 .au-section .au-band-cta:hover{filter:brightness(1.06)}
 .au-section .au-band-cta[hidden],.au-section .au-band-cta.au-hide{display:none!important}
 .au-section .au-band-tag{border-left:1px solid rgba(255,255,255,.35);padding:6px 0 6px 22px;align-self:stretch;display:flex;align-items:center}
-.au-section .au-band-tagline{font-family:"Barlow Condensed",system-ui,sans-serif;font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#fff;line-height:1.35;max-width:11ch;white-space:pre-line}
+.au-section .au-band-tagline{font-family:"Barlow Condensed",system-ui,sans-serif;font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--au-band-tag,#fff);line-height:1.35;max-width:11ch;white-space:pre-line}
 .au-section .au-band-tagline::after{content:"";display:block;width:36px;height:2px;margin-top:10px;background:rgba(255,255,255,.75)}
 .au-section .au-band-tag[hidden],.au-section .au-band-tag.au-hide{display:none!important}
 

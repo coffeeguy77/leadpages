@@ -2660,6 +2660,12 @@
       "bandDecor": true,
       "quoteOn": true,
       "quoteStyle": "handwriting",
+      "quoteSize": 100,
+      "quoteX": 50,
+      "quoteY": 78,
+      "quoteMaxW": 86,
+      "quoteScrim": 86,
+      "quoteAlign": "left",
       "imageFit": "cover",
       "imagePos": "center"
     }

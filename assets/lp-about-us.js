@@ -97,6 +97,20 @@
     return ok[v] ? v : 'center';
   }
 
+  function clampNum(v, min, max, fallback) {
+    var n = Number(v);
+    if (!isFinite(n)) return fallback;
+    if (n < min) return min;
+    if (n > max) return max;
+    return n;
+  }
+
+  function setCssColor(node, prop, value) {
+    var h = hex(value);
+    if (h) node.style.setProperty(prop, h);
+    else node.style.removeProperty(prop);
+  }
+
   /**
    * @param {object} sec sections.aboutUs
    * @param {Element|null} node [data-sec="aboutUs"]
@@ -127,13 +141,13 @@
     if (accent) node.style.setProperty('--au-accent', accent);
     else node.style.removeProperty('--au-accent');
 
-    var headingColor = hex(sec.headingColor);
-    if (headingColor) node.style.setProperty('--au-heading', headingColor);
-    else node.style.removeProperty('--au-heading');
-
-    var bg = hex(sec.bg);
-    if (bg) node.style.setProperty('--au-bg', bg);
-    else node.style.removeProperty('--au-bg');
+    setCssColor(node, '--au-heading', sec.headingColor);
+    setCssColor(node, '--au-eyebrow', sec.eyebrowColor);
+    setCssColor(node, '--au-intro', sec.introColor);
+    setCssColor(node, '--au-body', sec.bodyColor || sec.textColor);
+    setCssColor(node, '--au-cta', sec.ctaColor);
+    setCssColor(node, '--au-cta-border', sec.ctaBorderColor || sec.ctaColor);
+    setCssColor(node, '--au-bg', sec.bg);
 
     var eb = node.querySelector('.au-eyebrow');
     if (eb) {
@@ -204,6 +218,29 @@
         img.style.display = 'none';
       }
     }
+
+    /* Quote overlay size / position / colours */
+    var qSize = clampNum(sec.quoteSize != null ? sec.quoteSize : sec.quoteScale, 50, 220, 100) / 100;
+    var qX = clampNum(sec.quoteX, 0, 100, 50);
+    var qY = clampNum(sec.quoteY, 0, 100, 78);
+    var qMaxW = clampNum(sec.quoteMaxW, 40, 100, 86);
+    var qScrim = clampNum(sec.quoteScrim, 0, 100, 86) / 100;
+    var qAlign = String(sec.quoteAlign || 'left').toLowerCase();
+    if (qAlign !== 'center' && qAlign !== 'right') qAlign = 'left';
+    node.style.setProperty('--au-quote-size', String(qSize));
+    node.style.setProperty('--au-quote-x', qX + '%');
+    node.style.setProperty('--au-quote-y', qY + '%');
+    node.style.setProperty('--au-quote-maxw', qMaxW + '%');
+    node.style.setProperty('--au-quote-scrim', String(qScrim));
+    node.style.setProperty('--au-quote-align', qAlign);
+    setCssColor(node, '--au-quote-color', sec.quoteColor);
+    setCssColor(node, '--au-quote-attr', sec.quoteAttrColor);
+    if (qScrim < 0.25) {
+      node.style.setProperty('--au-quote-shadow', '0 1px 3px rgba(0,0,0,.45)');
+    } else {
+      node.style.removeProperty('--au-quote-shadow');
+    }
+
     var q = node.querySelector('.au-quote');
     var qt = node.querySelector('.au-quote-text');
     var qa = node.querySelector('.au-quote-attr');
@@ -246,6 +283,9 @@
         band.style.display = 'block';
         var bandBg = hex(sec.bandBg) || '#0a2744';
         band.style.setProperty('--au-band-bg', bandBg);
+        setCssColor(band, '--au-band-heading', sec.bandHeadingColor);
+        setCssColor(band, '--au-band-sub', sec.bandSubColor);
+        setCssColor(band, '--au-band-tag', sec.bandTagColor);
         band.classList.toggle('au-no-decor', sec.bandDecor === false);
         var bh = band.querySelector('.au-band-heading');
         if (bh) setMultilineText(bh, tok(sec.bandHeading != null ? sec.bandHeading : '', biz));
