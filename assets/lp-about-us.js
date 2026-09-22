@@ -17,12 +17,19 @@
       .replace(/"/g, '&quot;');
   }
 
+  /** Preserve intentional line breaks as <br>; blank lines become paragraphs. */
   function paras(text) {
     var raw = String(text == null ? '' : text).replace(/\r\n/g, '\n').trim();
     if (!raw) return '';
     return raw.split(/\n\s*\n/).map(function (p) {
-      return '<p>' + esc(p.replace(/\n/g, ' ').trim()) + '</p>';
+      return '<p>' + esc(p).replace(/\n/g, '<br>') + '</p>';
     }).join('');
+  }
+
+  /** Multiline plain text → textContent preserves \n with CSS white-space:pre-line. */
+  function setMultilineText(el, value) {
+    if (!el) return;
+    el.textContent = value == null ? '' : String(value);
   }
 
   function hex(v) {
@@ -73,6 +80,23 @@
     }
   }
 
+  function fitValue(v) {
+    v = String(v || 'cover').toLowerCase();
+    if (v === 'contain' || v === 'fill' || v === 'cover') return v;
+    if (v === 'stretch') return 'fill';
+    return 'cover';
+  }
+
+  function posValue(v) {
+    v = String(v || 'center').toLowerCase().replace(/\s+/g, ' ');
+    var ok = {
+      center: 1, top: 1, bottom: 1, left: 1, right: 1,
+      'top left': 1, 'top right': 1, 'bottom left': 1, 'bottom right': 1,
+      'left top': 1, 'right top': 1, 'left bottom': 1, 'right bottom': 1
+    };
+    return ok[v] ? v : 'center';
+  }
+
   /**
    * @param {object} sec sections.aboutUs
    * @param {Element|null} node [data-sec="aboutUs"]
@@ -114,17 +138,17 @@
     var eb = node.querySelector('.au-eyebrow');
     if (eb) {
       var ebV = tok(sec.eyebrow != null ? sec.eyebrow : '', biz);
-      eb.textContent = ebV;
-      eb.style.display = ebV ? '' : 'none';
+      setMultilineText(eb, ebV);
+      eb.style.display = ebV.trim() ? '' : 'none';
     }
     var h = node.querySelector('.au-heading');
-    if (h) h.textContent = tok(sec.heading != null ? sec.heading : '', biz);
+    if (h) setMultilineText(h, tok(sec.heading != null ? sec.heading : '', biz));
 
     var intro = node.querySelector('.au-intro');
     if (intro) {
       var introV = tok(sec.intro != null ? sec.intro : '', biz);
-      intro.textContent = introV;
-      intro.style.display = introV ? '' : 'none';
+      setMultilineText(intro, introV);
+      intro.style.display = introV.trim() ? '' : 'none';
     }
 
     var body = node.querySelector('.au-body');
@@ -145,8 +169,11 @@
     var wrap = node.querySelector('.au-media-wrap');
     var img = node.querySelector('.au-img');
     var imgUrl = String(sec.image || '').trim();
-    var quoteText = tok(sec.quote != null ? sec.quote : '', biz).trim();
+    var quoteOn = sec.quoteOn !== false && sec.quoteShow !== false;
+    var quoteText = quoteOn ? tok(sec.quote != null ? sec.quote : '', biz).trim() : '';
     var quoteAttr = tok(sec.quoteAttr != null ? sec.quoteAttr : '', biz).trim();
+    var quoteStyle = String(sec.quoteStyle || sec.quoteFont || 'handwriting').toLowerCase();
+    if (quoteStyle !== 'plain') quoteStyle = 'handwriting';
     var hasMedia = !!(imgUrl || quoteText);
     if (media) {
       if (hasMedia) {
@@ -156,13 +183,22 @@
         media.classList.add('au-hide');
         media.setAttribute('hidden', '');
       }
+      media.classList.toggle('au-hide-quote', !quoteOn || !quoteText);
     }
     if (wrap) wrap.classList.toggle('au-no-img', !imgUrl);
+
+    var fit = fitValue(sec.imageFit || sec.imgFit);
+    var pos = posValue(sec.imagePos || sec.imagePosition || sec.imgPos);
+    node.style.setProperty('--au-img-fit', fit);
+    node.style.setProperty('--au-img-pos', pos);
+
     if (img) {
       if (imgUrl) {
         img.setAttribute('src', imgUrl);
         img.setAttribute('alt', tok(sec.imageAlt != null ? sec.imageAlt : '', biz) || '');
         img.style.display = '';
+        img.style.objectFit = fit;
+        img.style.objectPosition = pos;
       } else {
         img.removeAttribute('src');
         img.style.display = 'none';
@@ -172,17 +208,29 @@
     var qt = node.querySelector('.au-quote-text');
     var qa = node.querySelector('.au-quote-attr');
     if (q) {
+      q.setAttribute('data-au-quote-style', quoteStyle);
+      q.classList.toggle('au-quote-hand', quoteStyle === 'handwriting');
+      q.classList.toggle('au-quote-plain', quoteStyle === 'plain');
       if (quoteText) {
         q.removeAttribute('hidden');
-        if (qt) qt.textContent = quoteText.charAt(0) === '"' || quoteText.charAt(0) === '\u201C'
-          ? quoteText
-          : ('\u201C' + quoteText.replace(/^["'\u201C\u201D]+|["'\u201C\u201D]+$/g, '') + '\u201D');
+        q.classList.remove('au-hide');
+        if (qt) {
+          var qBody = quoteText;
+          if (quoteStyle === 'handwriting') {
+            // Keep optional wrapping quotes for handwriting look.
+            if (!(qBody.charAt(0) === '"' || qBody.charAt(0) === '\u201C')) {
+              qBody = '\u201C' + qBody.replace(/^["'\u201C\u201D]+|["'\u201C\u201D]+$/g, '') + '\u201D';
+            }
+          }
+          setMultilineText(qt, qBody);
+        }
         if (qa) {
           qa.textContent = quoteAttr ? ('\u2014 ' + quoteAttr) : '';
           qa.style.display = quoteAttr ? '' : 'none';
         }
       } else {
         q.setAttribute('hidden', '');
+        q.classList.add('au-hide');
       }
     }
 
@@ -200,12 +248,12 @@
         band.style.setProperty('--au-band-bg', bandBg);
         band.classList.toggle('au-no-decor', sec.bandDecor === false);
         var bh = band.querySelector('.au-band-heading');
-        if (bh) bh.textContent = tok(sec.bandHeading != null ? sec.bandHeading : '', biz);
+        if (bh) setMultilineText(bh, tok(sec.bandHeading != null ? sec.bandHeading : '', biz));
         var bs = band.querySelector('.au-band-sub');
         if (bs) {
           var bsV = tok(sec.bandSub != null ? sec.bandSub : '', biz);
-          bs.textContent = bsV;
-          bs.style.display = bsV ? '' : 'none';
+          setMultilineText(bs, bsV);
+          bs.style.display = bsV.trim() ? '' : 'none';
         }
         wireCta(
           band.querySelector('.au-band-cta'),
@@ -217,7 +265,7 @@
         var tag = band.querySelector('.au-band-tag');
         var tagline = band.querySelector('.au-band-tagline');
         var tagV = tok(sec.bandTagline != null ? sec.bandTagline : '', biz).trim();
-        if (tagline) tagline.textContent = tagV;
+        if (tagline) setMultilineText(tagline, tagV);
         if (tag) {
           if (tagV) {
             tag.removeAttribute('hidden');
