@@ -81,7 +81,9 @@ header.site .head-nav{display:flex;align-items:center;gap:2px 4px;flex-wrap:wrap
 .head-phone{text-align:right;line-height:1.05}
 .head-phone small{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#9fb0c2;font-weight:600}
 .head-phone b{font-family:"Barlow Condensed";font-weight:800;font-size:23px;color:#fff;text-decoration:none}
-@media(max-width:680px){.head-phone{display:none}}
+.head-phone a,.head-phone .head-phone-num{font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:23px;color:var(--hdr-phone-fg,#fff);text-decoration:none;display:inline-block;line-height:1.05}
+.head-phone a:hover,.head-phone .head-phone-num:hover{opacity:.92}
+/* phone stays visible for click-to-call; compact styles below */
 
 /* hero */
 .hero{background:
@@ -923,10 +925,26 @@ section[data-sec="heroSlider"].hslsec{padding:0}
 .hsl-dots{position:absolute;left:0;right:0;bottom:18px;z-index:3;display:flex;gap:9px;justify-content:center}
 .hsl-dot{width:11px;height:11px;border-radius:50%;border:0;background:rgba(255,255,255,.45);cursor:pointer;padding:0;transition:.15s}
 .hsl-dot.on{background:#fff;transform:scale(1.15)}
-@media(max-width:760px){.hsl{height:var(--hsl-mh-m,560px)}.hsl-arrow{width:38px;height:38px;font-size:22px}.hsl-prev{left:10px}.hsl-next{right:10px}}
+@media(max-width:760px){.hsl{height:var(--hsl-mh-m,560px)}.hsl-arrow{width:38px;height:38px;font-size:22px}.hsl-prev{left:10px}.hsl-next{right:10px}.hsl-h{font-size:clamp(28px,8vw,44px);max-width:100%}.hsl-inner{padding:18px 0 36px;box-sizing:border-box}.hsl-cta{width:100%}.hsl-cta .btn{flex:1 1 calc(50% - 6px);min-width:min(100%,140px);justify-content:center;text-align:center;white-space:normal;padding:12px 14px;font-size:15px}}
 /* Site max width — caps hero slider + trust bar images and overall content */
 html.site-width-capped section[data-sec="heroSlider"] .hsl{max-width:var(--site-maxw,1920px);margin-left:auto;margin-right:auto;width:100%;height:auto;aspect-ratio:16/9;max-height:var(--hsl-mh-d,680px)}
-@media(max-width:760px){html.site-width-capped section[data-sec="heroSlider"] .hsl{max-height:var(--hsl-mh-m,560px)}}
+@media(max-width:760px){html.site-width-capped section[data-sec="heroSlider"] .hsl{aspect-ratio:auto;height:var(--hsl-mh-m,560px);max-height:none}}
+
+/* Float header → sticky on mobile so logo/CTA do not cover the hero */
+@media(max-width:760px){
+  header.site.lp-hdr-float{position:sticky!important;top:var(--emerg-sticky-h,0px)!important;left:auto!important;right:auto!important;background:var(--hdr-bg,var(--steel-900,#0b1b2a))!important}
+  header.site .bar{flex-wrap:wrap;align-items:center;gap:10px 12px;padding-top:10px;padding-bottom:10px;min-height:0;height:auto!important}
+  header.site .bar.lp-logo-center .head-call,
+  header.site .bar.lp-logo-left .head-call,
+  header.site .bar.lp-logo-right .head-call,
+  header.site .head-call{position:static!important;transform:none!important;top:auto!important;right:auto!important;margin-left:auto;flex:1 1 auto;justify-content:flex-end;flex-wrap:wrap;gap:8px;max-width:100%}
+  header.site .head-call .btn-call{font-size:14px;padding:10px 14px;white-space:normal;text-align:center;line-height:1.2;max-width:100%}
+  header.site a.brand{max-width:min(58vw,220px)}
+  header.site a.brand img.lp-logo{max-width:100%!important;height:auto!important;max-height:var(--hdr-logo-mh,48px)}
+  header.site a.brand .lp-logo-wrap{max-width:100%;height:auto!important}
+}
+.head-phone a,.head-phone .head-phone-num{font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:23px;color:var(--hdr-phone-fg,#fff);text-decoration:none;display:inline-block;line-height:1.05}
+.head-phone a:hover,.head-phone .head-phone-num:hover{opacity:.92}
 html.site-width-capped [data-sec="trustBar"].tb-images .tb-band{max-width:var(--site-maxw,1920px);margin-left:auto;margin-right:auto;width:100%}
 html.site-width-capped [data-sec="trustBar"].tb-images .tb-band>.wrap{max-width:100%}
 html.site-width-full .wrap{max-width:none}
