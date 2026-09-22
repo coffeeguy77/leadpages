@@ -16,6 +16,7 @@ const CONTENT_APPS = [
   'beforeAfter', 'beforeAfterFeed', 'responseCards', 'projectStats', 'activityCounter',
   'featuredProjects', 'projectFeed', 'jobsFeed', 'specialOffer', 'promotions', 'proofStream',
   'crew', 'certifications', 'estimateBuilder', 'quote', 'onlineQuote', 'finance', 'textBox',
+  'aboutUs',
   'seoText', 'videoReels', 'activityTimeline', 'footer', 'emerg', 'searchCanvas',
   'emergencyAvailability', 'instaGallery', 'igProjectFeed', 'orderStorefront', 'bookingStorefront',
   'premiumGallery', 'scrollingSponsorBanner', 'mobileBar', 'lpFooter'

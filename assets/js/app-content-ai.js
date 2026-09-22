@@ -322,6 +322,22 @@
         scalars: { eyebrow: 'eyebrow', heading: 'heading', intro: 'intro', body: 'content' }
       }
     },
+    aboutUs: {
+      label: 'About Us',
+      depth: 'article',
+      purpose: 'Three-column about story: eyebrow, heading, short intro, longer body (two short paragraphs), optional founder quote and attribution. Do not invent a person name unless the brief gives one. Keep band fields blank unless asked for a CTA strip.',
+      apply: {
+        section: 'aboutUs',
+        scalars: {
+          eyebrow: 'eyebrow',
+          heading: 'heading',
+          intro: 'intro',
+          body: 'body',
+          quote: 'quote',
+          quoteAttr: 'quoteAttr'
+        }
+      }
+    },
     seoText: {
       label: 'SEO text',
       depth: 'article',
