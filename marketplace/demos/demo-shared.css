@@ -428,9 +428,12 @@ footer.site .f-brand .foot-logo-wrap{
   display:inline-block;line-height:0;margin-bottom:10px;max-width:100%;
   transform:translate(var(--foot-logo-x,0px),var(--foot-logo-y,0px));
 }
-footer.site .f-brand .foot-logo-wrap img{
-  height:var(--foot-logo-h,72px);width:auto;max-width:100%;object-fit:contain;display:block;
+footer.site .f-brand .foot-logo-wrap img,
+footer.site .f-brand img.foot-logo-img,
+footer.site a.foot-logo-link img{
+  height:var(--foot-logo-h,72px)!important;width:auto!important;max-width:100%!important;object-fit:contain;display:block;
 }
+footer.site a.foot-logo-link .lp-logo-wrap{display:none!important}
 footer.site .f-brand .brand{margin-bottom:10px}
 footer.site .f-brand .brand .nm{color:var(--mkt-foot-ink,#fff)}
 footer.site .f-tagline-brand{margin:0 0 8px;font-size:14px;font-weight:700;color:var(--mkt-foot-ink,#fff)}

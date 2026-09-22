@@ -77,10 +77,19 @@ describe('Footer polish (width, colours, logo)', () => {
 
   it('footer logo height applies on img and offsets use px defaults', () => {
     const html = JSON.parse(fs.readFileSync(path.join(root, 'trade.template.json'), 'utf8')).html;
-    assert.match(html, /foot-logo-wrap img\{[^}]*height:var\(--foot-logo-h/);
+    assert.match(html, /foot-logo-wrap img[\s\S]{0,120}height:var\(--foot-logo-h,72px\)!important/);
     assert.match(html, /translate\(var\(--foot-logo-x,0px\),var\(--foot-logo-y,0px\)\)/);
     assert.match(html, /logoWrap\.style\.setProperty\('--foot-logo-h'/);
     assert.match(html, /removeAttribute\('hidden'\)/);
+  });
+
+  it('header logo painter skips footer brand links', () => {
+    const html = JSON.parse(fs.readFileSync(path.join(root, 'trade.template.json'), 'utf8')).html;
+    assert.match(html, /foot-logo-link.*closest\('footer'\)|closest\('footer'\).*foot-logo-link/);
+    assert.match(html, /continue; if\(a\.__orig==null\)/);
+    assert.match(html, /header\.site a\.brand img\.lp-logo\{height:/);
+    assert.match(html, /height:'\+logoH\+'px/);
+    assert.match(html, /logoWrap\.style\.transform='translate\('/);
   });
 });
 
