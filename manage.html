@@ -84,10 +84,20 @@ h1{font-family:var(--font-display);font-weight:500;font-size:clamp(26px,4vw,36px
 .sec-modeseg button.on{background:var(--accent);color:var(--accent-text);border-color:var(--accent);}
 .sec-modeseg button+button{border-left:0;}
 #svc-list.hide-inactive .svc-row[data-active="0"]{display:none;}
-#svc-list[data-svc-mode="grid"] .svc-split-only{display:none!important;}
-#svc-list[data-svc-mode="split"] .svc-grid-only{display:none!important;}
+#svc-list[data-svc-mode="grid"] .svc-split-only,
+#svc-list[data-svc-mode="cards"] .svc-split-only{display:none!important;}
+#svc-list[data-svc-mode="split"] .svc-grid-only,
+#svc-list[data-svc-mode="cards"] .svc-grid-only{display:none!important;}
+#svc-list[data-svc-mode="grid"] .svc-cards-only,
+#svc-list[data-svc-mode="split"] .svc-cards-only{display:none!important;}
+#svc-list[data-svc-mode="split"] .svc-not-split{display:none!important;}
 #svc-list .svc-bull-row{display:flex;gap:8px;align-items:center;margin-bottom:6px;}
 #svc-list .svc-bull-row input{flex:1;min-width:0;}
+#svc-list .svc-proof-only{display:none;}
+#le-reviews[data-rv-mode="proof"] .svc-proof-only,
+#le-reviews[data-rv-mode="proof"] .rv-proof-only{display:block;}
+.rv-proof-only{display:none;}
+#le-reviews[data-rv-mode="proof"] .rv-proof-only{display:block!important;}
 .svc-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:6px;}
 .lead-item{padding:10px 12px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;background:var(--surface-2);}
 .li-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:13.5px;font-weight:500;}
@@ -3968,7 +3978,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     mobileMenuItems:{secId:'mobileBar',key:'menuItems',addLabel:'+ Add menu item',item:[{k:'type',label:'Item type',type:'radio',opts:[['link','Link'],['scroll','Scroll to section'],['call','Call'],['quote','Get a quote'],['orderStorefront','Order Storefront'],['orderShop','Order shop'],['orderPortal','Order portal (SMS)']]},{k:'icon',label:'Icon',type:'icon'},{k:'label',label:'Label'},{k:'value',label:'URL or section name',ph:'https://…  or  services'},{k:'opens',label:'Link opens',type:'select',opts:[['_self','Same tab'],['_blank','New tab']]}],defaultItem:{on:true,type:'link',icon:'chevron-right',label:'',value:'',opens:'_self'}},
     badges:{secId:'hero',key:'badges',addLabel:'Add badge',item:[{k:'icon',label:'Icon',type:'icon',ph:'✓'},{k:'text',label:'Text'}],defaultItem:{icon:'✓',text:'New badge'}},
     why:{secId:'why',key:'items',addLabel:'Add reason',item:[{k:'icon',label:'Icon',type:'icon'},{k:'n',label:'Number (if no icon)',w:'120px',ph:'01'},{k:'title',label:'Heading'},{k:'body',label:'Text',type:'ta'}],defaultItem:{icon:'',n:'+',title:'New reason',body:''}},
-    reviews:{secId:'reviews',key:'items',addLabel:'Add review',item:[{k:'who',label:'Name & suburb'},{k:'text',label:'Quote',type:'ta'},{k:'source',label:'Source',type:'select',opts:[['','—'],['google','Google'],['facebook','Facebook'],['hipages','hipages'],['productreview','ProductReview'],['word','Word of mouth']],w:'1 1 150px'}],defaultItem:{who:'',text:'',source:''}},
+    reviews:{secId:'reviews',key:'items',addLabel:'Add review',item:[{k:'image',type:'image',label:'Photo (proof layout)',ph:'https://\u2026 (portrait)',hint:'Left-side portrait for homepage-style cards'},{k:'who',label:'Name & suburb / business'},{k:'text',label:'Quote',type:'ta'},{k:'metric',label:'Result metric (e.g. 62%)',w:'1 1 140px',ph:'62%'},{k:'metricLabel',label:'Metric label',w:'1 1 160px',ph:'More calls'},{k:'note',label:'Small note (e.g. Demo content)',w:'1 1 180px',ph:''},{k:'source',label:'Source',type:'select',opts:[['','—'],['google','Google'],['facebook','Facebook'],['hipages','hipages'],['productreview','ProductReview'],['word','Word of mouth']],w:'1 1 150px'}],defaultItem:{who:'',text:'',source:'',image:'',metric:'',metricLabel:'',note:''}},
     faq:{secId:'faq',key:'items',addLabel:'Add question',item:[{k:'q',label:'Question'},{k:'a',label:'Answer',type:'ta'}],defaultItem:{q:'',a:''}},
     seoText:{secId:'seoText',key:'faq',addLabel:'Add FAQ',item:[{k:'q',label:'Question'},{k:'a',label:'Answer',type:'ta'}],defaultItem:{q:'',a:''}},
     quotePoints:{secId:'quote',key:'points',addLabel:'Add point',item:[{k:'icon',label:'Icon',type:'icon',ph:'✓'},{k:'text',label:'Point'}],defaultItem:{text:''}},
@@ -4714,6 +4724,55 @@ function wireQuoteStyle(c){
     var def=$('wy-msz-def'); if(def) def.addEventListener('click',function(){ delete WY().iconSize; delete WY().iconScale; ['compact','standard','large','hero'].forEach(function(x){ var bb=$('wy-msz-'+x); if(bb){ bb.style.borderColor=''; bb.style.color=''; } }); if(sc) sc.value=100; if(scv) scv.textContent='100%'; persist(); previewApply(); });
   }
 
+  function reviewsModeCard(c){
+    var RV=(c.sections&&c.sections.reviews)||{};
+    var mode=(RV.mode==='proof'||RV.mode==='homepage'||RV.mode==='tcard')?'proof':'classic';
+    var secBg=(RV.sectionBg&&/^#[0-9a-fA-F]{6}$/.test(RV.sectionBg))?RV.sectionBg:'';
+    var contentBg=(RV.contentBg&&/^#[0-9a-fA-F]{6}$/.test(RV.contentBg))?RV.contentBg:'';
+    var metricBg=(RV.metricBg&&/^#[0-9a-fA-F]{6}$/.test(RV.metricBg))?RV.metricBg:'';
+    var metricColor=(RV.metricColor&&/^#[0-9a-fA-F]{6}$/.test(RV.metricColor))?RV.metricColor:'';
+    var aw=(RV.avatarWidth!=null&&RV.avatarWidth!=='')?+RV.avatarWidth:154; if(isNaN(aw)) aw=154;
+    function colRow(id,val,defv,label){
+      return '<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:200px;"><label>'+label+'</label><div style="display:flex;align-items:center;gap:8px;"><input type="color" id="'+id+'-clr" value="'+(val||defv)+'" style="width:46px;height:34px;padding:0;border:1px solid var(--line);border-radius:8px;cursor:pointer;flex:0 0 auto;"><input type="text" id="'+id+'-tx" class="tin" value="'+val+'" placeholder="'+defv+' (default)" style="flex:1;min-width:0;"><button type="button" class="btn ghost" id="'+id+'-def" style="padding:6px 10px;">Default</button></div></div>';
+    }
+    var h='<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Layout</h2><p class="lede" style="margin:0 0 12px;">Classic quote cards, or the LeadPages homepage proof layout — photo on the left, stars, quote, name and optional result metric.</p>';
+    h+='<div class="row"><div class="f"><label>Style</label><select id="rv-mode" class="tin"><option value="classic"'+(mode==='classic'?' selected':'')+'>Classic quotes</option><option value="proof"'+(mode==='proof'?' selected':'')+'>Homepage proof cards</option></select></div><div class="f"></div></div>';
+    h+='<div id="rv-proof-opts" style="'+(mode==='proof'?'':'display:none;')+'margin-top:14px;padding-top:14px;border-top:1px solid var(--line);">';
+    h+='<div class="f" style="margin:0 0 12px;max-width:420px;"><label>Photo width <span id="rv-aw-v" style="font-weight:700;color:var(--accent);">'+aw+'px</span></label><input type="range" id="rv-aw" min="100" max="200" step="2" value="'+aw+'" style="width:100%;"></div>';
+    h+='<div style="display:flex;flex-wrap:wrap;gap:12px;">';
+    h+=colRow('rv-secbg',secBg,'#F5EDE2','Section background');
+    h+=colRow('rv-contentbg',contentBg,'#FBF5EA','Quote panel background');
+    h+=colRow('rv-metricbg',metricBg,'#E7F0E6','Metric badge background');
+    h+=colRow('rv-metricfg',metricColor,'#5E8C5B','Metric text colour');
+    h+='</div></div></div>';
+    return h;
+  }
+  function wireReviewsMode(c){
+    function RV(){ if(!c.sections)c.sections={}; if(!c.sections.reviews)c.sections.reviews={}; return c.sections.reviews; }
+    function modeOf(){ var m=RV().mode; return (m==='proof'||m==='homepage'||m==='tcard')?'proof':'classic'; }
+    function sync(){
+      var mode=modeOf();
+      var opts=$('rv-proof-opts'); if(opts) opts.style.display=(mode==='proof')?'':'none';
+      var host=$('le-reviews'); if(host) host.setAttribute('data-rv-mode', mode);
+      var lede=$('rv-list-lede');
+      if(lede) lede.textContent=(mode==='proof')
+        ? 'Homepage-style cards: add a portrait photo, quote, name, optional result metric (e.g. 62% More calls) and a small note.'
+        : 'Customer quotes (stars stay at five). Edit, hide or remove each.';
+    }
+    var md=$('rv-mode');
+    if(md){ md.value=modeOf(); md.addEventListener('change',function(){ RV().mode=md.value; sync(); persist(); previewApply(); }); }
+    var aw=$('rv-aw'), awv=$('rv-aw-v');
+    if(aw) aw.addEventListener('input',function(){ RV().avatarWidth=+aw.value; if(awv) awv.textContent=aw.value+'px'; persist(); previewApply(); });
+    function colWire(id,key){
+      var cEl=$(id+'-clr'), tEl=$(id+'-tx'), dEl=$(id+'-def');
+      if(cEl) cEl.addEventListener('input',function(){ RV()[key]=cEl.value; if(tEl) tEl.value=cEl.value; persist(); previewApply(); });
+      if(tEl) tEl.addEventListener('input',function(){ var v=tEl.value.trim(); if(v===''){ delete RV()[key]; } else { if(v[0]!=='#')v='#'+v; if(/^#[0-9a-fA-F]{6}$/.test(v)){ RV()[key]=v; if(cEl)cEl.value=v; } } persist(); previewApply(); });
+      if(dEl) dEl.addEventListener('click',function(){ delete RV()[key]; if(tEl)tEl.value=''; persist(); previewApply(); });
+    }
+    colWire('rv-secbg','sectionBg'); colWire('rv-contentbg','contentBg'); colWire('rv-metricbg','metricBg'); colWire('rv-metricfg','metricColor');
+    sync();
+  }
+
   function reviewsStyleCard(c){
     var RV=(c.sections&&c.sections.reviews)||{};
     var DEF={ cardBg:'#ffffff', stroke:'#e7e7e7', starColor:'#ffc400', textColor:'#33414f', whoColor:'#1a2230', eyebrowColor:'#1f7bb8', titleColor:'#1a2230' };
@@ -4760,38 +4819,80 @@ function wireQuoteStyle(c){
 
   function servicesModeCard(c){
     var SV=(c.sections&&c.sections.services)||{};
-    var mode=(SV.mode==='split'||SV.mode==='columns')?'split':'grid';
+    var mode=(SV.mode==='split'||SV.mode==='columns')?'split':((SV.mode==='cards'||SV.mode==='homepage'||SV.mode==='cap')?'cards':'grid');
     var accentOn=SV.accentOn!==false;
     var ac=(SV.accentColor&&/^#[0-9a-fA-F]{6}$/.test(SV.accentColor))?SV.accentColor:'';
     var defAc='#ff6a1f';
-    var h='<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Layout</h2><p class="lede" style="margin:0 0 12px;">Classic grid keeps the heading above the cards. Split columns puts eyebrow, title and intro on the left, with service columns on the right (title, subtitle, icon list and optional link).</p>';
-    h+='<div class="row"><div class="f"><label>Style</label><select id="svc-mode" class="tin"><option value="grid"'+(mode==='grid'?' selected':'')+'>Classic grid</option><option value="split"'+(mode==='split'?' selected':'')+'>Split columns (text left)</option></select></div><div class="f"></div></div>';
+    var icoSz=(SV.iconCircleSize!=null&&SV.iconCircleSize!=='')?+SV.iconCircleSize:88; if(isNaN(icoSz)) icoSz=88;
+    var titleSz=SV.titleSize||'';
+    var bodySz=SV.bodySize||'';
+    var secBg=(SV.sectionBg&&/^#[0-9a-fA-F]{6}$/.test(SV.sectionBg))?SV.sectionBg:'';
+    var cardBg=(SV.cardBg&&/^#[0-9a-fA-F]{6}$/.test(SV.cardBg))?SV.cardBg:'';
+    var icoBg=(SV.iconCircleBg&&/^#[0-9a-fA-F]{6}$/.test(SV.iconCircleBg))?SV.iconCircleBg:'';
+    var icoFg=(SV.iconColor&&/^#[0-9a-fA-F]{6}$/.test(SV.iconColor))?SV.iconColor:'';
+    var titleCol=(SV.cardTitleColor&&/^#[0-9a-fA-F]{6}$/.test(SV.cardTitleColor))?SV.cardTitleColor:'';
+    var bodyCol=(SV.cardBodyColor&&/^#[0-9a-fA-F]{6}$/.test(SV.cardBodyColor))?SV.cardBodyColor:'';
+    function colRow(id,val,defv,label){
+      return '<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:200px;"><label>'+label+'</label><div style="display:flex;align-items:center;gap:8px;"><input type="color" id="'+id+'-clr" value="'+(val||defv)+'" style="width:46px;height:34px;padding:0;border:1px solid var(--line);border-radius:8px;cursor:pointer;flex:0 0 auto;"><input type="text" id="'+id+'-tx" class="tin" value="'+val+'" placeholder="'+defv+' (default)" style="flex:1;min-width:0;"><button type="button" class="btn ghost" id="'+id+'-def" style="padding:6px 10px;">Default</button></div></div>';
+    }
+    var h='<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Layout</h2><p class="lede" style="margin:0 0 12px;">Classic grid keeps the heading above the cards. Split columns puts copy on the left. Image cards match the LeadPages homepage — photo on top, optional icon in a circle, title and text below.</p>';
+    h+='<div class="row"><div class="f"><label>Style</label><select id="svc-mode" class="tin"><option value="grid"'+(mode==='grid'?' selected':'')+'>Classic grid</option><option value="split"'+(mode==='split'?' selected':'')+'>Split columns (text left)</option><option value="cards"'+(mode==='cards'?' selected':'')+'>Image cards (homepage)</option></select></div><div class="f"></div></div>';
     h+='<div id="svc-split-opts" style="'+(mode==='split'?'':'display:none;')+'margin-top:14px;padding-top:14px;border-top:1px solid var(--line);">';
     h+='<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 12px;"><input type="checkbox" id="svc-accent-on"'+(accentOn?' checked':'')+'> Accent line under title</label>';
     h+='<div class="f" style="max-width:340px;margin:0;"><label>Accent colour</label><div style="display:flex;align-items:center;gap:8px;"><input type="color" id="svc-accent-clr" value="'+(ac||defAc)+'" style="width:46px;height:34px;padding:0;border:1px solid var(--line);border-radius:8px;cursor:pointer;flex:0 0 auto;"><input type="text" id="svc-accent-tx" class="tin" value="'+ac+'" placeholder="'+defAc+' (theme)" style="flex:1;min-width:0;"><button type="button" class="btn ghost" id="svc-accent-def" style="padding:6px 10px;">Default</button></div></div>';
-    h+='</div></div>';
+    h+='</div>';
+    h+='<div id="svc-cards-opts" style="'+(mode==='cards'?'':'display:none;')+'margin-top:14px;padding-top:14px;border-top:1px solid var(--line);">';
+    h+='<p class="lede" style="margin:0 0 12px;">Sizes and colours for the homepage-style cards. Leave blank to use theme defaults.</p>';
+    h+='<div class="f" style="margin:0 0 12px;max-width:420px;"><label>Icon circle size <span id="svc-ico-sz-v" style="font-weight:700;color:var(--accent);">'+icoSz+'px</span></label><input type="range" id="svc-ico-sz" min="48" max="120" step="2" value="'+icoSz+'" style="width:100%;"><span class="hint" style="display:block;margin-top:4px;">Optional — hide the circle on a card by clearing its icon.</span></div>';
+    h+='<div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:12px;">';
+    h+='<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:200px;"><label>Title size (px)</label><input type="number" id="svc-title-sz" class="tin" min="12" max="32" step="1" value="'+esc(String(titleSz))+'" placeholder="e.g. 17"></div>';
+    h+='<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:200px;"><label>Body size (px)</label><input type="number" id="svc-body-sz" class="tin" min="11" max="22" step="1" value="'+esc(String(bodySz))+'" placeholder="e.g. 14"></div>';
+    h+='</div>';
+    h+='<div style="display:flex;flex-wrap:wrap;gap:12px;">';
+    h+=colRow('svc-secbg',secBg,'#F4EBDE','Section background');
+    h+=colRow('svc-cardbg',cardBg,'#FFFFFF','Card background');
+    h+=colRow('svc-icobg',icoBg,'#FFFFFF','Icon circle background');
+    h+=colRow('svc-icofg',icoFg,'#1E2B34','Icon colour');
+    h+=colRow('svc-cardtitle',titleCol,'#1E2B34','Title colour');
+    h+=colRow('svc-cardbody',bodyCol,'#6B7680','Body text colour');
+    h+='</div></div></div>';
     return h;
   }
   function wireServicesMode(c){
     function SV(){ if(!c.sections)c.sections={}; if(!c.sections.services)c.sections.services={}; return c.sections.services; }
+    function modeOf(){ var m=SV().mode; return (m==='split'||m==='columns')?'split':((m==='cards'||m==='homepage'||m==='cap')?'cards':'grid'); }
     function syncSplitUi(){
-      var mode=(SV().mode==='split'||SV().mode==='columns')?'split':'grid';
+      var mode=modeOf();
       var opts=$('svc-split-opts'); if(opts) opts.style.display=(mode==='split')?'':'none';
+      var cops=$('svc-cards-opts'); if(cops) cops.style.display=(mode==='cards')?'':'none';
       var box=$('svc-list'); if(box) box.setAttribute('data-svc-mode', mode);
       var lede=$('svc-cards-lede');
-      if(lede) lede.textContent=(mode==='split')
-        ? 'Add columns with a title, subtitle, icon list and optional Learn more link (URL, landing page, or app position). Untick cards you do not need.'
-        : 'Untick anything this client doesn\u2019t do, or re-purpose a card \u2014 icon or image, colours, size, heading and text.';
+      if(lede){
+        if(mode==='split') lede.textContent='Add columns with a title, subtitle, icon list and optional Learn more link (URL, landing page, or app position). Untick cards you do not need.';
+        else if(mode==='cards') lede.textContent='Homepage-style cards: upload a photo, optional icon in a circle, then title and short text. Adjust sizes and colours in Layout above.';
+        else lede.textContent='Untick anything this client doesn\u2019t do, or re-purpose a card \u2014 icon or image, colours, size, heading and text.';
+      }
       var h2=$('svc-cards-h2');
-      if(h2) h2.textContent=(mode==='split')?'Service columns':'Service cards';
+      if(h2) h2.textContent=(mode==='split'?'Service columns':(mode==='cards'?'Service cards (image)':'Service cards'));
     }
     var md=$('svc-mode');
-    if(md){ md.value=((SV().mode==='split'||SV().mode==='columns')?'split':'grid'); md.addEventListener('change',function(){ SV().mode=md.value; syncSplitUi(); persist(); previewApply(); }); }
+    if(md){ md.value=modeOf(); md.addEventListener('change',function(){ SV().mode=md.value; syncSplitUi(); persist(); previewApply(); }); }
     var ao=$('svc-accent-on'); if(ao) ao.addEventListener('change',function(){ SV().accentOn=ao.checked; persist(); previewApply(); });
     var clr=$('svc-accent-clr'), tx=$('svc-accent-tx'), df=$('svc-accent-def');
     if(clr) clr.addEventListener('input',function(){ SV().accentColor=clr.value; if(tx) tx.value=clr.value; persist(); previewApply(); });
     if(tx) tx.addEventListener('input',function(){ var v=tx.value.trim(); if(v===''){ delete SV().accentColor; } else { if(v[0]!=='#')v='#'+v; if(/^#[0-9a-fA-F]{6}$/.test(v)){ SV().accentColor=v; if(clr)clr.value=v; } } persist(); previewApply(); });
     if(df) df.addEventListener('click',function(){ delete SV().accentColor; if(tx)tx.value=''; persist(); previewApply(); });
+    var ico=$('svc-ico-sz'), icov=$('svc-ico-sz-v');
+    if(ico) ico.addEventListener('input',function(){ SV().iconCircleSize=+ico.value; if(icov) icov.textContent=ico.value+'px'; persist(); previewApply(); });
+    var ts=$('svc-title-sz'); if(ts) ts.addEventListener('input',function(){ if(ts.value==='') delete SV().titleSize; else SV().titleSize=ts.value; persist(); previewApply(); });
+    var bs=$('svc-body-sz'); if(bs) bs.addEventListener('input',function(){ if(bs.value==='') delete SV().bodySize; else SV().bodySize=bs.value; persist(); previewApply(); });
+    function colWire(id,key){
+      var cEl=$(id+'-clr'), tEl=$(id+'-tx'), dEl=$(id+'-def');
+      if(cEl) cEl.addEventListener('input',function(){ SV()[key]=cEl.value; if(tEl) tEl.value=cEl.value; persist(); previewApply(); });
+      if(tEl) tEl.addEventListener('input',function(){ var v=tEl.value.trim(); if(v===''){ delete SV()[key]; } else { if(v[0]!=='#')v='#'+v; if(/^#[0-9a-fA-F]{6}$/.test(v)){ SV()[key]=v; if(cEl)cEl.value=v; } } persist(); previewApply(); });
+      if(dEl) dEl.addEventListener('click',function(){ delete SV()[key]; if(tEl)tEl.value=''; persist(); previewApply(); });
+    }
+    colWire('svc-secbg','sectionBg'); colWire('svc-cardbg','cardBg'); colWire('svc-icobg','iconCircleBg'); colWire('svc-icofg','iconColor'); colWire('svc-cardtitle','cardTitleColor'); colWire('svc-cardbody','cardBodyColor');
     syncSplitUi();
   }
 
@@ -8251,7 +8352,7 @@ function heroCtaCard(c){
         var mz=$('ar-mapz'); if(mz) mz.addEventListener('change',function(){ var n=parseInt(mz.value,10); ens().mapZoom=isNaN(n)?11:n; persist(); previewApply(); });
       })();
     } else if(sub==='reviews'){
-      body.innerHTML=secCard(c,'reviews','Reviews section',true,[['eyebrow','Eyebrow'],['heading','Heading']])+reviewsStyleCard(c)+listCard('reviews','Reviews','Customer quotes (stars stay at five). Edit, hide or remove each.')+listCard('reviewSources','Review sources','Show which platforms your reviews come from — Google, Facebook, hipages, ProductReview. Add a rating and link; logos are optional (a clean text badge shows otherwise).'); wireSec(c,'reviews',true,[['eyebrow'],['heading']]); wireReviewsStyle(c); listEditor($('le-reviews'),c,'reviews'); listEditor($('le-reviewSources'),c,'reviewSources');
+      body.innerHTML=secCard(c,'reviews','Reviews section',true,[['eyebrow','Eyebrow'],['heading','Heading']])+reviewsModeCard(c)+reviewsStyleCard(c)+'<div class="card" style="margin-bottom:22px;"><h2>Reviews</h2><p class="lede" id="rv-list-lede">Customer quotes (stars stay at five). Edit, hide or remove each.</p><div id="le-reviews"></div></div>'+listCard('reviewSources','Review sources','Show which platforms your reviews come from — Google, Facebook, hipages, ProductReview. Add a rating and link; logos are optional (a clean text badge shows otherwise).'); wireSec(c,'reviews',true,[['eyebrow'],['heading']]); wireReviewsMode(c); wireReviewsStyle(c); listEditor($('le-reviews'),c,'reviews'); listEditor($('le-reviewSources'),c,'reviewSources');
     } else if(sub==='beforeAfter'){
       body.innerHTML=secCard(c,'beforeAfter','Before & After section',true,[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro','ta']])+listCard('beforeAfterItems','Before / after items','Each card shows a before and an after image with a title and caption. Leave an image URL blank to show a clean placeholder \u2014 no upload needed yet.'); wireSec(c,'beforeAfter',true,[['eyebrow'],['heading'],['intro']]); listEditor($('le-beforeAfterItems'),c,'beforeAfterItems');
     } else if(sub==='responseCards'){
@@ -9961,7 +10062,7 @@ function heroCtaCard(c){
     if(!Array.isArray(c.services)||!c.services.length){ c.services=JSON.parse(JSON.stringify(DEFAULT_TRADE_SVCS)); }
     var SZ=[['compact','Compact 56'],['standard','Standard 80'],['large','Large 120'],['hero','Hero 180']];
     function hexOk(v){ v=String(v||'').trim(); return /^#?[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/.test(v)?(v.charAt(0)==='#'?v:'#'+v):''; }
-    function svcMode(){ var SV=(c.sections&&c.sections.services)||{}; return (SV.mode==='split'||SV.mode==='columns')?'split':'grid'; }
+    function svcMode(){ var SV=(c.sections&&c.sections.services)||{}; return (SV.mode==='split'||SV.mode==='columns')?'split':((SV.mode==='cards'||SV.mode==='homepage'||SV.mode==='cap')?'cards':'grid'); }
     function ensureCta(s){ if(!s.cta||typeof s.cta!=='object') s.cta={}; return s.cta; }
     function ensureBullets(s){ if(!Array.isArray(s.bullets)) s.bullets=[]; return s.bullets; }
     function colorField(i,k,label,val){
@@ -10015,9 +10116,9 @@ function heroCtaCard(c){
           +'<button type="button" class="btn ghost sm svc-rm" data-i="'+i+'" style="margin-left:auto;">Remove</button>'
           +'</div>'
           +'<input type="text" class="svc-sub tin svc-split-only" data-i="'+i+'" style="width:100%;margin-bottom:8px;" placeholder="Sub title (e.g. RESIDENTIAL &amp; COMMERCIAL)" value="'+esc(sub)+'">'
-          +'<textarea class="svc-b tin svc-grid-only" data-i="'+i+'" rows="2" style="width:100%;resize:vertical;" placeholder="Description"></textarea>'
+          +'<textarea class="svc-b tin svc-not-split" data-i="'+i+'" rows="2" style="width:100%;resize:vertical;" placeholder="Description"></textarea>'
           +bulletsHtml(i,s)
-          +'<div style="margin-top:12px;"><label style="font-weight:600;font-size:13px;">Large icon / image</label>'
+          +'<div style="margin-top:12px;"><label style="font-weight:600;font-size:13px;">Image <span class="svc-cards-only" style="font-weight:500;color:var(--ink-soft);">(top of card)</span><span class="svc-grid-only" style="font-weight:500;color:var(--ink-soft);"> / large icon</span></label>'
           +cwImgHTML('class="svc-img tin" data-i="'+i+'"','https://\u2026 or upload','Big service icon or photo')
           +'<input type="hidden" class="svc-img-pid" data-i="'+i+'"></div>'
           +'<div class="svc-split-only" style="margin-top:12px;"><label style="font-weight:600;font-size:13px;">Side strip image (optional)</label>'
