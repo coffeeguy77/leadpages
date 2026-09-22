@@ -162,6 +162,30 @@ section[data-sec="services"].svcs-split .svc .svc-sub{
   display:block;margin-top:8px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--svc-sub,#5b6878);
 }
 section[data-sec="services"].svcs-split .svc > p{display:none}
+
+section[data-sec="services"].svcs-split .svc-intro{
+  display:block;margin:12px 0 0;font-size:14.5px;font-weight:500;line-height:1.45;color:var(--svc-body,#46535f);
+}
+section[data-sec="services"].svcs-split .svc-list-title{
+  display:block;margin:16px 0 0;font-size:13px;font-weight:800;letter-spacing:.04em;
+  text-transform:var(--svc-list-title-case,none);color:var(--svc-title,var(--ink,#1a2230));
+}
+section[data-sec="services"].svcs-split .svc .svc-sub{
+  text-transform:var(--svc-sub-case,uppercase);
+}
+section[data-sec="services"].svcs-split .svc h3{
+  text-transform:var(--svc-title-case,none);
+}
+section[data-sec="services"] .section-head .eyebrow{
+  text-transform:var(--svc-eyebrow-case,uppercase);
+}
+section[data-sec="services"] .section-head h2{
+  text-transform:var(--svc-heading-case,none);
+}
+/* Site-wide title / eyebrow case (sections opt in via CSS vars) */
+.eyebrow{text-transform:var(--lp-eyebrow-case,uppercase)}
+.section-head h2{text-transform:var(--lp-heading-case,none)}
+
 section[data-sec="services"].svcs-split .svc-bullets{list-style:none;margin:18px 0 0;padding:0;width:100%;display:flex;flex-direction:column;gap:10px}
 section[data-sec="services"].svcs-split .svc-bullets li{display:flex;align-items:flex-start;gap:10px;font-size:14.5px;font-weight:500;line-height:1.35;color:var(--svc-body,#46535f)}
 section[data-sec="services"].svcs-split .svc-bullets .svc-tick{
@@ -169,9 +193,9 @@ section[data-sec="services"].svcs-split .svc-bullets .svc-tick{
 }
 section[data-sec="services"].svcs-split .svc-bullets .svc-tick svg{width:11px;height:11px;display:block}
 section[data-sec="services"].svcs-split .svc-cta{
-  margin-top:auto;padding-top:22px;display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:14px;
+  margin-top:28px;padding-top:0;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;box-sizing:border-box;text-align:center;font-weight:700;font-size:14px;
   color:var(--svc-cta-fg,var(--hivis,var(--pipe,#ff6a1f)));background:transparent;border:1.5px solid var(--svc-cta-bd,var(--hivis,var(--pipe,#ff6a1f)));
-  border-radius:6px;padding:10px 14px;text-decoration:none;line-height:1;
+  border-radius:6px;padding:12px 16px;text-decoration:none;line-height:1.2;
 }
 section[data-sec="services"].svcs-split a.svc-cta:hover{filter:brightness(.95)}
 section[data-sec="services"].svcs-split .svc-cta svg{width:16px;height:16px;display:block}
@@ -385,26 +409,90 @@ section[data-sec="faq"]{background:var(--faq-bg,transparent)}
 .faq details[open] summary::after{content:"–"}
 .faq p{margin-top:11px;color:var(--faq-answer,#46535f);font-weight:500;font-size:16px}
 
-/* footer */
-footer.site{background:var(--steel-950);color:#9fb0c2;padding:52px 0 110px;font-size:14.5px}
-.foot-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:32px}
-footer .brand{margin-bottom:14px}
-footer h4{color:#fff;font-family:"Barlow Condensed";font-weight:700;text-transform:uppercase;font-size:17px;letter-spacing:.04em;margin:0 0 12px}
-footer a{display:block;text-decoration:none;margin-bottom:8px;color:#9fb0c2}
-footer a:hover{color:#fff}
-.foot-blurb{max-width:34ch;color:#9fb0c2}
-.foot-legal{margin-top:34px;padding-top:20px;border-top:1px solid rgba(255,255,255,.1);font-size:12.5px;color:#6b7986;line-height:1.7}
-.foot-privacy{margin-top:12px;padding-top:0;border-top:none;font-size:12.5px;color:#6b7986;line-height:1.7}
-.foot-privacy a{display:inline;color:inherit;text-decoration:underline;margin:0}
-footer.site.foot-meta-empty .foot-blurb,
-footer.site.foot-meta-empty .foot-legal:not(.foot-privacy){display:none}
-footer.site.foot-meta-empty .foot-privacy{margin-top:28px;padding-top:0;border-top:none}
-footer.site.foot-no-legal .foot-legal:not(.foot-privacy){display:none}
-footer.site.foot-no-legal .foot-privacy{margin-top:28px;padding-top:20px;border-top:1px solid rgba(255,255,255,.1)}
-footer.site.foot-no-blurb .foot-blurb{display:none}
-@media(max-width:760px){.foot-grid{grid-template-columns:1fr;gap:24px}}
+/* Footer — LeadPages marketing layout (tenant) */
+footer.site{
+  --mkt-foot-bg:var(--foot-bg,var(--steel-950,#0b1b2a));
+  --mkt-foot-ink:#f9f7f2;--mkt-foot-muted:#9fb0bd;--mkt-foot-soft:#c3d0da;--mkt-foot-faint:#8496a2;
+  --mkt-foot-line:rgba(255,255,255,.14);--mkt-foot-accent:var(--foot-accent,var(--hivis,#C85A2C));
+  background:var(--mkt-foot-bg);color:var(--mkt-foot-soft);padding:40px 0 20px;font-size:14px;
+}
+footer.site .wrap,footer.site .wrap-wide{width:min(100% - 40px,1220px);max-width:1220px;margin-inline:auto}
+footer.site .footer-top{
+  display:grid;grid-template-columns:minmax(140px,200px) minmax(0,1fr) max-content;
+  column-gap:clamp(20px,2.6vw,36px);row-gap:24px;align-items:start;
+}
+footer.site .f-brand{min-width:0}
+footer.site .f-brand .foot-logo-wrap{
+  display:inline-flex;align-items:center;line-height:0;margin-bottom:10px;
+  height:var(--foot-logo-h,72px);transform:translate(var(--foot-logo-x,0),var(--foot-logo-y,0));
+}
+footer.site .f-brand .foot-logo-wrap img{
+  height:100%;width:auto;max-width:min(240px,100%);object-fit:contain;display:block;
+}
+footer.site .f-brand .brand{margin-bottom:10px}
+footer.site .f-brand .brand .nm{color:#fff}
+footer.site .f-tagline-brand{margin:0 0 8px;font-size:14px;font-weight:700;color:#fff}
+footer.site .f-tagline-brand .acc{color:var(--mkt-foot-accent)}
+footer.site .foot-blurb,.mkt-site-footer .blurb,footer.site .blurb{
+  max-width:28ch;margin:8px 0 0;color:var(--mkt-foot-muted);font-size:13.5px;line-height:1.45;
+}
+footer.site .f-nav{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,max-content));
+  justify-content:start;align-content:start;column-gap:clamp(20px,2.4vw,36px);row-gap:16px;min-width:0;
+}
+footer.site .f-col{min-width:0}
+footer.site .f-col h4,footer.site h4{
+  margin:0 0 10px;color:#fff;font-size:13px;font-weight:700;letter-spacing:0;
+  text-transform:var(--foot-col-case,none);font-family:inherit;
+}
+footer.site .f-col a{display:block;margin:0 0 7px;color:var(--mkt-foot-muted);font-weight:500;font-size:13.5px;text-decoration:none}
+footer.site .f-col a:hover{color:#fff}
+footer.site .f-support{
+  display:grid;grid-template-columns:auto auto;gap:12px 16px;align-items:center;justify-content:start;
+  width:max-content;max-width:100%;border:1px solid rgba(255,255,255,.3);border-radius:16px;padding:16px 18px;
+  background:linear-gradient(120deg,rgba(255,255,255,.07),rgba(255,255,255,.03) 48%,rgba(255,255,255,.05));
+  box-shadow:0 14px 32px rgba(0,0,0,.12);box-sizing:border-box;
+}
+footer.site .f-support-copy{display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+footer.site .f-support-lead{display:flex;flex-direction:column;gap:4px}
+footer.site .f-support h4{margin:0;font-size:18px;font-weight:750;line-height:1.2;color:#fff;text-transform:var(--foot-support-case,none)}
+footer.site .f-support .help{margin:0;color:var(--mkt-foot-muted);font-size:14.5px;line-height:1.2}
+footer.site .f-support-contacts{display:flex;flex-direction:column;gap:8px}
+footer.site .f-support .fphone,footer.site .f-support .email{
+  display:inline-flex;align-items:center;gap:10px;margin:0;text-decoration:none;color:#fff;font-weight:750;font-size:16px;line-height:1.2;
+}
+footer.site .f-support .email{color:var(--mkt-foot-soft);font-size:15px;font-weight:550}
+footer.site .f-support .fphone:hover,footer.site .f-support .email:hover{color:#fff}
+footer.site .f-support .f-ico{width:22px;height:22px;flex-shrink:0;display:block}
+footer.site .f-support-map{display:grid;place-items:center;width:84px;pointer-events:none}
+footer.site .f-support .f-ico-au{width:100%;height:auto;max-width:84px;color:rgba(232,238,242,.92);display:block}
+footer.site .footer-bottom{margin-top:28px;padding-top:22px;border-top:1px solid var(--mkt-foot-line);display:grid;gap:16px;color:var(--mkt-foot-faint)}
+footer.site .f-tagline{margin:0;font-size:clamp(1.2rem,2.8vw,1.9rem);font-weight:800;line-height:1.15;letter-spacing:-.035em;color:#fff}
+footer.site .f-tagline-accent{color:var(--mkt-foot-accent)}
+footer.site .f-bottom-meta{display:flex;flex-wrap:wrap;gap:10px 18px;justify-content:space-between;align-items:center}
+footer.site .f-legal{display:flex;flex-wrap:wrap;gap:4px 0;align-items:center;font-size:12px;line-height:1.35}
+footer.site .f-legal > span:not(:last-child)::after{content:'·';margin:0 8px;opacity:.55}
+footer.site .f-links{display:flex;flex-wrap:wrap;gap:12px 16px}
+footer.site .f-links a{color:inherit;text-decoration:none;font-size:12px;display:inline;margin:0}
+footer.site .f-links a:hover{color:#fff}
+footer.site.foot-hide-brand .f-brand{display:none}
+footer.site.foot-hide-nav .f-nav{display:none}
+footer.site.foot-hide-support .f-support{display:none}
+footer.site.foot-hide-tagline .f-tagline{display:none}
+footer.site.foot-hide-legal .f-legal{display:none}
+footer.site.foot-hide-links .f-links{display:none}
+@media(max-width:900px){
+  footer.site .footer-top{grid-template-columns:1fr; }
+  footer.site .f-support{width:100%;max-width:100%;grid-template-columns:1fr auto}
+  footer.site .f-tagline{white-space:normal}
+}
+@media(max-width:560px){
+  footer.site .f-nav{grid-template-columns:1fr 1fr}
+  footer.site .f-support{grid-template-columns:1fr; }
+  footer.site .f-support-map{justify-self:start}
+}
 
-/* LeadPages strip — always visible; coloured SVG accents */
+
 .lp-foot{width:100%;padding:16px 22px;box-sizing:border-box;background:#0e1217}
 .lp-foot-in{max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:14px}
 .lp-foot.lpf-center .lp-foot-in{justify-content:center}
