@@ -4525,6 +4525,11 @@
     },
     {
       "type": "text",
+      "key": "sections.aboutUs.imageAlt",
+      "label": "Image alt text"
+    },
+    {
+      "type": "text",
       "key": "sections.aboutUs.ctaLabel",
       "label": "Story button"
     },
@@ -4541,8 +4546,43 @@
     },
     {
       "type": "color",
+      "key": "sections.aboutUs.bg",
+      "label": "Section background"
+    },
+    {
+      "type": "color",
+      "key": "sections.aboutUs.eyebrowColor",
+      "label": "Eyebrow colour"
+    },
+    {
+      "type": "color",
+      "key": "sections.aboutUs.headingColor",
+      "label": "Heading colour"
+    },
+    {
+      "type": "color",
+      "key": "sections.aboutUs.introColor",
+      "label": "Intro colour"
+    },
+    {
+      "type": "color",
+      "key": "sections.aboutUs.bodyColor",
+      "label": "Body colour"
+    },
+    {
+      "type": "color",
       "key": "sections.aboutUs.accent",
       "label": "Accent colour"
+    },
+    {
+      "type": "color",
+      "key": "sections.aboutUs.ctaColor",
+      "label": "Story button colour"
+    },
+    {
+      "type": "color",
+      "key": "sections.aboutUs.ctaBorderColor",
+      "label": "Story button border"
     },
     {
       "type": "toggle",
@@ -4574,6 +4614,21 @@
       "type": "color",
       "key": "sections.aboutUs.bandBg",
       "label": "Band background"
+    },
+    {
+      "type": "color",
+      "key": "sections.aboutUs.bandHeadingColor",
+      "label": "Band heading colour"
+    },
+    {
+      "type": "color",
+      "key": "sections.aboutUs.bandSubColor",
+      "label": "Band subtext colour"
+    },
+    {
+      "type": "color",
+      "key": "sections.aboutUs.bandTagColor",
+      "label": "Band tagline colour"
     },
     {
       "key": "sections.aboutUs.imageFit",
@@ -4640,6 +4695,70 @@
           "label": "Plain text"
         }
       ]
+    },
+    {
+      "key": "sections.aboutUs.quoteAlign",
+      "label": "Quote alignment",
+      "type": "select",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Centre"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "key": "sections.aboutUs.quoteSize",
+      "label": "Quote size %",
+      "type": "number",
+      "min": 50,
+      "max": 220
+    },
+    {
+      "key": "sections.aboutUs.quoteX",
+      "label": "Quote position X %",
+      "type": "number",
+      "min": 0,
+      "max": 100
+    },
+    {
+      "key": "sections.aboutUs.quoteY",
+      "label": "Quote position Y %",
+      "type": "number",
+      "min": 0,
+      "max": 100
+    },
+    {
+      "key": "sections.aboutUs.quoteMaxW",
+      "label": "Quote max width %",
+      "type": "number",
+      "min": 40,
+      "max": 100
+    },
+    {
+      "key": "sections.aboutUs.quoteScrim",
+      "label": "Quote background opacity %",
+      "type": "number",
+      "min": 0,
+      "max": 100
+    },
+    {
+      "type": "color",
+      "key": "sections.aboutUs.quoteColor",
+      "label": "Quote text colour"
+    },
+    {
+      "type": "color",
+      "key": "sections.aboutUs.quoteAttrColor",
+      "label": "Quote attribution colour"
     }
   ]
 }

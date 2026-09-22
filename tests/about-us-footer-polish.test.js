@@ -13,6 +13,7 @@ const manage = fs.readFileSync(path.join(root, 'manage.html'), 'utf8');
 const css = fs.readFileSync(path.join(root, 'assets/lp-about-us.css'), 'utf8');
 const js = fs.readFileSync(path.join(root, 'assets/lp-about-us.js'), 'utf8');
 const demoShared = fs.readFileSync(path.join(root, 'marketplace/demos/demo-shared.js'), 'utf8');
+const fields = fs.readFileSync(path.join(root, 'marketplace/playground-field-defs.json'), 'utf8');
 
 test('About Us headings use Barlow Condensed (not Georgia)', function () {
   assert.match(css, /\.au-heading\{[^}]*Barlow Condensed/);
@@ -49,6 +50,51 @@ test('About Us quote handwriting \/ plain + show\/hide', function () {
   assert.match(manage, /id="au-quote-on"/);
   assert.match(manage, /id="au-quote-style"/);
   assert.match(manage, /quoteStyle:'handwriting'/);
+});
+
+test('About Us quote overlays image with size and position sliders', function () {
+  assert.match(css, /--au-quote-x/);
+  assert.match(css, /--au-quote-y/);
+  assert.match(css, /--au-quote-size/);
+  assert.match(css, /transform:translate\(-50%,-50%\)/);
+  assert.match(js, /--au-quote-x/);
+  assert.match(js, /quoteSize/);
+  assert.match(js, /quoteX/);
+  assert.match(js, /quoteY/);
+  assert.match(js, /quoteScrim/);
+  assert.match(manage, /id="au-quote-size"/);
+  assert.match(manage, /id="au-quote-x"/);
+  assert.match(manage, /id="au-quote-y"/);
+  assert.match(manage, /id="au-quote-scrim"/);
+  assert.match(manage, /quoteSize:100/);
+  assert.match(manage, /quoteX:50/);
+  assert.match(manage, /quoteY:78/);
+  assert.match(fields, /sections\.aboutUs\.quoteX/);
+  assert.match(fields, /sections\.aboutUs\.quoteSize/);
+});
+
+test('About Us section has full text colour styling options', function () {
+  assert.match(css, /--au-eyebrow/);
+  assert.match(css, /--au-intro/);
+  assert.match(css, /--au-body/);
+  assert.match(css, /--au-cta/);
+  assert.match(css, /--au-quote-color/);
+  assert.match(js, /eyebrowColor/);
+  assert.match(js, /introColor/);
+  assert.match(js, /bodyColor/);
+  assert.match(js, /ctaColor/);
+  assert.match(js, /quoteColor/);
+  assert.match(manage, /Section colours/);
+  assert.match(manage, /_auCol\('au-eyebrow'/);
+  assert.match(manage, /_auCol\('au-heading'/);
+  assert.match(manage, /_auCol\('au-intro'/);
+  assert.match(manage, /_auCol\('au-body'/);
+  assert.match(manage, /_auCol\('au-quote-color'/);
+  assert.match(manage, /colWire\('au-eyebrow','eyebrowColor'\)/);
+  assert.match(manage, /colWire\('au-quote-color','quoteColor'\)/);
+  assert.match(manage, /imageAlt/);
+  assert.match(fields, /sections\.aboutUs\.eyebrowColor/);
+  assert.match(fields, /sections\.aboutUs\.bodyColor/);
 });
 
 test('Footer can host LeadPages logo; Privacy\/Terms move beside copyright', function () {
