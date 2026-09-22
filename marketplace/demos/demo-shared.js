@@ -2045,8 +2045,10 @@ function applyCfg(C){
         var nm=brandA&&brandA.querySelector('.nm');
         var customLogo=(F.logoImage&&String(F.logoImage).trim())||'';
         var useCustom=(F.logoMode==='custom'&&customLogo);
-        var useSite=(F.logoMode!=='text'&&F.logoMode!=='custom'&&C.logo&&C.logo.mode==='image'&&C.logo.imageUrl);
-        var logoUrl=useCustom?customLogo:(useSite?C.logo.imageUrl:'');
+        var siteLogoUrl=(C.logo&&(C.logo.imageUrl||C.logo.url))||'';
+        var logoMode=(C.logo&&C.logo.mode)||'';
+        var useSite=(F.logoMode!=='text'&&F.logoMode!=='custom'&&!!siteLogoUrl&&logoMode!=='mark'&&logoMode!=='text');
+        var logoUrl=useCustom?customLogo:(useSite?siteLogoUrl:'');
         var logoH=parseInt(F.logoHeight!=null?F.logoHeight:72,10); if(isNaN(logoH)) logoH=72; logoH=Math.max(24,Math.min(160,logoH));
         var lx=parseInt(F.logoOffsetX!=null?F.logoOffsetX:0,10)||0;
         var ly=parseInt(F.logoOffsetY!=null?F.logoOffsetY:0,10)||0;
@@ -2054,11 +2056,16 @@ function applyCfg(C){
         ft.style.setProperty('--foot-logo-x', lx+'px');
         ft.style.setProperty('--foot-logo-y', ly+'px');
         if(logoWrap){
+          logoWrap.style.setProperty('--foot-logo-h', logoH+'px');
+          logoWrap.style.setProperty('--foot-logo-x', lx+'px');
+          logoWrap.style.setProperty('--foot-logo-y', ly+'px');
           if(logoUrl){
-            logoWrap.hidden=false; logoWrap.innerHTML='<img src="'+esc(logoUrl)+'" alt="'+esc((C.businessName||C.logo&&C.logo.text)||'')+'">';
+            logoWrap.hidden=false; logoWrap.removeAttribute('hidden');
+            logoWrap.innerHTML='<img src="'+esc(logoUrl)+'" alt="'+esc((C.businessName||C.logo&&C.logo.text)||'')+'">';
             if(mark) mark.style.display='none'; if(nm) nm.style.display='none';
           } else {
-            logoWrap.hidden=true; logoWrap.innerHTML='';
+            logoWrap.hidden=true; logoWrap.setAttribute('hidden','');
+            logoWrap.innerHTML='';
             if(mark) mark.style.display=''; if(nm){ nm.style.display=''; if(C.businessName||(C.logo&&C.logo.text)) nm.textContent=C.logo&&C.logo.text||C.businessName; }
           }
         }
