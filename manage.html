@@ -84,6 +84,10 @@ h1{font-family:var(--font-display);font-weight:500;font-size:clamp(26px,4vw,36px
 .sec-modeseg button.on{background:var(--accent);color:var(--accent-text);border-color:var(--accent);}
 .sec-modeseg button+button{border-left:0;}
 #svc-list.hide-inactive .svc-row[data-active="0"]{display:none;}
+#svc-list[data-svc-mode="grid"] .svc-split-only{display:none!important;}
+#svc-list[data-svc-mode="split"] .svc-grid-only{display:none!important;}
+#svc-list .svc-bull-row{display:flex;gap:8px;align-items:center;margin-bottom:6px;}
+#svc-list .svc-bull-row input{flex:1;min-width:0;}
 .svc-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:6px;}
 .lead-item{padding:10px 12px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;background:var(--surface-2);}
 .li-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:13.5px;font-weight:500;}
@@ -4753,6 +4757,44 @@ function wireQuoteStyle(c){
     colWire('faq-eyebrow','eyebrowColor'); colWire('faq-title','titleColor'); colWire('faq-summary','summaryColor'); colWire('faq-answer','answerColor'); colWire('faq-card','cardBg'); colWire('faq-stroke','stroke'); colWire('faq-accent','accentColor');
   }
 
+
+  function servicesModeCard(c){
+    var SV=(c.sections&&c.sections.services)||{};
+    var mode=(SV.mode==='split'||SV.mode==='columns')?'split':'grid';
+    var accentOn=SV.accentOn!==false;
+    var ac=(SV.accentColor&&/^#[0-9a-fA-F]{6}$/.test(SV.accentColor))?SV.accentColor:'';
+    var defAc='#ff6a1f';
+    var h='<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Layout</h2><p class="lede" style="margin:0 0 12px;">Classic grid keeps the heading above the cards. Split columns puts eyebrow, title and intro on the left, with service columns on the right (title, subtitle, icon list and optional link).</p>';
+    h+='<div class="row"><div class="f"><label>Style</label><select id="svc-mode" class="tin"><option value="grid"'+(mode==='grid'?' selected':'')+'>Classic grid</option><option value="split"'+(mode==='split'?' selected':'')+'>Split columns (text left)</option></select></div><div class="f"></div></div>';
+    h+='<div id="svc-split-opts" style="'+(mode==='split'?'':'display:none;')+'margin-top:14px;padding-top:14px;border-top:1px solid var(--line);">';
+    h+='<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 12px;"><input type="checkbox" id="svc-accent-on"'+(accentOn?' checked':'')+'> Accent line under title</label>';
+    h+='<div class="f" style="max-width:340px;margin:0;"><label>Accent colour</label><div style="display:flex;align-items:center;gap:8px;"><input type="color" id="svc-accent-clr" value="'+(ac||defAc)+'" style="width:46px;height:34px;padding:0;border:1px solid var(--line);border-radius:8px;cursor:pointer;flex:0 0 auto;"><input type="text" id="svc-accent-tx" class="tin" value="'+ac+'" placeholder="'+defAc+' (theme)" style="flex:1;min-width:0;"><button type="button" class="btn ghost" id="svc-accent-def" style="padding:6px 10px;">Default</button></div></div>';
+    h+='</div></div>';
+    return h;
+  }
+  function wireServicesMode(c){
+    function SV(){ if(!c.sections)c.sections={}; if(!c.sections.services)c.sections.services={}; return c.sections.services; }
+    function syncSplitUi(){
+      var mode=(SV().mode==='split'||SV().mode==='columns')?'split':'grid';
+      var opts=$('svc-split-opts'); if(opts) opts.style.display=(mode==='split')?'':'none';
+      var box=$('svc-list'); if(box) box.setAttribute('data-svc-mode', mode);
+      var lede=$('svc-cards-lede');
+      if(lede) lede.textContent=(mode==='split')
+        ? 'Add columns with a title, subtitle, icon list and optional Learn more link (URL, landing page, or app position). Untick cards you do not need.'
+        : 'Untick anything this client doesn\u2019t do, or re-purpose a card \u2014 icon or image, colours, size, heading and text.';
+      var h2=$('svc-cards-h2');
+      if(h2) h2.textContent=(mode==='split')?'Service columns':'Service cards';
+    }
+    var md=$('svc-mode');
+    if(md){ md.value=((SV().mode==='split'||SV().mode==='columns')?'split':'grid'); md.addEventListener('change',function(){ SV().mode=md.value; syncSplitUi(); persist(); previewApply(); }); }
+    var ao=$('svc-accent-on'); if(ao) ao.addEventListener('change',function(){ SV().accentOn=ao.checked; persist(); previewApply(); });
+    var clr=$('svc-accent-clr'), tx=$('svc-accent-tx'), df=$('svc-accent-def');
+    if(clr) clr.addEventListener('input',function(){ SV().accentColor=clr.value; if(tx) tx.value=clr.value; persist(); previewApply(); });
+    if(tx) tx.addEventListener('input',function(){ var v=tx.value.trim(); if(v===''){ delete SV().accentColor; } else { if(v[0]!=='#')v='#'+v; if(/^#[0-9a-fA-F]{6}$/.test(v)){ SV().accentColor=v; if(clr)clr.value=v; } } persist(); previewApply(); });
+    if(df) df.addEventListener('click',function(){ delete SV().accentColor; if(tx)tx.value=''; persist(); previewApply(); });
+    syncSplitUi();
+  }
+
   function servicesStyleCard(c){
     var SV=(c.sections&&c.sections.services)||{};
     var DEF={ eyebrowColor:'#1f7bb8', titleColor:'#1a2230', introColor:'#5b6878' };
@@ -8142,9 +8184,10 @@ function heroCtaCard(c){
       _prDraw();
     } else if(sub==='services'){
       body.innerHTML=secCard(c,'services','Services section',true,[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro text','ta']])
+        +servicesModeCard(c)
         +servicesStyleCard(c)
-        +'<div class="card" style="margin-bottom:22px;"><div class="svc-head"><h2 style="margin:0">Service cards</h2><label class="ci-toggle"><input type="checkbox" id="svc-hide-inactive" checked> Hide inactive</label></div><p class="lede">Untick anything this client doesn\u2019t do, or re-purpose a card \u2014 icon or image, colours, size, heading and text.</p><div id="svc-list"></div></div>';
-      wireSec(c,'services',true,[['eyebrow'],['heading'],['intro']]); wireServicesStyle(c); wireTradeServices(c);
+        +'<div class="card" style="margin-bottom:22px;"><div class="svc-head"><h2 style="margin:0" id="svc-cards-h2">Service cards</h2><label class="ci-toggle"><input type="checkbox" id="svc-hide-inactive" checked> Hide inactive</label></div><p class="lede" id="svc-cards-lede">Untick anything this client doesn\u2019t do, or re-purpose a card \u2014 icon or image, colours, size, heading and text.</p><div id="svc-list"></div></div>';
+      wireSec(c,'services',true,[['eyebrow'],['heading'],['intro']]); wireServicesMode(c); wireServicesStyle(c); wireTradeServices(c);
     } else if(sub==='featureStrip'){
       body.innerHTML=secCard(c,'featureStrip','Feature Strip section',true,[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro','ta']])+featureStripStyleCard(c)+listCard('featureStrip','Features','Each feature shows an icon, title and detail in a horizontal strip. Edit, hide, reorder or add.'); wireSec(c,'featureStrip',true,[['eyebrow'],['heading'],['intro']]); wireFeatureStripStyle(c); listEditor($('le-featureStrip'),c,'featureStrip');
     } else if(sub==='why'){
@@ -9918,6 +9961,9 @@ function heroCtaCard(c){
     if(!Array.isArray(c.services)||!c.services.length){ c.services=JSON.parse(JSON.stringify(DEFAULT_TRADE_SVCS)); }
     var SZ=[['compact','Compact 56'],['standard','Standard 80'],['large','Large 120'],['hero','Hero 180']];
     function hexOk(v){ v=String(v||'').trim(); return /^#?[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/.test(v)?(v.charAt(0)==='#'?v:'#'+v):''; }
+    function svcMode(){ var SV=(c.sections&&c.sections.services)||{}; return (SV.mode==='split'||SV.mode==='columns')?'split':'grid'; }
+    function ensureCta(s){ if(!s.cta||typeof s.cta!=='object') s.cta={}; return s.cta; }
+    function ensureBullets(s){ if(!Array.isArray(s.bullets)) s.bullets=[]; return s.bullets; }
     function colorField(i,k,label,val){
       var h=hexOk(val); var cv=/^#[0-9a-fA-F]{6}$/.test(h)?h:(/^#[0-9a-fA-F]{3}$/.test(h)?('#'+h.charAt(1)+h.charAt(1)+h.charAt(2)+h.charAt(2)+h.charAt(3)+h.charAt(3)):'#ffffff');
       return '<div class="f" style="margin:0;flex:1 1 calc(50% - 6px);min-width:170px;"><label>'+label+'</label>'
@@ -9926,58 +9972,124 @@ function heroCtaCard(c){
         +'<input type="text" class="svc-ctx tin" data-i="'+i+'" data-k="'+k+'" value="'+esc(h)+'" placeholder="Default" style="flex:1;min-width:0;">'
         +'<button type="button" class="btn ghost sm svc-cdef" data-i="'+i+'" data-k="'+k+'">Default</button></div></div>';
     }
-    box.innerHTML=c.services.map(function(s,i){
-      var op=(s.bgOpacity!=null&&s.bgOpacity!=='')?+s.bgOpacity:100; if(isNaN(op)) op=100;
-      var sc=(s.mediaScale!=null&&s.mediaScale!=='')?+s.mediaScale:100; if(isNaN(sc)) sc=100;
-      var msz=s.mediaSize||'';
-      return '<div class="svc-row" data-row="'+i+'" data-active="'+(s.on===false?'0':'1')+'"'+(s.on===false?' style="opacity:.5;"':'')+'>'
-        +'<div style="display:flex;gap:12px;align-items:center;margin-bottom:10px;">'
-        +'<label style="display:flex;gap:7px;align-items:center;font-weight:600;font-size:13px;white-space:nowrap;"><input type="checkbox" class="svc-on" data-i="'+i+'"'+(s.on===false?'':' checked')+'> Shown</label>'
-        +'<div class="iconctl"><button type="button" class="icon-pick" tabindex="-1" title="Choose an icon"></button><input type="text" class="svc-ic icon-input tin" data-i="'+i+'" style="width:56px;text-align:center;font-size:18px;" placeholder="icon"></div>'
-        +'<input type="text" class="svc-t tin" data-i="'+i+'" style="flex:1;" placeholder="Heading">'
-        +'</div>'
-        +'<textarea class="svc-b tin" data-i="'+i+'" rows="2" style="width:100%;resize:vertical;" placeholder="Description"></textarea>'
-        +'<div style="margin-top:12px;"><label style="font-weight:600;font-size:13px;">Large icon / image</label>'
-        +cwImgHTML('class="svc-img tin" data-i="'+i+'"','https://\u2026 or upload','Big service icon or photo')
-        +'<input type="hidden" class="svc-img-pid" data-i="'+i+'"></div>'
-        +'<div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;">'
-        +colorField(i,'bg','Background colour',s.bg)
-        +colorField(i,'stroke','Stroke colour',s.stroke)
-        +colorField(i,'titleColor','Title colour',s.titleColor)
-        +colorField(i,'color','Font colour',s.color)
-        +'</div>'
-        +'<div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;align-items:flex-end;">'
-        +'<div class="f" style="margin:0;flex:1 1 calc(50% - 6px);min-width:170px;"><label>Icon / image position</label><select class="svc-align tin" data-i="'+i+'"><option value="left"'+(s.mediaAlign==='left'||!s.mediaAlign?' selected':'')+'>Left</option><option value="center"'+(s.mediaAlign==='center'?' selected':'')+'>Centre</option><option value="right"'+(s.mediaAlign==='right'?' selected':'')+'>Right</option></select></div>'
-        +'<div class="f" style="margin:0;flex:1 1 calc(50% - 6px);min-width:170px;"><label>Image fit</label><select class="svc-fit tin" data-i="'+i+'"><option value="contain"'+(s.imageFit!=='cover'&&s.imageFit!=='fill'&&s.imageFit!=='stretch'?' selected':'')+'>Contain (fit, no crop)</option><option value="cover"'+(s.imageFit==='cover'?' selected':'')+'>Cover (fill &amp; crop)</option><option value="fill"'+(s.imageFit==='fill'?' selected':'')+'>Fill (stretch to box)</option><option value="stretch"'+(s.imageFit==='stretch'?' selected':'')+'>Stretch</option></select><span class="hint" style="display:block;margin-top:4px;">Applies when an image is uploaded</span></div>'
-        +'</div>'
-        +'<div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;">'
-        +'<div class="f" style="margin:0;flex:1 1 calc(50% - 6px);min-width:170px;"><label>Background opacity <span class="svc-op-v" data-i="'+i+'" style="font-weight:700;color:var(--accent);">'+op+'%</span></label>'
-        +'<input type="range" class="svc-op" data-i="'+i+'" min="0" max="100" value="'+op+'" style="width:100%;">'
-        +'<span class="hint" style="display:block;margin-top:4px;">100% = solid \u00b7 0% = fully clear (needs a background colour)</span></div>'
-        +'<div class="f" style="margin:0;flex:1 1 calc(50% - 6px);min-width:170px;"><label>Image + icon size <span class="svc-sc-v" data-i="'+i+'" style="font-weight:700;color:var(--accent);">'+sc+'%</span></label>'
-        +'<div style="display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 8px;">'
-        +SZ.map(function(z){ return '<button type="button" class="btn ghost sm svc-msz" data-i="'+i+'" data-v="'+z[0]+'" style="'+(msz===z[0]?'border-color:var(--accent);color:var(--accent);':'')+'">'+z[1]+'</button>'; }).join('')
-        +'<button type="button" class="btn ghost sm svc-msz-def" data-i="'+i+'" title="Reset size">Default</button>'
-        +'</div>'
-        +'<input type="range" class="svc-sc" data-i="'+i+'" min="50" max="250" step="5" value="'+sc+'" style="width:100%;">'
-        +'<span class="hint" style="display:block;margin-top:4px;">Presets set the base size \u00b7 slider scales 50\u2013250%</span></div>'
-        +'</div></div>';
-    }).join('');
-    c.services.forEach(function(s,i){
-      var ic=box.querySelector('.svc-ic[data-i="'+i+'"]'); if(ic) ic.value=s.icon||'';
-      var tt=box.querySelector('.svc-t[data-i="'+i+'"]'); if(tt) tt.value=s.title||'';
-      var bb=box.querySelector('.svc-b[data-i="'+i+'"]'); if(bb) bb.value=s.body||'';
-      var im=box.querySelector('.svc-img[data-i="'+i+'"]'); if(im) im.value=s.image||'';
-      var pid=box.querySelector('.svc-img-pid[data-i="'+i+'"]'); if(pid) pid.value=s.image_pid||'';
-    });
-    refreshIconBtns(box);
+    function linkFields(i,s){
+      var cta=ensureCta(s);
+      var act=cta.linkAction||s.linkAction||'none';
+      var tgt=cta.linkTarget||s.linkTarget||'quote';
+      var page=cta.linkPage||s.linkPage||'';
+      var url=cta.linkUrl||s.linkUrl||'';
+      var label=(cta.label!=null?cta.label:'Learn more');
+      var h='<div class="svc-split-only" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line);">';
+      h+='<div style="font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px;">Column link</div>';
+      h+='<div style="display:flex;flex-wrap:wrap;gap:12px;">';
+      h+='<div class="f" style="margin:0;flex:1 1 180px;min-width:160px;"><label>Button label</label><input type="text" class="svc-cta-label tin" data-i="'+i+'" value="'+esc(label)+'" placeholder="Learn more"></div>';
+      h+='<div class="f" style="margin:0;flex:1 1 220px;min-width:180px;"><label>When clicked</label><select class="svc-link-act tin" data-i="'+i+'"><option value="none"'+(act==='none'?' selected':'')+'>None (not clickable)</option><option value="scroll"'+(act==='scroll'?' selected':'')+'>App / section on this page</option><option value="page"'+(act==='page'?' selected':'')+'>Landing page on this site</option><option value="url"'+(act==='url'?' selected':'')+'>External URL (new tab)</option></select></div>';
+      h+='<div class="f svc-link-tgt-wrap" data-i="'+i+'" style="margin:0;flex:1 1 220px;min-width:180px;'+(act==='scroll'?'':'display:none;')+'"><label>App / section</label><select class="svc-link-tgt tin" data-i="'+i+'">'+heroCtaScrollOptsHtml(tgt)+'</select></div>';
+      h+='<div class="f svc-link-page-wrap" data-i="'+i+'" style="margin:0;flex:1 1 220px;min-width:180px;'+(act==='page'?'':'display:none;')+'"><label>Landing page slug</label><input type="text" class="svc-link-page tin" data-i="'+i+'" value="'+esc(page)+'" placeholder="e.g. about"></div>';
+      h+='<div class="f svc-link-url-wrap" data-i="'+i+'" style="margin:0;flex:1 1 220px;min-width:180px;'+(act==='url'?'':'display:none;')+'"><label>External URL</label><input type="text" class="svc-link-url tin" data-i="'+i+'" value="'+esc(url)+'" placeholder="https://\u2026"></div>';
+      h+='</div></div>';
+      return h;
+    }
+    function bulletsHtml(i,s){
+      var bulls=ensureBullets(s);
+      if(!bulls.length && s.body && String(s.body).trim() && svcMode()==='split'){
+        /* show empty row for editing */
+      }
+      var rows=bulls.map(function(b,bi){
+        return '<div class="svc-bull-row" data-i="'+i+'" data-bi="'+bi+'"><input type="text" class="svc-bull-tx tin" data-i="'+i+'" data-bi="'+bi+'" value="'+esc((b&&(b.text||b.title))||'')+'" placeholder="List item"><button type="button" class="btn ghost sm svc-bull-rm" data-i="'+i+'" data-bi="'+bi+'" title="Remove">\u00d7</button></div>';
+      }).join('');
+      return '<div class="svc-split-only" style="margin-top:12px;"><label style="font-weight:600;font-size:13px;">Feature list (icons)</label><div class="svc-bulls" data-i="'+i+'">'+rows+'</div><button type="button" class="btn ghost sm svc-bull-add" data-i="'+i+'" style="margin-top:4px;">+ Add item</button></div>';
+    }
+    function draw(){
+      box.setAttribute('data-svc-mode', svcMode());
+      box.innerHTML=c.services.map(function(s,i){
+        var op=(s.bgOpacity!=null&&s.bgOpacity!=='')?+s.bgOpacity:100; if(isNaN(op)) op=100;
+        var sc=(s.mediaScale!=null&&s.mediaScale!=='')?+s.mediaScale:100; if(isNaN(sc)) sc=100;
+        var msz=s.mediaSize||'';
+        var sub=s.subtitle||'';
+        return '<div class="svc-row" data-row="'+i+'" data-active="'+(s.on===false?'0':'1')+'"'+(s.on===false?' style="opacity:.5;"':'')+'>'
+          +'<div style="display:flex;gap:12px;align-items:center;margin-bottom:10px;flex-wrap:wrap;">'
+          +'<label style="display:flex;gap:7px;align-items:center;font-weight:600;font-size:13px;white-space:nowrap;"><input type="checkbox" class="svc-on" data-i="'+i+'"'+(s.on===false?'':' checked')+'> Shown</label>'
+          +'<div class="iconctl"><button type="button" class="icon-pick" tabindex="-1" title="Choose an icon"></button><input type="text" class="svc-ic icon-input tin" data-i="'+i+'" style="width:56px;text-align:center;font-size:18px;" placeholder="icon"></div>'
+          +'<input type="text" class="svc-t tin" data-i="'+i+'" style="flex:1;min-width:140px;" placeholder="Title">'
+          +'<button type="button" class="btn ghost sm svc-rm" data-i="'+i+'" style="margin-left:auto;">Remove</button>'
+          +'</div>'
+          +'<input type="text" class="svc-sub tin svc-split-only" data-i="'+i+'" style="width:100%;margin-bottom:8px;" placeholder="Sub title (e.g. RESIDENTIAL &amp; COMMERCIAL)" value="'+esc(sub)+'">'
+          +'<textarea class="svc-b tin svc-grid-only" data-i="'+i+'" rows="2" style="width:100%;resize:vertical;" placeholder="Description"></textarea>'
+          +bulletsHtml(i,s)
+          +'<div style="margin-top:12px;"><label style="font-weight:600;font-size:13px;">Large icon / image</label>'
+          +cwImgHTML('class="svc-img tin" data-i="'+i+'"','https://\u2026 or upload','Big service icon or photo')
+          +'<input type="hidden" class="svc-img-pid" data-i="'+i+'"></div>'
+          +'<div class="svc-split-only" style="margin-top:12px;"><label style="font-weight:600;font-size:13px;">Side strip image (optional)</label>'
+          +cwImgHTML('class="svc-side tin" data-i="'+i+'"','https://\u2026 or upload','Decorative strip on the right of the column')
+          +'<input type="hidden" class="svc-side-pid" data-i="'+i+'"></div>'
+          +linkFields(i,s)
+          +'<div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;">'
+          +colorField(i,'bg','Background colour',s.bg)
+          +colorField(i,'stroke','Stroke colour',s.stroke)
+          +colorField(i,'titleColor','Title colour',s.titleColor)
+          +colorField(i,'color','Font colour',s.color)
+          +'</div>'
+          +'<div class="svc-grid-only" style="display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;align-items:flex-end;">'
+          +'<div class="f" style="margin:0;flex:1 1 calc(50% - 6px);min-width:170px;"><label>Icon / image position</label><select class="svc-align tin" data-i="'+i+'"><option value="left"'+(s.mediaAlign==='left'||!s.mediaAlign?' selected':'')+'>Left</option><option value="center"'+(s.mediaAlign==='center'?' selected':'')+'>Centre</option><option value="right"'+(s.mediaAlign==='right'?' selected':'')+'>Right</option></select></div>'
+          +'<div class="f" style="margin:0;flex:1 1 calc(50% - 6px);min-width:170px;"><label>Image fit</label><select class="svc-fit tin" data-i="'+i+'"><option value="contain"'+(s.imageFit!=='cover'&&s.imageFit!=='fill'&&s.imageFit!=='stretch'?' selected':'')+'>Contain (fit, no crop)</option><option value="cover"'+(s.imageFit==='cover'?' selected':'')+'>Cover (fill &amp; crop)</option><option value="fill"'+(s.imageFit==='fill'?' selected':'')+'>Fill (stretch to box)</option><option value="stretch"'+(s.imageFit==='stretch'?' selected':'')+'>Stretch</option></select><span class="hint" style="display:block;margin-top:4px;">Applies when an image is uploaded</span></div>'
+          +'</div>'
+          +'<div class="svc-grid-only" style="display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;">'
+          +'<div class="f" style="margin:0;flex:1 1 calc(50% - 6px);min-width:170px;"><label>Background opacity <span class="svc-op-v" data-i="'+i+'" style="font-weight:700;color:var(--accent);">'+op+'%</span></label>'
+          +'<input type="range" class="svc-op" data-i="'+i+'" min="0" max="100" value="'+op+'" style="width:100%;">'
+          +'<span class="hint" style="display:block;margin-top:4px;">100% = solid \u00b7 0% = fully clear (needs a background colour)</span></div>'
+          +'<div class="f" style="margin:0;flex:1 1 calc(50% - 6px);min-width:170px;"><label>Image + icon size <span class="svc-sc-v" data-i="'+i+'" style="font-weight:700;color:var(--accent);">'+sc+'%</span></label>'
+          +'<div style="display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 8px;">'
+          +SZ.map(function(z){ return '<button type="button" class="btn ghost sm svc-msz" data-i="'+i+'" data-v="'+z[0]+'" style="'+(msz===z[0]?'border-color:var(--accent);color:var(--accent);':'')+'">'+z[1]+'</button>'; }).join('')
+          +'<button type="button" class="btn ghost sm svc-msz-def" data-i="'+i+'" title="Reset size">Default</button>'
+          +'</div>'
+          +'<input type="range" class="svc-sc" data-i="'+i+'" min="50" max="250" step="5" value="'+sc+'" style="width:100%;">'
+          +'<span class="hint" style="display:block;margin-top:4px;">Presets set the base size \u00b7 slider scales 50\u2013250%</span></div>'
+          +'</div></div>';
+      }).join('')+'<button type="button" class="btn ghost svc-add" style="margin-top:8px;">+ Add column</button>';
+      c.services.forEach(function(s,i){
+        var ic=box.querySelector('.svc-ic[data-i="'+i+'"]'); if(ic) ic.value=s.icon||'';
+        var tt=box.querySelector('.svc-t[data-i="'+i+'"]'); if(tt) tt.value=s.title||'';
+        var bb=box.querySelector('.svc-b[data-i="'+i+'"]'); if(bb) bb.value=s.body||'';
+        var im=box.querySelector('.svc-img[data-i="'+i+'"]'); if(im) im.value=s.image||'';
+        var pid=box.querySelector('.svc-img-pid[data-i="'+i+'"]'); if(pid) pid.value=s.image_pid||'';
+        var side=box.querySelector('.svc-side[data-i="'+i+'"]'); if(side) side.value=s.sideImage||'';
+        var spid=box.querySelector('.svc-side-pid[data-i="'+i+'"]'); if(spid) spid.value=s.sideImage_pid||'';
+      });
+      refreshIconBtns(box);
+      syncLinkVisibility();
+    }
+    function syncLinkVisibility(){
+      box.querySelectorAll('.svc-link-act').forEach(function(el){
+        var i=el.getAttribute('data-i'); var act=el.value||'none';
+        var tw=box.querySelector('.svc-link-tgt-wrap[data-i="'+i+'"]');
+        var pw=box.querySelector('.svc-link-page-wrap[data-i="'+i+'"]');
+        var uw=box.querySelector('.svc-link-url-wrap[data-i="'+i+'"]');
+        if(tw) tw.style.display=act==='scroll'?'':'none';
+        if(pw) pw.style.display=act==='page'?'':'none';
+        if(uw) uw.style.display=act==='url'?'':'none';
+      });
+    }
     function setColor(s,k,v){ v=hexOk(v); if(v) s[k]=v; else delete s[k]; }
+    if(box.__svcWired){ draw(); wireSvcHide(); applySvcFilter(); return; }
+    box.__svcWired=true;
+    draw();
     box.addEventListener('input',function(e){
       var el=e.target, i=+el.getAttribute('data-i'); if(isNaN(i)) return; var s=c.services[i]; if(!s) return;
       if(el.classList.contains('svc-ic')) s.icon=el.value;
       else if(el.classList.contains('svc-t')) s.title=el.value;
+      else if(el.classList.contains('svc-sub')) s.subtitle=el.value;
       else if(el.classList.contains('svc-b')) s.body=el.value;
+      else if(el.classList.contains('svc-bull-tx')){
+        var bi=+el.getAttribute('data-bi'); ensureBullets(s);
+        if(!s.bullets[bi]) s.bullets[bi]={on:true,text:''};
+        s.bullets[bi].text=el.value; s.bullets[bi].on=true;
+      }
+      else if(el.classList.contains('svc-cta-label')){ ensureCta(s).label=el.value; }
+      else if(el.classList.contains('svc-link-page')){ ensureCta(s).linkPage=el.value.trim(); }
+      else if(el.classList.contains('svc-link-url')){ ensureCta(s).linkUrl=el.value.trim(); }
       else if(el.classList.contains('svc-img')){ s.image=el.value.trim(); if(!s.image){ delete s.image; delete s.image_pid; var p=box.querySelector('.svc-img-pid[data-i="'+i+'"]'); if(p) p.value=''; } }
+      else if(el.classList.contains('svc-side')){ s.sideImage=el.value.trim(); if(!s.sideImage){ delete s.sideImage; delete s.sideImage_pid; var p2=box.querySelector('.svc-side-pid[data-i="'+i+'"]'); if(p2) p2.value=''; } }
       else if(el.classList.contains('svc-cf')){ var k=el.getAttribute('data-k'); setColor(s,k,el.value); var tx=box.querySelector('.svc-ctx[data-i="'+i+'"][data-k="'+k+'"]'); if(tx) tx.value=el.value; }
       else if(el.classList.contains('svc-ctx')){ var k2=el.getAttribute('data-k'); setColor(s,k2,el.value); var cf=box.querySelector('.svc-cf[data-i="'+i+'"][data-k="'+k2+'"]'); var h=hexOk(el.value); if(cf&&h&&h.length===7) cf.value=h; }
       else if(el.classList.contains('svc-op')){ s.bgOpacity=+el.value; var ov=box.querySelector('.svc-op-v[data-i="'+i+'"]'); if(ov) ov.textContent=el.value+'%'; }
@@ -9994,9 +10106,27 @@ function heroCtaCard(c){
       if(!s) return;
       if(el.classList.contains('svc-align')){ s.mediaAlign=el.value; persist(); previewApply(); return; }
       if(el.classList.contains('svc-fit')){ s.imageFit=el.value; persist(); previewApply(); return; }
+      if(el.classList.contains('svc-link-act')){ ensureCta(s).linkAction=el.value; syncLinkVisibility(); persist(); previewApply(); return; }
+      if(el.classList.contains('svc-link-tgt')){ ensureCta(s).linkTarget=el.value; persist(); previewApply(); return; }
     });
     box.addEventListener('click',function(e){
       var t=e.target; if(!t||!t.classList) return;
+      if(t.classList.contains('svc-add')||(t.closest&&t.closest('.svc-add'))){
+        c.services.push({on:true,icon:'',title:'New service',subtitle:'',body:'',bullets:[{on:true,text:''},{on:true,text:''}],cta:{label:'Learn more',linkAction:'none'}});
+        persist(); previewApply(); draw(); applySvcFilter(); return;
+      }
+      if(t.classList.contains('svc-rm')){
+        var ir=+t.getAttribute('data-i'); if(isNaN(ir)) return;
+        c.services.splice(ir,1); persist(); previewApply(); draw(); applySvcFilter(); return;
+      }
+      if(t.classList.contains('svc-bull-add')){
+        var ia=+t.getAttribute('data-i'); var sa=c.services[ia]; if(!sa) return;
+        ensureBullets(sa).push({on:true,text:''}); persist(); previewApply(); draw(); applySvcFilter(); return;
+      }
+      if(t.classList.contains('svc-bull-rm')){
+        var ibm=+t.getAttribute('data-i'), bib=+t.getAttribute('data-bi'); var sb=c.services[ibm]; if(!sb) return;
+        ensureBullets(sb).splice(+bib,1); persist(); previewApply(); draw(); applySvcFilter(); return;
+      }
       if(t.classList.contains('svc-cdef')){
         var i=+t.getAttribute('data-i'), k=t.getAttribute('data-k'), s=c.services[i]; if(!s) return;
         delete s[k]; var tx=box.querySelector('.svc-ctx[data-i="'+i+'"][data-k="'+k+'"]'); if(tx) tx.value='';
@@ -10017,24 +10147,37 @@ function heroCtaCard(c){
         persist(); previewApply(); return;
       }
       if(t.classList.contains('cw-up')){
-        var row=t.closest('.cw-row'), tx=row&&row.querySelector('.svc-img'); if(!tx) return;
+        var row=t.closest('.cw-row'), tx=row&&(row.querySelector('.svc-img')||row.querySelector('.svc-side')); if(!tx) return;
         var iu=+tx.getAttribute('data-i'), su=c.services[iu]; if(!su) return;
-        var pd=box.querySelector('.svc-img-pid[data-i="'+iu+'"]'), prev=pd?pd.value:'';
-        cwPick(function(file){ cwBusy(t,true); cwUpload(file,['services','card'+iu]).then(function(r){
-          tx.value=r.url; su.image=r.url; su.image_pid=r.publicId; if(pd) pd.value=r.publicId;
+        var isSide=tx.classList.contains('svc-side');
+        var pd=box.querySelector((isSide?'.svc-side-pid':'.svc-img-pid')+'[data-i="'+iu+'"]'), prev=pd?pd.value:'';
+        cwPick(function(file){ cwBusy(t,true); cwUpload(file,['services',isSide?('side'+iu):('card'+iu)]).then(function(r){
+          tx.value=r.url;
+          if(isSide){ su.sideImage=r.url; su.sideImage_pid=r.publicId; }
+          else { su.image=r.url; su.image_pid=r.publicId; }
+          if(pd) pd.value=r.publicId;
           persist(); previewApply(); if(prev&&prev!==r.publicId) cwDelete(prev);
         }).catch(function(err){ toast('Upload failed: '+((err&&err.message)||err)); }).then(function(){ cwBusy(t,false); }); });
         return;
       }
       if(t.classList.contains('cw-clr')){
-        var row2=t.closest('.cw-row'), tx2=row2&&row2.querySelector('.svc-img'); if(!tx2) return;
+        var row2=t.closest('.cw-row'), tx2=row2&&(row2.querySelector('.svc-img')||row2.querySelector('.svc-side')); if(!tx2) return;
         var ic=+tx2.getAttribute('data-i'), sc4=c.services[ic]; if(!sc4) return;
-        var pd2=box.querySelector('.svc-img-pid[data-i="'+ic+'"]');
+        var isSide2=tx2.classList.contains('svc-side');
+        var pd2=box.querySelector((isSide2?'.svc-side-pid':'.svc-img-pid')+'[data-i="'+ic+'"]');
         if(pd2&&pd2.value){ cwDelete(pd2.value); pd2.value=''; }
-        delete sc4.image; delete sc4.image_pid; tx2.value='';
+        if(isSide2){ delete sc4.sideImage; delete sc4.sideImage_pid; }
+        else { delete sc4.image; delete sc4.image_pid; }
+        tx2.value='';
         persist(); previewApply();
       }
     });
+    // Re-sync mode when layout select changes
+    var md=$('svc-mode');
+    if(md && !md.__svcListSync){
+      md.__svcListSync=1;
+      md.addEventListener('change',function(){ box.setAttribute('data-svc-mode', svcMode()); });
+    }
     wireSvcHide(); applySvcFilter();
   }
   function wireSvcHide(){ var t=$('svc-hide-inactive'); if(!t||t.__w) return; t.__w=1; t.addEventListener('change', applySvcFilter); }
