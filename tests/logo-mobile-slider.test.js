@@ -18,7 +18,7 @@ test('mobile logo height sets --hdr-logo-mh from heightPxM', function () {
   assert.match(js, /heightPxM!=null/);
   assert.match(js, /setProperty\('--hdr-logo-mh'/);
   assert.match(js, /--hdr-logo-mh:'\+_lhm\+'px/);
-  assert.match(js, /max-height:'\+_lhm\+'px!important/);
+  assert.match(js, /max-height:'\+\(_cropYM\?_imgHm:_lhm\)\+'px!important|max-height:'\+_lhm\+'px!important/);
   assert.match(css, /max-height:var\(--hdr-logo-mh,48px\)!important/);
   assert.match(manage, /id="lg-hm"/);
   assert.match(manage, /L\.heightPxM=v/);
