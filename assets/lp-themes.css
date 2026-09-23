@@ -1843,11 +1843,22 @@ html[data-lp-visitor-motion="reduced"] .lp-dash-chart-svg animateMotion {
   background: var(--panel-soft);
   color: var(--text);
 }
+.lp-sec-editonly[data-on="1"] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-text);
+}
 .lp-sec-editonly[data-active="1"] {
   background: var(--accent);
   color: var(--accent-text);
   border-color: var(--accent);
   box-shadow: 0 0 0 2px var(--accent-soft);
+}
+/* Page editor mode seg can wrap when LOCK + longer labels are present */
+#sec-modeseg.sec-modeseg {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  max-width: 100%;
 }
 
 /* Hide inactive sections in editor */
