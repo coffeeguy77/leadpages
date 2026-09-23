@@ -9362,7 +9362,7 @@ function heroCtaCard(c){
         +'<div class="row" style="margin-top:12px;"><div class="f"><label>Brand tagline (optional)</label><input type="text" id="ft-brandtag" class="tin" value="'+esc(_F.brandTagline||'')+'" placeholder="Smart sites."></div>'
         +'<div class="f"><label>Tagline accent words</label><input type="text" id="ft-brandtagacc" class="tin" value="'+esc(_F.brandTaglineAccent||'')+'" placeholder="More leads."></div></div>'
         +'<div class="f" style="margin-top:10px;"><label>About blurb</label><textarea id="ft-blurb" class="tin" rows="2" placeholder="Websites and growth tools for Australian small business.">'+esc(_F.blurb||'')+'</textarea></div></div>'
-        +'<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 8px;">Link columns</h2><p class="lede" style="margin:0 0 12px;">Up to four columns. Each can be a link list (URL, landing page, or app position) or a text-box card with optional whole-card link.</p>'
+        +'<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 8px;">Link columns</h2><p class="lede" style="margin:0 0 12px;">Up to four columns. Each can be a link list (URL, landing page, or app position) or a text-box card with optional whole-card link. Set width to <strong>2 columns</strong> so a text card spans the space of two narrow columns \u2014 useful when Support is off or you only want one wide card.</p>'
         +'<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 12px;"><input type="checkbox" id="ft-colcaps"'+(_F.columnTitleCaps===true?' checked':'')+'> Column titles ALL CAPS</label>'
         +'<div id="ft-cols"></div><button type="button" class="btn ghost" id="ft-col-add" style="margin-top:8px;">+ Add column</button></div>'
         +'<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 8px;">Support card</h2>'
@@ -9471,11 +9471,14 @@ function heroCtaCard(c){
           var cols=ens().columns||[];
           box.innerHTML=cols.map(function(col,ci){
             var mode=(col.mode==='card'||col.mode==='textbox')?'card':'links';
+            var span=(+col.span===2||col.span==='2'||col.colSpan===2)?'2':'1';
             var head='<div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap;">'
               +'<label style="display:flex;gap:6px;align-items:center;font-weight:600;font-size:13px;"><input type="checkbox" class="ft-col-on" data-ci="'+ci+'"'+(col.on===false?'':' checked')+'> Shown</label>'
               +'<input type="text" class="tin ft-col-title" data-ci="'+ci+'" value="'+esc(col.title||'')+'" placeholder="Column title" style="flex:1;min-width:140px;">'
               +'<select class="tin ft-col-mode" data-ci="'+ci+'" style="min-width:150px;"><option value="links"'+(mode==='links'?' selected':'')+'>List with links</option><option value="card"'+(mode==='card'?' selected':'')+'>Text-box card</option></select>'
-              +'<button type="button" class="btn ghost sm ft-col-rm" data-ci="'+ci+'">Remove</button></div>';
+              +'<select class="tin ft-col-span" data-ci="'+ci+'" style="min-width:130px;" title="Column width"><option value="1"'+(span==='1'?' selected':'')+'>1 column wide</option><option value="2"'+(span==='2'?' selected':'')+'>2 columns wide</option></select>'
+              +'<button type="button" class="btn ghost sm ft-col-rm" data-ci="'+ci+'">Remove</button></div>'
+              +'<p class="hint" style="margin:0 0 10px;">2 columns wide lets a text card fill the space of two narrow columns \u2014 handy when Support is off, or when you only want one wide card instead of two.</p>';
             if(mode==='card'){
               var strokeOn=col.cardStroke!==false;
               var linkOn=col.cardLinkOn===true;
@@ -9544,6 +9547,7 @@ function heroCtaCard(c){
             var col=cols[ci];
             if(t.classList.contains('ft-col-on')){ col.on=t.checked; persist(); previewApply(); }
             else if(t.classList.contains('ft-col-mode')){ col.mode=t.value==='card'?'card':'links'; if(col.mode==='card'&&!col.cardText&&col.body) col.cardText=col.body; persist(); previewApply(); drawCols(); }
+            else if(t.classList.contains('ft-col-span')){ col.span=+t.value===2?2:1; persist(); previewApply(); }
             else if(t.classList.contains('ft-link-on')){ if(!col.links||!col.links[li]) return; col.links[li].on=t.checked; persist(); previewApply(); }
             else if(t.classList.contains('ft-link-act')){ if(!col.links||!col.links[li]) return; col.links[li].action=t.value; _ftSyncColLinkVis(colsHost); persist(); previewApply(); }
             else if(t.classList.contains('ft-link-tgt')){ if(!col.links||!col.links[li]) return; col.links[li].target=t.value; persist(); previewApply(); }

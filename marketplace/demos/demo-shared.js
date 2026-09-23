@@ -2137,6 +2137,8 @@ function applyCfg(C){
           }
           nav.innerHTML=cols.filter(function(col){return col&&col.on!==false;}).map(function(col){
             var mode=(col.mode==='card'||col.mode==='textbox')?'card':'links';
+            var span=(+col.span===2||col.span==='2'||col.colSpan===2)?'2':'1';
+            var spanCls=span==='2'?' f-col-span-2':'';
             if(mode==='card'){
               var txt=String(col.cardText!=null?col.cardText:(col.body||'')).trim();
               var strokeOn=col.cardStroke!==false;
@@ -2154,17 +2156,19 @@ function applyCfg(C){
               var inner='<h4>'+esc(col.title||'')+'</h4>'+(txt?('<p class="f-col-card-text">'+esc(txt)+'</p>'):'')+(btnLab?('<span class="f-col-card-btn">'+esc(btnLab)+'</span>'):'');
               if(href){
                 var ext=/^https?:/i.test(href);
-                return '<div class="f-col f-col-card"><a class="f-col-card-box" href="'+esc(href)+'"'+(ext?' target="_blank" rel="noopener noreferrer"':'')+style+'>'+inner+'</a></div>';
+                return '<div class="f-col f-col-card'+spanCls+'"><a class="f-col-card-box" href="'+esc(href)+'"'+(ext?' target="_blank" rel="noopener noreferrer"':'')+style+'>'+inner+'</a></div>';
               }
-              return '<div class="f-col f-col-card"><div class="f-col-card-box"'+style+'>'+inner+'</div></div>';
+              return '<div class="f-col f-col-card'+spanCls+'"><div class="f-col-card-box"'+style+'>'+inner+'</div></div>';
             }
             var links=(Array.isArray(col.links)?col.links:[]).filter(function(l){return l&&l.on!==false&&l.label;});
-            return '<div class="f-col"><h4>'+esc(col.title||'')+'</h4>'+links.map(function(l){
+            return '<div class="f-col'+spanCls+'"><h4>'+esc(col.title||'')+'</h4>'+links.map(function(l){
               var href=_ftResolveHref(l)||(l.href||'#');
               var ext=/^https?:/i.test(href);
               return '<a href="'+esc(href)+'"'+(ext?' target="_blank" rel="noopener noreferrer"':'')+'>'+esc(l.label)+'</a>';
             }).join('')+'</div>';
           }).join('');
+          var hasSpan=!!nav.querySelector('.f-col-span-2');
+          nav.classList.toggle('f-nav-has-span', hasSpan);
         }
         // Support
         var sup=ft.querySelector('.f-support');
