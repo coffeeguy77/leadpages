@@ -589,11 +589,14 @@ footer.site .f-col-card-btn{
   footer.site .f-support-map .f-support-icon{height:72px}
   footer.site .f-support-map .f-support-icon .lp-ic{width:60px;height:60px}
   footer.site .f-support-map .f-support-img{height:72px}
+  /* Mobile: LeadPages logo under copyright/links, centred */
   footer.site.foot-lp-logo-slot .footer-bottom{
     grid-template-columns:1fr;
-    grid-template-areas:"tagline" "logo" "meta";
+    grid-template-areas:"tagline" "meta" "logo";
   }
-  footer.site.foot-lp-logo-slot .footer-bottom > .f-links.f-links-lp-logo{justify-self:start}
+  footer.site.foot-lp-logo-slot .footer-bottom > .f-links.f-links-lp-logo{
+    justify-self:center;justify-content:center;width:100%;
+  }
 }
 
 

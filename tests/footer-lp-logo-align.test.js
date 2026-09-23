@@ -1,5 +1,5 @@
 /**
- * LeadPages logo in site footer aligns with bottom tagline top.
+ * LeadPages logo in site footer: desktop beside tagline; mobile under copyright, centred.
  */
 'use strict';
 
@@ -22,4 +22,12 @@ test('LeadPages footer logo sits beside tagline with top alignment', function ()
   assert.match(js, /Sit beside the tagline/);
   assert.match(trade, /foot-lp-logo-slot \.footer-bottom/);
   assert.match(trade, /insertBefore\(linksNav/);
+});
+
+test('LeadPages footer logo sits under copyright/links and is centred on mobile', function () {
+  assert.match(css, /grid-template-areas:"tagline" "meta" "logo"/);
+  assert.doesNotMatch(css, /grid-template-areas:"tagline" "logo" "meta"/);
+  assert.match(css, /f-links-lp-logo\{[^}]*justify-self:center/);
+  assert.match(trade, /grid-template-areas:"tagline" "meta" "logo"/);
+  assert.match(trade, /justify-self:center;justify-content:center/);
 });
