@@ -20,6 +20,8 @@ LeadPages has **two theme systems** in one editor:
 
 Trade tokens: `pipe`, `hivis`, `steel`, `safety`, `lightBg`, `accent`, `presetKey`, `presetName`.
 
+**Button look (law):** `config.buttonLook` is the site-wide default for every tenant CTA (existing + future). Edited under **Branding → Button look**. Applies CSS variables `--lp-btn-*` / `--lp-btn-sec-*` via `applyButtonLook` in `demo-shared.js`. Stroke thickness presets: fine / thin / medium / normal. Link destinations for CTAs: custom app position, landing page picker (no free-typed slug), URL with `_blank`. Full rules: [11-DESIGN-SYSTEM](../11-DESIGN-SYSTEM.md) § Site Button look.
+
 ---
 
 ## Purpose

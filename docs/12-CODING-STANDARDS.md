@@ -19,6 +19,7 @@
 | **Serverless awareness** | Cold starts, bundle size, no long-running processes |
 | **Fail safe on public endpoints** | Leads and events always return 200 |
 | **No silent framework rewrites** | Vanilla HTML/JS unless explicitly approved |
+| **Button look is law** | Tenant CTAs use `config.buttonLook` + shared fill/outline/stroke/text + link targets (app position · landing page picker · URL `_blank`). See [11-DESIGN-SYSTEM](11-DESIGN-SYSTEM.md) § Site Button look. |
 
 ---
 

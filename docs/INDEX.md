@@ -208,6 +208,7 @@ Short summary of every engineering document in `docs/`.
 | **AI Website Team / Site Brain** | [ai-team/README](ai-team/README.md) | [ai-team/SITE-BRAIN](ai-team/SITE-BRAIN.md), [ai-team/CAPABILITY-REGISTRY](ai-team/CAPABILITY-REGISTRY.md), [AI/00-STATUS](AI/00-STATUS.md) | `lib/site-brain/`, `lib/ai-team/`, `api/site-brain/*`, `api/ai-team/*`, `assets/ai-website-team.js`, `db/site_brain.sql` |
 | **Database migration** | [02-DATABASE](02-DATABASE.md) | [12-CODING-STANDARDS](12-CODING-STANDARDS.md) | `db/*.sql` |
 | **UI / visual polish** | [11-DESIGN-SYSTEM](11-DESIGN-SYSTEM.md) | [10-EDITOR](10-EDITOR.md) | `manage.html` CSS |
+| **Site Button look / CTAs** | [11-DESIGN-SYSTEM](11-DESIGN-SYSTEM.md) § Site Button look | [12-CODING-STANDARDS](12-CODING-STANDARDS.md), [features/Theme Engine](features/Theme%20Engine.md) | `config.buttonLook`, `demo-shared.js` `applyButtonLook`, Branding editor |
 | **Tech debt / planning** | [13-ROADMAP](13-ROADMAP.md) | [01-ARCHITECTURE](01-ARCHITECTURE.md) §22 | — |
 | **Documentation only** | This file | Topic doc being updated | `docs/*.md` only |
 

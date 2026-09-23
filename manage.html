@@ -3425,7 +3425,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     projectStats:{eyebrow:'Established & accountable', heading:'A track record you can check', intro:''},
     responseCards:{eyebrow:"When it can't wait", heading:'Call us now \u2014 we solve this today', intro:"Real help, fast. Here's what you get the moment you call."},
     beforeAfter:{eyebrow:'Before & After', heading:'Real Results From Local Jobs', intro:'Show customers the standard of work before they call.'},
-    header:{cta:'Speak to a plumber', button:'Call now'},
+    header:{cta:'Speak to a plumber', button:'Call now', showOnMobile:true, action:'call', showPhone:true, btnFill:true, btnOutline:false, btnStrokeWidth:'medium'},
     hero:{eyebrow:'', title:'', titleHl:'', sub:''},
     services:{eyebrow:'What we fix', heading:'One call sorts the lot.', intro:'From a slow kitchen sink to a flooded laundry at 2am — we handle the everyday and the emergencies.'},
     why:{eyebrow:'Why {{businessName}}', heading:'No call-out games. No surprise bills.'},
@@ -3577,6 +3577,78 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   function wireLayout(c){ var el=$('layout-pick'); if(!el) return; el.value=getLayout(c.layout).id; el.onchange=function(){ c.layout=getLayout(el.value).id; persist(); previewApply(); renderDetails(); }; }
   var HERO_CTA_SCROLL_TARGETS=[['quote','Quote form'],['onlineQuote','Online Quote'],['orderStorefront','Order Storefront'],['bookingStorefront','Bookings'],['customHtml','Custom HTML'],['aboutUs','About Us'],['estimateBuilder','Estimate Builder'],['finance','Finance Options'],['specialOffer','Special Offer'],['promotions','Promotions'],['scrollingSponsorBanner','Scrolling Sponsor Banner'],['emergencyAvailability','Emergency Availability'],['services','Services'],['serviceProcess','How It Works'],['why','Why us'],['reviews','Reviews'],['faq','FAQ'],['area','Where we work'],['crew','Team'],['beforeAfter','Before & After'],['featuredProjects','Project Portfolio'],['premiumGallery','Premium Gallery'],['serviceAreaMap','Service Area Map'],['projectFeed','Project Feed'],['jobsFeed','Jobs Feed']];
   function heroCtaScrollOptsHtml(sel){ return HERO_CTA_SCROLL_TARGETS.map(function(o){ return '<option value="'+o[0]+'"'+(sel===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join(''); }
+  /* ── Site Button look (law) ── fill / outline / stroke thickness / text + link targets */
+  var LP_BTN_STROKE_PRESETS=[['fine','Fine (1px)'],['thin','Thin (1.5px)'],['medium','Medium (2px)'],['normal','Normal (2.5px)']];
+  var LP_BTN_STROKE_PX={fine:'1px',thin:'1.5px',medium:'2px',normal:'2.5px'};
+  function lpBtnStrokePx(key){ return LP_BTN_STROKE_PX[key]||LP_BTN_STROKE_PX.medium; }
+  function lpBtnStrokeOptsHtml(sel){ sel=sel||'medium'; return LP_BTN_STROKE_PRESETS.map(function(o){ return '<option value="'+o[0]+'"'+(sel===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join(''); }
+  function lpLandingPagesList(){ try{ return (Array.isArray(data.pages)?data.pages:[]).filter(function(pg){ return pg&&pg.slug; }); }catch(_e){ return []; } }
+  function lpLandingPageOptsHtml(sel){
+    var opts='<option value="">— Choose a landing page —</option>';
+    lpLandingPagesList().forEach(function(pg){
+      var lab=(pg.title||pg.slug)+(pg.status!=='published'?' (draft)':'');
+      opts+='<option value="'+esc(pg.slug)+'"'+(sel===pg.slug?' selected':'')+'>'+esc(lab)+'</option>';
+    });
+    if(sel && opts.indexOf('value="'+esc(sel)+'"')<0) opts+='<option value="'+esc(sel)+'" selected>'+esc(sel)+' (missing)</option>';
+    return opts;
+  }
+  var DEFAULT_BUTTON_LOOK={fill:true,outline:false,bg:'',fg:'',strokeColor:'',strokeWidth:'medium',secondaryFill:false,secondaryOutline:true,secondaryBg:'',secondaryFg:'',secondaryStrokeColor:'',secondaryStrokeWidth:'medium'};
+  function ensButtonLook(c){ if(!c.buttonLook||typeof c.buttonLook!=='object') c.buttonLook=Object.assign({},DEFAULT_BUTTON_LOOK); return c.buttonLook; }
+  function lpBtnLookFieldsHtml(prefix, look, opts){
+    look=look||{}; opts=opts||{};
+    var fill=look.fill!==false; var outline=look.outline===true;
+    var sw=look.strokeWidth||'medium';
+    var th=siteThemeColors(typeof data!=='undefined'?data:{});
+    function col(id,key,label,defv){
+      var v=(look[key]&&/^#[0-9a-fA-F]{6}$/.test(look[key]))?look[key]:'';
+      return '<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:180px;"><label style="font-weight:600;">'+label+'</label>'
+        +'<div style="display:flex;align-items:center;gap:8px;"><input type="color" id="'+id+'-clr" value="'+(v||defv)+'" style="width:44px;height:34px;padding:0;border:1px solid var(--line);border-radius:8px;cursor:pointer;flex:0 0 auto;">'
+        +'<input type="text" id="'+id+'-tx" value="'+v+'" placeholder="'+(defv||'Theme')+'" style="flex:1;min-width:0;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;">'
+        +'<button type="button" class="btn ghost" id="'+id+'-def" style="padding:6px 10px;">Default</button></div></div>';
+    }
+    var h='<p style="margin:0 0 8px;font-weight:700;font-size:13px;">'+(opts.title||'Button look')+'</p>';
+    h+='<div style="display:flex;flex-wrap:wrap;gap:12px 16px;margin-bottom:10px;align-items:center;">';
+    h+='<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0;"><input type="checkbox" id="'+prefix+'-fill"'+(fill?' checked':'')+'> Fill background</label>';
+    h+='<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0;"><input type="checkbox" id="'+prefix+'-outline"'+(outline?' checked':'')+'> Outline / stroke</label>';
+    h+='</div>';
+    h+='<div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:8px;">';
+    h+=col(prefix+'-bg','bg','Fill colour',th.hivis||'#ff6a1f');
+    h+=col(prefix+'-fg','fg','Button text colour',th.white||'#ffffff');
+    h+=col(prefix+'-stroke','strokeColor','Outline colour',th.hivis||'#ff6a1f');
+    h+='<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:180px;"><label style="font-weight:600;">Stroke thickness</label><select id="'+prefix+'-sw" class="tin">'+lpBtnStrokeOptsHtml(sw)+'</select></div>';
+    h+='</div>';
+    if(opts.hint!==false) h+='<p class="hint" style="margin:4px 0 0;">Untick fill + tick outline for a clean outline button. Thickness presets: Fine → Normal.</p>';
+    return h;
+  }
+  function lpBtnLinkFieldsHtml(prefix, link, opts){
+    link=link||{}; opts=opts||{};
+    var act=link.action||'call';
+    var tgt=link.target||'quote';
+    var page=link.page||'';
+    var url=link.url||link.href||'';
+    var blank=link.blank!==false;
+    var text=link.text!=null?link.text:'';
+    var acts=opts.actions||[['call','Call the phone number'],['scroll','Custom app position'],['page','Landing page'],['url','URL (new tab)'],['form','Scroll to quote form']];
+    var h='';
+    if(opts.showText!==false){
+      h+='<div class="f" style="margin:0 0 8px;"><label>'+(opts.textLabel||'Button link text')+'</label><input type="text" id="'+prefix+'-text" class="tin" value="'+esc(String(text))+'" placeholder="'+(opts.textPh||'e.g. Request a consultation')+'"></div>';
+    }
+    h+='<div style="display:flex;flex-wrap:wrap;gap:8px;width:100%;">';
+    h+='<div class="f" style="margin:0;flex:1 1 160px;min-width:140px;"><label>Button links to</label><select id="'+prefix+'-act" class="tin">';
+    acts.forEach(function(o){ h+='<option value="'+o[0]+'"'+(act===o[0]?' selected':'')+'>'+o[1]+'</option>'; });
+    h+='</select></div>';
+    h+='<div class="f" id="'+prefix+'-tgt-wrap" style="margin:0;flex:1 1 180px;min-width:150px;'+(act==='scroll'?'':'display:none;')+'"><label>App / section</label><select id="'+prefix+'-tgt" class="tin">'+heroCtaScrollOptsHtml(tgt)+'</select></div>';
+    h+='<div class="f" id="'+prefix+'-page-wrap" style="margin:0;flex:1 1 180px;min-width:150px;'+(act==='page'?'':'display:none;')+'"><label>Landing page</label><select id="'+prefix+'-page" class="tin">'+lpLandingPageOptsHtml(page)+'</select></div>';
+    h+='<div class="f" id="'+prefix+'-url-wrap" style="margin:0;flex:1 1 180px;min-width:150px;'+(act==='url'?'':'display:none;')+'"><label>URL</label><input type="text" id="'+prefix+'-url" class="tin" value="'+esc(url)+'" placeholder="https://…"></div>';
+    h+='<div class="f" id="'+prefix+'-blank-wrap" style="margin:0;flex:1 1 140px;min-width:120px;'+(act==='url'?'':'display:none;')+'"><label style="display:flex;gap:8px;align-items:center;font-weight:600;margin-top:28px;"><input type="checkbox" id="'+prefix+'-blank"'+(blank?' checked':'')+'> Open in new tab (_blank)</label></div>';
+    h+='</div>';
+    return h;
+  }
+  function lpSyncBtnLinkVis(prefix){
+    var actEl=$(prefix+'-act'); var act=actEl?actEl.value:'call';
+    function show(suf,on){ var w=$(prefix+'-'+suf+'-wrap'); if(w) w.style.display=on?'':'none'; }
+    show('tgt',act==='scroll'); show('page',act==='page'); show('url',act==='url'); show('blank',act==='url');
+  }
   function _secLabel(id){ for(var i=0;i<TRADE_SUBTABS.length;i++){ if(TRADE_SUBTABS[i][0]===id) return TRADE_SUBTABS[i][1]; } return id; }
   function _secOn(c,id){ if(id==='lpFooter') return true; var s=(c&&c.sections&&c.sections[id])||{}; return (OFF_BY_DEFAULT_SECTIONS.indexOf(id)>=0)?(s.on===true):(s.on!==false); }
   function _setSecOn(c,id,v){ if(id==='lpFooter'){ if(!c.sections)c.sections={}; if(!c.sections.lpFooter)c.sections.lpFooter={}; c.sections.lpFooter.on=true; return; } if(!c.sections)c.sections={}; if(!c.sections[id])c.sections[id]={}; if(OFF_BY_DEFAULT_SECTIONS.indexOf(id)>=0){ c.sections[id].on=!!v; } else { if(v){ if(c.sections[id].on===false) delete c.sections[id].on; } else { c.sections[id].on=false; } } }
@@ -4048,7 +4120,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project',item:[{k:'title',label:'Project title'},{k:'tag',label:'Type'},{k:'location',label:'Location'},{k:'services',label:'Services used (comma separated)',w:'1 1 100%'},{k:'description',label:'Description',type:'ta'},{k:'image',type:'image',label:'Cover image',ph:'https://\u2026 (optional)',hint:'\u2248 1200\u00d7800 px (3:2 landscape)'},{k:'imageFit',label:'Image fit',type:'select',opts:[['cover','Cover (fill & crop)'],['contain','Contain (fit, no crop)'],['fill','Stretch to fill']]},{k:'imagePos',label:'Image position',type:'select',opts:[['center','Centre'],['left','Left'],['right','Right'],['top','Top'],['bottom','Bottom']]},{k:'images',label:'Gallery image URLs (one per line)',type:'ta'}],defaultItem:{title:'New project',tag:'',location:'',services:'',description:'',image:'',imageFit:'cover',imagePos:'center',images:''}},
     specialOfferPoints:{secId:'specialOffer',key:'points',addLabel:'Add point',item:[{k:'text',label:'Point'}],defaultItem:{text:''}},
     heroBeforeAfterFeatures:{secId:'heroBeforeAfter',key:'features',addLabel:'Add feature',item:[{k:'icon',label:'Icon (optional)',type:'icon'},{k:'label',label:'Feature text'}],defaultItem:{on:true,icon:'circle-check',label:''}},
-    heroSlides:{secId:'heroSlider',key:'slides',addLabel:'Add slide',item:[{k:'imageUrl',label:'Background image',type:'image',ph:'https://\u2026 (optional)',hint:'\u2248 1920\u00d71080 px (landscape)'},{k:'imageFit',label:'Image fit',type:'select',opts:[['cover','Cover (fill & crop)'],['contain','Contain (fit, no crop)'],['fill','Fill'],['stretch','Stretch (distort)'],['blend','Cover + blend sides']]},{k:'imagePos',label:'Image position',type:'select',opts:[['center','Centre'],['left','Left'],['right','Right'],['top','Top'],['bottom','Bottom']]},{k:'bgColour',label:'Background / blend colour',type:'color'},{k:'eyebrow',label:'Eyebrow'},{k:'eyebrowColor',label:'Eyebrow colour',type:'color'},{k:'heading',label:'Heading'},{k:'headingColor',label:'Heading colour',type:'color'},{k:'highlightText',label:'Highlighted words'},{k:'highlightColor',label:'Highlight colour',type:'color'},{k:'subText',label:'Sub text',type:'ta'},{k:'featureTextColor',label:'Feature text colour',type:'color'},{k:'slideTextAlign',label:'Text alignment (this slide)',type:'select',opts:[['','Use slider default'],['left','Left'],['center','Centre'],['right','Right']]},{k:'primaryCtaText',label:'Primary button text'},{k:'primaryCtaAction',label:'Primary action',type:'select',opts:[['call','Call'],['quote','Quote'],['scroll','Custom anchor'],['none','Hidden']]},{k:'primaryCtaTarget',label:'Primary custom anchor (section)',type:'select',opts:[['quote','Quote form'],['onlineQuote','Online Quote'],['customHtml','Custom HTML'],['estimateBuilder','Estimate Builder'],['finance','Finance Options'],['specialOffer','Special Offer'],['promotions','Promotions'],['emergencyAvailability','Emergency Availability'],['services','Services'],['serviceProcess','How It Works'],['why','Why us'],['reviews','Reviews'],['faq','FAQ'],['area','Where we work'],['crew','Team'],['beforeAfter','Before & After'],['featuredProjects','Project Portfolio'],['premiumGallery','Premium Gallery'],['serviceAreaMap','Service Area Map'],['projectFeed','Project Feed'],['jobsFeed','Jobs Feed']]},{k:'primaryCtaIcon',label:'Primary icon',type:'icon'},{k:'primaryCtaIconOnly',label:'Primary: icon only (no text)',type:'check'},{k:'primaryCtaBg',label:'Primary button colour',type:'color'},{k:'primaryCtaBorder',label:'Primary stroke colour',type:'color'},{k:'primaryCtaFg',label:'Primary text colour',type:'color'},{k:'primaryCtaOpacity',label:'Primary background transparency',type:'range',min:0,max:100,def:100,suf:'%'},{k:'primaryCtaGlow',label:'Primary: outer glow',type:'check'},{k:'primaryCtaGlowColor',label:'Primary glow colour',type:'color'},{k:'secondaryCtaText',label:'Secondary button text'},{k:'secondaryCtaAction',label:'Secondary action',type:'select',opts:[['call','Call'],['quote','Quote'],['scroll','Custom anchor'],['none','Hidden']]},{k:'secondaryCtaTarget',label:'Secondary custom anchor (section)',type:'select',opts:[['quote','Quote form'],['onlineQuote','Online Quote'],['customHtml','Custom HTML'],['estimateBuilder','Estimate Builder'],['finance','Finance Options'],['specialOffer','Special Offer'],['promotions','Promotions'],['emergencyAvailability','Emergency Availability'],['services','Services'],['serviceProcess','How It Works'],['why','Why us'],['reviews','Reviews'],['faq','FAQ'],['area','Where we work'],['crew','Team'],['beforeAfter','Before & After'],['featuredProjects','Project Portfolio'],['premiumGallery','Premium Gallery'],['serviceAreaMap','Service Area Map'],['projectFeed','Project Feed'],['jobsFeed','Jobs Feed']]},{k:'secondaryCtaIcon',label:'Secondary icon',type:'icon'},{k:'secondaryCtaIconOnly',label:'Secondary: icon only (no text)',type:'check'},{k:'secondaryCtaBg',label:'Secondary button colour',type:'color'},{k:'secondaryCtaBorder',label:'Secondary stroke colour',type:'color'},{k:'secondaryCtaFg',label:'Secondary text colour',type:'color'},{k:'secondaryCtaOpacity',label:'Secondary background transparency',type:'range',min:0,max:100,def:100,suf:'%'},{k:'secondaryCtaGlow',label:'Secondary: outer glow',type:'check'},{k:'secondaryCtaGlowColor',label:'Secondary glow colour',type:'color'}],defaultItem:{imageUrl:'',imageFit:'cover',imagePos:'center',bgColour:'',slideTextAlign:'',eyebrow:'',eyebrowColor:'',heading:'',headingColor:'',highlightText:'',highlightColor:'',subText:'',featureTextColor:'',primaryCtaText:'Call Now',primaryCtaAction:'call',primaryCtaTarget:'quote',secondaryCtaText:'Get A Fast Quote',secondaryCtaAction:'quote',secondaryCtaTarget:'customHtml'},rowHeader:heroSlideRowHeader},
+    heroSlides:{secId:'heroSlider',key:'slides',addLabel:'Add slide',item:[{k:'imageUrl',label:'Background image',type:'image',ph:'https://\u2026 (optional)',hint:'\u2248 1920\u00d71080 px (landscape)'},{k:'imageFit',label:'Image fit',type:'select',opts:[['cover','Cover (fill & crop)'],['contain','Contain (fit, no crop)'],['fill','Fill'],['stretch','Stretch (distort)'],['blend','Cover + blend sides']]},{k:'imagePos',label:'Image position',type:'select',opts:[['center','Centre'],['left','Left'],['right','Right'],['top','Top'],['bottom','Bottom']]},{k:'bgColour',label:'Background / blend colour',type:'color'},{k:'eyebrow',label:'Eyebrow'},{k:'eyebrowColor',label:'Eyebrow colour',type:'color'},{k:'heading',label:'Heading'},{k:'headingColor',label:'Heading colour',type:'color'},{k:'highlightText',label:'Highlighted words'},{k:'highlightColor',label:'Highlight colour',type:'color'},{k:'subText',label:'Sub text',type:'ta'},{k:'featureTextColor',label:'Feature text colour',type:'color'},{k:'slideTextAlign',label:'Text alignment (this slide)',type:'select',opts:[['','Use slider default'],['left','Left'],['center','Centre'],['right','Right']]},{k:'primaryCtaText',label:'Primary button text'},{k:'primaryCtaAction',label:'Primary action',type:'select',opts:[['call','Call'],['quote','Quote'],['scroll','Custom app position'],['page','Landing page'],['url','URL (_blank)'],['none','Hidden']]},{k:'primaryCtaTarget',label:'Primary app / section',type:'select',opts:[['quote','Quote form'],['onlineQuote','Online Quote'],['customHtml','Custom HTML'],['estimateBuilder','Estimate Builder'],['finance','Finance Options'],['specialOffer','Special Offer'],['promotions','Promotions'],['emergencyAvailability','Emergency Availability'],['services','Services'],['serviceProcess','How It Works'],['why','Why us'],['reviews','Reviews'],['faq','FAQ'],['area','Where we work'],['crew','Team'],['beforeAfter','Before & After'],['featuredProjects','Project Portfolio'],['premiumGallery','Premium Gallery'],['serviceAreaMap','Service Area Map'],['projectFeed','Project Feed'],['jobsFeed','Jobs Feed']],{k:'primaryCtaPage',label:'Primary landing page',type:'landingPage',w:'1 1 100%'},{k:'primaryCtaUrl',label:'Primary URL',ph:'https://\u2026',w:'1 1 100%'},{k:'primaryCtaBlank',label:'Primary: open URL in new tab',type:'check'}},{k:'primaryCtaIcon',label:'Primary icon',type:'icon'},{k:'primaryCtaIconOnly',label:'Primary: icon only (no text)',type:'check'},{k:'primaryCtaBg',label:'Primary button colour',type:'color'},{k:'primaryCtaFill',label:'Primary: fill background',type:'check'},{k:'primaryCtaOutline',label:'Primary: outline / stroke',type:'check'},{k:'primaryCtaBorder',label:'Primary stroke colour',type:'color'},{k:'primaryCtaStrokeWidth',label:'Primary stroke thickness',type:'select',opts:[['fine','Fine (1px)'],['thin','Thin (1.5px)'],['medium','Medium (2px)'],['normal','Normal (2.5px)']]},{k:'primaryCtaFg',label:'Primary text colour',type:'color'},{k:'primaryCtaOpacity',label:'Primary background transparency',type:'range',min:0,max:100,def:100,suf:'%'},{k:'primaryCtaGlow',label:'Primary: outer glow',type:'check'},{k:'primaryCtaGlowColor',label:'Primary glow colour',type:'color'},{k:'secondaryCtaText',label:'Secondary button text'},{k:'secondaryCtaAction',label:'Secondary action',type:'select',opts:[['call','Call'],['quote','Quote'],['scroll','Custom app position'],['page','Landing page'],['url','URL (_blank)'],['none','Hidden']]},{k:'secondaryCtaTarget',label:'Secondary app / section',type:'select',opts:[['quote','Quote form'],['onlineQuote','Online Quote'],['customHtml','Custom HTML'],['estimateBuilder','Estimate Builder'],['finance','Finance Options'],['specialOffer','Special Offer'],['promotions','Promotions'],['emergencyAvailability','Emergency Availability'],['services','Services'],['serviceProcess','How It Works'],['why','Why us'],['reviews','Reviews'],['faq','FAQ'],['area','Where we work'],['crew','Team'],['beforeAfter','Before & After'],['featuredProjects','Project Portfolio'],['premiumGallery','Premium Gallery'],['serviceAreaMap','Service Area Map'],['projectFeed','Project Feed'],['jobsFeed','Jobs Feed']],{k:'secondaryCtaPage',label:'Secondary landing page',type:'landingPage',w:'1 1 100%'},{k:'secondaryCtaUrl',label:'Secondary URL',ph:'https://\u2026',w:'1 1 100%'},{k:'secondaryCtaBlank',label:'Secondary: open URL in new tab',type:'check'}},{k:'secondaryCtaIcon',label:'Secondary icon',type:'icon'},{k:'secondaryCtaIconOnly',label:'Secondary: icon only (no text)',type:'check'},{k:'secondaryCtaBg',label:'Secondary button colour',type:'color'},{k:'secondaryCtaFill',label:'Secondary: fill background',type:'check'},{k:'secondaryCtaOutline',label:'Secondary: outline / stroke',type:'check'},{k:'secondaryCtaBorder',label:'Secondary stroke colour',type:'color'},{k:'secondaryCtaStrokeWidth',label:'Secondary stroke thickness',type:'select',opts:[['fine','Fine (1px)'],['thin','Thin (1.5px)'],['medium','Medium (2px)'],['normal','Normal (2.5px)']]},{k:'secondaryCtaFg',label:'Secondary text colour',type:'color'},{k:'secondaryCtaOpacity',label:'Secondary background transparency',type:'range',min:0,max:100,def:100,suf:'%'},{k:'secondaryCtaGlow',label:'Secondary: outer glow',type:'check'},{k:'secondaryCtaGlowColor',label:'Secondary glow colour',type:'color'}],defaultItem:{imageUrl:'',imageFit:'cover',imagePos:'center',bgColour:'',slideTextAlign:'',eyebrow:'',eyebrowColor:'',heading:'',headingColor:'',highlightText:'',highlightColor:'',subText:'',featureTextColor:'',primaryCtaText:'Call Now',primaryCtaAction:'call',primaryCtaTarget:'quote',primaryCtaFill:true,primaryCtaOutline:false,primaryCtaStrokeWidth:'medium',primaryCtaBlank:true,secondaryCtaText:'Get A Fast Quote',secondaryCtaAction:'quote',secondaryCtaTarget:'customHtml',secondaryCtaFill:false,secondaryCtaOutline:true,secondaryCtaStrokeWidth:'medium',secondaryCtaBlank:true},rowHeader:heroSlideRowHeader},
     proofStream:{secId:'proofStream',key:'items',addLabel:'Add proof card',item:[{k:'type',label:'Card type',type:'select',opts:[['job','Completed job'],['photo','Photo'],['review','Review'],['video','Video'],['beforeafter','Before / After']]},{k:'title',label:'Title'},{k:'location',label:'Location'},{k:'time',label:'Time label'},{k:'text',label:'Result / quote',type:'ta'},{k:'who',label:'Reviewer name (review)'},{k:'rating',label:'Stars (review)',w:'120px'},{k:'image',type:'image',label:'Image URL'},{k:'afterImage',type:'image',label:'After image URL (before/after)'},{k:'videoUrl',label:'Video link (video)'},{k:'ctaText',label:'Button text'},{k:'ctaAction',label:'Button action',type:'select',opts:[['quote','Quote'],['call','Call'],['none','Hidden']]}],defaultItem:{type:'job',title:'New proof card',location:'',time:'Just now',text:'',who:'',rating:'\u2605\u2605\u2605\u2605\u2605',image:'',afterImage:'',videoUrl:'',ctaText:'Get a quote',ctaAction:'quote'}},
     splitHeroFeed:{secId:'splitHero',key:'feed',addLabel:'Add activity',item:[{k:'text',label:'Activity'},{k:'time',label:'Time'}],defaultItem:{text:'New job completed',time:'Just now'}},
     activityStats:{secId:'activityCounter',key:'stats',addLabel:'Add counter',item:[{k:'icon',label:'Icon',type:'icon'},{k:'value',label:'Number',w:'150px',ph:'7'},{k:'label',label:'Label'}],defaultItem:{icon:'',value:'',label:'New counter'}},
@@ -4059,7 +4131,7 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
     activityTimeline:{secId:'activityTimeline',key:'events',addLabel:'Add event',item:[{k:'time',label:'Time',w:'120px'},{k:'task',label:'Task'},{k:'location',label:'Location'},{k:'status',label:'Status',type:'select',opts:[['active','On the job (live)'],['completed','Completed'],['enroute','On the way'],['booked','Booked'],['','None']]}],defaultItem:{time:'',task:'New job',location:'',status:'completed'}},
     customerReactions:{secId:'customerReactions',key:'items',addLabel:'Add reaction',item:[{k:'style',label:'Style',type:'select',opts:[['google','Google review'],['facebook','Facebook'],['sms','SMS'],['messenger','Messenger'],['image','Screenshot image']]},{k:'name',label:'Name'},{k:'message',label:'Message / review',type:'ta'},{k:'time',label:'Time / sub-label'},{k:'rating',label:'Stars (Google)',w:'120px'},{k:'image',type:'image',label:'Screenshot URL (image style)',ph:'https://\u2026'}],defaultItem:{style:'google',name:'Customer',message:'',time:'',rating:'5',image:''}},
     projectFeed:{secId:'projectFeed',key:'items',addLabel:'Add project',item:[{k:'title',label:'Project / title'},{k:'location',label:'Location'},{k:'service',label:'Service (shown as tag)'},{k:'date',label:'Date / completed'},{k:'caption',label:'Description',type:'ta'},{k:'image',type:'image',label:'Image URL',ph:'https://\u2026'},{k:'permalink',label:'Source link (post URL)',ph:'https://\u2026 (optional)'}],defaultItem:{title:'New project',location:'',service:'',date:'',caption:'',image:'',permalink:''}},
-    trustBar:{secId:'trustBar',key:'badges',addLabel:'Add item',item:[{k:'image',type:'image',label:'Tile image',ph:'https://\u2026 (optional)',hint:'\u2248 900\u00d7600 px (landscape)'},{k:'imageFit',label:'Image fit',type:'select',opts:[['cover','Cover (fill & crop)'],['contain','Contain (fit, no crop)'],['fill','Fill'],['stretch','Stretch (distort)']]},{k:'imagePos',label:'Image position',type:'select',opts:[['center','Centre'],['top','Top'],['bottom','Bottom'],['left','Left'],['right','Right']]},{k:'icon',type:'icon',label:'Icon (optional)'},{k:'label',label:'Title / caption',type:'ta'},{k:'text',label:'Info text (side cards)',type:'ta'},{k:'linkAction',label:'When clicked',type:'select',opts:[['none','None (not clickable)'],['scroll','App / section on this page'],['page','Landing page on this site'],['url','External URL (new tab)']],w:'1 1 100%'},{k:'linkTarget',label:'App / section',type:'select',opts:HERO_CTA_SCROLL_TARGETS,w:'1 1 100%'},{k:'linkPage',label:'Landing page slug',ph:'e.g. home-loans-canberra',w:'1 1 100%'},{k:'linkUrl',label:'External URL',ph:'https://instagram.com/your-page',w:'1 1 100%'}],defaultItem:{on:true,label:'New item',text:'',image:'',imageFit:'cover',imagePos:'center',icon:'',linkAction:'none',linkTarget:'quote',linkPage:'',linkUrl:''}},featuredProjectsBadges:{secId:'featuredProjects',key:'headBadges',addLabel:'+ Add badge',item:[{k:'icon',type:'icon',label:'Icon'},{k:'label',label:'Label'},{k:'sub',label:'Sub-text (optional)'}],defaultItem:{on:true,icon:'shield-check',label:'New badge',sub:''}},
+    trustBar:{secId:'trustBar',key:'badges',addLabel:'Add item',item:[{k:'image',type:'image',label:'Tile image',ph:'https://\u2026 (optional)',hint:'\u2248 900\u00d7600 px (landscape)'},{k:'imageFit',label:'Image fit',type:'select',opts:[['cover','Cover (fill & crop)'],['contain','Contain (fit, no crop)'],['fill','Fill'],['stretch','Stretch (distort)']]},{k:'imagePos',label:'Image position',type:'select',opts:[['center','Centre'],['top','Top'],['bottom','Bottom'],['left','Left'],['right','Right']]},{k:'icon',type:'icon',label:'Icon (optional)'},{k:'label',label:'Title / caption',type:'ta'},{k:'text',label:'Info text (side cards)',type:'ta'},{k:'linkAction',label:'When clicked',type:'select',opts:[['none','None (not clickable)'],['scroll','App / section on this page'],['page','Landing page on this site'],['url','External URL (new tab)']],w:'1 1 100%'},{k:'linkTarget',label:'App / section',type:'select',opts:HERO_CTA_SCROLL_TARGETS,w:'1 1 100%'},{k:'linkPage',label:'Landing page',type:'landingPage',ph:'e.g. home-loans-canberra',w:'1 1 100%'},{k:'linkUrl',label:'External URL',ph:'https://instagram.com/your-page',w:'1 1 100%'}],defaultItem:{on:true,label:'New item',text:'',image:'',imageFit:'cover',imagePos:'center',icon:'',linkAction:'none',linkTarget:'quote',linkPage:'',linkUrl:''}},featuredProjectsBadges:{secId:'featuredProjects',key:'headBadges',addLabel:'+ Add badge',item:[{k:'icon',type:'icon',label:'Icon'},{k:'label',label:'Label'},{k:'sub',label:'Sub-text (optional)'}],defaultItem:{on:true,icon:'shield-check',label:'New badge',sub:''}},
     serviceProcess:{secId:'serviceProcess',key:'steps',addLabel:'Add step',item:[{k:'icon',label:'Icon',type:'icon'},{k:'title',label:'Step title'},{k:'text',label:'Detail (optional)',type:'ta'}],defaultItem:{title:'New step',text:'',icon:''}},
     featureStrip:{secId:'featureStrip',key:'items',addLabel:'Add feature',item:[{k:'icon',label:'Icon',type:'icon'},{k:'title',label:'Title'},{k:'text',label:'Detail',type:'ta'}],defaultItem:{icon:'',title:'New feature',text:''}},
     certifications:{secId:'certifications',key:'items',addLabel:'+ Add certification',item:[{k:'name',label:'Certificate name',w:'1 1 160px'},{k:'body',label:'Issuing body',w:'1 1 160px'},{k:'number',label:'Certificate number',w:'1 1 130px'},{k:'expiry',label:'Expiry',w:'1 1 120px'},{k:'image',type:'image',label:'Logo URL (optional)',w:'1 1 100%'}],defaultItem:{on:true,name:'New certification',body:'',number:'',expiry:'',image:''}},
@@ -5607,6 +5679,7 @@ function heroCtaCard(c){
         var inner=sc.item.map(function(f){
           if(f.type==='icon') return '<div class="f" style="margin:0;"><label>'+f.label+'</label><div class="iconctl"><button type="button" class="icon-pick" tabindex="-1" title="Choose an icon"></button><input type="text" class="icon-input" data-k="'+f.k+'" placeholder="'+(f.ph||'')+'" style="width:60px;text-align:center;font-size:18px;"></div></div>';
           if(f.type==='select') return '<div class="f" style="margin:0;"><label>'+f.label+'</label><select data-k="'+f.k+'" style="width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#fff;box-sizing:border-box;">'+(f.opts||[]).map(function(o){return '<option value="'+o[0]+'">'+o[1]+'</option>';}).join('')+'</select></div>';
+          if(f.type==='landingPage') return '<div class="f" style="margin:0;flex:'+(f.w||'1 1 100%')+';min-width:160px;"><label>'+f.label+'</label><select data-k="'+f.k+'" style="width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#fff;box-sizing:border-box;">'+lpLandingPageOptsHtml(it[f.k]||'')+'</select></div>';
           if(f.type==='ta') return '<div class="f le-f-full" style="margin:0;"><label>'+f.label+'</label><textarea data-k="'+f.k+'" rows="2" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;resize:vertical;box-sizing:border-box;"></textarea></div>';
           if(f.type==='image') return '<div class="f le-f-full" style="margin:0;"><label>'+f.label+'</label>'+cwImgHTML('data-k="'+f.k+'"',f.ph,f.hint)+'<input type="hidden" data-k="'+f.k+'_pid"></div>';
           if(f.type==='color'){ var _cdef=listColorDefault(f.k,c); return '<div class="f" style="margin:0;"><label>'+f.label+'</label><div class="le-color-row"><input type="color" class="le-color" data-colorfor="'+f.k+'" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer;flex:0 0 auto;"><input type="text" data-k="'+f.k+'" placeholder="'+_cdef+' (site)"><button type="button" class="le-eyedrop" data-colorfor="'+f.k+'" tabindex="-1" title="Pick a colour from anywhere on screen" style="border:1px solid var(--line);background:#fff;border-radius:8px;padding:7px 9px;cursor:pointer;line-height:1;flex:0 0 auto;">\uD83D\uDD0D</button></div></div>'; }
@@ -9647,7 +9720,7 @@ function heroCtaCard(c){
         colWire('ft-bg','bg'); colWire('ft-accent','accentColor'); colWire('ft-ink','inkColor'); colWire('ft-muted','mutedColor'); colWire('ft-map','mapColor');
 
         function _ftActOpts(sel){
-          return [['url','URL'],['page','Landing page'],['scroll','Custom app position']].map(function(o){
+          return [['scroll','Custom app position'],['page','Landing page'],['url','URL (_blank)']].map(function(o){
             return '<option value="'+o[0]+'"'+(sel===o[0]?' selected':'')+'>'+o[1]+'</option>';
           }).join('');
         }
@@ -9705,7 +9778,8 @@ function heroCtaCard(c){
               var linkOn=col.cardLinkOn===true;
               var btnFill=col.cardBtnFill!==false;
               var btnOutline=col.cardBtnOutline===true;
-              var cardLink={action:col.cardLinkAction||'url',href:col.cardLinkUrl||col.cardLinkHref||'',page:col.cardLinkPage||'',target:col.cardLinkTarget||'quote'};
+              var btnSw=col.cardBtnStrokeWidth||'medium';
+              var cardLink={action:col.cardLinkAction||'url',href:col.cardLinkUrl||col.cardLinkHref||'',page:col.cardLinkPage||'',target:col.cardLinkTarget||'quote',blank:col.cardLinkBlank!==false};
               return '<div class="ft-col-ed" style="border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px;background:#fff;">'
                 +head
                 +'<div class="f" style="margin:0 0 10px;"><label>Card text</label><textarea class="tin ft-card-text" data-ci="'+ci+'" rows="3" placeholder="Short message — same idea as the support card.">'+esc(col.cardText!=null?col.cardText:(col.body||''))+'</textarea></div>'
@@ -9727,8 +9801,9 @@ function heroCtaCard(c){
                 +_ftClr('ft-card',ci,'cardBtnBg','Button fill colour',col.cardBtnBg)
                 +_ftClr('ft-card',ci,'cardBtnFg','Button text colour',col.cardBtnFg)
                 +_ftClr('ft-card',ci,'cardBtnStrokeColor','Outline colour',col.cardBtnStrokeColor)
+                +'<div class="f" style="margin:0;flex:1 1 calc(50% - 6px);min-width:160px;"><label>Stroke thickness</label><select class="tin ft-card-btnsw" data-ci="'+ci+'">'+lpBtnStrokeOptsHtml(btnSw)+'</select></div>'
                 +'</div>'
-                +'<p class="hint" style="margin:8px 0 0;">Untick fill + tick outline for a clean outline-only button. Extra space is kept between the card text and the button.</p>'
+                +'<p class="hint" style="margin:8px 0 0;">Untick fill + tick outline for a clean outline-only button. Thickness: Fine → Normal. Extra space is kept between the card text and the button.</p>'
                 +'</div></div>';
             }
             var links=Array.isArray(col.links)?col.links:[];
@@ -9784,9 +9859,14 @@ function heroCtaCard(c){
             else if(t.classList.contains('ft-card-stroke')){ col.cardStroke=t.checked; persist(); previewApply(); }
             else if(t.classList.contains('ft-card-btnfill')){ col.cardBtnFill=t.checked; persist(); previewApply(); }
             else if(t.classList.contains('ft-card-btnoutline')){ col.cardBtnOutline=t.checked; persist(); previewApply(); }
+            else if(t.classList.contains('ft-card-btnsw')){ col.cardBtnStrokeWidth=t.value; persist(); previewApply(); }
             else if(t.classList.contains('ft-card-linkon')){ col.cardLinkOn=t.checked; var lf=colsHost.querySelector('.ft-card-link-fields[data-ci="'+ci+'"]'); if(lf) lf.style.display=t.checked?'':'none'; persist(); previewApply(); }
             else if(t.classList.contains('ft-card-act')){ col.cardLinkAction=t.value; _ftSyncColLinkVis(colsHost); persist(); previewApply(); }
             else if(t.classList.contains('ft-card-tgt')){ col.cardLinkTarget=t.value; persist(); previewApply(); }
+            else if(t.classList.contains('ft-card-blank')){ col.cardLinkBlank=t.checked; persist(); previewApply(); }
+            else if(t.classList.contains('ft-link-blank')){ if(!col.links||!col.links[li]) return; col.links[li].blank=t.checked; persist(); previewApply(); }
+            else if(t.classList.contains('ft-card-page')){ col.cardLinkPage=t.value.trim(); persist(); previewApply(); }
+            else if(t.classList.contains('ft-link-page')){ if(!col.links||!col.links[li]) return; col.links[li].page=t.value.trim(); persist(); previewApply(); }
           });
           colsHost.addEventListener('click',function(e){
             var t=e.target; if(!t.classList) return;
@@ -10161,6 +10241,21 @@ function heroCtaCard(c){
     } else if(sub==='branding'){
       var rowsC=TRADE_COLOURS.map(function(k){ return '<div class="f"><label>'+k[1]+' <span class="hint">'+k[2]+'</span></label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="col-'+k[0]+'" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="colt-'+k[0]+'" class="tin" style="flex:1;"></div></div>'; }).join('');
       body.innerHTML='<div class="card" style="margin-bottom:22px;"><div class="card-head" style="display:flex;justify-content:space-between;align-items:center;gap:12px;"><h2 style="margin:0;">Colours</h2><button class="btn ghost" id="col-reset" type="button">Reset to default</button></div><p class="lede">Pick a tradie preset, then fine-tune \u2014 changes preview live on the right. To retheme a duplicated design (e.g. Bean Culture \u2192 butcher), use <strong>CSS Override</strong> below.</p><div id="trade-presets" style="display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 16px;"></div><div class="appr-grid">'+rowsC+'</div>'+'<div style="margin-top:20px;border-top:1px solid var(--line);padding-top:16px;"><h3 style="margin:0 0 4px;font-size:15px;">Theme library</h3><div style="display:flex;align-items:center;gap:8px;margin:0 0 8px;padding:8px 10px;background:#f4f6f5;border:1px solid var(--line);border-radius:8px;"><span class="hint" style="margin:0;">Active theme:</span><strong id="active-theme-name" style="font-size:13.5px;">\u2014</strong></div><p class="hint" style="margin:0 0 10px;">100 ready-made trade palettes \u2014 click one to apply to this site, or <button type="button" class="btn ghost" id="reset-trade-colours" style="padding:3px 9px;">Reset to recommended trade colours</button></p><input type="text" id="lib-filter" class="tin" placeholder="Filter palettes\u2026" style="width:100%;margin-bottom:10px;box-sizing:border-box;"><div id="trade-colour-library" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(188px,1fr));gap:8px;max-height:300px;overflow:auto;padding:2px;"></div></div></div>'
+        +'<div class="card" style="margin-bottom:22px;" id="site-button-look-card"><h2 style="margin:0 0 4px;">Button look</h2>'
+        +'<p class="lede" style="margin:0 0 12px;">Site-wide default for every button — existing and new. Fill, outline stroke, stroke thickness, and text colour. Individual apps can still override colours. This is the LeadPages button standard.</p>'
+        +'<div id="bl-primary">'+lpBtnLookFieldsHtml('bl', ensButtonLook(c), {title:'Primary buttons (Call / CTA)'})+'</div>'
+        +'<div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line);">'
+        +'<p style="margin:0 0 8px;font-weight:700;font-size:13px;">Secondary / outline buttons</p>'
+        +'<div style="display:flex;flex-wrap:wrap;gap:12px 16px;margin-bottom:10px;align-items:center;">'
+        +'<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0;"><input type="checkbox" id="bl-sec-fill"'+(ensButtonLook(c).secondaryFill===true?' checked':'')+'> Fill background</label>'
+        +'<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0;"><input type="checkbox" id="bl-sec-outline"'+(ensButtonLook(c).secondaryOutline!==false?' checked':'')+'> Outline / stroke</label>'
+        +'</div>'
+        +'<div style="display:flex;flex-wrap:wrap;gap:12px;">'
+        +'<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:180px;"><label style="font-weight:600;">Fill colour</label><div style="display:flex;align-items:center;gap:8px;"><input type="color" id="bl-sec-bg-clr" value="'+(ensButtonLook(c).secondaryBg||'#ffffff')+'" style="width:44px;height:34px;padding:0;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="bl-sec-bg-tx" class="tin" value="'+(ensButtonLook(c).secondaryBg||'')+'" placeholder="#ffffff" style="flex:1;min-width:0;"><button type="button" class="btn ghost" id="bl-sec-bg-def" style="padding:6px 10px;">Default</button></div></div>'
+        +'<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:180px;"><label style="font-weight:600;">Text colour</label><div style="display:flex;align-items:center;gap:8px;"><input type="color" id="bl-sec-fg-clr" value="'+(ensButtonLook(c).secondaryFg||siteThemeColors(c).ink||'#1a2230')+'" style="width:44px;height:34px;padding:0;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="bl-sec-fg-tx" class="tin" value="'+(ensButtonLook(c).secondaryFg||'')+'" placeholder="Theme ink" style="flex:1;min-width:0;"><button type="button" class="btn ghost" id="bl-sec-fg-def" style="padding:6px 10px;">Default</button></div></div>'
+        +'<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:180px;"><label style="font-weight:600;">Outline colour</label><div style="display:flex;align-items:center;gap:8px;"><input type="color" id="bl-sec-stroke-clr" value="'+(ensButtonLook(c).secondaryStrokeColor||'#ffffff')+'" style="width:44px;height:34px;padding:0;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="bl-sec-stroke-tx" class="tin" value="'+(ensButtonLook(c).secondaryStrokeColor||'')+'" placeholder="Theme" style="flex:1;min-width:0;"><button type="button" class="btn ghost" id="bl-sec-stroke-def" style="padding:6px 10px;">Default</button></div></div>'
+        +'<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:180px;"><label style="font-weight:600;">Stroke thickness</label><select id="bl-sec-sw" class="tin">'+lpBtnStrokeOptsHtml(ensButtonLook(c).secondaryStrokeWidth||ensButtonLook(c).strokeWidth||'medium')+'</select></div>'
+        +'</div></div></div>'
         +'<div class="card" style="margin-bottom:22px;" id="css-override-card"><h2 style="margin:0 0 4px;">CSS Override</h2>'
         +'<p class="lede" style="margin:0 0 8px;">Fast retheme for an already-built design. Eyedrop from live preview, multi-select similar pinks, remap them together, then update the site CSS so the colour list simplifies.</p>'
         +'<ol class="hint" style="margin:0 0 12px;padding-left:18px;line-height:1.45;">'
@@ -10191,7 +10286,7 @@ function heroCtaCard(c){
         +'<button type="button" class="btn solid sm" id="co-bake" title="Permanently rewrite matching hex values in theme and apps">Update CSS to new overrides</button>'
         +'</div>'
         +'<p class="hint" id="co-bake-msg" style="margin:8px 0 0;"></p></div>';
-      wireTradeColours(c); renderTradePresets(c); renderColourLibrary(c); wireColorOverrides(c);
+      wireTradeColours(c); renderTradePresets(c); renderColourLibrary(c); wireColorOverrides(c); wireButtonLook(c);
     } else if(sub==='logo'){
       var L0=c.logo||{};
       var _hd=Math.max(24,Math.min(320,(L0.heightPx?L0.heightPx:Math.round(40*(L0.scale||1)))||44));
@@ -10341,26 +10436,29 @@ function heroCtaCard(c){
   }
   function headerCtaCard(c){
     var H=(c.sections&&c.sections.header)||{};
-    var on=H.on!==false, showPhone=H.showPhone!==false, action=H.action||'call';
+    var on=H.on!==false, showPhone=H.showPhone!==false, showM=H.showOnMobile!==false;
+    var action=H.action||'call';
     var cta=(H.cta!=null)?H.cta:'', button=(H.button!=null)?H.button:'';
-    var inp=function(id,val,ph){ return '<input type="text" id="'+id+'" value="'+esc(String(val)).replace(/"/g,'&quot;')+'" placeholder="'+(ph||'')+'" style="width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;">'; };
-    var opt=function(v,sel,lbl){ return '<option value="'+v+'"'+(sel===v?' selected':'')+'>'+lbl+'</option>'; };
-    var h='<div class="card" style="margin-bottom:22px;"><div class="card-head" style="display:flex;justify-content:space-between;align-items:center;gap:12px;"><h2 style="margin:0;">Header call-to-action</h2><label style="display:flex;gap:8px;align-items:center;font-weight:600;font-size:14px;white-space:nowrap;"><input type="checkbox" id="hd-on"'+(on?' checked':'')+'> Show on page</label></div><p class="lede" style="margin:0 0 12px;">The button (and optional phone number) shown top-right in the header.</p>';
-    h+='<div id="hd-fields"'+(on?'':' style="display:none"')+'>';
-    h+='<div class="row"><div class="f"><label>Button text</label>'+inp('hd-button',button,'Call now')+'</div><div class="f"><label>When tapped</label><select id="hd-action" class="tin">'+opt('call',action,'Call the phone number')+opt('form',action,'Scroll to the quote form')+'</select></div></div>';
-    h+='<label style="display:flex;gap:8px;align-items:center;font-weight:600;margin:4px 0 12px;"><input type="checkbox" id="hd-showphone"'+(showPhone?' checked':'')+'> Show the phone number beside the button</label>';
-    h+='<div class="f" id="hd-cta-row"'+(showPhone?'':' style="display:none"')+'><label>Small label above the phone</label>'+inp('hd-cta',cta,'e.g. Speak to a plumber')+'</div>';
     var th=siteThemeColors(c);
+    var look={fill:H.btnFill!==false, outline:H.btnOutline===true, bg:H.btnBg||'', fg:H.btnFg||'', strokeColor:H.btnBorder||H.btnStrokeColor||'', strokeWidth:H.btnStrokeWidth||'medium'};
+    var link={action:action, target:H.linkTarget||H.target||'quote', page:H.linkPage||'', url:H.linkUrl||H.href||'', blank:H.linkBlank!==false, text:button};
+    var h='<div class="card" style="margin-bottom:22px;"><div class="card-head" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;"><h2 style="margin:0;">Header call-to-action</h2><label style="display:flex;gap:8px;align-items:center;font-weight:600;font-size:14px;white-space:nowrap;"><input type="checkbox" id="hd-on"'+(on?' checked':'')+'> Show on page</label></div>';
+    h+='<p class="lede" style="margin:0 0 12px;">Phone label + number + button in the header. On phones they sit in a compact card under the logo — untick <strong>Show on phones</strong> if that feels too busy.</p>';
+    h+='<div id="hd-fields"'+(on?'':' style="display:none"')+'>';
+    h+='<label style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 12px;"><input type="checkbox" id="hd-showm"'+(showM?' checked':'')+'> Show on phones</label>';
+    h+=lpBtnLinkFieldsHtml('hd', link, {textLabel:'Button link text', textPh:'Request a consultation', actions:[['call','Call the phone number'],['form','Scroll to the quote form'],['scroll','Custom app position'],['page','Landing page'],['url','URL (_blank)']]});
+    h+='<label style="display:flex;gap:8px;align-items:center;font-weight:600;margin:12px 0;"><input type="checkbox" id="hd-showphone"'+(showPhone?' checked':'')+'> Show the phone number beside the button</label>';
+    h+='<div class="f" id="hd-cta-row"'+(showPhone?'':' style="display:none"')+'><label>Small label above the phone</label><input type="text" id="hd-cta" class="tin" value="'+esc(String(cta))+'" placeholder="e.g. Speak to a modification specialist"></div>';
+    h+='<div style="margin:14px 0 4px;padding-top:12px;border-top:1px solid var(--line);">';
+    h+=lpBtnLookFieldsHtml('hd-btn', look, {title:'Button look'});
+    h+='</div>';
     function hdCol(id,key,label,defv,help){
       var v=(H[key]&&/^#[0-9a-fA-F]{6}$/.test(H[key]))?H[key]:'';
       return '<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:200px;"><label style="font-weight:600;">'+label+'</label>'
         +(help?'<p class="hint" style="margin:2px 0 6px;font-size:12px;">'+help+'</p>':'')
         +'<div style="display:flex;align-items:center;gap:8px;"><input type="color" id="'+id+'-clr" value="'+(v||defv)+'" style="width:44px;height:34px;padding:0;border:1px solid var(--line);border-radius:8px;cursor:pointer;flex:0 0 auto;"><input type="text" id="'+id+'-tx" value="'+v+'" placeholder="'+defv+' (site)" style="flex:1;min-width:0;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;"><button type="button" class="btn ghost" id="'+id+'-def" style="padding:6px 10px;">Default</button></div></div>';
     }
-    h+='<div style="margin:14px 0 4px;padding-top:12px;border-top:1px solid var(--line);"><h3 style="margin:0 0 4px;font-size:15px;">Button &amp; text colours</h3><p class="hint" style="margin:0 0 10px;">Swatches show your site theme when a field is empty.</p><div style="display:flex;flex-wrap:wrap;gap:12px;">';
-    h+=hdCol('hd-btnbg','btnBg','Button colour',th.hivis,'Header Call Now background');
-    h+=hdCol('hd-btnfg','btnFg','Button text colour',th.white,'Text on the Call Now button');
-    h+=hdCol('hd-btnbd','btnBorder','Button stroke colour',th.hivis,'Border around the button');
+    h+='<div style="margin:14px 0 4px;padding-top:12px;border-top:1px solid var(--line);"><h3 style="margin:0 0 4px;font-size:15px;">Phone label colour</h3><div style="display:flex;flex-wrap:wrap;gap:12px;">';
     h+=hdCol('hd-phonefg','phoneFg','Phone &amp; label colour',th.white,'Small label and phone number beside the button');
     h+='</div></div>';
     var glowOn=H.glowOn===true, glowColor=(H.glowColor&&/^#[0-9a-fA-F]{6}$/.test(H.glowColor))?H.glowColor:'';
@@ -10372,17 +10470,27 @@ function heroCtaCard(c){
   function wireHeaderCta(c){
     function H(){ if(!c.sections)c.sections={}; if(!c.sections.header)c.sections.header={}; return c.sections.header; }
     var on=$('hd-on'); if(on) on.addEventListener('change',function(){ H().on=on.checked; var f=$('hd-fields'); if(f) f.style.display=on.checked?'':'none'; persist(); previewApply(); });
-    var bt=$('hd-button'); if(bt) bt.addEventListener('input',function(){ H().button=bt.value; persist(); previewApply(); });
-    var ac=$('hd-action'); if(ac) ac.addEventListener('change',function(){ H().action=ac.value; persist(); previewApply(); });
+    var sm=$('hd-showm'); if(sm) sm.addEventListener('change',function(){ H().showOnMobile=sm.checked; persist(); previewApply(); });
+    var bt=$('hd-text'); if(bt) bt.addEventListener('input',function(){ H().button=bt.value; persist(); previewApply(); });
+    var ac=$('hd-act'); if(ac) ac.addEventListener('change',function(){ H().action=ac.value; lpSyncBtnLinkVis('hd'); persist(); previewApply(); });
+    var tg=$('hd-tgt'); if(tg) tg.addEventListener('change',function(){ H().linkTarget=tg.value; persist(); previewApply(); });
+    var pg=$('hd-page'); if(pg) pg.addEventListener('change',function(){ H().linkPage=pg.value; persist(); previewApply(); });
+    var ur=$('hd-url'); if(ur) ur.addEventListener('input',function(){ H().linkUrl=ur.value; persist(); previewApply(); });
+    var bl=$('hd-blank'); if(bl) bl.addEventListener('change',function(){ H().linkBlank=bl.checked; persist(); previewApply(); });
     var sp=$('hd-showphone'); if(sp) sp.addEventListener('change',function(){ H().showPhone=sp.checked; var r=$('hd-cta-row'); if(r) r.style.display=sp.checked?'':'none'; persist(); previewApply(); });
     var ct=$('hd-cta'); if(ct) ct.addEventListener('input',function(){ H().cta=ct.value; persist(); previewApply(); });
     function colWire(id,key){ var clr=$(id+'-clr'),tx=$(id+'-tx'),df=$(id+'-def'); if(clr) clr.addEventListener('input',function(){ H()[key]=clr.value; if(tx)tx.value=clr.value; persist(); previewApply(); }); if(tx) tx.addEventListener('input',function(){ var v=tx.value.trim(); if(v===''){ H()[key]=''; } else { if(v[0]!=='#')v='#'+v; if(/^#[0-9a-fA-F]{6}$/.test(v)){ H()[key]=v; if(clr)clr.value=v; } } persist(); previewApply(); }); if(df) df.addEventListener('click',function(){ H()[key]=''; if(tx)tx.value=''; persist(); previewApply(); }); }
-    colWire('hd-btnbg','btnBg'); colWire('hd-btnfg','btnFg'); colWire('hd-btnbd','btnBorder'); colWire('hd-phonefg','phoneFg');
+    var bf=$('hd-btn-fill'); if(bf) bf.addEventListener('change',function(){ H().btnFill=bf.checked; persist(); previewApply(); });
+    var bo=$('hd-btn-outline'); if(bo) bo.addEventListener('change',function(){ H().btnOutline=bo.checked; persist(); previewApply(); });
+    colWire('hd-btn-bg','btnBg'); colWire('hd-btn-fg','btnFg'); colWire('hd-btn-stroke','btnBorder');
+    var bsw=$('hd-btn-sw'); if(bsw) bsw.addEventListener('change',function(){ H().btnStrokeWidth=bsw.value; persist(); previewApply(); });
+    colWire('hd-phonefg','phoneFg');
     var gl=$('hd-glow'); if(gl) gl.addEventListener('change',function(){ H().glowOn=gl.checked; var r=$('hd-glow-row'); if(r) r.style.display=gl.checked?'':'none'; persist(); previewApply(); });
     var gclr=$('hd-glow-clr'), gtx=$('hd-glow-tx'), gdf=$('hd-glow-def');
     if(gclr) gclr.addEventListener('input',function(){ H().glowColor=gclr.value; if(gtx)gtx.value=gclr.value; persist(); previewApply(); });
     if(gtx) gtx.addEventListener('input',function(){ var v=gtx.value.trim(); if(v===''){ H().glowColor=''; } else { if(v[0]!=='#')v='#'+v; if(/^#[0-9a-fA-F]{6}$/.test(v)){ H().glowColor=v; if(gclr)gclr.value=v; } } persist(); previewApply(); });
     if(gdf) gdf.addEventListener('click',function(){ H().glowColor=''; if(gtx)gtx.value=''; persist(); previewApply(); });
+    try{ lpSyncBtnLinkVis('hd'); }catch(_e){}
   }
   function wireLogoSize(c){
     var L=c.logo||(c.logo={});
@@ -10458,6 +10566,23 @@ function heroCtaCard(c){
       e.target.value='';
     });
     refresh();
+  }
+  function wireButtonLook(c){
+    function BL(){ return ensButtonLook(c); }
+    function colWire(id,key){
+      var clr=$(id+'-clr'),tx=$(id+'-tx'),df=$(id+'-def');
+      if(clr) clr.addEventListener('input',function(){ BL()[key]=clr.value; if(tx)tx.value=clr.value; persist(); previewApply(); });
+      if(tx) tx.addEventListener('input',function(){ var v=tx.value.trim(); if(v===''){ BL()[key]=''; } else { if(v[0]!=='#')v='#'+v; if(/^#[0-9a-fA-F]{6}$/.test(v)){ BL()[key]=v; if(clr)clr.value=v; } } persist(); previewApply(); });
+      if(df) df.addEventListener('click',function(){ BL()[key]=''; if(tx)tx.value=''; persist(); previewApply(); });
+    }
+    var f=$('bl-fill'); if(f) f.addEventListener('change',function(){ BL().fill=f.checked; persist(); previewApply(); });
+    var o=$('bl-outline'); if(o) o.addEventListener('change',function(){ BL().outline=o.checked; persist(); previewApply(); });
+    colWire('bl-bg','bg'); colWire('bl-fg','fg'); colWire('bl-stroke','strokeColor');
+    var sw=$('bl-sw'); if(sw) sw.addEventListener('change',function(){ BL().strokeWidth=sw.value; persist(); previewApply(); });
+    var sf=$('bl-sec-fill'); if(sf) sf.addEventListener('change',function(){ BL().secondaryFill=sf.checked; persist(); previewApply(); });
+    var so=$('bl-sec-outline'); if(so) so.addEventListener('change',function(){ BL().secondaryOutline=so.checked; persist(); previewApply(); });
+    colWire('bl-sec-bg','secondaryBg'); colWire('bl-sec-fg','secondaryFg'); colWire('bl-sec-stroke','secondaryStrokeColor');
+    var ssw=$('bl-sec-sw'); if(ssw) ssw.addEventListener('change',function(){ BL().secondaryStrokeWidth=ssw.value; persist(); previewApply(); });
   }
   function wireTradeColours(c){
     var th=c.theme||(c.theme={});

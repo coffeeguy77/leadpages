@@ -161,6 +161,21 @@ Sticky top region with publish, preview, settings — always visible on trade/br
 | Small | `.btn.sm` | Toolbar, chips |
 | Danger | custom red | Delete site, destructive |
 
+### Site Button look (law — tenant sites)
+
+**This is the LeadPages button standard for every existing and future tenant-site button.** Do not invent one-off button styles. New CTAs must use `config.buttonLook` (site default) and/or the shared Button look fields (fill / outline / stroke thickness / text colour) plus link targets (custom app position · landing page picker · URL `_blank` · link text).
+
+| Config | Role |
+|--------|------|
+| `config.buttonLook` | Site-wide primary + secondary defaults (`fill`, `outline`, `bg`, `fg`, `strokeColor`, `strokeWidth`, secondary mirrors) |
+| CSS vars | `--lp-btn-bg`, `--lp-btn-fg`, `--lp-btn-stroke`, `--lp-btn-stroke-w` (+ `--lp-btn-sec-*`) |
+| Stroke presets | `fine` 1px · `thin` 1.5px · `medium` 2px · `normal` 2.5px |
+| Link targets | `scroll` (app/section) · `page` (landing page picker — never free-type slug) · `url` (opens `_blank` by default) |
+| Editor | Branding → **Button look**; also Header CTA, Hero slides, Footer text-box cards |
+| Mobile header | Header CTA may be hidden on phones (`sections.header.showOnMobile`); when shown it is a compact card under the logo |
+
+Per-button colour overrides (hero slide, header, footer card) still win over site defaults. Empty colour fields inherit `buttonLook` → theme `hivis` / ink.
+
 ### Cards (`.card`)
 
 Themed surface using `var(--panel)`, `var(--border)`, radius, shadow. Group related settings with `h2` title. **Never hardcode `#fff` or `#ffffff` on cards** — dark workspace themes will show white bleed.
