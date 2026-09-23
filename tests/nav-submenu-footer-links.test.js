@@ -45,14 +45,14 @@ describe('nav menu parent/child submenus', () => {
     assert.match(demoJs, /hnm-children/);
     assert.match(demoJs, /nm-drop/);
     assert.match(demoJs, /_nmWireDrops/);
-    assert.match(demoCss, /Nav menu parent\/child submenus/);
+    assert.match(demoCss, /Nav menu parent\/child/);
     assert.match(demoCss, /header\.site \.hn-drop/);
     assert.match(demoCss, /\.hnm-group/);
     assert.match(demoCss, /hn-drop\.hn-open>\.hn-sub/);
     assert.match(demoCss, /hn-sub-link/);
     assert.doesNotMatch(demoCss, /\.hn-sub::before/);
     assert.match(trade, /hn-drop/);
-    assert.match(trade, /Nav menu parent\/child submenus/);
+    assert.match(trade, /Nav menu parent\/child/);
     assert.match(trade, /_nmWireDrops/);
   });
 
@@ -60,6 +60,7 @@ describe('nav menu parent/child submenus', () => {
     assert.match(demoCss, /button\.hn-link\.hn-parent/);
     assert.match(demoCss, /font-weight:700;font-size:16px/);
     assert.match(demoCss, /\.hn-sub-link\{[\s\S]*?font-weight:700;font-size:16px/);
+    assert.match(demoCss, /color:var\(--hn-fg/);
     assert.doesNotMatch(demoJs, /hn-sub-link\\" href=\\"[^"]+\\" title=/);
     assert.doesNotMatch(demoJs, /hn-parent\\" aria-haspopup=\\"true\\" aria-expanded=\\"false\\" title=/);
   });
@@ -117,32 +118,31 @@ describe('nav menu parent / submenu colour controls', () => {
   const demoCss = fs.readFileSync(path.join(root, 'marketplace/demos/demo-shared.css'), 'utf8');
   const trade = JSON.parse(fs.readFileSync(path.join(root, 'trade.template.json'), 'utf8')).html;
 
-  it('editor exposes menu + submenu colours only (no separate parent panel)', () => {
+  it('editor exposes Parent + Sub colour sections only', () => {
+    assert.match(manage, />Parent<\/h3>/);
+    assert.match(manage, />Sub<\/h3>/);
+    assert.match(manage, /id="nm-fg"/);
     assert.match(manage, /id="nm-subbg"/);
-    assert.match(manage, /id="nm-subfg"/);
     assert.match(manage, /id="nm-hstroke"/);
     assert.match(manage, /id="nm-subhstroke"/);
-    assert.match(manage, /id="nm-subsw"/);
-    assert.match(manage, /Submenu background/);
-    assert.match(manage, /Hover stroke colour/);
     assert.match(manage, /_nmCol\('subBg'/);
     assert.match(manage, /_nmCol\('hoverStroke'/);
-    assert.match(manage, /_nmCol\('subHoverStroke'/);
     assert.doesNotMatch(manage, /id="nm-pfg"/);
     assert.doesNotMatch(manage, /_nmCol\('parentFg'/);
-    assert.doesNotMatch(manage, /Parent stroke/);
+    assert.doesNotMatch(manage, /Submenu panel/);
+    assert.doesNotMatch(manage, /Link \/ text colour/);
   });
 
-  it('renderer sets menu hover stroke + sub CSS vars with contrast fallback', () => {
+  it('renderer sets Parent (--hn-*) + Sub (--hn-sub-*) vars; parents use --hn-fg not inherit', () => {
     assert.match(demoJs, /--hn-sub-bg/);
     assert.match(demoJs, /--hn-hover-stroke/);
     assert.match(demoJs, /--hn-sub-hover-stroke/);
-    assert.match(demoJs, /--hn-sub-stroke-w/);
+    assert.match(demoJs, /--hn-fg/);
     assert.match(demoJs, /_autoFg/);
-    assert.match(demoJs, /--nm-sub-bg/);
+    assert.match(demoCss, /button\.hn-link\.hn-parent/);
+    assert.match(demoCss, /color:var\(--hn-fg/);
+    assert.doesNotMatch(demoCss, /button\.hn-link\.hn-parent\{[^}]*color:inherit/);
     assert.doesNotMatch(demoJs, /--hn-parent-fg/);
-    assert.match(demoCss, /--hn-sub-bg/);
-    assert.match(demoCss, /--hn-hover-stroke/);
     assert.doesNotMatch(demoCss, /--hn-parent-stroke-w/);
     assert.match(trade, /--hn-sub-bg/);
     assert.match(trade, /_autoFg/);
