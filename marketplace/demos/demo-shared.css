@@ -966,8 +966,8 @@ html.site-width-capped section[data-sec="heroSlider"] .hsl{max-width:var(--site-
   header.site .head-call{position:static!important;transform:none!important;top:auto!important;right:auto!important;margin-left:auto;flex:1 1 auto;justify-content:flex-end;flex-wrap:wrap;gap:8px;max-width:100%}
   header.site .head-call .btn-call{font-size:14px;padding:10px 14px;white-space:normal;text-align:center;line-height:1.2;max-width:100%}
   header.site a.brand{max-width:min(58vw,220px)}
-  header.site a.brand img.lp-logo{max-width:100%!important;height:auto!important;max-height:var(--hdr-logo-mh,48px)}
-  header.site a.brand .lp-logo-wrap{max-width:100%;height:auto!important}
+  header.site a.brand img.lp-logo{max-width:100%!important;height:auto!important;max-height:var(--hdr-logo-mh,48px)!important}
+  header.site a.brand .lp-logo-wrap{max-width:100%;height:auto!important;max-height:var(--hdr-logo-mh,48px)}
 }
 .head-phone a,.head-phone .head-phone-num{font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:23px;color:var(--hdr-phone-fg,#fff);text-decoration:none;display:inline-block;line-height:1.05}
 .head-phone a:hover,.head-phone .head-phone-num:hover{opacity:.92}
