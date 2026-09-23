@@ -4295,6 +4295,7 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
   function lpRange(label,id,cur,min,max,suf){ return '<div class="f"><label>'+label+' <span id="'+id+'-v" style="font-weight:700;color:var(--accent);">'+(cur!=null?cur:'')+(suf||'')+'</span></label><input type="range" id="'+id+'" min="'+min+'" max="'+max+'" value="'+(cur!=null?cur:0)+'" style="width:100%;"></div>'; }
   function slideFromHero(c){ var H=(c.sections&&c.sections.hero)||{}; return { on:true, imageUrl:'', eyebrow:(H.eyebrow!=null?String(H.eyebrow):''), heading:(H.title!=null?String(H.title):''), highlightText:(H.titleHl!=null?String(H.titleHl):''), subText:(H.sub!=null?String(H.sub):''), primaryCtaText:'Call Now', primaryCtaAction:'call', secondaryCtaText:'Get A Fast Quote', secondaryCtaAction:'quote' }; }
   var secHideInactive=true;
+  var secAppsLocked=true;
   function renderDetails(){
     var box=$('av-details'); if(!box) return;
     var t=currentSiteTemplate, c=data||{};
@@ -4311,6 +4312,10 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
     var labelOf=function(id){ for(var i=0;i<subs.length;i++){ if(subs[i][0]===id) return subs[i][1]; } return id; };
     var _byLabel=function(ids){ return ids.slice().sort(function(a,b){ var la=labelOf(a).toLowerCase(), lb=labelOf(b).toLowerCase(); return la<lb?-1:(la>lb?1:0); }); };
     function _secChip(id){ var on=_secOn(c,id); var active=(landingSub===id); var lbl=labelOf(id);
+      // Locked: edit-only chip so a tap opens the editor and never toggles the section off.
+      if(secAppsLocked){
+        return '<button type="button" class="sec-editonly lp-sec-editonly" data-sec="'+id+'" data-on="'+(on?'1':'0')+'" data-active="'+(active?'1':'0')+'">'+esc(lbl)+'</button>';
+      }
       return '<span class="lp-sec-pill" data-on="'+(on?'1':'0')+'" data-active="'+(active?'1':'0')+'">'
         +'<button type="button" class="sec-toggle lp-sec-toggle" data-sec="'+id+'">'+(on?'\u2713 ':'')+esc(lbl)+'</button>'
         +'<button type="button" class="sec-edit lp-sec-edit" data-sec="'+id+'">Edit</button>'
@@ -4318,6 +4323,12 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
     function _editOnlyChip(id){ var on=_secOn(c,id); var active=(landingSub===id); var lbl=labelOf(id);
       return '<button type="button" class="sec-editonly lp-sec-editonly" data-sec="'+id+'" data-on="'+(on?'1':'0')+'" data-active="'+(active?'1':'0')+'">'+esc(lbl)+'</button>'; }
     var _layChip=function(k){ var on=_presetOn(c,k); var canEdit=(k==='quote-first')||(k==='classic')||(_presetFeatures(k).length>0);
+      if(secAppsLocked){
+        if(canEdit){
+          return '<button type="button" class="lay-edit lp-sec-editonly" data-lay="'+k+'" data-on="'+(on?'1':'0')+'">'+esc(LAYOUTS[k].name)+'</button>';
+        }
+        return '<span class="lp-sec-editonly" data-on="'+(on?'1':'0')+'" aria-disabled="true">'+esc(LAYOUTS[k].name)+'</span>';
+      }
       return '<span class="lp-lay-pill" data-on="'+(on?'1':'0')+'">'
         +'<button type="button" class="lay-toggle lp-lay-toggle" data-lay="'+k+'">'+(on?'\u2713 ':'')+esc(LAYOUTS[k].name)+'</button>'
         +(canEdit?'<button type="button" class="lay-edit lp-lay-edit" data-lay="'+k+'">Edit</button>':'')
@@ -4343,14 +4354,57 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
     ];
     var _coreHtml=CORE_GROUPS.map(function(g){return _grpS(g[0],g[1]);}).join('');
     var _presetHtml=PRESET_GROUPS.map(function(g){return _grpL(g[0],g[1]);}).join('');
+    var _modeSeg=document.body.getAttribute('data-lp-standard')==='1'?'':(
+      '<div class="sec-modeseg" id="sec-modeseg">'
+        +'<button type="button" data-mode="lock" class="'+(secAppsLocked?'on':'')+'" title="'+(secAppsLocked?'Apps locked — tap a chip to edit only. Unlock to turn apps on or off.':'Apps unlocked — you can turn apps on or off.')+'">'+(secAppsLocked?'LOCKED':'LOCK')+'</button>'
+        +'<button type="button" data-mode="hide" class="'+(secHideInactive?'on':'')+'">Hide Inactive Apps</button>'
+        +'<button type="button" data-mode="features" class="'+(secHideInactive?'':'on')+'">Show All Apps</button>'
+      +'</div>'
+    );
     var _subHtml='<div class="card" style="margin:0;padding:14px 16px;">'
-      + '<div class="svc-head" style="margin-bottom:12px;"><div style="font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);">Page editor</div>'+(document.body.getAttribute('data-lp-standard')==='1'?'':'<div class="sec-modeseg" id="sec-modeseg"><button type="button" data-mode="hide" class="'+(secHideInactive?'on':'')+'">Hide Inactive</button><button type="button" data-mode="features" class="'+(secHideInactive?'':'on')+'">Show Features</button></div>')+'</div>'
+      + '<div class="svc-head" style="margin-bottom:12px;"><div style="font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);">Page editor</div>'+_modeSeg+'</div>'
       + '<div class="pcf-section">'+_sectitle('Core Website Sections','The main sections that make up the customer-facing page.')+_coreHtml+'</div>'
       + (_presetHtml?('<div class="pcf-section" style="margin-top:22px;padding-top:16px;border-top:1px solid var(--line);">'+_sectitle('Conversion & Layout Presets','Ready-made combinations for different page goals.')+_presetHtml+'</div>'):'')
       + '</div>';
     _subHtml+='<div id="lsub-body"></div>';
     box.innerHTML=_subHtml;
-    (function(){ function _apply(){ var on=secHideInactive; box.querySelectorAll('.pcf').forEach(function(r){ r.classList.toggle('hide-inactive', on); }); box.querySelectorAll('.pcf-sec,.pcf-section').forEach(function(sec){ if(!on){ sec.style.display=''; return; } var hasOn=sec.querySelector('[data-on="1"]'); sec.style.display=hasOn?'':'none'; }); } var seg=$('sec-modeseg'); if(seg){ seg.querySelectorAll('button').forEach(function(b){ b.onclick=function(){ var nm=(b.getAttribute('data-mode')==='hide'); if(nm===secHideInactive) return; secHideInactive=nm; renderDetails(); }; }); } _apply(); })();
+    (function(){
+      function _apply(){
+        var on=secHideInactive;
+        box.querySelectorAll('.pcf').forEach(function(r){ r.classList.toggle('hide-inactive', on); });
+        box.querySelectorAll('.pcf-sec,.pcf-section').forEach(function(sec){
+          if(!on){ sec.style.display=''; return; }
+          var hasOn=sec.querySelector('[data-on="1"]');
+          sec.style.display=hasOn?'':'none';
+        });
+      }
+      var seg=$('sec-modeseg');
+      if(seg){
+        seg.querySelectorAll('button').forEach(function(b){
+          b.onclick=function(){
+            var mode=b.getAttribute('data-mode');
+            if(mode==='lock'){
+              secAppsLocked=!secAppsLocked;
+              renderDetails();
+              return;
+            }
+            if(mode==='hide'){
+              if(secHideInactive) return;
+              secHideInactive=true;
+              renderDetails();
+              return;
+            }
+            if(mode==='features'){
+              // Show All Apps also unlocks so sections can be turned on/off.
+              secHideInactive=false;
+              secAppsLocked=false;
+              renderDetails();
+            }
+          };
+        });
+      }
+      _apply();
+    })();
     box.querySelectorAll('.sec-toggle').forEach(function(b){ b.addEventListener('click',function(){ var id=b.getAttribute('data-sec'); if(id==='lpFooter'){ if(!c.sections)c.sections={}; if(!c.sections.lpFooter)c.sections.lpFooter={}; c.sections.lpFooter.on=true; persist(); previewApply(); renderDetails(); return; } var willOn=!_secOn(c,id); _setSecOn(c,id,willOn); if(willOn&&OFF_BY_DEFAULT_SECTIONS.indexOf(id)>=0) lpSeedComponent(c,id); _syncSectionOrder(c); persist(); previewApply(); renderDetails(); }); });
     box.querySelectorAll('.sec-edit').forEach(function(b){ b.addEventListener('click',function(){ landingSub=b.getAttribute('data-sec'); renderDetails(); }); });
     box.querySelectorAll('.sec-editonly').forEach(function(b){ b.addEventListener('click',function(){ var id=b.getAttribute('data-sec'); if(id==='details'){ openSettingsPage(); return; } landingSub=id; renderDetails(); }); });
@@ -13276,23 +13330,26 @@ function heroCtaCard(c){
   }
 
   function _getStandardHideEls() {
-    // Find Hide Inactive and Show Features buttons by text content — no IDs
-    return Array.from(document.querySelectorAll('button')).filter(function(b) {
-      var t = b.textContent.trim();
-      return t === 'Hide Inactive' || t === 'Show Features' || t === 'Show inactive' || t === 'Hide inactive';
+    // Find page-editor mode buttons by text content — no IDs
+    return Array.from(document.querySelectorAll('#sec-modeseg button, button')).filter(function(b) {
+      var t = b.textContent.trim().toLowerCase();
+      return t === 'hide inactive' || t === 'show features' || t === 'show inactive'
+        || t === 'hide inactive apps' || t === 'show all apps' || t === 'lock' || t === 'locked';
     });
   }
 
   function _enforceStandardMode() {
-    // Step 1: if "Show Features" is active (all visible), click "Hide Inactive" first
+    // Step 1: if "Show All Apps" is active (all visible), click "Hide Inactive Apps" first
     // so we get back to the normal hidden state before we lock it down
-    Array.from(document.querySelectorAll('button')).forEach(function(b) {
-      if (b.textContent.trim() === 'Hide Inactive' && b.classList.contains('on')) {
+    Array.from(document.querySelectorAll('#sec-modeseg button, button')).forEach(function(b) {
+      var t = b.textContent.trim().toLowerCase();
+      if ((t === 'hide inactive' || t === 'hide inactive apps') && b.classList.contains('on')) {
         // already in hide-inactive mode — good
-      } else if (b.textContent.trim() === 'Show Features') {
-        // currently showing all — need to click Hide Inactive to reset
-        var hideBtn = Array.from(document.querySelectorAll('button')).find(function(x) {
-          return x.textContent.trim() === 'Hide Inactive';
+      } else if (t === 'show features' || t === 'show all apps') {
+        // currently showing all — need to click Hide Inactive Apps to reset
+        var hideBtn = Array.from(document.querySelectorAll('#sec-modeseg button, button')).find(function(x) {
+          var xt = x.textContent.trim().toLowerCase();
+          return xt === 'hide inactive' || xt === 'hide inactive apps';
         });
         if (hideBtn) hideBtn.click();
       }
