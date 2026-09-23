@@ -4370,6 +4370,7 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
     var _mswEl=$('d-max-site-width'); if(_mswEl){ var _mswRaw=c.maxSiteWidth; _mswEl.value=(_mswRaw==='full'||_mswRaw==='1440'||_mswRaw==='1920')?_mswRaw:'1920'; }
     on('d-biz',function(v){ currentBusinessName=v; }); on('d-domain',function(v){ currentCustomDomain=v; }); on('d-owner',function(v){ currentOwnerEmail=v; }); var __dsv=$('d-save'); if(__dsv){ __dsv.addEventListener('click',async function(){ var st=$('d-saved'); __dsv.disabled=true; var o=__dsv.textContent; __dsv.textContent='Saving\u2026'; if(st){ st.style.color='#0a7d33'; st.textContent=''; } try{ await publishToDB(); __dsv.textContent='Saved \u2713'; if(st) st.textContent='Saved and live.'; }catch(e){ __dsv.textContent='Save failed'; if(st){ st.style.color='#b42318'; st.textContent='Could not save \u2014 try again.'; } } setTimeout(function(){ __dsv.disabled=false; __dsv.textContent=o; },1800); }); } on('d-phoneText',function(v){ c.phoneText=v; }); on('d-phone',function(v){ c.phone=v; }); on('d-email',function(v){ c.email=v; }); on('d-region',function(v){ c.region=v; });
     if(_mswEl){ _mswEl.addEventListener('change',function(){ c.maxSiteWidth=_mswEl.value||'1920'; persist(); previewApply(); }); }
+    try{ wireBreakpointSettings(c); }catch(_wbp){}
     if(t==='trade'){ setv('d-trade',c.trade); setv('d-licence',c.licence); on('d-trade',function(v){ c.trade=v; }); on('d-licence',function(v){ c.licence=v; }); }
     if(t==='broker-leads'){ var r=c.rates||{}; setv('d-suburb',c.suburb); setv('d-var',r.variableRate); setv('d-comp',r.comparisonRate); setv('d-rupd',r.updatedAt);
       on('d-suburb',function(v){ c.suburb=v; });
@@ -4378,6 +4379,134 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
       on('d-rupd',function(v){ c.rates=c.rates||{}; c.rates.updatedAt=v; });
     }
     if(currentRole==='super') lpRefreshDomainQuota();
+  }
+  /* Keep in sync with lib/breakpoints.js */
+  var LP_BP_PLATFORM={version:1,mobilePortraitMax:430,mobileLandscapeMax:560,tabletPortraitMax:768,tabletLandscapeMax:900};
+  function _bpClamp(v,fb){ var n=parseInt(v,10); if(!isFinite(n)||n<320) return fb; return n>4096?4096:n; }
+  function _bpPlatform(){ return {version:LP_BP_PLATFORM.version,mobilePortraitMax:LP_BP_PLATFORM.mobilePortraitMax,mobileLandscapeMax:LP_BP_PLATFORM.mobileLandscapeMax,tabletPortraitMax:LP_BP_PLATFORM.tabletPortraitMax,tabletLandscapeMax:LP_BP_PLATFORM.tabletLandscapeMax,desktopMin:LP_BP_PLATFORM.tabletLandscapeMax+1}; }
+  function _bpNormalize(raw){
+    var plat=_bpPlatform();
+    var src=raw&&typeof raw==='object'?raw:{};
+    var mobileP=_bpClamp(src.mobilePortraitMax,plat.mobilePortraitMax);
+    var mobileL=_bpClamp(src.mobileLandscapeMax,plat.mobileLandscapeMax);
+    var tabletP=_bpClamp(src.tabletPortraitMax,plat.tabletPortraitMax);
+    var tabletL=_bpClamp(src.tabletLandscapeMax,plat.tabletLandscapeMax);
+    if(mobileL<mobileP) mobileL=mobileP;
+    if(tabletP<mobileL) tabletP=mobileL;
+    if(tabletL<tabletP) tabletL=tabletP;
+    return {mobilePortraitMax:mobileP,mobileLandscapeMax:mobileL,tabletPortraitMax:tabletP,tabletLandscapeMax:tabletL,desktopMin:tabletL+1,version:plat.version};
+  }
+  function _bpResolve(c){
+    var bp=c&&c.breakpoints;
+    if(!bp||bp.source!=='custom') return Object.assign({source:'platform',previous:null},_bpPlatform());
+    return Object.assign({source:'custom',previous:(bp.previous&&typeof bp.previous==='object')?bp.previous:null,storedVersion:bp.version},_bpNormalize(bp));
+  }
+  function _bpSnapshot(bp){
+    bp=bp||_bpPlatform();
+    return {mobilePortraitMax:bp.mobilePortraitMax,mobileLandscapeMax:bp.mobileLandscapeMax,tabletPortraitMax:bp.tabletPortraitMax,tabletLandscapeMax:bp.tabletLandscapeMax,version:bp.version!=null?bp.version:LP_BP_PLATFORM.version};
+  }
+  function _bpSettingsCardHtml(c){
+    var bp=_bpResolve(c||{});
+    var custom=bp.source==='custom';
+    var outdated=custom&&(parseInt(bp.storedVersion,10)||0)<LP_BP_PLATFORM.version;
+    var canUndo=!!(custom&&bp.previous);
+    function inp(id,val,lbl,hint){
+      return '<div class="f" style="margin:0;flex:1 1 calc(50% - 8px);min-width:160px;"><label for="'+id+'">'+lbl+'</label>'
+        +'<input type="number" id="'+id+'" class="tin" min="320" max="4096" step="1" value="'+val+'" style="max-width:140px;">'
+        +'<span class="hint" style="display:block;margin-top:4px;">'+hint+'</span></div>';
+    }
+    return '<div id="bp-settings" style="margin-top:18px;padding-top:16px;border-top:1px solid var(--line);">'
+      +'<h3 style="margin:0 0 4px;font-size:15px;">Responsive breakpoints</h3>'
+      +'<p class="hint" style="margin:0 0 12px;">Phone and tablet bands (portrait &amp; landscape). Apps can hide on phones or tablets using these widths. Sites on LeadPages defaults pick up future platform updates automatically; customised sites stay locked until you Update or Restore.</p>'
+      +'<p id="bp-status" class="hint" style="margin:0 0 12px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);">'
+      +(custom
+        ?('Using <strong>custom</strong> widths'+(outdated?' \u2014 newer LeadPages defaults (v'+LP_BP_PLATFORM.version+') are available.':' (v'+(bp.storedVersion||'?')+').'))
+        :('Following <strong>LeadPages defaults</strong> (v'+LP_BP_PLATFORM.version+').'))
+      +'</p>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:12px 16px;">'
+      +inp('bp-mob-p',bp.mobilePortraitMax,'Mobile portrait max (px)','Typical phone upright')
+      +inp('bp-mob-l',bp.mobileLandscapeMax,'Mobile landscape max (px)','Phones sideways \u2014 also the Hide-on-phones cutoff')
+      +inp('bp-tab-p',bp.tabletPortraitMax,'Tablet portrait max (px)','iPad-style upright')
+      +inp('bp-tab-l',bp.tabletLandscapeMax,'Tablet landscape max (px)','Tablets sideways \u2014 Hide-on-tablets upper bound')
+      +'<div class="f" style="margin:0;flex:1 1 calc(50% - 8px);min-width:160px;"><label>Desktop starts at</label>'
+      +'<div id="bp-desk" style="font-weight:700;font-size:15px;padding:9px 0;">'+bp.desktopMin+'px</div>'
+      +'<span class="hint" style="display:block;">Automatically tablet landscape + 1</span></div>'
+      +'</div>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px;">'
+      +'<button type="button" class="btn ghost sm" id="bp-restore">Restore LeadPages defaults</button>'
+      +'<button type="button" class="btn ghost sm" id="bp-update">Update to latest defaults</button>'
+      +'<button type="button" class="btn ghost sm" id="bp-undo"'+(canUndo?'':' disabled')+'>Undo last update</button>'
+      +'<span id="bp-msg" class="hint" style="margin:0;"></span>'
+      +'</div></div>';
+  }
+  function wireBreakpointSettings(c){
+    if(!$('bp-settings')) return;
+    function readInputs(){
+      return _bpNormalize({
+        mobilePortraitMax:($('bp-mob-p')&&$('bp-mob-p').value),
+        mobileLandscapeMax:($('bp-mob-l')&&$('bp-mob-l').value),
+        tabletPortraitMax:($('bp-tab-p')&&$('bp-tab-p').value),
+        tabletLandscapeMax:($('bp-tab-l')&&$('bp-tab-l').value)
+      });
+    }
+    function writeInputs(bp){
+      [['bp-mob-p','mobilePortraitMax'],['bp-mob-l','mobileLandscapeMax'],['bp-tab-p','tabletPortraitMax'],['bp-tab-l','tabletLandscapeMax']].forEach(function(p){
+        var el=$(p[0]); if(el) el.value=bp[p[1]];
+      });
+      var d=$('bp-desk'); if(d) d.textContent=bp.desktopMin+'px';
+    }
+    function setStatus(html){ var s=$('bp-status'); if(s) s.innerHTML=html; }
+    function setMsg(t,ok){ var m=$('bp-msg'); if(!m) return; m.textContent=t||''; m.style.color=ok===false?'#b42318':(ok?'#0a7d33':''); }
+    function markCustom(vals,previous){
+      c.breakpoints={
+        source:'custom',
+        version:LP_BP_PLATFORM.version,
+        mobilePortraitMax:vals.mobilePortraitMax,
+        mobileLandscapeMax:vals.mobileLandscapeMax,
+        tabletPortraitMax:vals.tabletPortraitMax,
+        tabletLandscapeMax:vals.tabletLandscapeMax,
+        previous:previous||null
+      };
+      writeInputs(Object.assign({desktopMin:vals.tabletLandscapeMax+1},vals));
+      setStatus('Using <strong>custom</strong> widths (v'+LP_BP_PLATFORM.version+').');
+      var und=$('bp-undo'); if(und) und.disabled=!c.breakpoints.previous;
+      persist(); previewApply();
+    }
+    ['bp-mob-p','bp-mob-l','bp-tab-p','bp-tab-l'].forEach(function(id){
+      var el=$(id); if(!el) return;
+      el.addEventListener('change',function(){
+        var vals=readInputs();
+        writeInputs(Object.assign({desktopMin:vals.tabletLandscapeMax+1},vals));
+        markCustom(vals, (c.breakpoints&&c.breakpoints.previous)||null);
+        setMsg('Saved as custom breakpoints', true);
+      });
+    });
+    var rest=$('bp-restore');
+    if(rest) rest.addEventListener('click',function(){
+      delete c.breakpoints;
+      var plat=_bpPlatform();
+      writeInputs(plat);
+      setStatus('Following <strong>LeadPages defaults</strong> (v'+LP_BP_PLATFORM.version+').');
+      var und=$('bp-undo'); if(und) und.disabled=true;
+      persist(); previewApply();
+      setMsg('Restored LeadPages defaults \u2014 future platform updates apply automatically', true);
+    });
+    var upd=$('bp-update');
+    if(upd) upd.addEventListener('click',function(){
+      var cur=_bpResolve(c);
+      var prev=_bpSnapshot(cur);
+      var plat=_bpPlatform();
+      markCustom(plat, prev);
+      setMsg('Applied latest LeadPages defaults \u2014 Undo to go back', true);
+    });
+    var und=$('bp-undo');
+    if(und) und.addEventListener('click',function(){
+      var prev=c.breakpoints&&c.breakpoints.previous;
+      if(!prev){ setMsg('Nothing to undo', false); return; }
+      var vals=_bpNormalize(prev);
+      markCustom(vals, null);
+      setMsg('Reverted to previous breakpoints', true);
+    });
   }
   function secHexField(prefix, label, placeholder) {
     return '<div class="f" style="margin:0;flex:1 1 calc(50% - 6px);min-width:190px;"><label>'+label+'</label>'
@@ -4442,6 +4571,7 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
     var h='<div class="card" style="margin-bottom:22px;"><div class="card-head" style="display:flex;justify-content:space-between;align-items:center;gap:12px;"><h2 style="margin:0;">'+title+'</h2>';
     if(toggle){ var _offDef=(OFF_BY_DEFAULT_SECTIONS.indexOf(id)>=0); var _on=_offDef?(s.on===true):(s.on!==false); h+='<label style="display:flex;gap:8px;align-items:center;font-weight:600;font-size:14px;white-space:nowrap;"><input type="checkbox" id="sec-on-'+id+'"'+(_on?' checked':'')+'> Show on page</label>'; }
     h+='</div>';
+    h+=deviceVisRowHtml(c,id);
     h+='<div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;">';
     fields.forEach(function(f){ var key=f[0],label=f[1],ta=f[2]==='ta'; var _full=(ta||f[2]==='image'); var fst=' style="margin:0;'+(_full?'flex:1 1 100%;':'flex:1 1 calc(50% - 6px);min-width:190px;')+'"'; var ph=String(def[key]||'').replace(/\{\{\s*businessName\s*\}\}/g,currentBusinessName||'').replace(/"/g,'&quot;');
       var _rows=(ta&&f[3]&&+f[3]>0)?(+f[3]):(ta?2:0);
@@ -4458,6 +4588,39 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
     h+=secAppearancePanel(id, c);
     return h+'</div>';
   }
+  /** Shared phone/tablet visibility row — unchecked = hide on that device band. */
+  function deviceVisRowHtml(c,id){
+    if(!id) return '';
+    if(typeof LP_PAGE_APP_SKIP!=='undefined' && LP_PAGE_APP_SKIP.indexOf(id)>=0) return '';
+    if(typeof PAGE_CONTENT_EDITONLY!=='undefined' && PAGE_CONTENT_EDITONLY.indexOf(id)>=0) return '';
+    var s=(c&&c.sections&&c.sections[id])||{};
+    return '<div class="lp-device-vis" id="lp-device-vis-'+id+'" style="display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin:10px 0 4px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel-soft,transparent);">'
+      +'<span style="font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);">Devices</span>'
+      +'<label style="display:inline-flex;gap:7px;align-items:center;font-weight:600;font-size:13px;cursor:pointer;"><input type="checkbox" id="sec-showm-'+id+'"'+(s.hideOnMobile===true?'':' checked')+'> Show on phones</label>'
+      +'<label style="display:inline-flex;gap:7px;align-items:center;font-weight:600;font-size:13px;cursor:pointer;"><input type="checkbox" id="sec-showt-'+id+'"'+(s.hideOnTablet===true?'':' checked')+'> Show on tablets</label>'
+      +'<span class="hint" style="margin:0;flex:1 1 100%;">Phones and tablets cover portrait and landscape. Breakpoint widths are in Site settings.</span>'
+      +'</div>';
+  }
+  function wireDeviceVis(c,id){
+    if(!id||!c) return;
+    function ensure(){ if(!c.sections) c.sections={}; if(!c.sections[id]) c.sections[id]={}; return c.sections[id]; }
+    var sm=$('sec-showm-'+id); if(sm) sm.addEventListener('change',function(){ ensure().hideOnMobile=!sm.checked; persist(); previewApply(); });
+    var st=$('sec-showt-'+id); if(st) st.addEventListener('change',function(){ ensure().hideOnTablet=!st.checked; persist(); previewApply(); });
+  }
+  function ensureDeviceVisInBody(body,c,id){
+    if(!body||!id) return;
+    if(body.querySelector('#sec-showm-'+id)){ wireDeviceVis(c,id); return; }
+    var html=deviceVisRowHtml(c,id); if(!html) return;
+    var card=body.querySelector('.card');
+    if(card){
+      var head=card.querySelector('.card-head');
+      if(head&&head.insertAdjacentHTML){ head.insertAdjacentHTML('afterend', html); }
+      else card.insertAdjacentHTML('afterbegin', html);
+    } else {
+      body.insertAdjacentHTML('afterbegin', '<div class="card" style="margin-bottom:16px;padding:12px 14px;">'+html+'</div>');
+    }
+    wireDeviceVis(c,id);
+  }
   function wireSec(c,id,toggle,fields){
     function ensure(){ if(!c.sections) c.sections={}; if(!c.sections[id]) c.sections[id]={}; return c.sections[id]; }
     if(toggle){ var onb=$('sec-on-'+id); if(onb) onb.addEventListener('change',function(){ ensure().on=onb.checked; persist(); previewApply(); }); }
@@ -4468,6 +4631,7 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
       if(capsKey){ var capEl=$('sec-'+id+'-'+capsKey); if(capEl){ capEl.addEventListener('change',function(){ ensure()[capsKey]=capEl.checked; persist(); previewApply(); }); } }
     });
     wireSecAppearance(c, id);
+    wireDeviceVis(c, id);
   }
   function wireHero(c){
     var ks=['eyebrow','title','titleHl','sub'], cur=(c.sections&&c.sections.hero)||{};
@@ -4477,6 +4641,7 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
     ks.forEach(function(k){ var el=$('sec-hero-'+k); if(el) el.addEventListener('input',writeAll); });
     var ob=$('sec-on-hero'); if(ob) ob.addEventListener('change',function(){ if(!c.sections)c.sections={}; if(!c.sections.hero)c.sections.hero={}; c.sections.hero.on=ob.checked; persist(); previewApply(); });
     wireSecAppearance(c, 'hero');
+    wireDeviceVis(c, 'hero');
   }
   function _lpfVer(val,label,img,cur,sw){
     var sel=(cur===val);
@@ -6522,6 +6687,7 @@ function heroCtaCard(c){
       +'<option value="full">Full width (edge to edge)</option>'
       +'</select>'
       +'<p class="hint" style="margin:8px 0 0;">Limits overall content width and keeps hero slider images at a 16:9 aspect ratio so wide screens do not stretch photos. Trust bar image tiles follow the same cap.</p></div>'
+      +_bpSettingsCardHtml(c0())
       +'<div style="margin-top:6px;"><button class="btn" id="d-save">Save details</button><span id="d-saved" style="margin-left:10px;font-size:13px;color:#0a7d33;"></span></div></div>';
     var assignPartnerCard='';
     var ownershipCard='';
@@ -10090,6 +10256,7 @@ function heroCtaCard(c){
         });
       }
     } catch (_appAi) {}
+    try{ ensureDeviceVisInBody(body, c, sub); }catch(_dv){}
   }
   function _faviconCard(c){
     var fav=c.favicon||'';

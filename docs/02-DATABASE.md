@@ -165,9 +165,21 @@ The `sites.config` JSONB column is the **primary content store** for tenant webs
   "licence": "ACT Licence 0000000",
   "favicon": "https://res.cloudinary.com/.../favicon.ico",
   "seoTitle": "",
-  "seoDescription": ""
+  "seoDescription": "",
+  "maxSiteWidth": "1920",
+  "breakpoints": {
+    "source": "platform",
+    "version": 1,
+    "mobilePortraitMax": 430,
+    "mobileLandscapeMax": 560,
+    "tabletPortraitMax": 768,
+    "tabletLandscapeMax": 900,
+    "previous": null
+  }
 }
 ```
+
+`breakpoints`: omit or `source: "platform"` → always follow latest platform defaults at render (`lib/breakpoints.js`). `source: "custom"` locks site values until Restore or Update (Update snapshots into `previous` for Undo). Per-section: `sections.<id>.hideOnMobile` / `hideOnTablet` (boolean).
 
 #### `trade` template
 
