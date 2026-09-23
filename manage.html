@@ -10306,7 +10306,7 @@ function heroCtaCard(c){
       if(!c.sections) c.sections={}; if(!c.sections.navMenu) c.sections.navMenu={};
       var _nm=c.sections.navMenu; if(!Array.isArray(_nm.items)) _nm.items=[];
       body.innerHTML=secCard(c,'navMenu','Navigation Menu',true,[])
-        +'<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Menu items</h2><p class="lede" style="margin:0 0 12px;">Build a menu with top-level links and optional <b>parent items</b> that open a submenu (e.g. Services → Home Modifications). Link to Home, Landing pages, Order Storefront / shop / portal, or an external URL. Parents keep the main bar tidy when you have many pages.</p>'
+        +'<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Menu items</h2><p class="lede" style="margin:0 0 12px;">Build a menu with top-level links and optional <b>parent items</b> that open a submenu (e.g. Services → Home Modifications). <b>Drag</b> a link or parent onto another parent to nest it as a sub-item (centre highlight); drag to the top/bottom edge to reorder. Link to Home, Landing pages, Order Storefront / shop / portal, or an external URL. Parents keep the main bar tidy when you have many pages.</p>'
           +'<div class="row" style="margin-bottom:14px;"><div class="f"><label>Placement</label><select id="nm-place" class="tin"><option value="header">In the header, beside the logo</option><option value="bar">Own bar (below the header)</option></select></div><div class="f"><p class="hint" style="margin:24px 0 0;">Default is beside the logo. In-header position follows your logo alignment (Logo tab). Button styles and colours apply to <strong>both</strong> placements.</p></div></div>'+'<div class="row" style="margin-bottom:14px;"><div class="f"><label>Button style</label><select id="nm-style" class="tin"><option value="pills">Pills (filled)</option><option value="solid">Solid buttons</option><option value="outline">Outline buttons</option><option value="shadow">Elevated (shadow)</option><option value="buttons">Bordered buttons</option><option value="tabs">Underline tabs</option><option value="underline">Animated underline</option><option value="links">Plain links</option><option value="ghost">Ghost (subtle)</option></select></div><div class="f"><label>Alignment</label><select id="nm-align" class="tin"><option value="left">Left</option><option value="center">Centre</option><option value="right">Right</option></select></div></div>'+'<div class="row" style="margin-bottom:14px;"><div class="f"><label>Show items as</label><select id="nm-icons" class="tin"><option value="both">Icon + text</option><option value="text">Text only</option><option value="icon">Icon only</option></select></div><div class="f"><label>Menu background <span class="hint">standalone bar</span></label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="nm-bg" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="nm-bgt" class="tin" placeholder="Theme default" style="flex:1;min-width:0;"><button type="button" id="nm-bg-clr" class="btn ghost sm">Default</button></div></div></div>'+'<div class="row" style="margin-bottom:14px;"><div class="f"><label>Link / text colour</label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="nm-fg" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="nm-fgt" class="tin" placeholder="#ffffff" style="flex:1;min-width:0;"><button type="button" id="nm-fg-clr" class="btn ghost sm">Default</button></div></div><div class="f"><label>Hover text colour</label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="nm-hfg" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="nm-hfgt" class="tin" placeholder="Same as text" style="flex:1;min-width:0;"><button type="button" id="nm-hfg-clr" class="btn ghost sm">Default</button></div></div></div>'+'<div class="row" style="margin-bottom:14px;"><div class="f"><label>Button stroke colour <span class="hint">outline &amp; bordered</span></label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="nm-stroke" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="nm-stroket" class="tin" placeholder="Theme default" style="flex:1;min-width:0;"><button type="button" id="nm-stroke-clr" class="btn ghost sm">Default</button></div></div><div class="f"><label>Button background <span class="hint">pills &amp; solid / hover chip</span></label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="nm-fill" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="nm-fillt" class="tin" placeholder="Theme default" style="flex:1;min-width:0;"><button type="button" id="nm-fill-clr" class="btn ghost sm">Default</button></div></div></div>'+'<div class="row" style="margin-bottom:14px;"><div class="f"><label>Hover background</label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="nm-hbg" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="nm-hbgt" class="tin" placeholder="Soft white wash" style="flex:1;min-width:0;"><button type="button" id="nm-hbg-clr" class="btn ghost sm">Default</button></div></div><div class="f"></div></div>'
           +'<div id="nm-list"></div>'
           +'<div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;"><button type="button" id="nm-add" class="nm-add">+ Add menu item</button><button type="button" id="nm-add-parent" class="nm-add">+ Add parent menu</button></div>'
@@ -10358,7 +10358,8 @@ function heroCtaCard(c){
         }
         function childRow(ch,pi,ci,n){
           var path=pi+'.'+ci;
-          return '<div class="nm-child-row" data-path="'+path+'" style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px dashed var(--line);border-radius:8px;margin:0 0 6px 28px;background:var(--input-bg,#f7f5f1);">'
+          return '<div class="nm-child-row" draggable="true" data-path="'+path+'" style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px dashed var(--line);border-radius:8px;margin:0 0 6px 28px;background:var(--input-bg,#f7f5f1);">'
+            +'<span class="nm-grip" style="cursor:grab;color:var(--ink-faint);font-size:12px;letter-spacing:-2px;line-height:1;" title="Drag onto a parent to nest, or between items to reorder">\u22ee\u22ee</span>'
             +'<span style="color:var(--ink-faint);font-size:12px;font-weight:700;">\u21b3</span>'
             +'<div style="flex:1;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">'
               +'<input type="text" class="nm-label tin" data-path="'+path+'" value="'+esc(ch.label||'')+'" placeholder="Sub-item label" style="flex:1 1 120px;'+_is+'">'
@@ -10375,9 +10376,9 @@ function heroCtaCard(c){
           var parent=isParent(it);
           if(parent){ it.kind='parent'; ensKids(it); }
           var kids=parent?ensKids(it):[];
-          return '<div class="nm-row" draggable="true" data-i="'+i+'" data-path="'+i+'" style="border:1px solid var(--line);border-radius:9px;margin-bottom:10px;background:#fff;">'
-          +'<div style="display:flex;align-items:center;gap:8px;padding:9px 10px;">'
-            +'<span class="nm-grip" style="cursor:grab;color:var(--ink-faint);font-size:15px;letter-spacing:-2px;line-height:1;">\u22ee\u22ee</span>'
+          return '<div class="nm-row" draggable="true" data-i="'+i+'" data-path="'+i+'" data-parent="'+(parent?'1':'0')+'" style="border:1px solid var(--line);border-radius:9px;margin-bottom:10px;background:#fff;">'
+          +'<div class="nm-row-head" style="display:flex;align-items:center;gap:8px;padding:9px 10px;">'
+            +'<span class="nm-grip" style="cursor:grab;color:var(--ink-faint);font-size:15px;letter-spacing:-2px;line-height:1;" title="Drag onto another parent to make this a sub-item">\u22ee\u22ee</span>'
             +'<div style="flex:1;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">'
               +'<input type="text" class="nm-label tin" data-path="'+i+'" value="'+esc(it.label||'')+'" placeholder="'+(parent?'Parent label (e.g. Services)':'Label')+'" style="flex:1 1 120px;'+_is+'">'
               +kindSel(it,String(i))
@@ -10392,7 +10393,7 @@ function heroCtaCard(c){
           +(parent
             ?('<div class="nm-kids" data-i="'+i+'">'
               +(kids.length?kids.map(function(ch,ci){ return childRow(ch,i,ci,kids.length); }).join('')
-                :'<p class="hint" style="margin:0 0 8px 28px;">No sub-items yet — add pages under this parent.</p>')
+                :'<p class="hint nm-kids-empty" style="margin:0 0 8px 28px;">No sub-items yet — add pages, or drag a menu item onto this parent.</p>')
               +'<div style="margin:0 0 10px 28px;"><button type="button" class="btn ghost sm nm-add-child" data-i="'+i+'">+ Add sub-item</button></div>'
             +'</div>')
             :'')
@@ -10409,6 +10410,65 @@ function heroCtaCard(c){
           else if(val==='orderPortal') it.label='My orders';
           else if(val&&val.indexOf('page:')===0){ var pg=pages().filter(function(p){return 'page:'+p.slug===val;})[0]; if(pg) it.label=pg.title||pg.slug; }
           else if(val==='external') it.label=it.label||'';
+        }
+        function takePath(path){
+          var parts=String(path||'').split('.');
+          var i=+parts[0];
+          if(parts.length===1){
+            if(isNaN(i)||i<0||i>=_nm.items.length) return null;
+            return _nm.items.splice(i,1)[0];
+          }
+          var j=+parts[1]; var kids=ensKids(_nm.items[i]||{});
+          if(isNaN(j)||j<0||j>=kids.length) return null;
+          return kids.splice(j,1)[0];
+        }
+        /** Turn a dragged parent into one or more link children (flatten one level). */
+        function asNestPayload(it){
+          if(!it) return [];
+          if(!isParent(it)){
+            it.kind='link';
+            if(!it.target) it.target='home';
+            if(!it.opens) it.opens='_self';
+            return [it];
+          }
+          var kids=(Array.isArray(it.children)?it.children:[]).slice();
+          var head={
+            label:it.label||'Item',
+            kind:'link',
+            target:it.target||'home',
+            url:it.url||'',
+            opens:it.opens||'_self',
+            icon:it.icon||''
+          };
+          return [head].concat(kids.map(function(ch){
+            if(!ch) return null;
+            ch.kind='link';
+            if(!ch.target) ch.target='home';
+            if(!ch.opens) ch.opens='_self';
+            return ch;
+          }).filter(Boolean));
+        }
+        function clearNmDrop(){
+          host.querySelectorAll('.nm-drop-before,.nm-drop-after,.nm-drop-nest').forEach(function(el){
+            el.classList.remove('nm-drop-before','nm-drop-after','nm-drop-nest');
+          });
+        }
+        function dropModeFor(e, row){
+          if(!row) return null;
+          var isPar=row.getAttribute('data-parent')==='1';
+          var kids=row.querySelector('.nm-kids');
+          var onKids=kids&&(e.target===kids||kids.contains(e.target));
+          if(onKids&&isPar) return 'nest';
+          var head=row.querySelector('.nm-row-head')||row;
+          var rc=head.getBoundingClientRect();
+          var y=e.clientY-rc.top;
+          var h=rc.height||1;
+          if(isPar){
+            if(y<h*0.22) return 'before';
+            if(y>h*0.78) return 'after';
+            return 'nest';
+          }
+          return (y>h/2)?'after':'before';
         }
         host.addEventListener('input',function(e){
           var t=e.target, path=t.getAttribute('data-path'); if(!path) return;
@@ -10469,10 +10529,116 @@ function heroCtaCard(c){
             persist(); previewApply(); draw();
           }
         });
-        var drag=null;
-        host.addEventListener('dragstart',function(e){ var r=e.target.closest&&e.target.closest('.nm-row'); if(!r) return; drag=+r.getAttribute('data-i'); try{e.dataTransfer.effectAllowed='move';}catch(_e){} });
-        host.addEventListener('dragover',function(e){ e.preventDefault(); });
-        host.addEventListener('drop',function(e){ e.preventDefault(); var r=e.target.closest&&e.target.closest('.nm-row'); if(!r||drag==null) return; var to=+r.getAttribute('data-i'); if(isNaN(to)||to===drag) return; var it=_nm.items.splice(drag,1)[0]; _nm.items.splice(to,0,it); drag=null; persist(); previewApply(); draw(); });
+        var dragPath=null;
+        if(!document.getElementById('nm-dnd-css')){
+          var st=document.createElement('style'); st.id='nm-dnd-css';
+          st.textContent='.nm-row.nm-drop-before{box-shadow:0 -3px 0 0 var(--accent,#c45c26)}.nm-row.nm-drop-after{box-shadow:0 3px 0 0 var(--accent,#c45c26)}.nm-row.nm-drop-nest{outline:2px solid var(--accent,#c45c26);outline-offset:2px;background:#fff8f4}.nm-child-row.nm-drop-before{box-shadow:inset 0 3px 0 0 var(--accent,#c45c26)}.nm-child-row.nm-drop-after{box-shadow:inset 0 -3px 0 0 var(--accent,#c45c26)}.nm-row.nm-dragging,.nm-child-row.nm-dragging{opacity:.45}';
+          document.head.appendChild(st);
+        }
+        host.addEventListener('dragstart',function(e){
+          var child=e.target.closest&&e.target.closest('.nm-child-row');
+          var row=e.target.closest&&e.target.closest('.nm-row');
+          if(child){ dragPath=child.getAttribute('data-path'); child.classList.add('nm-dragging'); }
+          else if(row){ dragPath=row.getAttribute('data-path'); row.classList.add('nm-dragging'); }
+          else return;
+          try{ e.dataTransfer.effectAllowed='move'; e.dataTransfer.setData('text/plain',dragPath||''); }catch(_e){}
+        });
+        host.addEventListener('dragend',function(){
+          dragPath=null; clearNmDrop();
+          host.querySelectorAll('.nm-dragging').forEach(function(el){ el.classList.remove('nm-dragging'); });
+        });
+        host.addEventListener('dragover',function(e){
+          e.preventDefault();
+          if(dragPath==null) return;
+          var child=e.target.closest&&e.target.closest('.nm-child-row');
+          var row=e.target.closest&&e.target.closest('.nm-row');
+          clearNmDrop();
+          if(child){
+            var cpath=child.getAttribute('data-path');
+            if(cpath===dragPath) return;
+            var crc=child.getBoundingClientRect();
+            child.classList.add((e.clientY-crc.top)>crc.height/2?'nm-drop-after':'nm-drop-before');
+            return;
+          }
+          if(!row) return;
+          var tpath=row.getAttribute('data-path');
+          if(tpath===dragPath) return;
+          // Don't nest a parent into itself via path prefix
+          if(String(dragPath).indexOf('.')<0 && tpath===dragPath) return;
+          var mode=dropModeFor(e,row);
+          if(mode==='nest') row.classList.add('nm-drop-nest');
+          else if(mode==='before') row.classList.add('nm-drop-before');
+          else if(mode==='after') row.classList.add('nm-drop-after');
+        });
+        host.addEventListener('drop',function(e){
+          e.preventDefault();
+          if(dragPath==null){ clearNmDrop(); return; }
+          var fromPath=dragPath;
+          var child=e.target.closest&&e.target.closest('.nm-child-row');
+          var row=e.target.closest&&e.target.closest('.nm-row');
+          clearNmDrop();
+
+          function insertTop(items, at){
+            for(var k=0;k<items.length;k++) _nm.items.splice(at+k,0,items[k]);
+          }
+          function insertKids(pi, items, at){
+            var p=_nm.items[pi]; if(!p) return;
+            p.kind='parent';
+            var kids=ensKids(p);
+            for(var k=0;k<items.length;k++) kids.splice(at+k,0,items[k]);
+          }
+
+          // Drop onto a child row → reorder among that parent's children (or move into that parent)
+          if(child){
+            var toPath=child.getAttribute('data-path');
+            if(!toPath||toPath===fromPath){ dragPath=null; return; }
+            var tp=toPath.split('.'); var tpi=+tp[0], tci=+tp[1];
+            var crc=child.getBoundingClientRect();
+            var after=(e.clientY-crc.top)>crc.height/2;
+            var taken=takePath(fromPath);
+            if(!taken){ dragPath=null; return; }
+            // Re-resolve target index if we removed a top-level item before the parent
+            if(String(fromPath).indexOf('.')<0){
+              var fi=+fromPath;
+              if(fi<tpi) tpi-=1;
+            } else {
+              var fp=fromPath.split('.');
+              if(+fp[0]===tpi && +fp[1]<tci) tci-=1;
+            }
+            var payload=asNestPayload(taken);
+            var insertAt=after?tci+1:tci;
+            insertKids(tpi, payload, insertAt);
+            dragPath=null; persist(); previewApply(); draw();
+            return;
+          }
+
+          if(!row){ dragPath=null; return; }
+          var toPath2=row.getAttribute('data-path');
+          if(!toPath2||toPath2===fromPath){ dragPath=null; return; }
+          var mode=dropModeFor(e,row);
+          var toIdx=+toPath2;
+          var taken2=takePath(fromPath);
+          if(!taken2){ dragPath=null; return; }
+
+          // Adjust destination index if we removed a top-level item before it
+          if(String(fromPath).indexOf('.')<0){
+            var fromI=+fromPath;
+            if(fromI<toIdx) toIdx-=1;
+          }
+
+          if(mode==='nest' && _nm.items[toIdx] && (isParent(_nm.items[toIdx])||row.getAttribute('data-parent')==='1')){
+            var payload2=asNestPayload(taken2);
+            insertKids(toIdx, payload2, ensKids(_nm.items[toIdx]).length);
+            dragPath=null; persist(); previewApply(); draw();
+            return;
+          }
+
+          // Top-level reorder / promote — keep parent structure when moving among top-level rows
+          var at=mode==='after'?toIdx+1:toIdx;
+          if(!isParent(taken2)){ taken2.kind='link'; if(!taken2.target) taken2.target='home'; }
+          insertTop([taken2], at);
+          dragPath=null; persist(); previewApply(); draw();
+        });
         var ab=$('nm-add'); if(ab) ab.addEventListener('click',function(){ _nm.items.push({label:'Home',kind:'link',target:'home',url:'',opens:'_self'}); persist(); previewApply(); draw(); });
         var pb=$('nm-add-parent'); if(pb) pb.addEventListener('click',function(){ _nm.items.push({label:'Services',kind:'parent',icon:'',children:[{label:'',target:'home',url:'',opens:'_self'}]}); persist(); previewApply(); draw(); });
       })();

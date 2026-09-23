@@ -29,6 +29,14 @@ describe('nav menu parent/child submenus', () => {
     assert.match(manage, /children:/);
   });
 
+  it('allows dragging a menu item onto a parent to nest as a sub-item', () => {
+    assert.match(manage, /nm-drop-nest/);
+    assert.match(manage, /asNestPayload/);
+    assert.match(manage, /dropModeFor/);
+    assert.match(manage, /Drag onto another parent/);
+    assert.match(manage, /data-parent="/);
+  });
+
   it('renderer builds dropdown + mobile nested groups', () => {
     assert.match(demoJs, /_nmIsParent/);
     assert.match(demoJs, /hn-drop/);
