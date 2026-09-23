@@ -50,7 +50,8 @@ describe('nav menu parent/child submenus', () => {
     assert.match(demoCss, /\.hnm-group/);
     assert.match(demoCss, /hn-drop\.hn-open>\.hn-sub/);
     assert.match(demoCss, /hn-sub-link/);
-    assert.doesNotMatch(demoCss, /\.hn-sub::before/);
+    assert.match(demoCss, /hn-sub::before/); // hover bridge (transparent), not diamond caret
+    assert.doesNotMatch(demoCss, /hn-sub::before\{[^}]*rotate\(45deg\)/);
     assert.match(trade, /hn-drop/);
     assert.match(trade, /Nav menu parent\/child/);
     assert.match(trade, /_nmWireDrops/);
@@ -61,8 +62,16 @@ describe('nav menu parent/child submenus', () => {
     assert.match(demoCss, /font-weight:700;font-size:16px/);
     assert.match(demoCss, /\.hn-sub-link\{[\s\S]*?font-weight:700;font-size:16px/);
     assert.match(demoCss, /color:var\(--hn-fg/);
+    assert.match(demoCss, /min-height:38px/);
     assert.doesNotMatch(demoJs, /hn-sub-link\\" href=\\"[^"]+\\" title=/);
     assert.doesNotMatch(demoJs, /hn-parent\\" aria-haspopup=\\"true\\" aria-expanded=\\"false\\" title=/);
+  });
+
+  it('hover stroke does not resize buttons (box-shadow, not border-width)', () => {
+    assert.match(demoCss, /box-shadow:0 0 0 var\(--hn-sub-hover-stroke-w/);
+    assert.match(demoCss, /box-shadow:0 0 0 var\(--hn-hover-stroke-w/);
+    assert.doesNotMatch(demoCss, /hn-sub-link:hover[^}]*border-width:var\(--hn-sub-hover-stroke-w/);
+    assert.doesNotMatch(demoCss, /hn-drop\.hn-open>\.hn-parent\{[^}]*border-width:/);
   });
 
   it('sync helpers find and remove nested page targets', () => {
