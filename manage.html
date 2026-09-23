@@ -969,7 +969,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   <div id="av-landing" hidden>
     <div class="card">
       <div class="card-head"><h2>Landing pages</h2><button class="btn" id="lp-new">+ New page</button></div>
-      <p class="lede">Build SEO-optimised pages that match your theme. Tick <strong>Show in site menu</strong> on a page to add it to the Navigation Menu in one step (name + optional icon). Reorder with the arrows here, or fine-tune everything in <strong>Page editor → Menu</strong>. Published pages are included in <code>sitemap.xml</code> — after publishing, regenerate the sitemap under <strong>Settings → Search &amp; indexing</strong>.</p>
+      <p class="lede">Build SEO-optimised pages that match your theme. Tick <strong>Show in site menu</strong> on a page to add it to the Navigation Menu — top level or under a parent submenu. Reorder with the arrows here, or fine-tune everything in <strong>Page editor → Menu</strong>. Published pages are included in <code>sitemap.xml</code> — after publishing, regenerate the sitemap under <strong>Settings → Search &amp; indexing</strong>.</p>
       <div id="lp-list" class="lp-list"></div>
     </div>
 
@@ -1046,7 +1046,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       <div class="apgroup-h">Site menu</div>
       <div class="lp-menu-box" style="border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:0 0 14px;background:var(--input-bg,#f7f5f1);">
         <label class="ck" style="font-weight:600;"><input type="checkbox" id="lp-show-menu"> Show in site menu</label>
-        <p class="hint" style="margin:6px 0 0;">One tick adds this page to the Navigation Menu (and turns the menu on if needed). For colours and styles, use <strong>Page editor → Menu</strong>.</p>
+        <p class="hint" style="margin:6px 0 0;">Add this page as a top-level link, or nest it under a <strong>parent</strong> (submenu) so the main bar stays tidy — e.g. Services → this page. Colours and styles: <strong>Page editor → Menu</strong>.</p>
         <div id="lp-menu-opts" style="display:none;margin-top:12px;">
           <div class="lp-row" style="gap:12px;">
             <div class="f" style="margin:0;flex:1;min-width:180px;"><label>Menu item name</label><input type="text" id="lp-menu-label" class="tin" placeholder="Defaults to page title"></div>
@@ -1054,10 +1054,14 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
               <div class="iconctl"><button type="button" class="icon-pick" id="lp-menu-icon-btn" tabindex="-1" title="Choose an icon"><span style="opacity:.35;">＋</span></button><input type="hidden" class="icon-input" id="lp-menu-icon" value=""></div>
             </div>
           </div>
+          <div class="lp-row" style="gap:12px;margin-top:12px;">
+            <div class="f" style="margin:0;flex:1;min-width:200px;"><label>Place in menu</label><select id="lp-menu-under" class="tin"><option value="top">Top level (main menu)</option><option value="__new__">+ New parent menu…</option></select></div>
+            <div class="f" id="lp-menu-new-parent-wrap" style="margin:0;flex:1;min-width:180px;display:none;"><label>New parent name</label><input type="text" id="lp-menu-new-parent" class="tin" placeholder="e.g. Services"></div>
+          </div>
           <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px;">
             <span class="hint" id="lp-menu-pos" style="margin:0;">Position in menu</span>
-            <button type="button" class="btn ghost sm" id="lp-menu-left" title="Move earlier in the menu">← Earlier</button>
-            <button type="button" class="btn ghost sm" id="lp-menu-right" title="Move later in the menu">Later →</button>
+            <button type="button" class="btn ghost sm" id="lp-menu-left" title="Move earlier among siblings">← Earlier</button>
+            <button type="button" class="btn ghost sm" id="lp-menu-right" title="Move later among siblings">Later →</button>
           </div>
         </div>
       </div>
@@ -2692,13 +2696,29 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     $('lp-status').addEventListener('change',function(){ lpField('status',this.value); });
     (function wireLpMenuQuick(){
       var show=$('lp-show-menu'), opts=$('lp-menu-opts'), lab=$('lp-menu-label'), ic=$('lp-menu-icon'), left=$('lp-menu-left'), right=$('lp-menu-right');
+      var under=$('lp-menu-under'), newWrap=$('lp-menu-new-parent-wrap'), newPar=$('lp-menu-new-parent');
+      function underSpec(){
+        if(!under) return 'top';
+        var v=under.value||'top';
+        if(v==='__new__'){
+          var name=(newPar&&newPar.value)||'';
+          return { create: String(name).trim()||'Services' };
+        }
+        if(v==='top'||v==='') return 'top';
+        var n=+v;
+        return isNaN(n)?'top':n;
+      }
+      function syncNewParentVis(){
+        if(!newWrap||!under) return;
+        newWrap.style.display=under.value==='__new__'?'':'none';
+      }
       function apply(){
         if(!lpCur) return;
         var on=!!(show&&show.checked);
         lpCur.menu=on?'top':'none';
         lpCur.menuLabel=(lab&&lab.value)||'';
         lpCur.menuIcon=(ic&&ic.value)||'';
-        lpSyncNavMenu({show:on, label:lpCur.menuLabel||lpCur.title||lpCur.slug, icon:lpCur.menuIcon});
+        lpSyncNavMenu({show:on, label:lpCur.menuLabel||lpCur.title||lpCur.slug, icon:lpCur.menuIcon, under:on?underSpec():undefined});
         lpFillMenuUi();
         persist(); lpAutosave(); previewApply();
       }
@@ -2716,6 +2736,9 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       });
       if(lab) lab.addEventListener('input',function(){ if(show&&show.checked) apply(); else if(lpCur){ lpCur.menuLabel=lab.value; persist(); lpAutosave(); } });
       if(ic) ic.addEventListener('input',function(){ if(show&&show.checked) apply(); else if(lpCur){ lpCur.menuIcon=ic.value; persist(); lpAutosave(); } });
+      if(under) under.addEventListener('change',function(){ syncNewParentVis(); if(show&&show.checked) apply(); });
+      if(newPar) newPar.addEventListener('change',function(){ if(show&&show.checked&&under&&under.value==='__new__') apply(); });
+      if(newPar) newPar.addEventListener('blur',function(){ if(show&&show.checked&&under&&under.value==='__new__') apply(); });
       if(left) left.addEventListener('click',function(){ if(!lpCur||!lpCur.slug) return; if(lpMoveNavMenu(-1)){ persist(); lpAutosave(); previewApply(); lpFillMenuUi(); } });
       if(right) right.addEventListener('click',function(){ if(!lpCur||!lpCur.slug) return; if(lpMoveNavMenu(1)){ persist(); lpAutosave(); previewApply(); lpFillMenuUi(); } });
     })();
@@ -2842,13 +2865,61 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     return nm;
   }
   function lpNavTarget(slug){ return 'page:'+String(slug||'').trim(); }
-  function lpFindNavIdx(slug){
-    var items=lpNavMenuEns().items, t=lpNavTarget(slug);
-    if(!slug||t==='page:') return -1;
-    for(var i=0;i<items.length;i++){ if(items[i]&&items[i].target===t) return i; }
-    return -1;
+  function lpNavIsParent(it){
+    if(!it) return false;
+    if(it.kind==='link') return false;
+    if(it.kind==='parent') return true;
+    return !!(Array.isArray(it.children)&&it.children.length);
   }
-  /** Upsert / remove this landing page in sections.navMenu.items. */
+  function lpFindNavRef(slug){
+    var items=lpNavMenuEns().items, t=lpNavTarget(slug);
+    if(!slug||t==='page:') return null;
+    for(var i=0;i<items.length;i++){
+      if(items[i]&&items[i].target===t) return {parent:i,child:-1,item:items[i]};
+      var kids=items[i]&&Array.isArray(items[i].children)?items[i].children:null;
+      if(kids){
+        for(var j=0;j<kids.length;j++){
+          if(kids[j]&&kids[j].target===t) return {parent:i,child:j,item:kids[j]};
+        }
+      }
+    }
+    return null;
+  }
+  function lpFindNavIdx(slug){
+    var ref=lpFindNavRef(slug);
+    return ref?ref.parent:-1;
+  }
+  function lpDetachNavItem(slug){
+    var items=lpNavMenuEns().items;
+    var ref=lpFindNavRef(slug);
+    if(!ref) return null;
+    var item=ref.item;
+    if(ref.child>=0) items[ref.parent].children.splice(ref.child,1);
+    else items.splice(ref.parent,1);
+    return item;
+  }
+  function lpEnsureNavParent(under){
+    var items=lpNavMenuEns().items;
+    if(under==null||under==='top'||under===-1||under==='') return -1;
+    if(typeof under==='object'&&under.create!=null){
+      var label=String(under.create||'').trim()||'Services';
+      for(var i=0;i<items.length;i++){
+        if(lpNavIsParent(items[i])&&String(items[i].label||'')===label){
+          items[i].kind='parent';
+          if(!Array.isArray(items[i].children)) items[i].children=[];
+          return i;
+        }
+      }
+      items.push({label:label,kind:'parent',icon:'',children:[]});
+      return items.length-1;
+    }
+    var idx=+under;
+    if(isNaN(idx)||idx<0||idx>=items.length) return -1;
+    items[idx].kind='parent';
+    if(!Array.isArray(items[idx].children)) items[idx].children=[];
+    return idx;
+  }
+  /** Upsert / remove this landing page in sections.navMenu.items (top-level or under a parent). */
   function lpSyncNavMenu(opts){
     opts=opts||{};
     var page=lpCur;
@@ -2857,49 +2928,114 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     var items=nm.items;
     var oldSlug=String(opts.oldSlug||'').trim();
     if(oldSlug&&slug&&oldSlug!==slug){
-      var oi=lpFindNavIdx(oldSlug);
-      if(oi>=0) items[oi].target=lpNavTarget(slug);
+      var oref=lpFindNavRef(oldSlug);
+      if(oref) oref.item.target=lpNavTarget(slug);
     }
-    var idx=lpFindNavIdx(slug);
     var show=!!opts.show;
     if(!show||!slug){
-      if(idx>=0) items.splice(idx,1);
+      lpDetachNavItem(slug);
       return;
     }
     var label=String(opts.label!=null?opts.label:'').trim()||(page&&(page.title||page.slug))||slug;
     var icon=opts.icon!=null?String(opts.icon).trim():'';
-    if(idx<0){
-      items.push({label:label, target:lpNavTarget(slug), url:'', icon:icon||''});
+    var existing=lpFindNavRef(slug);
+    var parentIdx=-1;
+    if(opts.under!==undefined) parentIdx=lpEnsureNavParent(opts.under);
+    else if(existing) parentIdx=existing.child>=0?existing.parent:-1;
+    var needMove=!existing;
+    if(existing&&opts.under!==undefined){
+      var curParent=existing.child>=0?existing.parent:-1;
+      if(curParent!==parentIdx) needMove=true;
+    }
+    var item=existing?existing.item:null;
+    if(needMove){
+      item=lpDetachNavItem(slug)||{label:label,target:lpNavTarget(slug),url:'',icon:icon||'',opens:'_self',kind:'link'};
+      item.kind='link';
+      item.target=lpNavTarget(slug);
+      if(label) item.label=label;
+      if(opts.icon!==undefined) item.icon=icon;
+      if(parentIdx>=0&&items[parentIdx]){
+        items[parentIdx].kind='parent';
+        if(!Array.isArray(items[parentIdx].children)) items[parentIdx].children=[];
+        items[parentIdx].children.push(item);
+      } else {
+        items.push(item);
+      }
     } else {
-      if(label) items[idx].label=label;
-      if(opts.icon!==undefined) items[idx].icon=icon;
+      if(label) item.label=label;
+      if(opts.icon!==undefined) item.icon=icon;
+      if(!item.target) item.target=lpNavTarget(slug);
     }
     if(nm.on!==true) nm.on=true;
   }
   function lpMoveNavMenu(dir){
     if(!lpCur||!lpCur.slug) return false;
     var items=lpNavMenuEns().items;
-    var idx=lpFindNavIdx(lpCur.slug);
-    if(idx<0) return false;
+    var ref=lpFindNavRef(lpCur.slug);
+    if(!ref) return false;
+    if(ref.child>=0){
+      var kids=items[ref.parent].children||[];
+      var ci=ref.child;
+      var toC=ci+(dir<0?-1:1);
+      if(toC<0||toC>=kids.length) return false;
+      var ch=kids.splice(ci,1)[0];
+      kids.splice(toC,0,ch);
+      return true;
+    }
+    var idx=ref.parent;
     var to=idx+(dir<0?-1:1);
     if(to<0||to>=items.length) return false;
     var it=items.splice(idx,1)[0];
     items.splice(to,0,it);
     return true;
   }
+  function lpFillMenuUnderOpts(selected){
+    var sel=$('lp-menu-under'); if(!sel) return;
+    var items=lpNavMenuEns().items;
+    var html='<option value="top">Top level (main menu)</option>';
+    items.forEach(function(it,i){
+      if(!lpNavIsParent(it)) return;
+      html+='<option value="'+i+'">Under: '+esc(it.label||('Parent '+(i+1)))+'</option>';
+    });
+    html+='<option value="__new__">+ New parent menu…</option>';
+    sel.innerHTML=html;
+    var want=selected!=null?String(selected):'top';
+    if(want!=='__new__'&&want!=='top'){
+      var found=false;
+      for(var o=0;o<sel.options.length;o++){ if(sel.options[o].value===want){ found=true; break; } }
+      if(!found) want='top';
+    }
+    sel.value=want;
+    var nw=$('lp-menu-new-parent-wrap');
+    if(nw) nw.style.display=sel.value==='__new__'?'':'none';
+  }
   function lpFillMenuUi(){
     var show=$('lp-show-menu'), opts=$('lp-menu-opts'), lab=$('lp-menu-label'), ic=$('lp-menu-icon'), pos=$('lp-menu-pos'), left=$('lp-menu-left'), right=$('lp-menu-right');
     if(!lpCur) return;
     var slug=String(lpCur.slug||'').trim();
-    var idx=slug?lpFindNavIdx(slug):-1;
-    var inMenu=idx>=0;
-    var item=inMenu?lpNavMenuEns().items[idx]:null;
+    var ref=slug?lpFindNavRef(slug):null;
+    var inMenu=!!ref;
+    var item=inMenu?ref.item:null;
     if(show) show.checked=inMenu;
     if(opts) opts.style.display=inMenu?'':'none';
     if(lab) lab.value=(item&&item.label)||lpCur.menuLabel||lpCur.title||lpCur.slug||'';
     if(ic){ ic.value=(item&&item.icon)||lpCur.menuIcon||''; var btn=$('lp-menu-icon-btn'); if(btn) btn.innerHTML=iconBtnInner(ic.value); }
-    var n=lpNavMenuEns().items.length;
-    if(pos) pos.textContent=inMenu?(('Position '+(idx+1)+' of '+n+' in menu')):'Not in menu yet';
+    var underVal='top';
+    if(ref&&ref.child>=0) underVal=String(ref.parent);
+    lpFillMenuUnderOpts(underVal);
+    var n, idx, label;
+    if(ref&&ref.child>=0){
+      var kids=lpNavMenuEns().items[ref.parent].children||[];
+      n=kids.length; idx=ref.child;
+      var pl=lpNavMenuEns().items[ref.parent].label||'Parent';
+      label='Under “'+pl+'” — '+(idx+1)+' of '+n;
+    } else if(ref){
+      n=lpNavMenuEns().items.length; idx=ref.parent;
+      label='Top level — '+(idx+1)+' of '+n;
+    } else {
+      n=0; idx=-1; label='Not in menu yet';
+    }
+    if(pos) pos.textContent=label;
     if(left) left.disabled=!inMenu||idx<=0;
     if(right) right.disabled=!inMenu||idx<0||idx>=n-1;
   }
@@ -2918,10 +3054,17 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       }
       lpCur[f]=v;
       if(f==='slug'){
-        var wasIn=lpFindNavIdx(prevSlug)>=0||lpFindNavIdx(String(lpCur.slug||'').trim())>=0;
+        var wasIn=!!lpFindNavRef(prevSlug)||!!lpFindNavRef(String(lpCur.slug||'').trim());
         var wantOn=wasIn||!!($('lp-show-menu')&&$('lp-show-menu').checked);
         if(wantOn&&String(lpCur.slug||'').trim()){
-          lpSyncNavMenu({show:true, slug:lpCur.slug, oldSlug:prevSlug, label:(lpCur.menuLabel||($('lp-menu-label')&&$('lp-menu-label').value)||lpCur.title||lpCur.slug), icon:lpCur.menuIcon||(($('lp-menu-icon')&&$('lp-menu-icon').value)||'')});
+          var underEl=$('lp-menu-under');
+          var underSpec='top';
+          if(underEl){
+            var uv=underEl.value||'top';
+            if(uv==='__new__') underSpec={create:(($('lp-menu-new-parent')&&$('lp-menu-new-parent').value)||'Services')};
+            else if(uv!=='top') underSpec=+uv;
+          }
+          lpSyncNavMenu({show:true, slug:lpCur.slug, oldSlug:prevSlug, label:(lpCur.menuLabel||($('lp-menu-label')&&$('lp-menu-label').value)||lpCur.title||lpCur.slug), icon:lpCur.menuIcon||(($('lp-menu-icon')&&$('lp-menu-icon').value)||''), under:underSpec});
         }
         lpFillMenuUi();
       }
