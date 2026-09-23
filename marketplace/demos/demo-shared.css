@@ -447,7 +447,13 @@ footer.site .f-nav{
   display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,max-content));
   justify-content:start;align-content:start;column-gap:clamp(20px,2.4vw,36px);row-gap:16px;min-width:0;
 }
+/* When any column spans 2, lock to a 2-track grid so span works reliably */
+footer.site .f-nav.f-nav-has-span{
+  grid-template-columns:repeat(2,minmax(140px,1fr));
+  width:100%;max-width:100%;
+}
 footer.site .f-col{min-width:0}
+footer.site .f-col.f-col-span-2{grid-column:span 2;min-width:0}
 footer.site .f-col h4,footer.site h4{
   margin:0 0 10px;color:var(--mkt-foot-ink,#fff);font-size:13px;font-weight:700;letter-spacing:0;
   text-transform:var(--foot-col-case,none);font-family:inherit;
@@ -529,6 +535,7 @@ footer.site .f-col-card-box{
   color:var(--mkt-foot-ink,#fff);text-decoration:none;width:100%;max-width:280px;
   box-shadow:0 10px 24px rgba(0,0,0,.1);
 }
+footer.site .f-col.f-col-span-2 .f-col-card-box{max-width:none}
 footer.site a.f-col-card-box{cursor:pointer}
 footer.site a.f-col-card-box:hover{filter:brightness(1.05)}
 footer.site .f-col-card-text{margin:0;font-size:14.5px;line-height:1.45;color:var(--mkt-foot-muted);white-space:pre-line}
@@ -569,6 +576,8 @@ footer.site .f-col-card-btn{
   footer.site{padding:28px 0 22px}
   footer.site .footer-top{gap:18px}
   footer.site .f-nav{grid-template-columns:1fr 1fr;column-gap:14px;row-gap:16px}
+  footer.site .f-nav.f-nav-has-span{grid-template-columns:1fr 1fr}
+  footer.site .f-col.f-col-span-2{grid-column:1 / -1}
   footer.site .f-col h4{margin-bottom:8px}
   footer.site .f-col a{margin-bottom:5px;font-size:13.5px}
   footer.site .f-col-card-box{max-width:none;padding:12px 14px}
