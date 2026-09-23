@@ -850,7 +850,7 @@ header.site .hn-sub-link .lp-ic{width:17px;height:17px;flex:0 0 auto;color:inher
   box-shadow:0 0 0 var(--nm-sub-hover-stroke-w,0px) var(--nm-sub-hover-stroke,transparent)
 }
 .nm-sub-link .lp-ic{width:17px;height:17px;flex:0 0 auto;color:inherit}
-@media(max-width:900px){html.lp-compact-nav header.site .head-nav{display:none}html.lp-compact-nav header.site .head-menu-btn{display:inline-flex}}
+@media(max-width:900px){html.lp-compact-nav header.site .head-nav{display:none}html.lp-compact-nav header.site .head-menu-btn{display:inline-flex}html.lp-compact-nav .nav-menu-sec,html.lp-compact-nav section[data-sec="navMenu"].nav-menu-sec{display:none!important}}
 @media(min-width:901px){.hnm-backdrop,.hnm-panel{display:none!important}}
 
 :focus-visible{outline:3px solid var(--safety);outline-offset:2px;border-radius:5px}
