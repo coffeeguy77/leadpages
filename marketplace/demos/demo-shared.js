@@ -35,6 +35,47 @@
     rs.setProperty('--site-maxw',px+'px');
     rs.setProperty('--maxw',px+'px');
   }
+  /* Platform breakpoint defaults — keep in sync with lib/breakpoints.js */
+  var LP_BP_DEFAULTS={version:1,mobilePortraitMax:430,mobileLandscapeMax:560,tabletPortraitMax:768,tabletLandscapeMax:900};
+  function __lpResolveBreakpoints(cfg){
+    function clamp(v,fb){ var n=parseInt(v,10); if(!isFinite(n)||n<320) return fb; return n>4096?4096:n; }
+    var plat=LP_BP_DEFAULTS;
+    var bp=(cfg&&cfg.breakpoints&&typeof cfg.breakpoints==='object')?cfg.breakpoints:null;
+    var useCustom=!!(bp&&bp.source==='custom');
+    var src=useCustom?bp:plat;
+    var mobileP=clamp(src.mobilePortraitMax,plat.mobilePortraitMax);
+    var mobileL=clamp(src.mobileLandscapeMax,plat.mobileLandscapeMax);
+    var tabletP=clamp(src.tabletPortraitMax,plat.tabletPortraitMax);
+    var tabletL=clamp(src.tabletLandscapeMax,plat.tabletLandscapeMax);
+    if(mobileL<mobileP) mobileL=mobileP;
+    if(tabletP<mobileL) tabletP=mobileL;
+    if(tabletL<tabletP) tabletL=tabletP;
+    return {source:useCustom?'custom':'platform',mobilePortraitMax:mobileP,mobileLandscapeMax:mobileL,tabletPortraitMax:tabletP,tabletLandscapeMax:tabletL,desktopMin:tabletL+1,version:plat.version};
+  }
+  function applyBreakpoints(cfg){
+    var bp=__lpResolveBreakpoints(cfg);
+    var de=document.documentElement;
+    var rs=de.style;
+    rs.setProperty('--lp-bp-mobile-p',bp.mobilePortraitMax+'px');
+    rs.setProperty('--lp-bp-mobile-l',bp.mobileLandscapeMax+'px');
+    rs.setProperty('--lp-bp-tablet-p',bp.tabletPortraitMax+'px');
+    rs.setProperty('--lp-bp-tablet-l',bp.tabletLandscapeMax+'px');
+    rs.setProperty('--lp-bp-desktop-min',bp.desktopMin+'px');
+    var st=document.getElementById('lp-bp-hide-css');
+    if(!st){ st=document.createElement('style'); st.id='lp-bp-hide-css'; document.head.appendChild(st); }
+    st.textContent='@media(max-width:'+bp.mobileLandscapeMax+'px){.lp-hide-mobile{display:none!important}}'
+      +'@media(min-width:'+(bp.mobileLandscapeMax+1)+'px) and (max-width:'+bp.tabletLandscapeMax+'px){.lp-hide-tablet{display:none!important}}';
+  }
+  function applyDeviceVisibility(C){
+    var SEC=C&&C.sections||{};
+    Object.keys(SEC).forEach(function(id){
+      var node=document.querySelector('[data-sec="'+id+'"]');
+      if(!node) return;
+      var s=SEC[id]||{};
+      node.classList.toggle('lp-hide-mobile', s.hideOnMobile===true);
+      node.classList.toggle('lp-hide-tablet', s.hideOnTablet===true);
+    });
+  }
   function __lpApplyColorOverrides(cfg){
     function norm(v){v=String(v==null?'':v).trim();if(!v)return'';if(v.charAt(0)!=='#')v='#'+v;if(/^#[0-9a-fA-F]{3}$/.test(v))v='#'+v.charAt(1)+v.charAt(1)+v.charAt(2)+v.charAt(2)+v.charAt(3)+v.charAt(3);return /^#[0-9a-fA-F]{6}$/.test(v)?v.toLowerCase():'';}
     function mapOf(list){var m={},arr=Array.isArray(list)?list:[];arr.forEach(function(r){if(!r)return;var f=norm(r.from),t=norm(r.to);if(f&&t&&f!==t)m[f]=t;});return m;}
@@ -655,6 +696,7 @@ function applyCfg(C){
     } }catch(e){} try{ _navMenuRender(C); }catch(e){}
     applyThemeVars(th);
     try{ applySiteMaxWidth(C); }catch(_eSmw){}
+    try{ applyBreakpoints(C); }catch(_eBp){}
     if(Array.isArray(C.services)){ var grid=document.querySelector('.svcs'); if(grid){
       function _svcHex(v){ v=String(v||'').trim(); if(/^#?[0-9a-fA-F]{3}$/.test(v)){ v=v.charAt(0)==='#'?v:'#'+v; return '#'+v.charAt(1)+v.charAt(1)+v.charAt(2)+v.charAt(2)+v.charAt(3)+v.charAt(3); } if(/^#?[0-9a-fA-F]{6}$/.test(v)) return v.charAt(0)==='#'?v:'#'+v; return ''; }
       function _svcRgba(hex,op){ hex=_svcHex(hex); if(!hex) return ''; var r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16); return 'rgba('+r+','+g+','+b+','+op+')'; }
@@ -816,6 +858,7 @@ function applyCfg(C){
         if(s.intro!=null){ var pp=node.querySelector('.section-head p'); if(pp) pp.textContent=s.intro; }
       }
     });
+    try{ applyDeviceVisibility(C); }catch(_eDv){}
     /* hero CTA buttons (text / action / show-hide) + hero replacement hide */
     try{
       var __H=(C.sections&&C.sections.hero)||{};
@@ -2711,6 +2754,6 @@ function applyCfg(C){
       if(st) st.textContent=hide?'header.site,header.nav,.site-header,.emerg{display:none!important}':'';
     };
   if(typeof SITE_CONFIG!=='undefined'&&SITE_CONFIG&&SITE_CONFIG.theme){ try{ applyThemeVars(SITE_CONFIG.theme); }catch(e){} }
-  if(typeof SITE_CONFIG!=='undefined'&&SITE_CONFIG){ try{ applySiteMaxWidth(SITE_CONFIG); }catch(_eSmw0){} }
+  if(typeof SITE_CONFIG!=='undefined'&&SITE_CONFIG){ try{ applySiteMaxWidth(SITE_CONFIG); }catch(_eSmw0){} try{ applyBreakpoints(SITE_CONFIG); }catch(_eBp0){} }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',_lpBoot); else _lpBoot();
 })();

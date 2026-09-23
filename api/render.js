@@ -378,6 +378,7 @@ function shadeHex(hex, pct) {
  * instead of the template defaults (--hivis orange / --pipe blue).
  */
 const { resolveMaxSiteWidth } = require('../lib/site-max-width');
+const { resolveBreakpoints } = require('../lib/breakpoints');
 
 function tradeThemeRootCss(theme, cfg) {
   const th = theme || {};
@@ -408,6 +409,14 @@ function tradeThemeRootCss(theme, cfg) {
     vars.push('--site-maxw:' + sw.px + 'px');
     vars.push('--maxw:' + sw.px + 'px');
   }
+  try {
+    const bp = resolveBreakpoints(cfg);
+    vars.push('--lp-bp-mobile-p:' + bp.mobilePortraitMax + 'px');
+    vars.push('--lp-bp-mobile-l:' + bp.mobileLandscapeMax + 'px');
+    vars.push('--lp-bp-tablet-p:' + bp.tabletPortraitMax + 'px');
+    vars.push('--lp-bp-tablet-l:' + bp.tabletLandscapeMax + 'px');
+    vars.push('--lp-bp-desktop-min:' + bp.desktopMin + 'px');
+  } catch (_bp) { /* never break theme inject */ }
   if (!vars.length) return '';
   return ':root{' + vars.join(';') + '}';
 }
@@ -436,6 +445,10 @@ function injectTradeThemeVars(html, cfg) {
   if (!html || !cfg) return html;
   html = injectSiteWidthClass(html, cfg);
   let css = tradeThemeRootCss(cfg.theme, cfg);
+  try {
+    const { breakpointsHideCss, resolveBreakpoints: resolveBp } = require('../lib/breakpoints');
+    css += breakpointsHideCss(resolveBp(cfg));
+  } catch (_bp2) { /* never break live render */ }
   if (!css && resolveMaxSiteWidth(cfg).mode === 'full') return html;
   try {
     const { applyColorOverridesToCssText, applyColorOverridesToHtml } = require('../lib/color-overrides');

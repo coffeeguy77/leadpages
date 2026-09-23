@@ -277,6 +277,7 @@ Page Editor (Details tab)
 ```
 Settings
 ├── Site details (business, slug, domain, owner email)
+├── Maximum site width + Responsive breakpoints (mobile/tablet bands, Restore / Update / Undo)
 ├── Demo flag toggle [super]
 ├── Hosting plans builder [super] → #plans-page
 ├── Suspended page editor [super] → #susp-editor
@@ -286,6 +287,7 @@ Settings
     └── Delete site (double confirm)
 ```
 
+Each page-editor app also has **Show on phones** / **Show on tablets** (portrait + landscape). Unchecking sets `sections.<id>.hideOnMobile` / `hideOnTablet`. Breakpoint px values come from `sites.config.breakpoints` (or LeadPages platform defaults when `source` is not `custom`).
 ### Level 7 — Broker-app Rates tab
 
 ```
