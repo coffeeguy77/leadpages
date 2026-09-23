@@ -2167,17 +2167,27 @@ function applyCfg(C){
           fl.hidden=!parts.length;
         }
         if(linksNav){
+          var bottomRow=ft.querySelector('.footer-bottom');
+          var metaRow=ft.querySelector('.f-bottom-meta');
           if(lpInFooter){
             linksNav.classList.add('f-links-lp-logo');
             linksNav.setAttribute('aria-label','LeadPages');
             if(!linksNav.querySelector('.foot-lp-logo-host')){
               linksNav.innerHTML='<a class="foot-lp-logo-host" href="https://www.leadpages.com.au" target="_blank" rel="noopener noreferrer" aria-label="LeadPages"></a>';
             }
+            /* Sit beside the tagline so tops align with “Safer Homes…” */
+            if(bottomRow && linksNav.parentElement!==bottomRow){
+              var afterTg=bottomRow.querySelector('.f-tagline');
+              if(afterTg&&afterTg.nextSibling) bottomRow.insertBefore(linksNav, afterTg.nextSibling);
+              else if(metaRow) bottomRow.insertBefore(linksNav, metaRow);
+              else bottomRow.appendChild(linksNav);
+            }
             try{ if(typeof _lpMountFooterLogoInto==='function') _lpMountFooterLogoInto(linksNav.querySelector('.foot-lp-logo-host'), C); }catch(_eLp){}
           } else {
             linksNav.classList.remove('f-links-lp-logo');
             linksNav.setAttribute('aria-label','Legal');
             linksNav.innerHTML=showLinks?ll.map(_fLegalLinkHtml).join(''):'';
+            if(metaRow && linksNav.parentElement!==metaRow) metaRow.appendChild(linksNav);
           }
         }
         try{
