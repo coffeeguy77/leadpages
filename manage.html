@@ -9957,8 +9957,38 @@ function heroCtaCard(c){
         +'<p class="hint" id="co-bake-msg" style="margin:8px 0 0;"></p></div>';
       wireTradeColours(c); renderTradePresets(c); renderColourLibrary(c); wireColorOverrides(c);
     } else if(sub==='logo'){
-      var L0=c.logo||{}; var _hd=Math.max(24,Math.min(320,(L0.heightPx?L0.heightPx:Math.round(40*(L0.scale||1)))||44)); var _hm=Math.max(20,Math.min(160,(L0.heightPxM!=null&&L0.heightPxM!==''?+L0.heightPxM:Math.round(_hd*0.72)))); if(!isFinite(_hm))_hm=Math.round(_hd*0.72); var _cropY=Math.max(0,Math.min(50,(L0.cropY!=null?+L0.cropY:0))); if(isNaN(_cropY))_cropY=0; var _cropFocus=(L0.cropFocus==='top'||L0.cropFocus==='bottom')?L0.cropFocus:'center'; var _bgIsC=!!(L0.bg&&L0.bg!=='transparent'); var _bgC=_bgIsC?L0.bg:'#0f1115'; var _pad=(L0.pad!=null?L0.pad:8); var _rad=(L0.radius!=null?L0.radius:12); var _float=!!L0.float; var _hbgV=(L0.headerBg&&L0.headerBg!=='')?L0.headerBg:'#0b1220'; var _hopV=(L0.headerBgOpacity!=null&&L0.headerBgOpacity!=='')?Math.max(0,Math.min(100,+L0.headerBgOpacity||0)):100; var _hstTopOn=L0.headerStrokeTopOn===true; var _hstBotOn=L0.headerStrokeBottomOn===true; var _hstTopC=(L0.headerStrokeTopColor&&String(L0.headerStrokeTopColor).trim())||'#ffffff'; var _hstBotC=(L0.headerStrokeBottomColor&&String(L0.headerStrokeBottomColor).trim())||'#ffffff'; var _hstTopW=Math.max(0,Math.min(16,(L0.headerStrokeTopWidth!=null?+L0.headerStrokeTopWidth:2))); if(isNaN(_hstTopW))_hstTopW=2; var _hstBotW=Math.max(0,Math.min(16,(L0.headerStrokeBottomWidth!=null?+L0.headerStrokeBottomWidth:2))); if(isNaN(_hstBotW))_hstBotW=2; var _hbarH=Math.max(0,Math.min(280,(L0.headerBarHeight!=null?+L0.headerBarHeight:0))); if(isNaN(_hbarH))_hbarH=0; var _hHang=(L0.headerHang==='below'||L0.headerHang===true); var _hbarPad=Math.max(0,Math.min(48,(L0.headerBarPadding!=null?+L0.headerBarPadding:10))); if(isNaN(_hbarPad))_hbarPad=10; var _valign=(L0.headerLogoAlign==='start'||L0.headerLogoAlign==='top')?'top':((L0.headerLogoAlign==='end'||L0.headerLogoAlign==='bottom')?'bottom':'center'); var _offX=Math.max(-120,Math.min(120,(L0.offsetX!=null?+L0.offsetX:0))); if(isNaN(_offX))_offX=0; var _offY=Math.max(-120,Math.min(120,(L0.offsetY!=null?+L0.offsetY:0))); if(isNaN(_offY))_offY=0; var _offXM=(L0.offsetXM!=null&&L0.offsetXM!=='')?Math.max(-120,Math.min(120,+L0.offsetXM||0)):_offX; if(isNaN(_offXM))_offXM=_offX; var _offYM=(L0.offsetYM!=null&&L0.offsetYM!=='')?Math.max(-120,Math.min(120,+L0.offsetYM||0)):_offY; if(isNaN(_offYM))_offYM=_offY; var _posM=(L0.positionM==='center'||L0.positionM==='right'||L0.positionM==='left')?L0.positionM:''; 
-      body.innerHTML='<div class="card" style="margin-bottom:22px;"><h2>Logo</h2><p class="lede">Show a clean text logo or upload an image \u2014 both replace the default initial badge.</p>'
+      var L0=c.logo||{};
+      var _hd=Math.max(24,Math.min(320,(L0.heightPx?L0.heightPx:Math.round(40*(L0.scale||1)))||44));
+      var _hm=Math.max(20,Math.min(200,(L0.heightPxM!=null&&L0.heightPxM!==''?+L0.heightPxM:Math.round(_hd*0.72)))); if(!isFinite(_hm))_hm=Math.round(_hd*0.72);
+      var _cropY=Math.max(0,Math.min(50,(L0.cropY!=null?+L0.cropY:0))); if(isNaN(_cropY))_cropY=0;
+      var _cropFocus=(L0.cropFocus==='top'||L0.cropFocus==='bottom')?L0.cropFocus:'center';
+      var _cropYM=(L0.cropYM!=null&&L0.cropYM!=='')?Math.max(0,Math.min(50,+L0.cropYM||0)):_cropY; if(isNaN(_cropYM))_cropYM=_cropY;
+      var _cropFocusM=(L0.cropFocusM==='top'||L0.cropFocusM==='bottom'||L0.cropFocusM==='center')?L0.cropFocusM:_cropFocus;
+      var _bgIsC=!!(L0.bg&&L0.bg!=='transparent'); var _bgC=_bgIsC?L0.bg:'#0f1115';
+      var _pad=(L0.pad!=null?L0.pad:8); var _rad=(L0.radius!=null?L0.radius:12); var _float=!!L0.float;
+      var _hbgV=(L0.headerBg&&L0.headerBg!=='')?L0.headerBg:'#0b1220';
+      var _hopV=(L0.headerBgOpacity!=null&&L0.headerBgOpacity!=='')?Math.max(0,Math.min(100,+L0.headerBgOpacity||0)):100;
+      var _hstTopOn=L0.headerStrokeTopOn===true; var _hstBotOn=L0.headerStrokeBottomOn===true;
+      var _hstTopC=(L0.headerStrokeTopColor&&String(L0.headerStrokeTopColor).trim())||'#ffffff';
+      var _hstBotC=(L0.headerStrokeBottomColor&&String(L0.headerStrokeBottomColor).trim())||'#ffffff';
+      var _hstTopW=Math.max(0,Math.min(16,(L0.headerStrokeTopWidth!=null?+L0.headerStrokeTopWidth:2))); if(isNaN(_hstTopW))_hstTopW=2;
+      var _hstBotW=Math.max(0,Math.min(16,(L0.headerStrokeBottomWidth!=null?+L0.headerStrokeBottomWidth:2))); if(isNaN(_hstBotW))_hstBotW=2;
+      var _hbarH=Math.max(0,Math.min(280,(L0.headerBarHeight!=null?+L0.headerBarHeight:0))); if(isNaN(_hbarH))_hbarH=0;
+      var _hHang=(L0.headerHang==='below'||L0.headerHang===true);
+      var _hbarPad=Math.max(0,Math.min(48,(L0.headerBarPadding!=null?+L0.headerBarPadding:10))); if(isNaN(_hbarPad))_hbarPad=10;
+      var _hbarPadM=(L0.headerBarPaddingM!=null&&L0.headerBarPaddingM!=='')?Math.max(0,Math.min(48,+L0.headerBarPaddingM||0)):_hbarPad; if(isNaN(_hbarPadM))_hbarPadM=_hbarPad;
+      var _valign=(L0.headerLogoAlign==='start'||L0.headerLogoAlign==='top')?'top':((L0.headerLogoAlign==='end'||L0.headerLogoAlign==='bottom')?'bottom':'center');
+      var _valignM=(L0.headerLogoAlignM==='start'||L0.headerLogoAlignM==='top')?'top':((L0.headerLogoAlignM==='end'||L0.headerLogoAlignM==='bottom')?'bottom':((L0.headerLogoAlignM==='center')?'center':_valign));
+      var _offX=Math.max(-120,Math.min(120,(L0.offsetX!=null?+L0.offsetX:0))); if(isNaN(_offX))_offX=0;
+      var _offY=Math.max(-120,Math.min(120,(L0.offsetY!=null?+L0.offsetY:0))); if(isNaN(_offY))_offY=0;
+      /* Mobile offsets default to 0 (not desktop) so desktop nudges do not strangle the phone layout */
+      var _offXM=(L0.offsetXM!=null&&L0.offsetXM!=='')?Math.max(-120,Math.min(120,+L0.offsetXM||0)):0; if(isNaN(_offXM))_offXM=0;
+      var _offYM=(L0.offsetYM!=null&&L0.offsetYM!=='')?Math.max(-120,Math.min(120,+L0.offsetYM||0)):0; if(isNaN(_offYM))_offYM=0;
+      var _posM=(L0.positionM==='center'||L0.positionM==='right'||L0.positionM==='left')?L0.positionM:'';
+      var _posD=L0.position||'left';
+      body.innerHTML=
+        /* ── 1. Logo image ── */
+        '<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Logo image</h2><p class="lede" style="margin:0 0 14px;">Choose how the logo looks, upload the artwork, and optionally frame it with a colour chip. Size and placement are set in the Desktop and Mobile cards below.</p>'
         +'<div class="row"><div class="f"><label>Logo style</label><select id="lg-mode" class="tin"><option value="mark">Initial badge + name</option><option value="text">Text only</option><option value="image">Image</option></select></div>'+lpFld('Logo text','lg-text','defaults to business name')+'</div>'
         +'<div id="lg-imgwrap" class="f" style="display:none;"><label>Logo image</label><input type="file" id="lg-file" accept="image/*"><div class="hint" style="margin-top:4px;">PNG, JPG or SVG \u2014 images over ~800 KB are compressed on upload.</div>'
         +'<div id="lg-chroma" style="margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--input-bg,#f7f5f1);">'
@@ -9971,63 +10001,76 @@ function heroCtaCard(c){
         +'</div>'
         +'<p class="hint" style="margin:8px 0 0;">Applied on the next upload. SVG files are left unchanged.</p>'
         +'</div></div>'
-        +'<div id="lg-imgprev" style="margin-top:8px;"></div></div></div>'
-        +'<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Size, position &amp; background</h2><p class="lede" style="margin:0 0 12px;">Set the logo height for desktop and mobile, choose where it sits, and add an optional background chip behind it. The header grows to fit \u2014 it won\u2019t clip the top any more.</p>'
-          +'<div class="row"><div class="f"><label>Desktop height <span class="hint" id="lg-hd-val">'+_hd+'px</span></label><input type="range" id="lg-hd" min="24" max="320" step="1" value="'+_hd+'" style="width:100%;"></div>'
-            +'<div class="f"><label>Mobile height <span class="hint" id="lg-hm-val">'+_hm+'px</span></label><input type="range" id="lg-hm" min="20" max="160" step="1" value="'+_hm+'" style="width:100%;"></div></div>'
-          +'<div id="lg-crop-row" style="margin:0 0 14px;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--input-bg,#f7f5f1);">'
-          +'<p style="margin:0 0 4px;font-weight:700;font-size:14px;">Trim unused space</p>'
-          +'<p class="hint" style="margin:0 0 10px;">Zoom into the logo to clip empty padding above and below. 0% = show the full image.</p>'
-          +'<div class="f" style="margin:0 0 10px;"><label>Crop tightness <span class="hint" id="lg-crop-val">'+_cropY+'%</span></label><input type="range" id="lg-crop" min="0" max="50" step="1" value="'+_cropY+'" style="width:100%;"></div>'
-          +'<div class="f" style="margin:0;"><label>Crop focus</label><select id="lg-crop-focus" class="tin"><option value="center"'+( _cropFocus==='center'?' selected':'')+'>Centre</option><option value="top"'+( _cropFocus==='top'?' selected':'')+'>Keep top</option><option value="bottom"'+( _cropFocus==='bottom'?' selected':'')+'>Keep bottom</option></select></div>'
-          +'</div>'
-          +'<div class="f"><label>Position in header</label><select id="lg-pos" class="tin"><option value="left">Left</option><option value="center">Centre</option><option value="right">Right</option></select><div class="hint" style="margin-top:4px;">Left, centre and right apply when the header phone number is turned off (Header call-to-action). With the phone shown, the logo stays on the left opposite the phone.</div></div>'
-          +'<div class="f"><label>Header style</label><select id="lg-hstyle" class="tin"><option value="solid-sticky">Solid bar \u2014 sticky (stays pinned at top)</option><option value="solid-scroll">Solid bar \u2014 scrolls away with the page</option><option value="float">Float over hero \u2014 transparent, scrolls away</option><option value="shrink">Shrink on scroll (big over hero \u2192 compact pinned bar)</option></select></div>'
-          +'<div id="lg-hbg-row">'
-          +'<div class="f"><label>Header bar colour</label><div style="display:flex;gap:10px;align-items:center;"><input type="color" id="lg-hbg" value="'+_hbgV+'" style="width:56px;height:40px;padding:2px;border:1px solid var(--line);border-radius:8px;"><span class="hint" style="margin:0;">The band behind the logo. Used by the solid bar and by the compact bar in \u201cShrink on scroll\u201d.</span></div></div>'
-          +'<div class="f" style="margin-top:12px;"><label>Header bar transparency <span id="lg-hop-v" style="font-weight:700;color:var(--accent);">'+_hopV+'%</span></label><input type="range" id="lg-hop" min="0" max="100" step="1" value="'+_hopV+'" style="width:100%;"><span class="hint" style="display:block;margin-top:4px;">100% = solid \u00b7 0% = clear (hero shows through)</span></div>'
-          +'</div>'
-          +'<div id="lg-hstroke" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line);">'
-          +'<p style="margin:0 0 4px;font-weight:700;font-size:14px;">Header bar strokes</p>'
-          +'<p class="hint" style="margin:0 0 12px;">Optional top and bottom lines on the logo header. Size 0 hides a stroke even when enabled.</p>'
-          +'<div style="display:flex;flex-wrap:wrap;gap:14px;">'
-          +'<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:220px;">'
-          +'<label style="display:flex;gap:8px;align-items:center;font-weight:600;"><input type="checkbox" id="lg-hst-top"'+(_hstTopOn?' checked':'')+'> Top stroke</label>'
-          +'<div id="lg-hst-top-opts" style="margin-top:10px;'+(_hstTopOn?'':'display:none;')+'">'
-          +'<div class="f" style="margin:0 0 10px;"><label>Colour</label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="lg-hst-topc" value="'+_hstTopC+'" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="lg-hst-topct" class="tin" value="'+_hstTopC+'" style="flex:1;min-width:0;"></div></div>'
-          +'<div class="f" style="margin:0;"><label>Size <span id="lg-hst-topw-v" style="font-weight:700;color:var(--accent);">'+_hstTopW+'px</span></label><input type="range" id="lg-hst-topw" min="0" max="16" step="1" value="'+_hstTopW+'" style="width:100%;"></div>'
-          +'</div></div>'
-          +'<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:220px;">'
-          +'<label style="display:flex;gap:8px;align-items:center;font-weight:600;"><input type="checkbox" id="lg-hst-bot"'+(_hstBotOn?' checked':'')+'> Bottom stroke</label>'
-          +'<div id="lg-hst-bot-opts" style="margin-top:10px;'+(_hstBotOn?'':'display:none;')+'">'
-          +'<div class="f" style="margin:0 0 10px;"><label>Colour</label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="lg-hst-botc" value="'+_hstBotC+'" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="lg-hst-botct" class="tin" value="'+_hstBotC+'" style="flex:1;min-width:0;"></div></div>'
-          +'<div class="f" style="margin:0;"><label>Size <span id="lg-hst-botw-v" style="font-weight:700;color:var(--accent);">'+_hstBotW+'px</span></label><input type="range" id="lg-hst-botw" min="0" max="16" step="1" value="'+_hstBotW+'" style="width:100%;"></div>'
-          +'</div></div>'
-          +'</div></div>'
-                    +'<div id="lg-hbar" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line);">'
-          +'<p style="margin:0 0 4px;font-weight:700;font-size:14px;">Header bar size &amp; logo placement</p>'
-          +'<p class="hint" style="margin:0 0 12px;">By default the logo stays centred in the coloured bar and fully visible while sticky. Raise bar height for a taller band; use padding for breathing room around the logo.</p>'
-          +'<div class="f" style="margin:0 0 12px;"><label>Bar height <span id="lg-hbar-v" style="font-weight:700;color:var(--accent);">'+(_hbarH?(_hbarH+'px'):'Auto (fit logo)')+'</span></label><input type="range" id="lg-hbar-h" min="0" max="220" step="2" value="'+_hbarH+'" style="width:100%;"><span class="hint" style="display:block;margin-top:4px;">0 = auto \u00b7 raise this to make a taller solid band behind a large logo</span></div>'
-          +'<div class="f" style="margin:0 0 12px;"><label>Bar padding <span id="lg-hbar-pad-v" style="font-weight:700;color:var(--accent);">'+_hbarPad+'px</span></label><input type="range" id="lg-hbar-pad" min="0" max="48" step="1" value="'+_hbarPad+'" style="width:100%;"><span class="hint" style="display:block;margin-top:4px;">Top &amp; bottom padding inside the header band \u2014 handy for circular logos</span></div>'
-          +'<div class="f" style="margin:0 0 12px;"><label>Logo vertical align</label><select id="lg-valign" class="tin"><option value="center"'+( _valign==='center'?' selected':'')+'>Centre</option><option value="top"'+( _valign==='top'?' selected':'')+'>Top</option><option value="bottom"'+( _valign==='bottom'?' selected':'')+'>Bottom</option></select></div>'
-          +'<div class="row" style="margin:0 0 12px;"><div class="f" style="margin:0;"><label>Move logo horizontally <span id="lg-offx-v" style="font-weight:700;color:var(--accent);">'+_offX+'px</span></label><input type="range" id="lg-offx" min="-120" max="120" step="1" value="'+_offX+'" style="width:100%;"></div>'
-            +'<div class="f" style="margin:0;"><label>Move logo vertically <span id="lg-offy-v" style="font-weight:700;color:var(--accent);">'+_offY+'px</span></label><input type="range" id="lg-offy" min="-120" max="120" step="1" value="'+_offY+'" style="width:100%;"></div></div>'
-                    +'<div style="margin:14px 0 0;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--input-bg,#f7f5f1);">'
-          +'<p style="margin:0 0 4px;font-weight:700;font-size:14px;">Mobile placement <span class="hint">(independent of desktop)</span></p>'
-          +'<p class="hint" style="margin:0 0 10px;">Size is set with Mobile height above. These controls only apply under ~760px / live preview Mobile.</p>'
-          +'<div class="f" style="margin:0 0 10px;"><label>Position in header (mobile)</label><select id="lg-pos-m" class="tin"><option value=""'+(!_posM?' selected':'')+'>Same as desktop</option><option value="left"'+(_posM==='left'?' selected':'')+'>Left</option><option value="center"'+(_posM==='center'?' selected':'')+'>Centre</option><option value="right"'+(_posM==='right'?' selected':'')+'>Right</option></select></div>'
-          +'<div class="row" style="margin:0;"><div class="f" style="margin:0;"><label>Move horizontally <span id="lg-offxm-v" style="font-weight:700;color:var(--accent);">'+_offXM+'px</span></label><input type="range" id="lg-offxm" min="-120" max="120" step="1" value="'+_offXM+'" style="width:100%;"></div>'
-            +'<div class="f" style="margin:0;"><label>Move vertically <span id="lg-offym-v" style="font-weight:700;color:var(--accent);">'+_offYM+'px</span></label><input type="range" id="lg-offym" min="-120" max="120" step="1" value="'+_offYM+'" style="width:100%;"></div></div>'
-          +'</div>'
-+'<label style="display:flex;gap:8px;align-items:center;font-weight:600;"><input type="checkbox" id="lg-hang"'+(_hHang?' checked':'')+'> Fill from the top \u2014 let the logo hang below the bar</label>'
-          +'<p class="hint" style="margin:6px 0 0;">Optional: top-aligns the logo so only the bottom overhangs (handy with a bottom stroke). Leave off to keep circular logos fully visible while scrolling.</p>'
-          +'</div>'
-          +'<div class="f"><label>Logo background</label><select id="lg-bgmode" class="tin"><option value="transparent">Transparent</option><option value="color">Solid colour chip</option></select><div class="hint" style="margin-top:4px;">Transparent shows the logo straight on the header. A colour chip frames it \u2014 handy for a logo whose own background doesn\u2019t match.</div></div>'
-          +'<div id="lg-bgwrap" style="display:'+(_bgIsC?'block':'none')+';">'
-            +'<div class="row"><div class="f"><label>Chip colour</label><input type="color" id="lg-bg" value="'+_bgC+'" style="width:56px;height:40px;padding:2px;border:1px solid var(--line);border-radius:8px;"></div>'
-              +'<div class="f"><label>Padding <span class="hint" id="lg-pad-val">'+_pad+'px</span></label><input type="range" id="lg-pad" min="0" max="28" step="1" value="'+_pad+'" style="width:100%;"></div>'
-              +'<div class="f"><label>Corner radius <span class="hint" id="lg-rad-val">'+_rad+'px</span></label><input type="range" id="lg-rad" min="0" max="40" step="1" value="'+_rad+'" style="width:100%;"></div></div></div>'
+        +'<div id="lg-imgprev" style="margin-top:8px;"></div></div>'
+        +'<div class="f" style="margin-top:14px;"><label>Logo background chip</label><select id="lg-bgmode" class="tin"><option value="transparent">Transparent</option><option value="color">Solid colour chip</option></select><div class="hint" style="margin-top:4px;">Transparent shows the logo straight on the header. A colour chip frames it \u2014 handy when the artwork has its own backdrop.</div></div>'
+        +'<div id="lg-bgwrap" style="display:'+(_bgIsC?'block':'none')+';margin-top:10px;">'
+          +'<div class="row"><div class="f"><label>Chip colour</label><input type="color" id="lg-bg" value="'+_bgC+'" style="width:56px;height:40px;padding:2px;border:1px solid var(--line);border-radius:8px;"></div>'
+            +'<div class="f"><label>Padding <span class="hint" id="lg-pad-val">'+_pad+'px</span></label><input type="range" id="lg-pad" min="0" max="28" step="1" value="'+_pad+'" style="width:100%;"></div>'
+            +'<div class="f"><label>Corner radius <span class="hint" id="lg-rad-val">'+_rad+'px</span></label><input type="range" id="lg-rad" min="0" max="40" step="1" value="'+_rad+'" style="width:100%;"></div></div></div>'
         +'</div>'
+
+        /* ── 2. Desktop ── */
+        +'<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Desktop</h2><p class="lede" style="margin:0 0 14px;">Size, trim and placement for wide screens and the Desktop live preview. These do not change the Mobile card.</p>'
+        +'<div class="f" style="margin:0 0 14px;"><label>Logo height <span class="hint" id="lg-hd-val" style="font-weight:700;color:var(--accent);">'+_hd+'px</span></label><input type="range" id="lg-hd" min="24" max="320" step="1" value="'+_hd+'" style="width:100%;"></div>'
+        +'<div class="f" style="margin:0 0 14px;"><label>Position in header</label><select id="lg-pos" class="tin"><option value="left"'+(_posD==='left'?' selected':'')+'>Left</option><option value="center"'+(_posD==='center'?' selected':'')+'>Centre</option><option value="right"'+(_posD==='right'?' selected':'')+'>Right</option></select><div class="hint" style="margin-top:4px;">Applies when the header phone number is off. With the phone shown, the logo stays on the left opposite the phone.</div></div>'
+        +'<div class="row" style="margin:0 0 14px;"><div class="f" style="margin:0;"><label>Move horizontally <span id="lg-offx-v" style="font-weight:700;color:var(--accent);">'+_offX+'px</span></label><input type="range" id="lg-offx" min="-120" max="120" step="1" value="'+_offX+'" style="width:100%;"></div>'
+          +'<div class="f" style="margin:0;"><label>Move vertically <span id="lg-offy-v" style="font-weight:700;color:var(--accent);">'+_offY+'px</span></label><input type="range" id="lg-offy" min="-120" max="120" step="1" value="'+_offY+'" style="width:100%;"></div></div>'
+        +'<div class="f" style="margin:0 0 14px;"><label>Vertical align in bar</label><select id="lg-valign" class="tin"><option value="center"'+(_valign==='center'?' selected':'')+'>Centre</option><option value="top"'+(_valign==='top'?' selected':'')+'>Top</option><option value="bottom"'+(_valign==='bottom'?' selected':'')+'>Bottom</option></select></div>'
+        +'<div id="lg-crop-row" class="lg-crop-box" style="margin:0;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--input-bg,#f7f5f1);">'
+        +'<p style="margin:0 0 4px;font-weight:700;font-size:14px;">Trim unused space <span class="hint">(desktop)</span></p>'
+        +'<p class="hint" style="margin:0 0 10px;">Zoom into the artwork to clip empty padding. 0% = full image. Mobile has its own trim in the Mobile card.</p>'
+        +'<div class="f" style="margin:0 0 10px;"><label>Crop tightness <span class="hint" id="lg-crop-val">'+_cropY+'%</span></label><input type="range" id="lg-crop" min="0" max="50" step="1" value="'+_cropY+'" style="width:100%;"></div>'
+        +'<div class="f" style="margin:0;"><label>Crop focus</label><select id="lg-crop-focus" class="tin"><option value="center"'+(_cropFocus==='center'?' selected':'')+'>Centre</option><option value="top"'+(_cropFocus==='top'?' selected':'')+'>Keep top</option><option value="bottom"'+(_cropFocus==='bottom'?' selected':'')+'>Keep bottom</option></select></div>'
+        +'</div></div>'
+
+        /* ── 3. Mobile ── */
+        +'<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Mobile</h2><p class="lede" style="margin:0 0 14px;">Phone-only size, trim and placement (~760px and Live preview \u2192 Mobile). Completely independent of Desktop \u2014 desktop nudges are not copied here.</p>'
+        +'<div class="f" style="margin:0 0 14px;"><label>Logo height <span class="hint" id="lg-hm-val" style="font-weight:700;color:var(--accent);">'+_hm+'px</span></label><input type="range" id="lg-hm" min="20" max="200" step="1" value="'+_hm+'" style="width:100%;"><span class="hint" style="display:block;margin-top:4px;">Keep this modest on phones so the logo does not crowd the call button under it.</span></div>'
+        +'<div class="f" style="margin:0 0 14px;"><label>Position in header</label><select id="lg-pos-m" class="tin"><option value=""'+(!_posM?' selected':'')+'>Same as desktop</option><option value="left"'+(_posM==='left'?' selected':'')+'>Left</option><option value="center"'+(_posM==='center'?' selected':'')+'>Centre</option><option value="right"'+(_posM==='right'?' selected':'')+'>Right</option></select></div>'
+        +'<div class="row" style="margin:0 0 14px;"><div class="f" style="margin:0;"><label>Move horizontally <span id="lg-offxm-v" style="font-weight:700;color:var(--accent);">'+_offXM+'px</span></label><input type="range" id="lg-offxm" min="-120" max="120" step="1" value="'+_offXM+'" style="width:100%;"></div>'
+          +'<div class="f" style="margin:0;"><label>Move vertically <span id="lg-offym-v" style="font-weight:700;color:var(--accent);">'+_offYM+'px</span></label><input type="range" id="lg-offym" min="-120" max="120" step="1" value="'+_offYM+'" style="width:100%;"></div></div>'
+        +'<div class="f" style="margin:0 0 14px;"><label>Vertical align in bar</label><select id="lg-valign-m" class="tin"><option value="center"'+(_valignM==='center'?' selected':'')+'>Centre</option><option value="top"'+(_valignM==='top'?' selected':'')+'>Top</option><option value="bottom"'+(_valignM==='bottom'?' selected':'')+'>Bottom</option></select></div>'
+        +'<div class="f" style="margin:0 0 14px;"><label>Bar padding (mobile) <span id="lg-hbar-padm-v" style="font-weight:700;color:var(--accent);">'+_hbarPadM+'px</span></label><input type="range" id="lg-hbar-padm" min="0" max="48" step="1" value="'+_hbarPadM+'" style="width:100%;"><span class="hint" style="display:block;margin-top:4px;">Breathing room above and below the logo on phones. Stops the artwork looking clipped against the top edge.</span></div>'
+        +'<div id="lg-crop-row-m" class="lg-crop-box" style="margin:0;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--input-bg,#f7f5f1);">'
+        +'<p style="margin:0 0 4px;font-weight:700;font-size:14px;">Trim unused space <span class="hint">(mobile)</span></p>'
+        +'<p class="hint" style="margin:0 0 10px;">Separate from desktop trim. High trim + a large height can clip the logo \u2014 keep tightness low if the artwork looks strangled.</p>'
+        +'<div class="f" style="margin:0 0 10px;"><label>Crop tightness <span class="hint" id="lg-cropm-val">'+_cropYM+'%</span></label><input type="range" id="lg-cropm" min="0" max="50" step="1" value="'+_cropYM+'" style="width:100%;"></div>'
+        +'<div class="f" style="margin:0;"><label>Crop focus</label><select id="lg-cropm-focus" class="tin"><option value="center"'+(_cropFocusM==='center'?' selected':'')+'>Centre</option><option value="top"'+(_cropFocusM==='top'?' selected':'')+'>Keep top</option><option value="bottom"'+(_cropFocusM==='bottom'?' selected':'')+'>Keep bottom</option></select></div>'
+        +'</div></div>'
+
+        /* ── 4. Header bar ── */
+        +'<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Header bar</h2><p class="lede" style="margin:0 0 14px;">The band behind the logo \u2014 style, colour, strokes and desktop bar size. Phone padding lives in the Mobile card.</p>'
+        +'<div class="f" style="margin:0 0 12px;"><label>Header style</label><select id="lg-hstyle" class="tin"><option value="solid-sticky">Solid bar \u2014 sticky (stays pinned at top)</option><option value="solid-scroll">Solid bar \u2014 scrolls away with the page</option><option value="float">Float over hero \u2014 transparent, scrolls away</option><option value="shrink">Shrink on scroll (big over hero \u2192 compact pinned bar)</option></select></div>'
+        +'<div id="lg-hbg-row">'
+        +'<div class="f"><label>Header bar colour</label><div style="display:flex;gap:10px;align-items:center;"><input type="color" id="lg-hbg" value="'+_hbgV+'" style="width:56px;height:40px;padding:2px;border:1px solid var(--line);border-radius:8px;"><span class="hint" style="margin:0;">Used by the solid bar and by the compact bar in \u201cShrink on scroll\u201d.</span></div></div>'
+        +'<div class="f" style="margin-top:12px;"><label>Header bar transparency <span id="lg-hop-v" style="font-weight:700;color:var(--accent);">'+_hopV+'%</span></label><input type="range" id="lg-hop" min="0" max="100" step="1" value="'+_hopV+'" style="width:100%;"><span class="hint" style="display:block;margin-top:4px;">100% = solid \u00b7 0% = clear (hero shows through)</span></div>'
+        +'</div>'
+        +'<div id="lg-hstroke" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line);">'
+        +'<p style="margin:0 0 4px;font-weight:700;font-size:14px;">Header bar strokes</p>'
+        +'<p class="hint" style="margin:0 0 12px;">Optional top and bottom lines on the logo header. Size 0 hides a stroke even when enabled.</p>'
+        +'<div style="display:flex;flex-wrap:wrap;gap:14px;">'
+        +'<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:220px;">'
+        +'<label style="display:flex;gap:8px;align-items:center;font-weight:600;"><input type="checkbox" id="lg-hst-top"'+(_hstTopOn?' checked':'')+'> Top stroke</label>'
+        +'<div id="lg-hst-top-opts" style="margin-top:10px;'+(_hstTopOn?'':'display:none;')+'">'
+        +'<div class="f" style="margin:0 0 10px;"><label>Colour</label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="lg-hst-topc" value="'+_hstTopC+'" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="lg-hst-topct" class="tin" value="'+_hstTopC+'" style="flex:1;min-width:0;"></div></div>'
+        +'<div class="f" style="margin:0;"><label>Size <span id="lg-hst-topw-v" style="font-weight:700;color:var(--accent);">'+_hstTopW+'px</span></label><input type="range" id="lg-hst-topw" min="0" max="16" step="1" value="'+_hstTopW+'" style="width:100%;"></div>'
+        +'</div></div>'
+        +'<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:220px;">'
+        +'<label style="display:flex;gap:8px;align-items:center;font-weight:600;"><input type="checkbox" id="lg-hst-bot"'+(_hstBotOn?' checked':'')+'> Bottom stroke</label>'
+        +'<div id="lg-hst-bot-opts" style="margin-top:10px;'+(_hstBotOn?'':'display:none;')+'">'
+        +'<div class="f" style="margin:0 0 10px;"><label>Colour</label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="lg-hst-botc" value="'+_hstBotC+'" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="lg-hst-botct" class="tin" value="'+_hstBotC+'" style="flex:1;min-width:0;"></div></div>'
+        +'<div class="f" style="margin:0;"><label>Size <span id="lg-hst-botw-v" style="font-weight:700;color:var(--accent);">'+_hstBotW+'px</span></label><input type="range" id="lg-hst-botw" min="0" max="16" step="1" value="'+_hstBotW+'" style="width:100%;"></div>'
+        +'</div></div>'
+        +'</div></div>'
+        +'<div id="lg-hbar" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line);">'
+        +'<p style="margin:0 0 4px;font-weight:700;font-size:14px;">Desktop bar size</p>'
+        +'<p class="hint" style="margin:0 0 12px;">Raise bar height for a taller band behind a large logo. Desktop padding is separate from Mobile bar padding.</p>'
+        +'<div class="f" style="margin:0 0 12px;"><label>Bar height <span id="lg-hbar-v" style="font-weight:700;color:var(--accent);">'+(_hbarH?(_hbarH+'px'):'Auto (fit logo)')+'</span></label><input type="range" id="lg-hbar-h" min="0" max="220" step="2" value="'+_hbarH+'" style="width:100%;"><span class="hint" style="display:block;margin-top:4px;">0 = auto</span></div>'
+        +'<div class="f" style="margin:0 0 12px;"><label>Bar padding (desktop) <span id="lg-hbar-pad-v" style="font-weight:700;color:var(--accent);">'+_hbarPad+'px</span></label><input type="range" id="lg-hbar-pad" min="0" max="48" step="1" value="'+_hbarPad+'" style="width:100%;"></div>'
+        +'<label style="display:flex;gap:8px;align-items:center;font-weight:600;"><input type="checkbox" id="lg-hang"'+(_hHang?' checked':'')+'> Fill from the top \u2014 let the logo hang below the bar</label>'
+        +'<p class="hint" style="margin:6px 0 0;">Optional: top-aligns the logo so only the bottom overhangs (handy with a bottom stroke).</p>'
+        +'</div></div>'
+
         +_faviconCard(c)+headerCtaCard(c);
       wireTradeBranding(c); wireLogoSize(c); wireHeaderCta(c); wireFavicon(c);
     } else if(sub==='sectionOrder'){
@@ -10107,10 +10150,12 @@ function heroCtaCard(c){
   function wireLogoSize(c){
     var L=c.logo||(c.logo={});
     var hd=$('lg-hd'); if(hd) hd.addEventListener('input',function(){ var v=parseInt(hd.value,10)||44; L.heightPx=v; delete L.scale; var e=$('lg-hd-val'); if(e)e.textContent=v+'px'; persist(); previewApply(); });
-    var hm=$('lg-hm'); if(hm) hm.addEventListener('input',function(){ var v=parseInt(hm.value,10); if(isNaN(v))v=32; v=Math.max(20,Math.min(160,v)); L.heightPxM=v; var e=$('lg-hm-val'); if(e)e.textContent=v+'px'; persist(); previewApply(); });
+    var hm=$('lg-hm'); if(hm) hm.addEventListener('input',function(){ var v=parseInt(hm.value,10); if(isNaN(v))v=32; v=Math.max(20,Math.min(200,v)); L.heightPxM=v; var e=$('lg-hm-val'); if(e)e.textContent=v+'px'; persist(); previewApply(); });
     var crop=$('lg-crop'), cropv=$('lg-crop-val'); if(crop){ crop.addEventListener('input',function(){ var v=parseInt(crop.value,10); if(isNaN(v))v=0; v=Math.max(0,Math.min(50,v)); L.cropY=v; if(cropv) cropv.textContent=v+'%'; persist(); previewApply(); }); }
     var cropf=$('lg-crop-focus'); if(cropf){ cropf.addEventListener('change',function(){ L.cropFocus=cropf.value==='top'||cropf.value==='bottom'?cropf.value:'center'; persist(); previewApply(); }); }
-    var pos=$('lg-pos'); if(pos){ pos.value=L.position||'left'; pos.addEventListener('change',function(){ L.position=pos.value; persist(); previewApply(); }); }
+    var cropm=$('lg-cropm'), cropmv=$('lg-cropm-val'); if(cropm){ cropm.addEventListener('input',function(){ var v=parseInt(cropm.value,10); if(isNaN(v))v=0; v=Math.max(0,Math.min(50,v)); L.cropYM=v; if(cropmv) cropmv.textContent=v+'%'; persist(); previewApply(); }); }
+    var cropmf=$('lg-cropm-focus'); if(cropmf){ cropmf.addEventListener('change',function(){ L.cropFocusM=cropmf.value==='top'||cropmf.value==='bottom'?cropmf.value:'center'; persist(); previewApply(); }); }
+    var pos=$('lg-pos'); if(pos){ pos.addEventListener('change',function(){ L.position=pos.value; persist(); previewApply(); }); }
     var hs=$('lg-hstyle'); if(hs){ hs.value=L.headerStyle||(L.float?'float':'solid-sticky'); var _hsUpd=function(){ var solidish=(hs.value==='solid-sticky'||hs.value==='solid-scroll'||hs.value==='shrink'); var hr=$('lg-hbg-row'); if(hr) hr.style.opacity=solidish?'1':'0.5'; }; _hsUpd(); hs.addEventListener('change',function(){ L.headerStyle=hs.value; if('float' in L) delete L.float; _hsUpd(); persist(); previewApply(); }); }
     var hbg=$('lg-hbg'); if(hbg) hbg.addEventListener('input',function(){ L.headerBg=hbg.value; persist(); previewApply(); });
     var hop=$('lg-hop'), hopv=$('lg-hop-v'); if(hop){ hop.addEventListener('input',function(){ var v=parseInt(hop.value,10); if(isNaN(v))v=100; v=Math.max(0,Math.min(100,v)); L.headerBgOpacity=v; if(hopv) hopv.textContent=v+'%'; persist(); previewApply(); }); }
@@ -10127,7 +10172,9 @@ function heroCtaCard(c){
     wireHStroke('top'); wireHStroke('bot');
     var hb=$('lg-hbar-h'), hbv=$('lg-hbar-v'); if(hb){ hb.addEventListener('input',function(){ var v=parseInt(hb.value,10); if(isNaN(v))v=0; v=Math.max(0,Math.min(220,v)); L.headerBarHeight=v; if(hbv) hbv.textContent=v?(v+'px'):'Auto (fit logo)'; persist(); previewApply(); }); }
     var hbp=$('lg-hbar-pad'), hbpv=$('lg-hbar-pad-v'); if(hbp){ hbp.addEventListener('input',function(){ var v=parseInt(hbp.value,10); if(isNaN(v))v=10; v=Math.max(0,Math.min(48,v)); L.headerBarPadding=v; if(hbpv) hbpv.textContent=v+'px'; persist(); previewApply(); }); }
+    var hbpm=$('lg-hbar-padm'), hbpmv=$('lg-hbar-padm-v'); if(hbpm){ hbpm.addEventListener('input',function(){ var v=parseInt(hbpm.value,10); if(isNaN(v))v=10; v=Math.max(0,Math.min(48,v)); L.headerBarPaddingM=v; if(hbpmv) hbpmv.textContent=v+'px'; persist(); previewApply(); }); }
     var valign=$('lg-valign'); if(valign){ valign.addEventListener('change',function(){ L.headerLogoAlign=valign.value==='top'?'start':(valign.value==='bottom'?'end':'center'); persist(); previewApply(); }); }
+    var valignm=$('lg-valign-m'); if(valignm){ valignm.addEventListener('change',function(){ L.headerLogoAlignM=valignm.value==='top'?'start':(valignm.value==='bottom'?'end':'center'); persist(); previewApply(); }); }
     var ox=$('lg-offx'), oxv=$('lg-offx-v'); if(ox){ ox.addEventListener('input',function(){ var v=parseInt(ox.value,10); if(isNaN(v))v=0; v=Math.max(-120,Math.min(120,v)); L.offsetX=v; if(oxv) oxv.textContent=v+'px'; persist(); previewApply(); }); }
     var oy=$('lg-offy'), oyv=$('lg-offy-v'); if(oy){ oy.addEventListener('input',function(){ var v=parseInt(oy.value,10); if(isNaN(v))v=0; v=Math.max(-120,Math.min(120,v)); L.offsetY=v; if(oyv) oyv.textContent=v+'px'; persist(); previewApply(); }); }
     var posm=$('lg-pos-m'); if(posm){ posm.addEventListener('change',function(){ L.positionM=posm.value||''; persist(); previewApply(); }); }
@@ -10143,7 +10190,7 @@ function heroCtaCard(c){
     var L=c.logo||(c.logo={mode:'mark',text:'',imageUrl:''}); if(!L.mode) L.mode='mark';
     $('lg-mode').value=L.mode; $('lg-text').value=L.text||'';
     function renderPrev(){ var p=$('lg-imgprev'); if(!p) return; p.innerHTML=L.imageUrl?'<img src="'+L.imageUrl+'" style="max-height:64px;border:1px solid var(--line);border-radius:8px;padding:8px;background:repeating-conic-gradient(#e8e8e8 0% 25%,#fff 0% 50%) 50%/12px 12px;vertical-align:middle;"> <button class="btn ghost" id="lg-clear" type="button">Remove</button>':'<span class="hint">No image uploaded.</span>'; var cl=$('lg-clear'); if(cl) cl.addEventListener('click',function(){ if(L._pid){ cwDelete(L._pid); L._pid=''; } L.imageUrl=''; persist(); renderPrev(); previewApply(); }); }
-    function refresh(){ $('lg-imgwrap').style.display=($('lg-mode').value==='image')?'':'none'; var cr=$('lg-crop-row'); if(cr) cr.style.display=($('lg-mode').value==='image')?'':'none'; renderPrev(); }
+    function refresh(){ var isImg=($('lg-mode').value==='image'); $('lg-imgwrap').style.display=isImg?'':'none'; document.querySelectorAll('.lg-crop-box').forEach(function(cr){ cr.style.display=isImg?'':'none'; }); renderPrev(); }
     $('lg-mode').addEventListener('change',function(){ L.mode=this.value; persist(); refresh(); previewApply(); });
     $('lg-text').addEventListener('input',function(){ L.text=this.value; persist(); previewApply(); });
     var ckOn=$('lg-ck-on'), ckOpts=$('lg-ck-opts'), ckTol=$('lg-ck-tol'), ckTolV=$('lg-ck-tol-v'), ckColor=$('lg-ck-color'), ckEye=$('lg-ck-eyedrop');
