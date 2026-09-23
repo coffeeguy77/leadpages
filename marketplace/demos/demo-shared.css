@@ -704,26 +704,38 @@ header.site .head-menu-btn .lp-ic{width:22px;height:22px}
 .hnm-panel.hnm-open{transform:translateX(0)}
 .hnm-close{position:absolute;top:12px;right:12px;background:rgba(255,255,255,.16);border:0;color:#fff;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2}
 .hnm-close .lp-ic{width:20px;height:20px}
-.hnm-item{display:flex;align-items:center;gap:13px;padding:15px 6px;border:0;border-bottom:1px solid rgba(255,255,255,.13);color:inherit;text-decoration:none;background:none;width:100%;text-align:left;cursor:pointer;font-family:"Barlow Condensed",sans-serif;font-weight:700;text-transform:uppercase;font-size:19px;letter-spacing:.02em}
+.hnm-item{display:flex;align-items:center;gap:13px;padding:15px 6px;border:0;border-bottom:1px solid rgba(255,255,255,.13);color:var(--hn-fg,inherit);text-decoration:none;background:none;width:100%;text-align:left;cursor:pointer;font-family:"Barlow Condensed",sans-serif;font-weight:700;text-transform:uppercase;font-size:19px;letter-spacing:.02em}
 .hnm-item .lp-ic{width:24px;height:24px;flex:0 0 auto}
 
-/* Nav menu parent/child submenus — parents use the same .hn-link / .nm-link look as links */
+/* Nav menu parent/child — Parent = top-level (links + parents); Sub = dropdown children */
 header.site .hn-drop{position:relative;display:inline-flex;align-items:center;z-index:2}
 header.site .hn-drop.hn-open{z-index:30}
-/* button.hn-parent keeps .hn-link typography/padding/colours from style classes — only kill UA button chrome */
+/* Parent is a <button class="hn-link"> — use --hn-fg (never color:inherit). Do NOT set
+   background/border here or it beats .nm-pills / .nm-outline style classes. */
 header.site button.hn-link.hn-parent{
   appearance:none;-webkit-appearance:none;margin:0;cursor:pointer;
   font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:16px;
-  letter-spacing:.03em;text-transform:uppercase;line-height:1.2;color:inherit
+  letter-spacing:.03em;text-transform:uppercase;line-height:1.2;
+  color:var(--hn-fg,#fff);text-align:left
 }
-header.site .hn-link .hn-txt,header.site .hn-link.hn-parent .hn-txt{border:0;padding:0}
+header.site .hn-link .hn-txt,header.site .hn-link.hn-parent .hn-txt{border:0;padding:0;color:inherit;font:inherit;font-weight:inherit;font-size:inherit}
 header.site .hn-chev{
   width:14px;height:14px;margin-left:2px;flex:0 0 auto;opacity:.9;
-  transition:transform .18s ease;color:inherit;padding:0;background:transparent
+  transition:transform .18s ease;color:inherit;padding:0;background:transparent;border:0
 }
 header.site .hn-drop:hover>.hn-link .hn-chev,
 header.site .hn-drop:focus-within>.hn-link .hn-chev,
 header.site .hn-drop.hn-open>.hn-link .hn-chev{transform:rotate(180deg)}
+/* Open parent mirrors hover so colours stick while submenu is open */
+header.site .hn-drop:hover>.hn-parent,
+header.site .hn-drop:focus-within>.hn-parent,
+header.site .hn-drop.hn-open>.hn-parent{
+  opacity:1;
+  color:var(--hn-hover-fg,var(--hn-fg,#fff));
+  background:var(--hn-hover-bg,rgba(255,255,255,.12));
+  border-color:var(--hn-hover-stroke,var(--hn-stroke,transparent));
+  border-width:var(--hn-hover-stroke-w,var(--hn-stroke-w,0px))
+}
 header.site .hn-sub{
   display:none;position:absolute;top:100%;left:0;min-width:240px;
   padding:8px;margin:0;border-radius:0 0 10px 10px;
@@ -759,13 +771,17 @@ header.site .hn-sub-link .lp-ic{width:17px;height:17px;flex:0 0 auto;color:inher
 .hnm-group{border-bottom:1px solid rgba(255,255,255,.13)}
 .hnm-parent{
   display:flex;align-items:center;gap:13px;padding:15px 6px;width:100%;border:0;background:none;
-  color:inherit;font-family:"Barlow Condensed",sans-serif;font-weight:700;text-transform:uppercase;
+  color:var(--hn-fg,inherit);font-family:"Barlow Condensed",sans-serif;font-weight:700;text-transform:uppercase;
   font-size:19px;letter-spacing:.02em;cursor:pointer;text-align:left;border-radius:8px;
   appearance:none;-webkit-appearance:none;margin:0
 }
 .hnm-parent .lp-ic{width:24px;height:24px;flex:0 0 auto;color:inherit}
-.hnm-parent .hn-chev{margin-left:auto;width:18px;height:18px;transition:transform .15s;color:inherit;background:transparent;padding:0}
+.hnm-parent .hn-chev{margin-left:auto;width:18px;height:18px;transition:transform .15s;color:inherit;background:transparent;padding:0;border:0}
 .hnm-group.hnm-open>.hnm-parent .hn-chev{transform:rotate(180deg)}
+.hnm-group.hnm-open>.hnm-parent{
+  color:var(--hn-hover-fg,var(--hn-fg,inherit));
+  background:var(--hn-hover-bg,rgba(255,255,255,.08))
+}
 .hnm-children{
   display:none;padding:4px 0 12px 10px;margin:0 0 4px;
   border-left:2px solid var(--hn-sub-stroke,rgba(255,255,255,.28));
@@ -778,21 +794,28 @@ header.site .hn-sub-link .lp-ic{width:17px;height:17px;flex:0 0 auto;color:inher
 }
 .hnm-children .hnm-item:hover{
   background:var(--hn-sub-hover-bg,rgba(255,255,255,.08));
-  color:var(--hn-sub-hover-fg,var(--hn-sub-fg,inherit))
+  color:var(--hn-sub-hover-fg,var(--hn-sub-fg,inherit));
+  border-color:var(--hn-sub-hover-stroke,transparent);
+  border-width:var(--hn-sub-hover-stroke-w,0px)
 }
 .nm-drop{position:relative;display:inline-flex;align-items:center;z-index:2}
 .nm-drop.hn-open{z-index:20}
+.nm-drop>button.nm-link,
 .nm-drop>button.nm-link.nm-parent{
   appearance:none;-webkit-appearance:none;margin:0;cursor:pointer;
   font-family:"Barlow Condensed",system-ui,sans-serif;font-weight:700;font-size:15px;
-  letter-spacing:.02em;text-transform:uppercase;line-height:1.2;color:inherit
+  letter-spacing:.02em;text-transform:uppercase;line-height:1.2;
+  color:var(--nm-fg,#fff);text-align:left
 }
-.nm-link.nm-parent .nm-txt{border:0;padding:0}
+.nm-link.nm-parent .nm-txt{border:0;padding:0;color:inherit;font:inherit;font-weight:inherit;font-size:inherit}
 .nm-drop .hn-chev,.nm-parent .hn-chev{
-  width:14px;height:14px;margin-left:2px;padding:0;background:transparent;
+  width:14px;height:14px;margin-left:2px;padding:0;background:transparent;border:0;
   transition:transform .18s;color:inherit
 }
 .nm-drop:hover .hn-chev,.nm-drop.hn-open .hn-chev,.nm-drop:focus-within .hn-chev{transform:rotate(180deg)}
+.nm-drop:hover>.nm-parent,.nm-drop:focus-within>.nm-parent,.nm-drop.hn-open>.nm-parent{
+  color:var(--nm-fg,#fff);opacity:1
+}
 .nm-drop .nm-sub{
   display:none;position:absolute;top:100%;left:0;min-width:220px;
   padding:8px;z-index:50;flex-direction:column;gap:2px;
