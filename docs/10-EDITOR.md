@@ -216,7 +216,7 @@ Grouped in UI as **CORE_GROUPS** (6 sections) + **PRESET_GROUPS** (3 layout fami
 ```
 Page Editor (Details tab)
 ├── Layout picker + preset chips
-├── Section mode: Hide Inactive | Show Features
+├── Section mode: LOCKED/LOCK | Hide Inactive Apps | Show All Apps
 ├── Group: Business Identity & Hero Area
 │   ├── Branding
 │   ├── Logo
@@ -350,7 +350,8 @@ Mailer
 | `allSites` | array | Cached site list |
 | `activeView` | string | Current nav tab id |
 | `landingSub` | string | Active trade subtab key |
-| `secHideInactive` | boolean | Chip display mode |
+| `secHideInactive` | boolean | When true, inactive app chips are hidden |
+| `secAppsLocked` | boolean | When true (default), chips are edit-only so taps cannot turn apps off; Show All Apps unlocks |
 | `authed` | boolean | Session valid |
 
 ### Module state objects
