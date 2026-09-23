@@ -969,7 +969,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   <div id="av-landing" hidden>
     <div class="card">
       <div class="card-head"><h2>Landing pages</h2><button class="btn" id="lp-new">+ New page</button></div>
-      <p class="lede">Build SEO-optimised pages that match your theme. Tick <strong>Show in site menu</strong> on a page to add it to the Navigation Menu in one step (name + optional icon). Reorder with the arrows here, or fine-tune everything in <strong>Page editor → Menu</strong>. Published pages are included in <code>sitemap.xml</code> — after publishing, regenerate the sitemap under <strong>Settings → Search &amp; indexing</strong>.</p>
+      <p class="lede">Build SEO-optimised pages that match your theme. Tick <strong>Show in site menu</strong> on a page to add it to the Navigation Menu — top level or under a parent submenu. Reorder with the arrows here, or fine-tune everything in <strong>Page editor → Menu</strong>. Published pages are included in <code>sitemap.xml</code> — after publishing, regenerate the sitemap under <strong>Settings → Search &amp; indexing</strong>.</p>
       <div id="lp-list" class="lp-list"></div>
     </div>
 
@@ -1046,7 +1046,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       <div class="apgroup-h">Site menu</div>
       <div class="lp-menu-box" style="border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:0 0 14px;background:var(--input-bg,#f7f5f1);">
         <label class="ck" style="font-weight:600;"><input type="checkbox" id="lp-show-menu"> Show in site menu</label>
-        <p class="hint" style="margin:6px 0 0;">One tick adds this page to the Navigation Menu (and turns the menu on if needed). For colours and styles, use <strong>Page editor → Menu</strong>.</p>
+        <p class="hint" style="margin:6px 0 0;">Add this page as a top-level link, or nest it under a <strong>parent</strong> (submenu) so the main bar stays tidy — e.g. Services → this page. Colours and styles: <strong>Page editor → Menu</strong>.</p>
         <div id="lp-menu-opts" style="display:none;margin-top:12px;">
           <div class="lp-row" style="gap:12px;">
             <div class="f" style="margin:0;flex:1;min-width:180px;"><label>Menu item name</label><input type="text" id="lp-menu-label" class="tin" placeholder="Defaults to page title"></div>
@@ -1054,10 +1054,14 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
               <div class="iconctl"><button type="button" class="icon-pick" id="lp-menu-icon-btn" tabindex="-1" title="Choose an icon"><span style="opacity:.35;">＋</span></button><input type="hidden" class="icon-input" id="lp-menu-icon" value=""></div>
             </div>
           </div>
+          <div class="lp-row" style="gap:12px;margin-top:12px;">
+            <div class="f" style="margin:0;flex:1;min-width:200px;"><label>Place in menu</label><select id="lp-menu-under" class="tin"><option value="top">Top level (main menu)</option><option value="__new__">+ New parent menu…</option></select></div>
+            <div class="f" id="lp-menu-new-parent-wrap" style="margin:0;flex:1;min-width:180px;display:none;"><label>New parent name</label><input type="text" id="lp-menu-new-parent" class="tin" placeholder="e.g. Services"></div>
+          </div>
           <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px;">
             <span class="hint" id="lp-menu-pos" style="margin:0;">Position in menu</span>
-            <button type="button" class="btn ghost sm" id="lp-menu-left" title="Move earlier in the menu">← Earlier</button>
-            <button type="button" class="btn ghost sm" id="lp-menu-right" title="Move later in the menu">Later →</button>
+            <button type="button" class="btn ghost sm" id="lp-menu-left" title="Move earlier among siblings">← Earlier</button>
+            <button type="button" class="btn ghost sm" id="lp-menu-right" title="Move later among siblings">Later →</button>
           </div>
         </div>
       </div>
@@ -2692,13 +2696,29 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     $('lp-status').addEventListener('change',function(){ lpField('status',this.value); });
     (function wireLpMenuQuick(){
       var show=$('lp-show-menu'), opts=$('lp-menu-opts'), lab=$('lp-menu-label'), ic=$('lp-menu-icon'), left=$('lp-menu-left'), right=$('lp-menu-right');
+      var under=$('lp-menu-under'), newWrap=$('lp-menu-new-parent-wrap'), newPar=$('lp-menu-new-parent');
+      function underSpec(){
+        if(!under) return 'top';
+        var v=under.value||'top';
+        if(v==='__new__'){
+          var name=(newPar&&newPar.value)||'';
+          return { create: String(name).trim()||'Services' };
+        }
+        if(v==='top'||v==='') return 'top';
+        var n=+v;
+        return isNaN(n)?'top':n;
+      }
+      function syncNewParentVis(){
+        if(!newWrap||!under) return;
+        newWrap.style.display=under.value==='__new__'?'':'none';
+      }
       function apply(){
         if(!lpCur) return;
         var on=!!(show&&show.checked);
         lpCur.menu=on?'top':'none';
         lpCur.menuLabel=(lab&&lab.value)||'';
         lpCur.menuIcon=(ic&&ic.value)||'';
-        lpSyncNavMenu({show:on, label:lpCur.menuLabel||lpCur.title||lpCur.slug, icon:lpCur.menuIcon});
+        lpSyncNavMenu({show:on, label:lpCur.menuLabel||lpCur.title||lpCur.slug, icon:lpCur.menuIcon, under:on?underSpec():undefined});
         lpFillMenuUi();
         persist(); lpAutosave(); previewApply();
       }
@@ -2716,6 +2736,9 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       });
       if(lab) lab.addEventListener('input',function(){ if(show&&show.checked) apply(); else if(lpCur){ lpCur.menuLabel=lab.value; persist(); lpAutosave(); } });
       if(ic) ic.addEventListener('input',function(){ if(show&&show.checked) apply(); else if(lpCur){ lpCur.menuIcon=ic.value; persist(); lpAutosave(); } });
+      if(under) under.addEventListener('change',function(){ syncNewParentVis(); if(show&&show.checked) apply(); });
+      if(newPar) newPar.addEventListener('change',function(){ if(show&&show.checked&&under&&under.value==='__new__') apply(); });
+      if(newPar) newPar.addEventListener('blur',function(){ if(show&&show.checked&&under&&under.value==='__new__') apply(); });
       if(left) left.addEventListener('click',function(){ if(!lpCur||!lpCur.slug) return; if(lpMoveNavMenu(-1)){ persist(); lpAutosave(); previewApply(); lpFillMenuUi(); } });
       if(right) right.addEventListener('click',function(){ if(!lpCur||!lpCur.slug) return; if(lpMoveNavMenu(1)){ persist(); lpAutosave(); previewApply(); lpFillMenuUi(); } });
     })();
@@ -2842,13 +2865,61 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     return nm;
   }
   function lpNavTarget(slug){ return 'page:'+String(slug||'').trim(); }
-  function lpFindNavIdx(slug){
-    var items=lpNavMenuEns().items, t=lpNavTarget(slug);
-    if(!slug||t==='page:') return -1;
-    for(var i=0;i<items.length;i++){ if(items[i]&&items[i].target===t) return i; }
-    return -1;
+  function lpNavIsParent(it){
+    if(!it) return false;
+    if(it.kind==='link') return false;
+    if(it.kind==='parent') return true;
+    return !!(Array.isArray(it.children)&&it.children.length);
   }
-  /** Upsert / remove this landing page in sections.navMenu.items. */
+  function lpFindNavRef(slug){
+    var items=lpNavMenuEns().items, t=lpNavTarget(slug);
+    if(!slug||t==='page:') return null;
+    for(var i=0;i<items.length;i++){
+      if(items[i]&&items[i].target===t) return {parent:i,child:-1,item:items[i]};
+      var kids=items[i]&&Array.isArray(items[i].children)?items[i].children:null;
+      if(kids){
+        for(var j=0;j<kids.length;j++){
+          if(kids[j]&&kids[j].target===t) return {parent:i,child:j,item:kids[j]};
+        }
+      }
+    }
+    return null;
+  }
+  function lpFindNavIdx(slug){
+    var ref=lpFindNavRef(slug);
+    return ref?ref.parent:-1;
+  }
+  function lpDetachNavItem(slug){
+    var items=lpNavMenuEns().items;
+    var ref=lpFindNavRef(slug);
+    if(!ref) return null;
+    var item=ref.item;
+    if(ref.child>=0) items[ref.parent].children.splice(ref.child,1);
+    else items.splice(ref.parent,1);
+    return item;
+  }
+  function lpEnsureNavParent(under){
+    var items=lpNavMenuEns().items;
+    if(under==null||under==='top'||under===-1||under==='') return -1;
+    if(typeof under==='object'&&under.create!=null){
+      var label=String(under.create||'').trim()||'Services';
+      for(var i=0;i<items.length;i++){
+        if(lpNavIsParent(items[i])&&String(items[i].label||'')===label){
+          items[i].kind='parent';
+          if(!Array.isArray(items[i].children)) items[i].children=[];
+          return i;
+        }
+      }
+      items.push({label:label,kind:'parent',icon:'',children:[]});
+      return items.length-1;
+    }
+    var idx=+under;
+    if(isNaN(idx)||idx<0||idx>=items.length) return -1;
+    items[idx].kind='parent';
+    if(!Array.isArray(items[idx].children)) items[idx].children=[];
+    return idx;
+  }
+  /** Upsert / remove this landing page in sections.navMenu.items (top-level or under a parent). */
   function lpSyncNavMenu(opts){
     opts=opts||{};
     var page=lpCur;
@@ -2857,49 +2928,114 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     var items=nm.items;
     var oldSlug=String(opts.oldSlug||'').trim();
     if(oldSlug&&slug&&oldSlug!==slug){
-      var oi=lpFindNavIdx(oldSlug);
-      if(oi>=0) items[oi].target=lpNavTarget(slug);
+      var oref=lpFindNavRef(oldSlug);
+      if(oref) oref.item.target=lpNavTarget(slug);
     }
-    var idx=lpFindNavIdx(slug);
     var show=!!opts.show;
     if(!show||!slug){
-      if(idx>=0) items.splice(idx,1);
+      lpDetachNavItem(slug);
       return;
     }
     var label=String(opts.label!=null?opts.label:'').trim()||(page&&(page.title||page.slug))||slug;
     var icon=opts.icon!=null?String(opts.icon).trim():'';
-    if(idx<0){
-      items.push({label:label, target:lpNavTarget(slug), url:'', icon:icon||''});
+    var existing=lpFindNavRef(slug);
+    var parentIdx=-1;
+    if(opts.under!==undefined) parentIdx=lpEnsureNavParent(opts.under);
+    else if(existing) parentIdx=existing.child>=0?existing.parent:-1;
+    var needMove=!existing;
+    if(existing&&opts.under!==undefined){
+      var curParent=existing.child>=0?existing.parent:-1;
+      if(curParent!==parentIdx) needMove=true;
+    }
+    var item=existing?existing.item:null;
+    if(needMove){
+      item=lpDetachNavItem(slug)||{label:label,target:lpNavTarget(slug),url:'',icon:icon||'',opens:'_self',kind:'link'};
+      item.kind='link';
+      item.target=lpNavTarget(slug);
+      if(label) item.label=label;
+      if(opts.icon!==undefined) item.icon=icon;
+      if(parentIdx>=0&&items[parentIdx]){
+        items[parentIdx].kind='parent';
+        if(!Array.isArray(items[parentIdx].children)) items[parentIdx].children=[];
+        items[parentIdx].children.push(item);
+      } else {
+        items.push(item);
+      }
     } else {
-      if(label) items[idx].label=label;
-      if(opts.icon!==undefined) items[idx].icon=icon;
+      if(label) item.label=label;
+      if(opts.icon!==undefined) item.icon=icon;
+      if(!item.target) item.target=lpNavTarget(slug);
     }
     if(nm.on!==true) nm.on=true;
   }
   function lpMoveNavMenu(dir){
     if(!lpCur||!lpCur.slug) return false;
     var items=lpNavMenuEns().items;
-    var idx=lpFindNavIdx(lpCur.slug);
-    if(idx<0) return false;
+    var ref=lpFindNavRef(lpCur.slug);
+    if(!ref) return false;
+    if(ref.child>=0){
+      var kids=items[ref.parent].children||[];
+      var ci=ref.child;
+      var toC=ci+(dir<0?-1:1);
+      if(toC<0||toC>=kids.length) return false;
+      var ch=kids.splice(ci,1)[0];
+      kids.splice(toC,0,ch);
+      return true;
+    }
+    var idx=ref.parent;
     var to=idx+(dir<0?-1:1);
     if(to<0||to>=items.length) return false;
     var it=items.splice(idx,1)[0];
     items.splice(to,0,it);
     return true;
   }
+  function lpFillMenuUnderOpts(selected){
+    var sel=$('lp-menu-under'); if(!sel) return;
+    var items=lpNavMenuEns().items;
+    var html='<option value="top">Top level (main menu)</option>';
+    items.forEach(function(it,i){
+      if(!lpNavIsParent(it)) return;
+      html+='<option value="'+i+'">Under: '+esc(it.label||('Parent '+(i+1)))+'</option>';
+    });
+    html+='<option value="__new__">+ New parent menu…</option>';
+    sel.innerHTML=html;
+    var want=selected!=null?String(selected):'top';
+    if(want!=='__new__'&&want!=='top'){
+      var found=false;
+      for(var o=0;o<sel.options.length;o++){ if(sel.options[o].value===want){ found=true; break; } }
+      if(!found) want='top';
+    }
+    sel.value=want;
+    var nw=$('lp-menu-new-parent-wrap');
+    if(nw) nw.style.display=sel.value==='__new__'?'':'none';
+  }
   function lpFillMenuUi(){
     var show=$('lp-show-menu'), opts=$('lp-menu-opts'), lab=$('lp-menu-label'), ic=$('lp-menu-icon'), pos=$('lp-menu-pos'), left=$('lp-menu-left'), right=$('lp-menu-right');
     if(!lpCur) return;
     var slug=String(lpCur.slug||'').trim();
-    var idx=slug?lpFindNavIdx(slug):-1;
-    var inMenu=idx>=0;
-    var item=inMenu?lpNavMenuEns().items[idx]:null;
+    var ref=slug?lpFindNavRef(slug):null;
+    var inMenu=!!ref;
+    var item=inMenu?ref.item:null;
     if(show) show.checked=inMenu;
     if(opts) opts.style.display=inMenu?'':'none';
     if(lab) lab.value=(item&&item.label)||lpCur.menuLabel||lpCur.title||lpCur.slug||'';
     if(ic){ ic.value=(item&&item.icon)||lpCur.menuIcon||''; var btn=$('lp-menu-icon-btn'); if(btn) btn.innerHTML=iconBtnInner(ic.value); }
-    var n=lpNavMenuEns().items.length;
-    if(pos) pos.textContent=inMenu?(('Position '+(idx+1)+' of '+n+' in menu')):'Not in menu yet';
+    var underVal='top';
+    if(ref&&ref.child>=0) underVal=String(ref.parent);
+    lpFillMenuUnderOpts(underVal);
+    var n, idx, label;
+    if(ref&&ref.child>=0){
+      var kids=lpNavMenuEns().items[ref.parent].children||[];
+      n=kids.length; idx=ref.child;
+      var pl=lpNavMenuEns().items[ref.parent].label||'Parent';
+      label='Under “'+pl+'” — '+(idx+1)+' of '+n;
+    } else if(ref){
+      n=lpNavMenuEns().items.length; idx=ref.parent;
+      label='Top level — '+(idx+1)+' of '+n;
+    } else {
+      n=0; idx=-1; label='Not in menu yet';
+    }
+    if(pos) pos.textContent=label;
     if(left) left.disabled=!inMenu||idx<=0;
     if(right) right.disabled=!inMenu||idx<0||idx>=n-1;
   }
@@ -2918,10 +3054,17 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       }
       lpCur[f]=v;
       if(f==='slug'){
-        var wasIn=lpFindNavIdx(prevSlug)>=0||lpFindNavIdx(String(lpCur.slug||'').trim())>=0;
+        var wasIn=!!lpFindNavRef(prevSlug)||!!lpFindNavRef(String(lpCur.slug||'').trim());
         var wantOn=wasIn||!!($('lp-show-menu')&&$('lp-show-menu').checked);
         if(wantOn&&String(lpCur.slug||'').trim()){
-          lpSyncNavMenu({show:true, slug:lpCur.slug, oldSlug:prevSlug, label:(lpCur.menuLabel||($('lp-menu-label')&&$('lp-menu-label').value)||lpCur.title||lpCur.slug), icon:lpCur.menuIcon||(($('lp-menu-icon')&&$('lp-menu-icon').value)||'')});
+          var underEl=$('lp-menu-under');
+          var underSpec='top';
+          if(underEl){
+            var uv=underEl.value||'top';
+            if(uv==='__new__') underSpec={create:(($('lp-menu-new-parent')&&$('lp-menu-new-parent').value)||'Services')};
+            else if(uv!=='top') underSpec=+uv;
+          }
+          lpSyncNavMenu({show:true, slug:lpCur.slug, oldSlug:prevSlug, label:(lpCur.menuLabel||($('lp-menu-label')&&$('lp-menu-label').value)||lpCur.title||lpCur.slug), icon:lpCur.menuIcon||(($('lp-menu-icon')&&$('lp-menu-icon').value)||''), under:underSpec});
         }
         lpFillMenuUi();
       }
@@ -10163,7 +10306,7 @@ function heroCtaCard(c){
       if(!c.sections) c.sections={}; if(!c.sections.navMenu) c.sections.navMenu={};
       var _nm=c.sections.navMenu; if(!Array.isArray(_nm.items)) _nm.items=[];
       body.innerHTML=secCard(c,'navMenu','Navigation Menu',true,[])
-        +'<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Menu items</h2><p class="lede" style="margin:0 0 12px;">Build a menu with top-level links and optional <b>parent items</b> that open a submenu (e.g. Services → Home Modifications). Link to Home, Landing pages, Order Storefront / shop / portal, or an external URL. Parents keep the main bar tidy when you have many pages.</p>'
+        +'<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Menu items</h2><p class="lede" style="margin:0 0 12px;">Build a menu with top-level links and optional <b>parent items</b> that open a submenu (e.g. Services → Home Modifications). <b>Drag</b> a link or parent onto another parent to nest it as a sub-item (centre highlight); drag to the top/bottom edge to reorder. Link to Home, Landing pages, Order Storefront / shop / portal, or an external URL. Parents keep the main bar tidy when you have many pages.</p>'
           +'<div class="row" style="margin-bottom:14px;"><div class="f"><label>Placement</label><select id="nm-place" class="tin"><option value="header">In the header, beside the logo</option><option value="bar">Own bar (below the header)</option></select></div><div class="f"><p class="hint" style="margin:24px 0 0;">Default is beside the logo. In-header position follows your logo alignment (Logo tab). Button styles and colours apply to <strong>both</strong> placements.</p></div></div>'+'<div class="row" style="margin-bottom:14px;"><div class="f"><label>Button style</label><select id="nm-style" class="tin"><option value="pills">Pills (filled)</option><option value="solid">Solid buttons</option><option value="outline">Outline buttons</option><option value="shadow">Elevated (shadow)</option><option value="buttons">Bordered buttons</option><option value="tabs">Underline tabs</option><option value="underline">Animated underline</option><option value="links">Plain links</option><option value="ghost">Ghost (subtle)</option></select></div><div class="f"><label>Alignment</label><select id="nm-align" class="tin"><option value="left">Left</option><option value="center">Centre</option><option value="right">Right</option></select></div></div>'+'<div class="row" style="margin-bottom:14px;"><div class="f"><label>Show items as</label><select id="nm-icons" class="tin"><option value="both">Icon + text</option><option value="text">Text only</option><option value="icon">Icon only</option></select></div><div class="f"><label>Menu background <span class="hint">standalone bar</span></label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="nm-bg" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="nm-bgt" class="tin" placeholder="Theme default" style="flex:1;min-width:0;"><button type="button" id="nm-bg-clr" class="btn ghost sm">Default</button></div></div></div>'+'<div class="row" style="margin-bottom:14px;"><div class="f"><label>Link / text colour</label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="nm-fg" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="nm-fgt" class="tin" placeholder="#ffffff" style="flex:1;min-width:0;"><button type="button" id="nm-fg-clr" class="btn ghost sm">Default</button></div></div><div class="f"><label>Hover text colour</label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="nm-hfg" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="nm-hfgt" class="tin" placeholder="Same as text" style="flex:1;min-width:0;"><button type="button" id="nm-hfg-clr" class="btn ghost sm">Default</button></div></div></div>'+'<div class="row" style="margin-bottom:14px;"><div class="f"><label>Button stroke colour <span class="hint">outline &amp; bordered</span></label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="nm-stroke" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="nm-stroket" class="tin" placeholder="Theme default" style="flex:1;min-width:0;"><button type="button" id="nm-stroke-clr" class="btn ghost sm">Default</button></div></div><div class="f"><label>Button background <span class="hint">pills &amp; solid / hover chip</span></label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="nm-fill" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="nm-fillt" class="tin" placeholder="Theme default" style="flex:1;min-width:0;"><button type="button" id="nm-fill-clr" class="btn ghost sm">Default</button></div></div></div>'+'<div class="row" style="margin-bottom:14px;"><div class="f"><label>Hover background</label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="nm-hbg" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="nm-hbgt" class="tin" placeholder="Soft white wash" style="flex:1;min-width:0;"><button type="button" id="nm-hbg-clr" class="btn ghost sm">Default</button></div></div><div class="f"></div></div>'
           +'<div id="nm-list"></div>'
           +'<div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;"><button type="button" id="nm-add" class="nm-add">+ Add menu item</button><button type="button" id="nm-add-parent" class="nm-add">+ Add parent menu</button></div>'
@@ -10215,7 +10358,8 @@ function heroCtaCard(c){
         }
         function childRow(ch,pi,ci,n){
           var path=pi+'.'+ci;
-          return '<div class="nm-child-row" data-path="'+path+'" style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px dashed var(--line);border-radius:8px;margin:0 0 6px 28px;background:var(--input-bg,#f7f5f1);">'
+          return '<div class="nm-child-row" draggable="true" data-path="'+path+'" style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px dashed var(--line);border-radius:8px;margin:0 0 6px 28px;background:var(--input-bg,#f7f5f1);">'
+            +'<span class="nm-grip" style="cursor:grab;color:var(--ink-faint);font-size:12px;letter-spacing:-2px;line-height:1;" title="Drag onto a parent to nest, or between items to reorder">\u22ee\u22ee</span>'
             +'<span style="color:var(--ink-faint);font-size:12px;font-weight:700;">\u21b3</span>'
             +'<div style="flex:1;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">'
               +'<input type="text" class="nm-label tin" data-path="'+path+'" value="'+esc(ch.label||'')+'" placeholder="Sub-item label" style="flex:1 1 120px;'+_is+'">'
@@ -10232,9 +10376,9 @@ function heroCtaCard(c){
           var parent=isParent(it);
           if(parent){ it.kind='parent'; ensKids(it); }
           var kids=parent?ensKids(it):[];
-          return '<div class="nm-row" draggable="true" data-i="'+i+'" data-path="'+i+'" style="border:1px solid var(--line);border-radius:9px;margin-bottom:10px;background:#fff;">'
-          +'<div style="display:flex;align-items:center;gap:8px;padding:9px 10px;">'
-            +'<span class="nm-grip" style="cursor:grab;color:var(--ink-faint);font-size:15px;letter-spacing:-2px;line-height:1;">\u22ee\u22ee</span>'
+          return '<div class="nm-row" draggable="true" data-i="'+i+'" data-path="'+i+'" data-parent="'+(parent?'1':'0')+'" style="border:1px solid var(--line);border-radius:9px;margin-bottom:10px;background:#fff;">'
+          +'<div class="nm-row-head" style="display:flex;align-items:center;gap:8px;padding:9px 10px;">'
+            +'<span class="nm-grip" style="cursor:grab;color:var(--ink-faint);font-size:15px;letter-spacing:-2px;line-height:1;" title="Drag onto another parent to make this a sub-item">\u22ee\u22ee</span>'
             +'<div style="flex:1;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">'
               +'<input type="text" class="nm-label tin" data-path="'+i+'" value="'+esc(it.label||'')+'" placeholder="'+(parent?'Parent label (e.g. Services)':'Label')+'" style="flex:1 1 120px;'+_is+'">'
               +kindSel(it,String(i))
@@ -10249,7 +10393,7 @@ function heroCtaCard(c){
           +(parent
             ?('<div class="nm-kids" data-i="'+i+'">'
               +(kids.length?kids.map(function(ch,ci){ return childRow(ch,i,ci,kids.length); }).join('')
-                :'<p class="hint" style="margin:0 0 8px 28px;">No sub-items yet — add pages under this parent.</p>')
+                :'<p class="hint nm-kids-empty" style="margin:0 0 8px 28px;">No sub-items yet — add pages, or drag a menu item onto this parent.</p>')
               +'<div style="margin:0 0 10px 28px;"><button type="button" class="btn ghost sm nm-add-child" data-i="'+i+'">+ Add sub-item</button></div>'
             +'</div>')
             :'')
@@ -10266,6 +10410,65 @@ function heroCtaCard(c){
           else if(val==='orderPortal') it.label='My orders';
           else if(val&&val.indexOf('page:')===0){ var pg=pages().filter(function(p){return 'page:'+p.slug===val;})[0]; if(pg) it.label=pg.title||pg.slug; }
           else if(val==='external') it.label=it.label||'';
+        }
+        function takePath(path){
+          var parts=String(path||'').split('.');
+          var i=+parts[0];
+          if(parts.length===1){
+            if(isNaN(i)||i<0||i>=_nm.items.length) return null;
+            return _nm.items.splice(i,1)[0];
+          }
+          var j=+parts[1]; var kids=ensKids(_nm.items[i]||{});
+          if(isNaN(j)||j<0||j>=kids.length) return null;
+          return kids.splice(j,1)[0];
+        }
+        /** Turn a dragged parent into one or more link children (flatten one level). */
+        function asNestPayload(it){
+          if(!it) return [];
+          if(!isParent(it)){
+            it.kind='link';
+            if(!it.target) it.target='home';
+            if(!it.opens) it.opens='_self';
+            return [it];
+          }
+          var kids=(Array.isArray(it.children)?it.children:[]).slice();
+          var head={
+            label:it.label||'Item',
+            kind:'link',
+            target:it.target||'home',
+            url:it.url||'',
+            opens:it.opens||'_self',
+            icon:it.icon||''
+          };
+          return [head].concat(kids.map(function(ch){
+            if(!ch) return null;
+            ch.kind='link';
+            if(!ch.target) ch.target='home';
+            if(!ch.opens) ch.opens='_self';
+            return ch;
+          }).filter(Boolean));
+        }
+        function clearNmDrop(){
+          host.querySelectorAll('.nm-drop-before,.nm-drop-after,.nm-drop-nest').forEach(function(el){
+            el.classList.remove('nm-drop-before','nm-drop-after','nm-drop-nest');
+          });
+        }
+        function dropModeFor(e, row){
+          if(!row) return null;
+          var isPar=row.getAttribute('data-parent')==='1';
+          var kids=row.querySelector('.nm-kids');
+          var onKids=kids&&(e.target===kids||kids.contains(e.target));
+          if(onKids&&isPar) return 'nest';
+          var head=row.querySelector('.nm-row-head')||row;
+          var rc=head.getBoundingClientRect();
+          var y=e.clientY-rc.top;
+          var h=rc.height||1;
+          if(isPar){
+            if(y<h*0.22) return 'before';
+            if(y>h*0.78) return 'after';
+            return 'nest';
+          }
+          return (y>h/2)?'after':'before';
         }
         host.addEventListener('input',function(e){
           var t=e.target, path=t.getAttribute('data-path'); if(!path) return;
@@ -10326,10 +10529,116 @@ function heroCtaCard(c){
             persist(); previewApply(); draw();
           }
         });
-        var drag=null;
-        host.addEventListener('dragstart',function(e){ var r=e.target.closest&&e.target.closest('.nm-row'); if(!r) return; drag=+r.getAttribute('data-i'); try{e.dataTransfer.effectAllowed='move';}catch(_e){} });
-        host.addEventListener('dragover',function(e){ e.preventDefault(); });
-        host.addEventListener('drop',function(e){ e.preventDefault(); var r=e.target.closest&&e.target.closest('.nm-row'); if(!r||drag==null) return; var to=+r.getAttribute('data-i'); if(isNaN(to)||to===drag) return; var it=_nm.items.splice(drag,1)[0]; _nm.items.splice(to,0,it); drag=null; persist(); previewApply(); draw(); });
+        var dragPath=null;
+        if(!document.getElementById('nm-dnd-css')){
+          var st=document.createElement('style'); st.id='nm-dnd-css';
+          st.textContent='.nm-row.nm-drop-before{box-shadow:0 -3px 0 0 var(--accent,#c45c26)}.nm-row.nm-drop-after{box-shadow:0 3px 0 0 var(--accent,#c45c26)}.nm-row.nm-drop-nest{outline:2px solid var(--accent,#c45c26);outline-offset:2px;background:#fff8f4}.nm-child-row.nm-drop-before{box-shadow:inset 0 3px 0 0 var(--accent,#c45c26)}.nm-child-row.nm-drop-after{box-shadow:inset 0 -3px 0 0 var(--accent,#c45c26)}.nm-row.nm-dragging,.nm-child-row.nm-dragging{opacity:.45}';
+          document.head.appendChild(st);
+        }
+        host.addEventListener('dragstart',function(e){
+          var child=e.target.closest&&e.target.closest('.nm-child-row');
+          var row=e.target.closest&&e.target.closest('.nm-row');
+          if(child){ dragPath=child.getAttribute('data-path'); child.classList.add('nm-dragging'); }
+          else if(row){ dragPath=row.getAttribute('data-path'); row.classList.add('nm-dragging'); }
+          else return;
+          try{ e.dataTransfer.effectAllowed='move'; e.dataTransfer.setData('text/plain',dragPath||''); }catch(_e){}
+        });
+        host.addEventListener('dragend',function(){
+          dragPath=null; clearNmDrop();
+          host.querySelectorAll('.nm-dragging').forEach(function(el){ el.classList.remove('nm-dragging'); });
+        });
+        host.addEventListener('dragover',function(e){
+          e.preventDefault();
+          if(dragPath==null) return;
+          var child=e.target.closest&&e.target.closest('.nm-child-row');
+          var row=e.target.closest&&e.target.closest('.nm-row');
+          clearNmDrop();
+          if(child){
+            var cpath=child.getAttribute('data-path');
+            if(cpath===dragPath) return;
+            var crc=child.getBoundingClientRect();
+            child.classList.add((e.clientY-crc.top)>crc.height/2?'nm-drop-after':'nm-drop-before');
+            return;
+          }
+          if(!row) return;
+          var tpath=row.getAttribute('data-path');
+          if(tpath===dragPath) return;
+          // Don't nest a parent into itself via path prefix
+          if(String(dragPath).indexOf('.')<0 && tpath===dragPath) return;
+          var mode=dropModeFor(e,row);
+          if(mode==='nest') row.classList.add('nm-drop-nest');
+          else if(mode==='before') row.classList.add('nm-drop-before');
+          else if(mode==='after') row.classList.add('nm-drop-after');
+        });
+        host.addEventListener('drop',function(e){
+          e.preventDefault();
+          if(dragPath==null){ clearNmDrop(); return; }
+          var fromPath=dragPath;
+          var child=e.target.closest&&e.target.closest('.nm-child-row');
+          var row=e.target.closest&&e.target.closest('.nm-row');
+          clearNmDrop();
+
+          function insertTop(items, at){
+            for(var k=0;k<items.length;k++) _nm.items.splice(at+k,0,items[k]);
+          }
+          function insertKids(pi, items, at){
+            var p=_nm.items[pi]; if(!p) return;
+            p.kind='parent';
+            var kids=ensKids(p);
+            for(var k=0;k<items.length;k++) kids.splice(at+k,0,items[k]);
+          }
+
+          // Drop onto a child row → reorder among that parent's children (or move into that parent)
+          if(child){
+            var toPath=child.getAttribute('data-path');
+            if(!toPath||toPath===fromPath){ dragPath=null; return; }
+            var tp=toPath.split('.'); var tpi=+tp[0], tci=+tp[1];
+            var crc=child.getBoundingClientRect();
+            var after=(e.clientY-crc.top)>crc.height/2;
+            var taken=takePath(fromPath);
+            if(!taken){ dragPath=null; return; }
+            // Re-resolve target index if we removed a top-level item before the parent
+            if(String(fromPath).indexOf('.')<0){
+              var fi=+fromPath;
+              if(fi<tpi) tpi-=1;
+            } else {
+              var fp=fromPath.split('.');
+              if(+fp[0]===tpi && +fp[1]<tci) tci-=1;
+            }
+            var payload=asNestPayload(taken);
+            var insertAt=after?tci+1:tci;
+            insertKids(tpi, payload, insertAt);
+            dragPath=null; persist(); previewApply(); draw();
+            return;
+          }
+
+          if(!row){ dragPath=null; return; }
+          var toPath2=row.getAttribute('data-path');
+          if(!toPath2||toPath2===fromPath){ dragPath=null; return; }
+          var mode=dropModeFor(e,row);
+          var toIdx=+toPath2;
+          var taken2=takePath(fromPath);
+          if(!taken2){ dragPath=null; return; }
+
+          // Adjust destination index if we removed a top-level item before it
+          if(String(fromPath).indexOf('.')<0){
+            var fromI=+fromPath;
+            if(fromI<toIdx) toIdx-=1;
+          }
+
+          if(mode==='nest' && _nm.items[toIdx] && (isParent(_nm.items[toIdx])||row.getAttribute('data-parent')==='1')){
+            var payload2=asNestPayload(taken2);
+            insertKids(toIdx, payload2, ensKids(_nm.items[toIdx]).length);
+            dragPath=null; persist(); previewApply(); draw();
+            return;
+          }
+
+          // Top-level reorder / promote — keep parent structure when moving among top-level rows
+          var at=mode==='after'?toIdx+1:toIdx;
+          if(!isParent(taken2)){ taken2.kind='link'; if(!taken2.target) taken2.target='home'; }
+          insertTop([taken2], at);
+          dragPath=null; persist(); previewApply(); draw();
+        });
         var ab=$('nm-add'); if(ab) ab.addEventListener('click',function(){ _nm.items.push({label:'Home',kind:'link',target:'home',url:'',opens:'_self'}); persist(); previewApply(); draw(); });
         var pb=$('nm-add-parent'); if(pb) pb.addEventListener('click',function(){ _nm.items.push({label:'Services',kind:'parent',icon:'',children:[{label:'',target:'home',url:'',opens:'_self'}]}); persist(); previewApply(); draw(); });
       })();
