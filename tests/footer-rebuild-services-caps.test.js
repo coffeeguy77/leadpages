@@ -88,8 +88,8 @@ describe('Footer polish (width, colours, logo)', () => {
     assert.match(html, /foot-logo-link.*closest\('footer'\)|closest\('footer'\).*foot-logo-link/);
     assert.match(html, /continue; if\(a\.__orig==null\)/);
     assert.match(html, /header\.site a\.brand img\.lp-logo\{height:/);
-    assert.match(html, /height:'\+logoH\+'px/);
-    assert.match(html, /logoWrap\.style\.transform='translate\('/);
+    assert.match(html, /logoWrap\.style\.setProperty\('--foot-logo-h'/);
+    assert.match(html, /removeProperty\('transform'\)/);
   });
 });
 
