@@ -28,7 +28,7 @@ describe('Footer column span (1 or 2)', () => {
     assert.match(js, /\+col\.span===2/);
     assert.match(css, /\.f-col\.f-col-span-2\{grid-column:span 2/);
     assert.match(css, /\.f-nav\.f-nav-has-span/);
-    assert.match(css, /\.f-col\.f-col-span-2 \.f-col-card-box\{max-width:none\}/);
+    assert.match(css, /\.f-col\.f-col-span-2 \.f-col-card-box\{max-width:min\(100%,420px\)\}/);
     assert.match(trade, /f-col-span-2/);
     assert.match(trade, /f-nav-has-span/);
   });

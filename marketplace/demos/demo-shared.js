@@ -2182,6 +2182,7 @@ function applyCfg(C){
             var mode=(col.mode==='card'||col.mode==='textbox')?'card':'links';
             var span=(+col.span===2||col.span==='2'||col.colSpan===2)?'2':'1';
             var spanCls=span==='2'?' f-col-span-2':'';
+            var hideM=col.hideOnMobile===true?' lp-hide-mobile':'';
             if(mode==='card'){
               var txt=String(col.cardText!=null?col.cardText:(col.body||'')).trim();
               var strokeOn=col.cardStroke!==false;
@@ -2192,19 +2193,30 @@ function applyCfg(C){
               var btnLab=String(col.cardLinkLabel||col.cardBtnLabel||'').trim();
               var btnBg=(col.cardBtnBg&&String(col.cardBtnBg).trim())||'';
               var btnFg=(col.cardBtnFg&&String(col.cardBtnFg).trim())||'';
+              var btnFill=col.cardBtnFill!==false;
+              var btnOutline=col.cardBtnOutline===true;
+              var btnStroke=(col.cardBtnStrokeColor&&String(col.cardBtnStrokeColor).trim())||'';
               var st=[];
               if(bg) st.push('--f-card-bg:'+bg); if(sc) st.push('--f-card-stroke:'+sc);
-              if(!strokeOn) st.push('--f-card-stroke-w:0'); if(btnBg) st.push('--f-card-btn-bg:'+btnBg); if(btnFg) st.push('--f-card-btn-fg:'+btnFg);
+              if(!strokeOn) st.push('--f-card-stroke-w:0');
+              if(btnFill&&btnBg) st.push('--f-card-btn-bg:'+btnBg);
+              if(btnFg) st.push('--f-card-btn-fg:'+btnFg);
+              if(btnOutline||btnStroke){
+                st.push('--f-card-btn-stroke:'+(btnStroke||btnFg||'currentColor'));
+                st.push('--f-card-btn-stroke-w:'+(btnOutline?'2px':'1.5px'));
+              }
+              if(!btnFill) st.push('--f-card-btn-bg:transparent');
               var style=st.length?(' style="'+st.join(';')+'"'):'';
-              var inner='<h4>'+esc(col.title||'')+'</h4>'+(txt?('<p class="f-col-card-text">'+esc(txt)+'</p>'):'')+(btnLab?('<span class="f-col-card-btn">'+esc(btnLab)+'</span>'):'');
+              var btnCls='f-col-card-btn'+(btnOutline?' f-col-card-btn-outline':'')+(!btnFill&&!btnOutline?' f-col-card-btn-nofill':'');
+              var inner='<h4>'+esc(col.title||'')+'</h4>'+(txt?('<p class="f-col-card-text">'+esc(txt)+'</p>'):'')+(btnLab?('<span class="'+btnCls+'">'+esc(btnLab)+'</span>'):'');
               if(href){
                 var ext=/^https?:/i.test(href);
-                return '<div class="f-col f-col-card'+spanCls+'"><a class="f-col-card-box" href="'+esc(href)+'"'+(ext?' target="_blank" rel="noopener noreferrer"':'')+style+'>'+inner+'</a></div>';
+                return '<div class="f-col f-col-card'+spanCls+hideM+'"><a class="f-col-card-box" href="'+esc(href)+'"'+(ext?' target="_blank" rel="noopener noreferrer"':'')+style+'>'+inner+'</a></div>';
               }
-              return '<div class="f-col f-col-card'+spanCls+'"><div class="f-col-card-box"'+style+'>'+inner+'</div></div>';
+              return '<div class="f-col f-col-card'+spanCls+hideM+'"><div class="f-col-card-box"'+style+'>'+inner+'</div></div>';
             }
             var links=(Array.isArray(col.links)?col.links:[]).filter(function(l){return l&&l.on!==false&&l.label;});
-            return '<div class="f-col'+spanCls+'"><h4>'+esc(col.title||'')+'</h4>'+links.map(function(l){
+            return '<div class="f-col'+spanCls+hideM+'"><h4>'+esc(col.title||'')+'</h4>'+links.map(function(l){
               var href=_ftResolveHref(l)||(l.href||'#');
               var ext=/^https?:/i.test(href);
               return '<a href="'+esc(href)+'"'+(ext?' target="_blank" rel="noopener noreferrer"':'')+'>'+esc(l.label)+'</a>';

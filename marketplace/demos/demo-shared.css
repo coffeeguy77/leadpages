@@ -447,10 +447,11 @@ footer.site .f-nav{
   display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,max-content));
   justify-content:start;align-content:start;column-gap:clamp(20px,2.4vw,36px);row-gap:16px;min-width:0;
 }
-/* When any column spans 2, lock to a 2-track grid so span works reliably */
+/* When any column spans 2, use a 2-track grid — keep width content-sized so
+   a single text card does not stretch across the whole footer middle. */
 footer.site .f-nav.f-nav-has-span{
-  grid-template-columns:repeat(2,minmax(140px,1fr));
-  width:100%;max-width:100%;
+  grid-template-columns:repeat(2,minmax(140px,max-content));
+  width:auto;max-width:100%;
 }
 footer.site .f-col{min-width:0}
 footer.site .f-col.f-col-span-2{grid-column:span 2;min-width:0}
@@ -528,23 +529,36 @@ footer.site .f-support-map .f-support-img{
 /* Column text-box cards (optional instead of link lists) */
 footer.site .f-col.f-col-card{min-width:0}
 footer.site .f-col-card-box{
-  display:flex;flex-direction:column;gap:12px;align-items:flex-start;
+  display:flex;flex-direction:column;gap:16px;align-items:flex-start;
   padding:14px 16px;border-radius:14px;box-sizing:border-box;
   background:var(--f-card-bg,linear-gradient(120deg,rgba(255,255,255,.07),rgba(255,255,255,.03) 48%,rgba(255,255,255,.05)));
   border:var(--f-card-stroke-w,1px) solid var(--f-card-stroke,rgba(255,255,255,.3));
   color:var(--mkt-foot-ink,#fff);text-decoration:none;width:100%;max-width:280px;
   box-shadow:0 10px 24px rgba(0,0,0,.1);
 }
-footer.site .f-col.f-col-span-2 .f-col-card-box{max-width:none}
+/* Span-2: roomier than a narrow card, but still capped so desktop stays readable */
+footer.site .f-col.f-col-span-2 .f-col-card-box{max-width:min(100%,420px)}
 footer.site a.f-col-card-box{cursor:pointer}
 footer.site a.f-col-card-box:hover{filter:brightness(1.05)}
 footer.site .f-col-card-text{margin:0;font-size:14.5px;line-height:1.45;color:var(--mkt-foot-muted);white-space:pre-line}
 footer.site .f-col-card-btn{
   display:inline-flex;align-items:center;justify-content:center;
-  padding:9px 14px;border-radius:8px;font-family:"Barlow Condensed",system-ui,sans-serif;
+  margin-top:4px;padding:9px 14px;border-radius:8px;
+  font-family:"Barlow Condensed",system-ui,sans-serif;
   font-weight:700;font-size:14px;letter-spacing:.03em;text-transform:uppercase;
   background:var(--f-card-btn-bg,var(--mkt-foot-accent,#C85A2C));
-  color:var(--f-card-btn-fg,#fff);pointer-events:none;
+  color:var(--f-card-btn-fg,#fff);
+  border:var(--f-card-btn-stroke-w,0) solid var(--f-card-btn-stroke,currentColor);
+  box-sizing:border-box;pointer-events:none;
+}
+footer.site .f-col-card-btn.f-col-card-btn-outline{
+  background:transparent;
+  color:var(--f-card-btn-fg,var(--mkt-foot-ink,#fff));
+  border-width:var(--f-card-btn-stroke-w,2px);
+  border-color:var(--f-card-btn-stroke,var(--f-card-btn-fg,var(--mkt-foot-ink,#fff)));
+}
+footer.site .f-col-card-btn.f-col-card-btn-nofill:not(.f-col-card-btn-outline){
+  background:transparent;
 }
 
 @media(max-width:900px){
