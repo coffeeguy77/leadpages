@@ -101,3 +101,36 @@ describe('footer links match button builder', () => {
     assert.match(trade, /cardLinkBlank!==false/);
   });
 });
+
+describe('nav menu parent / submenu colour controls', () => {
+  const manage = fs.readFileSync(path.join(root, 'manage.html'), 'utf8');
+  const demoJs = fs.readFileSync(path.join(root, 'marketplace/demos/demo-shared.js'), 'utf8');
+  const demoCss = fs.readFileSync(path.join(root, 'marketplace/demos/demo-shared.css'), 'utf8');
+  const trade = JSON.parse(fs.readFileSync(path.join(root, 'trade.template.json'), 'utf8')).html;
+
+  it('editor exposes parent and submenu colour / stroke fields', () => {
+    assert.match(manage, /id="nm-subbg"/);
+    assert.match(manage, /id="nm-subfg"/);
+    assert.match(manage, /id="nm-pfg"/);
+    assert.match(manage, /id="nm-pstroke"/);
+    assert.match(manage, /id="nm-psw"/);
+    assert.match(manage, /id="nm-subsw"/);
+    assert.match(manage, /Submenu background/);
+    assert.match(manage, /Parent stroke/);
+    assert.match(manage, /_nmCol\('subBg'/);
+    assert.match(manage, /_nmCol\('parentFg'/);
+  });
+
+  it('renderer sets parent/sub CSS variables with contrast fallback', () => {
+    assert.match(demoJs, /--hn-sub-bg/);
+    assert.match(demoJs, /--hn-parent-fg/);
+    assert.match(demoJs, /--hn-sub-stroke-w/);
+    assert.match(demoJs, /_autoFg/);
+    assert.match(demoJs, /--nm-sub-bg/);
+    assert.match(demoCss, /--hn-sub-bg/);
+    assert.match(demoCss, /--hn-parent-stroke-w/);
+    assert.match(demoCss, /color-mix\(in srgb,currentColor/);
+    assert.match(trade, /--hn-sub-bg/);
+    assert.match(trade, /_autoFg/);
+  });
+});
