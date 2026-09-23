@@ -9737,12 +9737,14 @@ function heroCtaCard(c){
           var tgt=l.target||l.linkTarget||'quote';
           var page=l.page||l.linkPage||'';
           var url=l.href||l.url||l.linkUrl||'';
+          var blank=(l.blank!==false && l.linkBlank!==false);
           if(act==='url'&&url.charAt(0)==='#'&&!(l.action||l.linkAction)){ /* keep url */ }
           return '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;width:100%;">'
             +'<div class="f" style="margin:0;flex:1 1 160px;min-width:140px;"><label>Link to</label><select class="tin '+prefix+'-act" data-ci="'+ci+'"'+(li!=null?' data-li="'+li+'"':'')+'>'+_ftActOpts(act)+'</select></div>'
             +'<div class="f '+prefix+'-tgt-wrap" data-ci="'+ci+'"'+(li!=null?' data-li="'+li+'"':'')+' style="margin:0;flex:1 1 180px;min-width:150px;'+(act==='scroll'?'':'display:none;')+'"><label>App / section</label><select class="tin '+prefix+'-tgt" data-ci="'+ci+'"'+(li!=null?' data-li="'+li+'"':'')+'>'+heroCtaScrollOptsHtml(tgt)+'</select></div>'
-            +'<div class="f '+prefix+'-page-wrap" data-ci="'+ci+'"'+(li!=null?' data-li="'+li+'"':'')+' style="margin:0;flex:1 1 160px;min-width:140px;'+(act==='page'?'':'display:none;')+'"><label>Landing page slug</label><input type="text" class="tin '+prefix+'-page" data-ci="'+ci+'"'+(li!=null?' data-li="'+li+'"':'')+' value="'+esc(page)+'" placeholder="e.g. about"></div>'
-            +'<div class="f '+prefix+'-url-wrap" data-ci="'+ci+'"'+(li!=null?' data-li="'+li+'"':'')+' style="margin:0;flex:1 1 180px;min-width:150px;'+(act==='url'?'':'display:none;')+'"><label>URL</label><input type="text" class="tin '+prefix+'-url" data-ci="'+ci+'"'+(li!=null?' data-li="'+li+'"':'')+' value="'+esc(url)+'" placeholder="https://\u2026 or #quote"></div>'
+            +'<div class="f '+prefix+'-page-wrap" data-ci="'+ci+'"'+(li!=null?' data-li="'+li+'"':'')+' style="margin:0;flex:1 1 180px;min-width:150px;'+(act==='page'?'':'display:none;')+'"><label>Landing page</label><select class="tin '+prefix+'-page" data-ci="'+ci+'"'+(li!=null?' data-li="'+li+'"':'')+'>'+lpLandingPageOptsHtml(page)+'</select></div>'
+            +'<div class="f '+prefix+'-url-wrap" data-ci="'+ci+'"'+(li!=null?' data-li="'+li+'"':'')+' style="margin:0;flex:1 1 180px;min-width:150px;'+(act==='url'?'':'display:none;')+'"><label>URL</label><input type="text" class="tin '+prefix+'-url" data-ci="'+ci+'"'+(li!=null?' data-li="'+li+'"':'')+' value="'+esc(url)+'" placeholder="https://\u2026"></div>'
+            +'<div class="f '+prefix+'-blank-wrap" data-ci="'+ci+'"'+(li!=null?' data-li="'+li+'"':'')+' style="margin:0;flex:1 1 140px;min-width:120px;'+(act==='url'?'':'display:none;')+'"><label style="display:flex;gap:8px;align-items:center;font-weight:600;margin-top:28px;"><input type="checkbox" class="'+prefix+'-blank" data-ci="'+ci+'"'+(li!=null?' data-li="'+li+'"':'')+(blank?' checked':'')+'> Open in new tab (_blank)</label></div>'
             +'</div>';
         }
         function _ftSyncColLinkVis(scope){
@@ -9756,7 +9758,7 @@ function heroCtaCard(c){
               if(li!=null&&li!=='') sel+='[data-li="'+li+'"]';
               var w=root.querySelector(sel); if(w) w.style.display=on?'':'none';
             }
-            show('tgt',act==='scroll'); show('page',act==='page'); show('url',act==='url');
+            show('tgt',act==='scroll'); show('page',act==='page'); show('url',act==='url'); show('blank',act==='url');
           });
         }
         function drawCols(){
@@ -10161,82 +10163,175 @@ function heroCtaCard(c){
       if(!c.sections) c.sections={}; if(!c.sections.navMenu) c.sections.navMenu={};
       var _nm=c.sections.navMenu; if(!Array.isArray(_nm.items)) _nm.items=[];
       body.innerHTML=secCard(c,'navMenu','Navigation Menu',true,[])
-        +'<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Menu items</h2><p class="lede" style="margin:0 0 12px;">A row of links you can drop anywhere on the page with <b>Position</b>. Link to Home, Landing pages, the <b>Order Storefront</b> (on-page), Order shop / SMS portal, or an external URL. Choose whether links open in the <b>same tab</b> or a <b>new tab</b>.</p>'
+        +'<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Menu items</h2><p class="lede" style="margin:0 0 12px;">Build a menu with top-level links and optional <b>parent items</b> that open a submenu (e.g. Services → Home Modifications). Link to Home, Landing pages, Order Storefront / shop / portal, or an external URL. Parents keep the main bar tidy when you have many pages.</p>'
           +'<div class="row" style="margin-bottom:14px;"><div class="f"><label>Placement</label><select id="nm-place" class="tin"><option value="header">In the header, beside the logo</option><option value="bar">Own bar (below the header)</option></select></div><div class="f"><p class="hint" style="margin:24px 0 0;">Default is beside the logo. In-header position follows your logo alignment (Logo tab). Button styles and colours apply to <strong>both</strong> placements.</p></div></div>'+'<div class="row" style="margin-bottom:14px;"><div class="f"><label>Button style</label><select id="nm-style" class="tin"><option value="pills">Pills (filled)</option><option value="solid">Solid buttons</option><option value="outline">Outline buttons</option><option value="shadow">Elevated (shadow)</option><option value="buttons">Bordered buttons</option><option value="tabs">Underline tabs</option><option value="underline">Animated underline</option><option value="links">Plain links</option><option value="ghost">Ghost (subtle)</option></select></div><div class="f"><label>Alignment</label><select id="nm-align" class="tin"><option value="left">Left</option><option value="center">Centre</option><option value="right">Right</option></select></div></div>'+'<div class="row" style="margin-bottom:14px;"><div class="f"><label>Show items as</label><select id="nm-icons" class="tin"><option value="both">Icon + text</option><option value="text">Text only</option><option value="icon">Icon only</option></select></div><div class="f"><label>Menu background <span class="hint">standalone bar</span></label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="nm-bg" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="nm-bgt" class="tin" placeholder="Theme default" style="flex:1;min-width:0;"><button type="button" id="nm-bg-clr" class="btn ghost sm">Default</button></div></div></div>'+'<div class="row" style="margin-bottom:14px;"><div class="f"><label>Link / text colour</label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="nm-fg" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="nm-fgt" class="tin" placeholder="#ffffff" style="flex:1;min-width:0;"><button type="button" id="nm-fg-clr" class="btn ghost sm">Default</button></div></div><div class="f"><label>Hover text colour</label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="nm-hfg" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="nm-hfgt" class="tin" placeholder="Same as text" style="flex:1;min-width:0;"><button type="button" id="nm-hfg-clr" class="btn ghost sm">Default</button></div></div></div>'+'<div class="row" style="margin-bottom:14px;"><div class="f"><label>Button stroke colour <span class="hint">outline &amp; bordered</span></label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="nm-stroke" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="nm-stroket" class="tin" placeholder="Theme default" style="flex:1;min-width:0;"><button type="button" id="nm-stroke-clr" class="btn ghost sm">Default</button></div></div><div class="f"><label>Button background <span class="hint">pills &amp; solid / hover chip</span></label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="nm-fill" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="nm-fillt" class="tin" placeholder="Theme default" style="flex:1;min-width:0;"><button type="button" id="nm-fill-clr" class="btn ghost sm">Default</button></div></div></div>'+'<div class="row" style="margin-bottom:14px;"><div class="f"><label>Hover background</label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="nm-hbg" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="nm-hbgt" class="tin" placeholder="Soft white wash" style="flex:1;min-width:0;"><button type="button" id="nm-hbg-clr" class="btn ghost sm">Default</button></div></div><div class="f"></div></div>'
           +'<div id="nm-list"></div>'
-          +'<div style="margin-top:12px;"><button type="button" id="nm-add" class="nm-add">+ Add menu item</button></div>'
+          +'<div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;"><button type="button" id="nm-add" class="nm-add">+ Add menu item</button><button type="button" id="nm-add-parent" class="nm-add">+ Add parent menu</button></div>'
         +'</div>';
       wireSec(c,'navMenu',true,[]);
       (function(){ if(!_nm.placement) _nm.placement='header'; if(!_nm.icons) _nm.icons='both'; var _nmTh=siteThemeColors(c); var _nmPipe=_nmTh.pipe||DEFAULT_TRADE_THEME.pipe; var _nmSteel=_nmTh.steel||DEFAULT_TRADE_THEME.steel; var _pl=$('nm-place'); if(_pl){ _pl.value=(_nm.placement==='bar')?'bar':'header'; _pl.addEventListener('change',function(){ _nm.placement=_pl.value; persist(); previewApply(); }); } var s=$('nm-style'); if(s){ s.value=_nm.style||'pills'; s.addEventListener('change',function(){ _nm.style=s.value; persist(); previewApply(); }); } var a=$('nm-align'); if(a){ a.value=_nm.align||'left'; a.addEventListener('change',function(){ _nm.align=a.value; persist(); previewApply(); }); } var ic=$('nm-icons'); if(ic){ ic.value=_nm.icons||'both'; ic.addEventListener('change',function(){ _nm.icons=ic.value; persist(); previewApply(); }); } function _nmHex(v){ v=(v||'').trim(); return /^#?[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/.test(v)?(v.charAt(0)==='#'?v:'#'+v):''; } function _nmCol(key,clrId,txId,clrBtn,fallback){ var _c=$(clrId),_t=$(txId); if(!_c||!_t) return; if(_nm[key]){ _c.value=_nmHex(_nm[key])||fallback; _t.value=_nm[key]; } else { _c.value=fallback; } var set=function(v){ v=_nmHex(v); _nm[key]=v; _t.value=v||''; if(v) _c.value=v; persist(); previewApply(); }; _c.addEventListener('input',function(){ set(_c.value); }); _t.addEventListener('input',function(){ set(_t.value); }); var _b=$(clrBtn); if(_b) _b.addEventListener('click',function(){ _nm[key]=''; _t.value=''; _c.value=fallback; persist(); previewApply(); }); } var _bg=$('nm-bg'),_bgt=$('nm-bgt'); if(_bg&&_bgt){ if(_nm.bg){ _bg.value=_nm.bg; _bgt.value=_nm.bg; } else { _bg.value=_nmSteel; } var _setBg=function(v){ v=_nmHex(v); _nm.bg=v; _bgt.value=v; if(v) _bg.value=v; persist(); previewApply(); }; _bg.addEventListener('input',function(){ _setBg(_bg.value); }); _bgt.addEventListener('input',function(){ _setBg(_bgt.value); }); var _bc=$('nm-bg-clr'); if(_bc) _bc.addEventListener('click',function(){ _nm.bg=''; _bgt.value=''; _bg.value=_nmSteel; persist(); previewApply(); }); } _nmCol('fg','nm-fg','nm-fgt','nm-fg-clr','#ffffff'); _nmCol('hoverFg','nm-hfg','nm-hfgt','nm-hfg-clr','#ffffff'); _nmCol('hoverBg','nm-hbg','nm-hbgt','nm-hbg-clr','#ffffff'); var _sk=$('nm-stroke'),_skt=$('nm-stroket'); if(_sk&&_skt){ if(_nm.stroke){ _sk.value=_nm.stroke; _skt.value=_nm.stroke; } else { _sk.value=_nmPipe; } var _setSk=function(v){ v=_nmHex(v); _nm.stroke=v; _skt.value=v; if(v) _sk.value=v; persist(); previewApply(); }; _sk.addEventListener('input',function(){ _setSk(_sk.value); }); _skt.addEventListener('input',function(){ _setSk(_skt.value); }); var _sc=$('nm-stroke-clr'); if(_sc) _sc.addEventListener('click',function(){ _nm.stroke=''; _skt.value=''; _sk.value=_nmPipe; persist(); previewApply(); }); } var _fl=$('nm-fill'),_flt=$('nm-fillt'); if(_fl&&_flt){ if(_nm.fill){ _fl.value=_nm.fill; _flt.value=_nm.fill; } else { _fl.value=_nmPipe; } var _setFl=function(v){ v=_nmHex(v); _nm.fill=v; _flt.value=v; if(v) _fl.value=v; persist(); previewApply(); }; _fl.addEventListener('input',function(){ _setFl(_fl.value); }); _flt.addEventListener('input',function(){ _setFl(_flt.value); }); var _fc=$('nm-fill-clr'); if(_fc) _fc.addEventListener('click',function(){ _nm.fill=''; _flt.value=''; _fl.value=_nmPipe; persist(); previewApply(); }); } })();
       (function(){
         var host=$('nm-list'); if(!host) return;
         function pages(){ return (Array.isArray(data.pages)?data.pages:[]).filter(function(p){ return p&&p.slug; }); }
-        var _is='padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;'; var NM_ICONS=[['','\u2014 no icon \u2014'],['home','Home'],['phone','Phone'],['phone-call','Phone call'],['mail','Email'],['map-pin','Location'],['calendar','Calendar'],['clock','Clock'],['star','Star'],['heart','Heart'],['info','Info'],['check-circle','Tick'],['shield-check','Shield'],['award','Award'],['wrench','Wrench'],['hammer','Hammer'],['users','Team'],['user','Person'],['message-circle','Chat'],['image','Gallery'],['file-text','Document'],['book-open','Guide'],['sparkles','Sparkle'],['zap','Bolt'],['arrow-right','Arrow'],['external-link','External']]; function iconSel(it,i){ return '<div class="iconctl" style="flex:0 0 auto;"><button type="button" class="icon-pick" tabindex="-1" title="Choose an icon" style="width:42px;height:42px;">'+iconBtnInner(it.icon||'')+'</button><input type="hidden" class="icon-input" data-i="'+i+'" value="'+esc(it.icon||'')+'"></div>'; }
-        function tsel(it,i){
+        var _is='padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;';
+        var NM_ICONS=[['','\u2014 no icon \u2014'],['home','Home'],['phone','Phone'],['phone-call','Phone call'],['mail','Email'],['map-pin','Location'],['calendar','Calendar'],['clock','Clock'],['star','Star'],['heart','Heart'],['info','Info'],['check-circle','Tick'],['shield-check','Shield'],['award','Award'],['wrench','Wrench'],['hammer','Hammer'],['users','Team'],['user','Person'],['message-circle','Chat'],['image','Gallery'],['file-text','Document'],['book-open','Guide'],['sparkles','Sparkle'],['zap','Bolt'],['arrow-right','Arrow'],['external-link','External']];
+        function iconSel(it,path){ return '<div class="iconctl" style="flex:0 0 auto;"><button type="button" class="icon-pick" tabindex="-1" title="Choose an icon" style="width:42px;height:42px;">'+iconBtnInner(it.icon||'')+'</button><input type="hidden" class="icon-input" data-path="'+esc(path)+'" value="'+esc(it.icon||'')+'"></div>'; }
+        function isParent(it){ if(!it) return false; if(it.kind==='link') return false; if(it.kind==='parent') return true; return !!(Array.isArray(it.children)&&it.children.length); }
+        function ensKids(it){ if(!Array.isArray(it.children)) it.children=[]; return it.children; }
+        function tsel(it,path){
           var o='<option value="home"'+((!it.target||it.target==='home')?' selected':'')+'>Home page</option>';
           pages().forEach(function(p){ var v='page:'+p.slug; o+='<option value="'+esc(v)+'"'+(it.target===v?' selected':'')+'>'+esc((p.title||p.slug)+(p.status!=='published'?' (draft)':''))+'</option>'; });
           o+='<option value="orderStorefront"'+(it.target==='orderStorefront'?' selected':'')+'>Order Storefront (on this page)</option>';
           o+='<option value="orderShop"'+(it.target==='orderShop'?' selected':'')+'>Order shop (full page)</option>';
           o+='<option value="orderPortal"'+(it.target==='orderPortal'?' selected':'')+'>Order portal (SMS sign-in)</option>';
           o+='<option value="external"'+(it.target==='external'?' selected':'')+'>External URL\u2026</option>';
-          return '<select class="nm-target tin" data-i="'+i+'" style="'+_is+'flex:1 1 150px;">'+o+'</select>';
+          return '<select class="nm-target tin" data-path="'+esc(path)+'" style="'+_is+'flex:1 1 150px;">'+o+'</select>';
         }
-        function opensSel(it,i){
+        function opensSel(it,path){
           var op=(it.opens==='_blank')?'_blank':'_self';
-          return '<select class="nm-opens tin" data-i="'+i+'" title="Where the link opens" style="'+_is+'flex:0 1 120px;">'
+          return '<select class="nm-opens tin" data-path="'+esc(path)+'" title="Where the link opens" style="'+_is+'flex:0 1 120px;">'
             +'<option value="_self"'+(op==='_self'?' selected':'')+'>Same tab</option>'
             +'<option value="_blank"'+(op==='_blank'?' selected':'')+'>New tab</option>'
             +'</select>';
         }
-        function row(it,i,n){
+        function kindSel(it,path){
+          var k=isParent(it)?'parent':'link';
+          return '<select class="nm-kind tin" data-path="'+esc(path)+'" title="Item type" style="'+_is+'flex:0 1 150px;">'
+            +'<option value="link"'+(k==='link'?' selected':'')+'>Menu link</option>'
+            +'<option value="parent"'+(k==='parent'?' selected':'')+'>Parent (submenu)</option>'
+            +'</select>';
+        }
+        function getAt(path){
+          var parts=String(path||'').split('.');
+          var i=+parts[0]; var it=_nm.items[i];
+          if(!it) return null;
+          if(parts.length===1) return it;
+          var j=+parts[1]; return (it.children&&it.children[j])||null;
+        }
+        function linkFields(it,path){
           var ext=(it.target==='external');
-          var needsUrl=ext;
-          return '<div class="nm-row" draggable="true" data-i="'+i+'" style="display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid var(--line);border-radius:9px;margin-bottom:8px;">'
-          +'<span class="nm-grip" style="cursor:grab;color:var(--ink-faint);font-size:15px;letter-spacing:-2px;line-height:1;">\u22ee\u22ee</span>'
-          +'<div style="flex:1;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">'
-            +'<input type="text" class="nm-label tin" data-i="'+i+'" value="'+esc(it.label||'')+'" placeholder="Label" style="flex:1 1 120px;'+_is+'">'
-            +tsel(it,i)+opensSel(it,i)+iconSel(it,i)
-            +'<input type="text" class="nm-url tin" data-i="'+i+'" value="'+esc(it.url||'')+'" placeholder="https://\u2026" style="flex:1 1 150px;'+_is+(needsUrl?'':'display:none;')+'">'
+          return tsel(it,path)+opensSel(it,path)+iconSel(it,path)
+            +'<input type="text" class="nm-url tin" data-path="'+esc(path)+'" value="'+esc(it.url||'')+'" placeholder="https://\u2026" style="flex:1 1 150px;'+_is+(ext?'':'display:none;')+'">';
+        }
+        function childRow(ch,pi,ci,n){
+          var path=pi+'.'+ci;
+          return '<div class="nm-child-row" data-path="'+path+'" style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px dashed var(--line);border-radius:8px;margin:0 0 6px 28px;background:var(--input-bg,#f7f5f1);">'
+            +'<span style="color:var(--ink-faint);font-size:12px;font-weight:700;">\u21b3</span>'
+            +'<div style="flex:1;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">'
+              +'<input type="text" class="nm-label tin" data-path="'+path+'" value="'+esc(ch.label||'')+'" placeholder="Sub-item label" style="flex:1 1 120px;'+_is+'">'
+              +linkFields(ch,path)
+            +'</div>'
+            +'<span style="display:flex;gap:4px;">'
+              +'<button type="button" class="nm-mv nm-cup" data-path="'+path+'" title="Move up"'+(ci===0?' disabled':'')+'>\u2191</button>'
+              +'<button type="button" class="nm-mv nm-cdown" data-path="'+path+'" title="Move down"'+(ci===n-1?' disabled':'')+'>\u2193</button>'
+              +'<button type="button" class="nm-cdel" data-path="'+path+'" title="Remove">\u2715</button>'
+            +'</span>'
+          +'</div>';
+        }
+        function row(it,i,n){
+          var parent=isParent(it);
+          if(parent){ it.kind='parent'; ensKids(it); }
+          var kids=parent?ensKids(it):[];
+          return '<div class="nm-row" draggable="true" data-i="'+i+'" data-path="'+i+'" style="border:1px solid var(--line);border-radius:9px;margin-bottom:10px;background:#fff;">'
+          +'<div style="display:flex;align-items:center;gap:8px;padding:9px 10px;">'
+            +'<span class="nm-grip" style="cursor:grab;color:var(--ink-faint);font-size:15px;letter-spacing:-2px;line-height:1;">\u22ee\u22ee</span>'
+            +'<div style="flex:1;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">'
+              +'<input type="text" class="nm-label tin" data-path="'+i+'" value="'+esc(it.label||'')+'" placeholder="'+(parent?'Parent label (e.g. Services)':'Label')+'" style="flex:1 1 120px;'+_is+'">'
+              +kindSel(it,String(i))
+              +(parent?iconSel(it,String(i)):linkFields(it,String(i)))
+            +'</div>'
+            +'<span style="display:flex;gap:4px;">'
+              +'<button type="button" class="nm-mv nm-up" data-i="'+i+'" title="Move up"'+(i===0?' disabled':'')+'>\u2191</button>'
+              +'<button type="button" class="nm-mv nm-down" data-i="'+i+'" title="Move down"'+(i===n-1?' disabled':'')+'>\u2193</button>'
+              +'<button type="button" class="nm-del" data-i="'+i+'" title="Remove">\u2715</button>'
+            +'</span>'
           +'</div>'
-          +'<span style="display:flex;gap:4px;">'
-            +'<button type="button" class="nm-mv nm-up" data-i="'+i+'" title="Move up"'+(i===0?' disabled':'')+'>\u2191</button>'
-            +'<button type="button" class="nm-mv nm-down" data-i="'+i+'" title="Move down"'+(i===n-1?' disabled':'')+'>\u2193</button>'
-            +'<button type="button" class="nm-del" data-i="'+i+'" title="Remove">\u2715</button>'
-          +'</span>'
-        +'</div>'; }
-        function draw(){ var its=_nm.items; host.innerHTML = its.length ? its.map(function(it,i){ return row(it,i,its.length); }).join('') : '<p class="hint" style="color:#888;margin:0;">No items yet \u2014 add Home, Orders, a Landing page, or an external link below.</p>'; }
+          +(parent
+            ?('<div class="nm-kids" data-i="'+i+'">'
+              +(kids.length?kids.map(function(ch,ci){ return childRow(ch,i,ci,kids.length); }).join('')
+                :'<p class="hint" style="margin:0 0 8px 28px;">No sub-items yet — add pages under this parent.</p>')
+              +'<div style="margin:0 0 10px 28px;"><button type="button" class="btn ghost sm nm-add-child" data-i="'+i+'">+ Add sub-item</button></div>'
+            +'</div>')
+            :'')
+          +'</div>';
+        }
+        function draw(){ var its=_nm.items; host.innerHTML = its.length ? its.map(function(it,i){ return row(it,i,its.length); }).join('') : '<p class="hint" style="color:#888;margin:0;">No items yet \u2014 add a link or a parent with sub-items below.</p>'; }
         draw();
-        host.addEventListener('input',function(e){ var t=e.target, i=+t.getAttribute('data-i'); if(isNaN(i)) return; if(t.classList.contains('nm-label')){ _nm.items[i].label=t.value; persist(); previewApply(); } else if(t.classList.contains('nm-url')){ _nm.items[i].url=t.value; persist(); previewApply(); } else if(t.classList.contains('icon-input')){ if(_nm.items[i]){ _nm.items[i].icon=t.value; persist(); previewApply(); } } });
+        function autoLabel(it,val){
+          var auto=(!it.label||it.label==='Home'||it.label==='Order'||it.label==='Order online'||it.label==='My orders'||it.label==='Services'||pages().some(function(p){return (p.title||p.slug)===it.label;}));
+          if(!auto) return;
+          if(val==='home') it.label='Home';
+          else if(val==='orderStorefront') it.label='Order online';
+          else if(val==='orderShop') it.label='Order';
+          else if(val==='orderPortal') it.label='My orders';
+          else if(val&&val.indexOf('page:')===0){ var pg=pages().filter(function(p){return 'page:'+p.slug===val;})[0]; if(pg) it.label=pg.title||pg.slug; }
+          else if(val==='external') it.label=it.label||'';
+        }
+        host.addEventListener('input',function(e){
+          var t=e.target, path=t.getAttribute('data-path'); if(!path) return;
+          var it=getAt(path); if(!it) return;
+          if(t.classList.contains('nm-label')){ it.label=t.value; persist(); previewApply(); }
+          else if(t.classList.contains('nm-url')){ it.url=t.value; persist(); previewApply(); }
+          else if(t.classList.contains('icon-input')){ it.icon=t.value; persist(); previewApply(); }
+        });
         host.addEventListener('change',function(e){
-          var t=e.target;
-          if(t.classList.contains('nm-opens')){
-            var oi=+t.getAttribute('data-i');
-            if(_nm.items[oi]){ _nm.items[oi].opens=t.value; persist(); previewApply(); }
+          var t=e.target, path=t.getAttribute('data-path'); if(!path) return;
+          var it=getAt(path); if(!it) return;
+          if(t.classList.contains('nm-kind')){
+            var i=+path;
+            if(t.value==='parent'){
+              it.kind='parent'; ensKids(it);
+              if(!it.label||it.label==='Home') it.label='Services';
+              delete it.target; delete it.url;
+            } else {
+              it.kind='link';
+              if(!it.target) it.target='home';
+              if(!it.opens) it.opens='_self';
+              // keep children in config but unused unless re-parented
+            }
+            persist(); previewApply(); draw();
             return;
           }
-          if(t.classList.contains('nm-icon')){ var ii=+t.getAttribute('data-i'); if(_nm.items[ii]){ _nm.items[ii].icon=t.value; persist(); previewApply(); } return; }
+          if(t.classList.contains('nm-opens')){ it.opens=t.value; persist(); previewApply(); return; }
           if(!t.classList.contains('nm-target')) return;
-          var i=+t.getAttribute('data-i'); var it=_nm.items[i];
-          var auto=(!it.label||it.label==='Home'||it.label==='Order'||it.label==='Order online'||it.label==='My orders'||pages().some(function(p){return (p.title||p.slug)===it.label;}));
           it.target=t.value;
           if(t.value==='external' && !it.opens) it.opens='_blank';
           if((t.value==='orderStorefront'||t.value==='orderShop'||t.value==='orderPortal'||t.value==='home'||(t.value&&t.value.indexOf('page:')===0)) && !it.opens) it.opens='_self';
-          if(auto){
-            if(t.value==='home') it.label='Home';
-            else if(t.value==='orderStorefront') it.label='Order online';
-            else if(t.value==='orderShop') it.label='Order';
-            else if(t.value==='orderPortal') it.label='My orders';
-            else if(t.value.indexOf('page:')===0){ var pg=pages().filter(function(p){return 'page:'+p.slug===t.value;})[0]; if(pg) it.label=pg.title||pg.slug; }
-            else it.label='';
-          }
+          autoLabel(it,t.value);
           persist(); previewApply(); draw();
         });
-        host.addEventListener('click',function(e){ var up=e.target.closest&&e.target.closest('.nm-up'); var dn=e.target.closest&&e.target.closest('.nm-down'); var dl=e.target.closest&&e.target.closest('.nm-del'); if(up){ var i=+up.getAttribute('data-i'); if(i>0){ _nm.items.splice(i-1,0,_nm.items.splice(i,1)[0]); persist(); previewApply(); draw(); } } else if(dn){ var i=+dn.getAttribute('data-i'); if(i<_nm.items.length-1){ _nm.items.splice(i+1,0,_nm.items.splice(i,1)[0]); persist(); previewApply(); draw(); } } else if(dl){ var i=+dl.getAttribute('data-i'); _nm.items.splice(i,1); persist(); previewApply(); draw(); } });
+        host.addEventListener('click',function(e){
+          var up=e.target.closest&&e.target.closest('.nm-up');
+          var dn=e.target.closest&&e.target.closest('.nm-down');
+          var dl=e.target.closest&&e.target.closest('.nm-del');
+          var cup=e.target.closest&&e.target.closest('.nm-cup');
+          var cdn=e.target.closest&&e.target.closest('.nm-cdown');
+          var cdl=e.target.closest&&e.target.closest('.nm-cdel');
+          var addc=e.target.closest&&e.target.closest('.nm-add-child');
+          if(up){ var i=+up.getAttribute('data-i'); if(i>0){ _nm.items.splice(i-1,0,_nm.items.splice(i,1)[0]); persist(); previewApply(); draw(); } }
+          else if(dn){ var i2=+dn.getAttribute('data-i'); if(i2<_nm.items.length-1){ _nm.items.splice(i2+1,0,_nm.items.splice(i2,1)[0]); persist(); previewApply(); draw(); } }
+          else if(dl){ var i3=+dl.getAttribute('data-i'); _nm.items.splice(i3,1); persist(); previewApply(); draw(); }
+          else if(cup||cdn||cdl){
+            var p=(cup||cdn||cdl).getAttribute('data-path').split('.');
+            var pi=+p[0], ci=+p[1]; var kids=ensKids(_nm.items[pi]||{});
+            if(cup && ci>0){ kids.splice(ci-1,0,kids.splice(ci,1)[0]); }
+            else if(cdn && ci<kids.length-1){ kids.splice(ci+1,0,kids.splice(ci,1)[0]); }
+            else if(cdl){ kids.splice(ci,1); }
+            persist(); previewApply(); draw();
+          }
+          else if(addc){
+            var pi2=+addc.getAttribute('data-i');
+            var parent=_nm.items[pi2]; if(!parent) return;
+            parent.kind='parent'; ensKids(parent).push({label:'',target:'home',url:'',opens:'_self',icon:''});
+            persist(); previewApply(); draw();
+          }
+        });
         var drag=null;
         host.addEventListener('dragstart',function(e){ var r=e.target.closest&&e.target.closest('.nm-row'); if(!r) return; drag=+r.getAttribute('data-i'); try{e.dataTransfer.effectAllowed='move';}catch(_e){} });
         host.addEventListener('dragover',function(e){ e.preventDefault(); });
         host.addEventListener('drop',function(e){ e.preventDefault(); var r=e.target.closest&&e.target.closest('.nm-row'); if(!r||drag==null) return; var to=+r.getAttribute('data-i'); if(isNaN(to)||to===drag) return; var it=_nm.items.splice(drag,1)[0]; _nm.items.splice(to,0,it); drag=null; persist(); previewApply(); draw(); });
-        var ab=$('nm-add'); if(ab) ab.addEventListener('click',function(){ _nm.items.push({label:'Home',target:'home',url:'',opens:'_self'}); persist(); previewApply(); draw(); });
+        var ab=$('nm-add'); if(ab) ab.addEventListener('click',function(){ _nm.items.push({label:'Home',kind:'link',target:'home',url:'',opens:'_self'}); persist(); previewApply(); draw(); });
+        var pb=$('nm-add-parent'); if(pb) pb.addEventListener('click',function(){ _nm.items.push({label:'Services',kind:'parent',icon:'',children:[{label:'',target:'home',url:'',opens:'_self'}]}); persist(); previewApply(); draw(); });
       })();
     } else if(sub==='branding'){
       var rowsC=TRADE_COLOURS.map(function(k){ return '<div class="f"><label>'+k[1]+' <span class="hint">'+k[2]+'</span></label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="col-'+k[0]+'" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="colt-'+k[0]+'" class="tin" style="flex:1;"></div></div>'; }).join('');
