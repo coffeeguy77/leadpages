@@ -44,11 +44,15 @@ describe('nav menu parent/child submenus', () => {
     assert.match(demoJs, /hnm-group/);
     assert.match(demoJs, /hnm-children/);
     assert.match(demoJs, /nm-drop/);
+    assert.match(demoJs, /_nmWireDrops/);
     assert.match(demoCss, /Nav menu parent\/child submenus/);
     assert.match(demoCss, /header\.site \.hn-drop/);
     assert.match(demoCss, /\.hnm-group/);
+    assert.match(demoCss, /hn-drop\.hn-open>\.hn-sub/);
+    assert.match(demoCss, /padding:12px 8px 8px/);
     assert.match(trade, /hn-drop/);
     assert.match(trade, /Nav menu parent\/child submenus/);
+    assert.match(trade, /_nmWireDrops/);
   });
 
   it('sync helpers find and remove nested page targets', () => {
