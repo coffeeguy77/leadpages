@@ -509,15 +509,77 @@ footer.site.foot-hide-support .f-support{display:none}
 footer.site.foot-hide-tagline .f-tagline{display:none}
 footer.site.foot-hide-legal .f-legal{display:none}
 footer.site.foot-hide-links .f-links{display:none}
+
+/* Support visual: map / icon / image */
+footer.site .f-support-map .f-support-icon{
+  width:84px;height:84px;display:grid;place-items:center;color:var(--mkt-foot-map,rgba(255,255,255,.82));
+}
+footer.site .f-support-map .f-support-icon .lp-ic{width:72px;height:72px;stroke-width:1.6}
+footer.site .f-support-map .f-support-img{
+  width:84px;height:84px;object-fit:cover;border-radius:12px;display:block;
+}
+
+/* Column text-box cards (optional instead of link lists) */
+footer.site .f-col.f-col-card{min-width:0}
+footer.site .f-col-card-box{
+  display:flex;flex-direction:column;gap:12px;align-items:flex-start;
+  padding:14px 16px;border-radius:14px;box-sizing:border-box;
+  background:var(--f-card-bg,linear-gradient(120deg,rgba(255,255,255,.07),rgba(255,255,255,.03) 48%,rgba(255,255,255,.05)));
+  border:var(--f-card-stroke-w,1px) solid var(--f-card-stroke,rgba(255,255,255,.3));
+  color:var(--mkt-foot-ink,#fff);text-decoration:none;width:100%;max-width:280px;
+  box-shadow:0 10px 24px rgba(0,0,0,.1);
+}
+footer.site a.f-col-card-box{cursor:pointer}
+footer.site a.f-col-card-box:hover{filter:brightness(1.05)}
+footer.site .f-col-card-text{margin:0;font-size:14.5px;line-height:1.45;color:var(--mkt-foot-muted);white-space:pre-line}
+footer.site .f-col-card-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  padding:9px 14px;border-radius:8px;font-family:"Barlow Condensed",system-ui,sans-serif;
+  font-weight:700;font-size:14px;letter-spacing:.03em;text-transform:uppercase;
+  background:var(--f-card-btn-bg,var(--mkt-foot-accent,#C85A2C));
+  color:var(--f-card-btn-fg,#fff);pointer-events:none;
+}
+
 @media(max-width:900px){
-  footer.site .footer-top{grid-template-columns:1fr; }
-  footer.site .f-support{width:100%;max-width:100%;grid-template-columns:1fr auto}
-  footer.site .f-tagline{white-space:normal}
+  footer.site .footer-top{grid-template-columns:1fr;gap:22px}
+  footer.site .f-brand .blurb,footer.site .foot-blurb{max-width:none}
+  footer.site .f-nav{column-gap:18px;row-gap:14px}
+  footer.site .f-support{
+    width:100%;max-width:100%;
+    grid-template-columns:1fr auto;gap:10px 12px;
+    padding:12px 14px;border-radius:12px;
+  }
+  footer.site .f-support h4{font-size:16px}
+  footer.site .f-support .help{font-size:13.5px}
+  footer.site .f-support .fphone,footer.site .f-support .email{font-size:15px}
+  footer.site .f-tagline{white-space:normal;font-size:clamp(1.05rem,5.2vw,1.45rem)}
+  footer.site .footer-bottom{margin-top:18px;padding-top:16px;gap:12px}
+  footer.site.foot-hide-support-m .f-support{display:none!important}
+  footer.site .f-brand .foot-logo-wrap,
+  footer.site a.foot-logo-link .foot-logo-wrap{
+    transform:translate(var(--foot-logo-x-m,var(--foot-logo-x,0px)),var(--foot-logo-y-m,var(--foot-logo-y,0px)));
+  }
+  footer.site .f-brand .foot-logo-wrap img,
+  footer.site .f-brand img.foot-logo-img,
+  footer.site a.foot-logo-link img{
+    height:var(--foot-logo-h-m,var(--foot-logo-h,56px))!important;
+  }
 }
 @media(max-width:560px){
-  footer.site .f-nav{grid-template-columns:1fr 1fr}
-  footer.site .f-support{grid-template-columns:1fr; }
-  footer.site .f-support-map{justify-self:start}
+  footer.site{padding:28px 0 22px}
+  footer.site .footer-top{gap:18px}
+  footer.site .f-nav{grid-template-columns:1fr 1fr;column-gap:14px;row-gap:16px}
+  footer.site .f-col h4{margin-bottom:8px}
+  footer.site .f-col a{margin-bottom:5px;font-size:13.5px}
+  footer.site .f-col-card-box{max-width:none;padding:12px 14px}
+  footer.site .f-support{grid-template-columns:1fr;padding:12px;gap:10px}
+  footer.site .f-support-map{justify-self:start;width:72px}
+  footer.site .f-support-map .f-ico-au,
+  footer.site .f-support-map .f-support-icon,
+  footer.site .f-support-map .f-support-img{max-width:72px;width:72px;height:auto}
+  footer.site .f-support-map .f-support-icon{height:72px}
+  footer.site .f-support-map .f-support-icon .lp-ic{width:60px;height:60px}
+  footer.site .f-support-map .f-support-img{height:72px}
   footer.site.foot-lp-logo-slot .footer-bottom{
     grid-template-columns:1fr;
     grid-template-areas:"tagline" "logo" "meta";
