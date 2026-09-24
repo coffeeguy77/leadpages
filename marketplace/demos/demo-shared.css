@@ -696,8 +696,9 @@ footer.site .f-col-card-btn.f-col-card-btn-nofill:not(.f-col-card-btn-outline){
 .lpm-mega .lpm-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:18px 8px;border:0;border-radius:13px;background:rgba(255,255,255,.11);color:inherit;text-decoration:none;cursor:pointer;font-family:"Barlow Condensed";font-weight:700;text-transform:uppercase;font-size:13px;text-align:center;line-height:1.15}
 .lpm-mega .lpm-item .lp-ic{width:26px;height:26px}
 @media(min-width:901px){.lpm-backdrop,.lpm-panel{display:none!important}}
-header.site .head-menu-btn{display:none;align-items:center;justify-content:center;width:44px;height:44px;margin-left:auto;margin-right:10px;border:0;border-radius:10px;background:rgba(255,255,255,.12);color:#fff;cursor:pointer;flex:0 0 auto;padding:0}
-header.site .head-menu-btn .lp-ic{width:22px;height:22px}
+header.site .head-menu-btn{display:none;align-items:center;justify-content:center;width:44px;height:44px;margin-left:auto;margin-right:0;border:1.5px solid var(--hn-menu-btn-fg,var(--hn-fg,var(--hdr-phone-fg,currentColor)));border-radius:10px;background:rgba(0,0,0,.18);color:var(--hn-menu-btn-fg,var(--hn-fg,var(--hdr-phone-fg,currentColor)));cursor:pointer;flex:0 0 44px;padding:0;position:relative;z-index:6;order:30;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+header.site .head-menu-btn .lp-ic{width:22px;height:22px;stroke:currentColor;color:inherit}
+header.site .head-call{order:40}
 .hnm-backdrop{position:fixed;inset:0;z-index:80;background:rgba(10,14,20,.5);opacity:0;visibility:hidden;transition:opacity .25s}
 .hnm-backdrop.hnm-open{opacity:1;visibility:visible}
 .hnm-panel{position:fixed;top:0;bottom:0;right:0;z-index:81;width:min(85vw,330px);padding:60px 18px 24px;overflow:auto;background:#11161f;color:#fff;box-shadow:0 2px 30px rgba(0,0,0,.35);transform:translateX(106%);transition:transform .28s ease}
@@ -850,7 +851,8 @@ header.site .hn-sub-link .lp-ic{width:17px;height:17px;flex:0 0 auto;color:inher
   box-shadow:0 0 0 var(--nm-sub-hover-stroke-w,0px) var(--nm-sub-hover-stroke,transparent)
 }
 .nm-sub-link .lp-ic{width:17px;height:17px;flex:0 0 auto;color:inherit}
-@media(max-width:900px){html.lp-compact-nav header.site .head-nav{display:none}html.lp-compact-nav header.site .head-menu-btn{display:inline-flex}html.lp-compact-nav .nav-menu-sec,html.lp-compact-nav section[data-sec="navMenu"].nav-menu-sec{display:none!important}}
+@media(max-width:900px){html.lp-compact-nav header.site .head-nav{display:none!important}html.lp-compact-nav header.site .head-menu-btn{display:inline-flex!important;position:absolute;right:12px;top:50%;transform:translateY(-50%);margin:0;order:0}html.lp-compact-nav header.site .bar{position:relative;padding-right:56px;box-sizing:border-box}html.lp-compact-nav header.site a.brand{max-width:calc(100% - 8px);min-width:0}html.lp-compact-nav .nav-menu-sec,html.lp-compact-nav section[data-sec="navMenu"].nav-menu-sec{display:none!important}}
+@media(max-width:760px){html.lp-compact-nav header.site .head-menu-btn{top:14px;transform:none}html.lp-compact-nav header.site .bar{padding-right:56px}html.lp-compact-nav header.site.lp-hdr-cta-hide-m .bar,html.lp-compact-nav header.site .bar:not(:has(.head-call)){padding-right:56px}}
 @media(min-width:901px){.hnm-backdrop,.hnm-panel{display:none!important}}
 
 :focus-visible{outline:3px solid var(--safety);outline-offset:2px;border-radius:5px}
@@ -1248,7 +1250,7 @@ html.site-width-capped section[data-sec="heroSlider"] .hsl{max-width:var(--site-
     width:100%;max-width:100%;justify-content:center;box-sizing:border-box
   }
   header.site.lp-hdr-cta-hide-m .head-call{display:none!important}
-  header.site a.brand{max-width:min(92vw,440px)}
+  header.site a.brand{max-width:min(92vw,440px)}html.lp-compact-nav header.site a.brand{max-width:calc(100% - 58px)}
   header.site a.brand img.lp-logo{max-width:100%!important;height:var(--hdr-logo-mh,48px)!important;max-height:var(--hdr-logo-mh,48px)!important;width:auto!important;object-fit:contain}
   header.site a.brand .lp-logo-wrap{max-width:100%;max-height:none}
 }

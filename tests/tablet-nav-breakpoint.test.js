@@ -25,8 +25,8 @@ describe('tablet / mobile nav access', () => {
       assert.match(css, /@media\(max-width:900px\)\{\.mobile-call\{display:block\}\}/);
       assert.doesNotMatch(css, /@media\(max-width:680px\)\{\.mobile-call\{display:block\}\}/);
       assert.match(css, /@media\(min-width:901px\)\{\.lpm-backdrop,\.lpm-panel\{display:none!important\}\}/);
-      assert.match(css, /html\.lp-compact-nav header\.site \.head-nav\{display:none\}/);
-      assert.match(css, /html\.lp-compact-nav header\.site \.head-menu-btn\{display:inline-flex\}/);
+      assert.match(css, /html\.lp-compact-nav header\.site \.head-nav\{display:none/);
+      assert.match(css, /html\.lp-compact-nav header\.site \.head-menu-btn\{display:inline-flex/);
       assert.match(css, /\.hnm-panel\{/);
       assert.match(css, /@media\(min-width:901px\)\{\.hnm-backdrop,\.hnm-panel\{display:none!important\}\}/);
     });
