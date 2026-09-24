@@ -103,6 +103,8 @@ describe('nav mobile hamburger renderer', () => {
       assert.match(css, /\.hnm-children\{[\s\S]*border-left:0/);
       assert.match(css, /\.hnm-bd-dim/);
       assert.match(css, /backdrop-filter:blur\(12px\)/);
+      assert.doesNotMatch(css, /border-left:2px solid var\(--hn-sub-stroke/);
+      assert.doesNotMatch(css, /\.hnm-children \.hnm-item\{[\s\S]{0,200}color:var\(--hn-sub-fg,inherit\)/);
     });
   }
 
@@ -124,7 +126,7 @@ describe('nav mobile hamburger renderer', () => {
     assert.match(demoJs, /hamExpandAll/);
     assert.match(demoJs, /hamDrawerBtnStyle/);
     assert.match(demoJs, /hamPanelOpacity/);
-    assert.match(demoJs, /_hnmWasOpen/);
+    assert.match(demoJs, /__hnmKeepOpen/);
     assert.match(demoJs, /--hn-ham-panel-bg-a/);
     assert.match(demoJs, /hnm-btn-/);
     assert.match(demoJs, /--hn-ham-hover-fg/);

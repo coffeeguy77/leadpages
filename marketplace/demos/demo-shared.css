@@ -798,9 +798,9 @@ html.hnm-speed-slow{--hn-ham-dur:.45s}
   background:var(--hn-ham-hover-bg,rgba(255,255,255,.1))
 }
 .hnm-children .hnm-item{
-  color:var(--hn-ham-sub-fg,var(--hn-ham-panel-fg,#fff));
-  font-size:17px;padding:12px 10px;border-bottom:0;border-radius:8px;
-  opacity:1
+  color:var(--hn-ham-sub-fg,var(--hn-ham-panel-fg,#fff))!important;
+  font-size:17px;padding:12px 10px;border:0!important;border-bottom:0!important;border-left:0!important;border-radius:8px;
+  opacity:1;box-shadow:none
 }
 .hnm-children .hnm-item:hover{
   color:var(--hn-ham-sub-hover-fg,var(--hn-ham-hover-fg,var(--hn-ham-sub-fg,var(--hn-ham-panel-fg,#fff))));
@@ -928,7 +928,8 @@ header.site .hn-sub-link .lp-ic{width:17px;height:17px;flex:0 0 auto;color:inher
 }
 .hnm-children{
   display:none;padding:2px 0 8px 14px;margin:0;
-  border:0;border-left:0;background:var(--hn-ham-sub-bg,transparent);border-radius:0
+  border:0!important;border-left:0!important;border-bottom:0!important;
+  background:var(--hn-ham-sub-bg,transparent);border-radius:0;box-shadow:none
 }
 .hnm-group.hnm-open>.hnm-children{display:block}
 .hnm-panel.hnm-btn-links .hnm-group>.hnm-parent{border-bottom:1px solid rgba(255,255,255,.1)}
