@@ -85,6 +85,18 @@ describe('nav mobile hamburger renderer', () => {
     });
   }
 
+  for (const [name, css] of [
+    ['demo-shared.css', demoCss],
+    ['trade.template.json', trade],
+    ['landing-shell-neutral-v1.template.json', shell]
+  ]) {
+    it(`${name}: pins a contrast-safe hamburger on mobile`, () => {
+      assert.match(css, /--hn-menu-btn-fg|--hn-ham-fg/);
+      assert.match(css, /head-menu-btn\{display:inline-flex!important;position:absolute;right:12px/);
+      assert.match(css, /html\.lp-compact-nav header\.site \.bar\{position:relative;padding-right:56px/);
+    });
+  }
+
   it('renderer applies ham style classes and CSS vars', () => {
     assert.match(demoJs, /hamBtnStyle/);
     assert.match(demoJs, /hamEffect/);
@@ -93,7 +105,9 @@ describe('nav mobile hamburger renderer', () => {
     assert.match(demoJs, /--hn-ham-fg/);
     assert.match(demoJs, /--hn-ham-panel-bg/);
     assert.match(demoJs, /is-open/);
+    assert.match(demoJs, /_eNm2/);
     assert.match(trade, /hamBtnStyle/);
     assert.match(trade, /hnm-fx-/);
+    assert.match(trade, /_eNm2/);
   });
 });
