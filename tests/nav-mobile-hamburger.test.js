@@ -51,9 +51,28 @@ describe('nav mobile hamburger renderer', () => {
     ['landing-shell-neutral-v1.template.json', shell]
   ]) {
     it(`${name}: hides header + bar menus on compact mobile`, () => {
-      assert.match(css, /html\.lp-compact-nav header\.site \.head-nav\{display:none\}/);
-      assert.match(css, /html\.lp-compact-nav header\.site \.head-menu-btn\{display:inline-flex\}/);
+      assert.match(css, /html\.lp-compact-nav header\.site \.head-nav\{display:none/);
+      assert.match(css, /html\.lp-compact-nav header\.site \.head-menu-btn\{display:inline-flex/);
       assert.match(css, /html\.lp-compact-nav \.nav-menu-sec/);
     });
   }
+
+  for (const [name, css] of [
+    ['demo-shared.css', demoCss],
+    ['trade.template.json', trade],
+    ['landing-shell-neutral-v1.template.json', shell]
+  ]) {
+    it(`${name}: pins a contrast-safe hamburger on mobile`, () => {
+      assert.match(css, /--hn-menu-btn-fg/);
+      assert.match(css, /head-menu-btn\{display:inline-flex!important;position:absolute;right:12px/);
+      assert.match(css, /html\.lp-compact-nav header\.site \.bar\{position:relative;padding-right:56px/);
+    });
+  }
+
+  it('renderer sets auto-contrast hamburger colour and remounts after header', () => {
+    assert.match(demoJs, /--hn-menu-btn-fg/);
+    assert.match(demoJs, /_eNm2/);
+    assert.match(trade, /--hn-menu-btn-fg/);
+    assert.match(trade, /_eNm2/);
+  });
 });
