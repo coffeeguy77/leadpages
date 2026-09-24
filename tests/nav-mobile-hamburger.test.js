@@ -50,6 +50,9 @@ describe('nav mobile hamburger editor', () => {
     assert.match(manage, /hamDrawerBtnStyle/);
     assert.match(manage, /hamHoverFg/);
     assert.match(manage, /hamSubFg/);
+    assert.match(manage, /hamPanelOpacity/);
+    assert.match(manage, /id="nm-ham-panel-op"/);
+    assert.match(manage, /Drawer background transparency/);
     assert.match(manage, /_nmHamStyleVis/);
   });
 });
@@ -96,6 +99,10 @@ describe('nav mobile hamburger renderer', () => {
       assert.match(css, /\.hnm-btn-pills/);
       assert.match(css, /--hn-ham-hover-fg/);
       assert.match(css, /--hn-ham-sub-fg/);
+      assert.match(css, /--hn-ham-panel-bg-a/);
+      assert.match(css, /\.hnm-children\{[\s\S]*border-left:0/);
+      assert.match(css, /\.hnm-bd-dim/);
+      assert.match(css, /backdrop-filter:blur\(12px\)/);
     });
   }
 
@@ -116,6 +123,9 @@ describe('nav mobile hamburger renderer', () => {
     assert.match(demoJs, /hamEffect/);
     assert.match(demoJs, /hamExpandAll/);
     assert.match(demoJs, /hamDrawerBtnStyle/);
+    assert.match(demoJs, /hamPanelOpacity/);
+    assert.match(demoJs, /_hnmWasOpen/);
+    assert.match(demoJs, /--hn-ham-panel-bg-a/);
     assert.match(demoJs, /hnm-btn-/);
     assert.match(demoJs, /--hn-ham-hover-fg/);
     assert.match(demoJs, /--hn-ham-sub-fg/);
