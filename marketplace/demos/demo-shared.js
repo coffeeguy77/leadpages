@@ -2677,6 +2677,9 @@ function applyCfg(C){
   var _bd=(nm.hamBackdrop||'dim'); if(['dim','blur','solid'].indexOf(_bd)<0) _bd='dim';
   var _stagger=nm.hamStagger!==false;
   var _iconAnim=nm.hamIconAnim!==false;
+  var _expandAll=nm.hamExpandAll===true;
+  var _drawerBtn=(nm.hamDrawerBtnStyle||'links');
+  if(['links','pills','solid','outline','ghost'].indexOf(_drawerBtn)<0) _drawerBtn='links';
   try{ document.documentElement.classList.add('hnm-speed-'+_spd); }catch(_eSp){}
   if(_hdr){
     _setH(_hdr,'--hn-ham-fg',_scH(nm.hamFg));
@@ -2686,6 +2689,14 @@ function applyCfg(C){
     if(nm.hamRadius!=null&&nm.hamRadius!=='') _setH(_hdr,'--hn-ham-radius',(String(nm.hamRadius)==='999'?'999px':(parseFloat(nm.hamRadius)+'px'))); else _hdr.style.removeProperty('--hn-ham-radius');
     _setH(_hdr,'--hn-ham-panel-bg',_scH(nm.hamPanelBg));
     _setH(_hdr,'--hn-ham-panel-fg',_scH(nm.hamPanelFg));
+    _setH(_hdr,'--hn-ham-hover-fg',_scH(nm.hamHoverFg));
+    _setH(_hdr,'--hn-ham-hover-bg',_scH(nm.hamHoverBg));
+    _setH(_hdr,'--hn-ham-sub-fg',_scH(nm.hamSubFg));
+    _setH(_hdr,'--hn-ham-sub-bg',_scH(nm.hamSubBg));
+    _setH(_hdr,'--hn-ham-sub-hover-fg',_scH(nm.hamSubHoverFg));
+    _setH(_hdr,'--hn-ham-sub-hover-bg',_scH(nm.hamSubHoverBg));
+    _setH(_hdr,'--hn-ham-item-bg',_scH(nm.hamItemBg));
+    _setH(_hdr,'--hn-ham-item-stroke',_scH(nm.hamItemStroke));
   }
   var _btn=document.createElement('button'); _btn.type='button';
   _btn.className='head-menu-btn ham-'+_btnStyle+(_btnSize!=='md'?' ham-size-'+_btnSize:'')+(_btnStyle==='pill'?'':'');
@@ -2697,11 +2708,11 @@ function applyCfg(C){
   var _hc=_nmBar.querySelector('.head-call'); if(_hc) _nmBar.insertBefore(_btn,_hc); else _nmBar.appendChild(_btn);
   var _bdEl=document.createElement('div'); _bdEl.className='hnm-backdrop hnm-bd-'+_bd;
   var _pn=document.createElement('div');
-  _pn.className='hnm-panel hnm-side-'+_side+' hnm-fx-'+_fx+(_stagger?' hnm-stagger':'');
-  if(_hdr){ ['--hn-fg','--hn-hover-fg','--hn-hover-bg','--hn-fill','--hn-stroke','--hn-stroke-w','--hn-hover-stroke','--hn-hover-stroke-w','--hn-sub-bg','--hn-sub-fg','--hn-sub-hover-fg','--hn-sub-hover-bg','--hn-sub-stroke','--hn-sub-stroke-w','--hn-sub-hover-stroke','--hn-sub-hover-stroke-w','--hn-ham-panel-bg','--hn-ham-panel-fg','--hn-ham-fg','--hn-ham-bg'].forEach(function(k){ var v=_hdr.style.getPropertyValue(k); if(v) _pn.style.setProperty(k,v); }); }
+  _pn.className='hnm-panel hnm-side-'+_side+' hnm-fx-'+_fx+' hnm-btn-'+_drawerBtn+(_stagger?' hnm-stagger':'');
+  if(_hdr){ ['--hn-fg','--hn-hover-fg','--hn-hover-bg','--hn-fill','--hn-stroke','--hn-stroke-w','--hn-hover-stroke','--hn-hover-stroke-w','--hn-sub-bg','--hn-sub-fg','--hn-sub-hover-fg','--hn-sub-hover-bg','--hn-sub-stroke','--hn-sub-stroke-w','--hn-sub-hover-stroke','--hn-sub-hover-stroke-w','--hn-ham-panel-bg','--hn-ham-panel-fg','--hn-ham-fg','--hn-ham-bg','--hn-ham-hover-fg','--hn-ham-hover-bg','--hn-ham-sub-fg','--hn-ham-sub-bg','--hn-ham-sub-hover-fg','--hn-ham-sub-hover-bg','--hn-ham-item-bg','--hn-ham-item-stroke'].forEach(function(k){ var v=_hdr.style.getPropertyValue(k); if(v) _pn.style.setProperty(k,v); }); }
   var _xic=(window.LP_ICONS&&window.LP_ICONS.x)||'';
   var _ih='<button type="button" class="hnm-close" aria-label="Close">'+(_xic?('<svg class="lp-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+_xic+'</svg>'):'&times;')+'</button>';
-  _ih+=mItems.map(function(it){ if(!it) return ''; var label=esc(it.label||''); var ic=(_imode!=='text')?_nmIc(it.icon):''; if(!label&&!ic) return ''; if(_nmIsParent(it)){ var kids=_nmMobKids(it); var sub=kids.map(function(ch){ var cl=esc(ch.label||''); var cic=(_imode!=='text')?_nmIc(ch.icon):''; if(!cl&&!cic) return ''; var hr=_nmHref(ch); var ctxt=cl?('<span>'+cl+'</span>'):''; return '<a class="hnm-item hnm-child" href="'+esc(hr.href)+'"'+(hr.blank?' target="_blank" rel="noopener"':'')+'>'+cic+ctxt+'</a>'; }).join(''); var ptxt=label?('<span>'+label+'</span>'):''; return '<div class="hnm-group"><button type="button" class="hnm-parent" aria-expanded="false">'+ic+ptxt+_nmChev()+'</button><div class="hnm-children">'+sub+'</div></div>'; } var hr=_nmHref(it); var txt=label?('<span>'+label+'</span>'):''; return '<a class="hnm-item" href="'+esc(hr.href)+'"'+(hr.blank?' target="_blank" rel="noopener"':'')+'>'+ic+txt+'</a>'; }).join('');
+  _ih+=mItems.map(function(it){ if(!it) return ''; var label=esc(it.label||''); var ic=(_imode!=='text')?_nmIc(it.icon):''; if(!label&&!ic) return ''; if(_nmIsParent(it)){ var kids=_nmMobKids(it); var sub=kids.map(function(ch){ var cl=esc(ch.label||''); var cic=(_imode!=='text')?_nmIc(ch.icon):''; if(!cl&&!cic) return ''; var hr=_nmHref(ch); var ctxt=cl?('<span>'+cl+'</span>'):''; return '<a class="hnm-item hnm-child" href="'+esc(hr.href)+'"'+(hr.blank?' target="_blank" rel="noopener"':'')+'>'+cic+ctxt+'</a>'; }).join(''); var ptxt=label?('<span>'+label+'</span>'):''; var _gOpen=_expandAll?' hnm-open':''; var _gExp=_expandAll?'true':'false'; return '<div class="hnm-group'+_gOpen+'"><button type="button" class="hnm-parent" aria-expanded="'+_gExp+'">'+ic+ptxt+_nmChev()+'</button><div class="hnm-children">'+sub+'</div></div>'; } var hr=_nmHref(it); var txt=label?('<span>'+label+'</span>'):''; return '<a class="hnm-item" href="'+esc(hr.href)+'"'+(hr.blank?' target="_blank" rel="noopener"':'')+'>'+ic+txt+'</a>'; }).join('');
   _pn.innerHTML=_ih; document.body.appendChild(_bdEl); document.body.appendChild(_pn);
   var _open=function(){ _bdEl.classList.add('hnm-open'); _pn.classList.add('hnm-open'); _btn.classList.add('is-open'); _btn.setAttribute('aria-expanded','true'); };
   var _close=function(){ _bdEl.classList.remove('hnm-open'); _pn.classList.remove('hnm-open'); _btn.classList.remove('is-open'); _btn.setAttribute('aria-expanded','false'); };
