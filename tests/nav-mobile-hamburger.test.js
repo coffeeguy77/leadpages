@@ -37,9 +37,19 @@ describe('nav mobile hamburger editor', () => {
     assert.match(manage, /id="nm-ham-backdrop"/);
     assert.match(manage, /id="nm-ham-stagger"/);
     assert.match(manage, /id="nm-ham-icon-anim"/);
+    assert.match(manage, /id="nm-ham-expand-all"/);
+    assert.match(manage, /Expand all mobile options/);
+    assert.match(manage, /id="nm-ham-drawer-btn"/);
+    assert.match(manage, /Drawer button style/);
+    assert.match(manage, /id="nm-ham-hover-fg"/);
+    assert.match(manage, /id="nm-ham-sub-fg"/);
     assert.match(manage, /hamBtnStyle/);
     assert.match(manage, /hamEffect/);
     assert.match(manage, /hamPanelBg/);
+    assert.match(manage, /hamExpandAll/);
+    assert.match(manage, /hamDrawerBtnStyle/);
+    assert.match(manage, /hamHoverFg/);
+    assert.match(manage, /hamSubFg/);
     assert.match(manage, /_nmHamStyleVis/);
   });
 });
@@ -82,6 +92,10 @@ describe('nav mobile hamburger renderer', () => {
       assert.match(css, /--hn-ham-fg/);
       assert.match(css, /--hn-ham-panel-bg/);
       assert.match(css, /position:absolute;right:12px/);
+      assert.match(css, /hnm-fx-fade[\s\S]*transform:none!important/);
+      assert.match(css, /\.hnm-btn-pills/);
+      assert.match(css, /--hn-ham-hover-fg/);
+      assert.match(css, /--hn-ham-sub-fg/);
     });
   }
 
@@ -100,6 +114,11 @@ describe('nav mobile hamburger renderer', () => {
   it('renderer applies ham style classes and CSS vars', () => {
     assert.match(demoJs, /hamBtnStyle/);
     assert.match(demoJs, /hamEffect/);
+    assert.match(demoJs, /hamExpandAll/);
+    assert.match(demoJs, /hamDrawerBtnStyle/);
+    assert.match(demoJs, /hnm-btn-/);
+    assert.match(demoJs, /--hn-ham-hover-fg/);
+    assert.match(demoJs, /--hn-ham-sub-fg/);
     assert.match(demoJs, /ham-bars/);
     assert.match(demoJs, /hnm-fx-/);
     assert.match(demoJs, /--hn-ham-fg/);
@@ -107,6 +126,8 @@ describe('nav mobile hamburger renderer', () => {
     assert.match(demoJs, /is-open/);
     assert.match(demoJs, /_eNm2/);
     assert.match(trade, /hamBtnStyle/);
+    assert.match(trade, /hamExpandAll/);
+    assert.match(trade, /hamDrawerBtnStyle/);
     assert.match(trade, /hnm-fx-/);
     assert.match(trade, /_eNm2/);
   });
