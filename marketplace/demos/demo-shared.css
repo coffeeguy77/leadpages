@@ -781,10 +781,25 @@ html.hnm-speed-slow{--hn-ham-dur:.45s}
 .hnm-panel.hnm-stagger.hnm-open .hnm-item:nth-child(5),.hnm-panel.hnm-stagger.hnm-open .hnm-group:nth-child(5){transition-delay:.2s}
 .hnm-panel.hnm-stagger.hnm-open .hnm-item:nth-child(6),.hnm-panel.hnm-stagger.hnm-open .hnm-group:nth-child(6){transition-delay:.24s}
 .hnm-panel.hnm-stagger.hnm-open .hnm-item:nth-child(n+7),.hnm-panel.hnm-stagger.hnm-open .hnm-group:nth-child(n+7){transition-delay:.28s}
-.hnm-close{position:absolute;top:12px;right:12px;background:rgba(255,255,255,.16);border:0;color:inherit;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2;transition:background .15s ease,transform .15s ease}
-.hnm-panel.hnm-side-left .hnm-close{right:auto;left:12px}
-.hnm-close:hover{background:rgba(255,255,255,.28)}
-.hnm-close .lp-ic{width:20px;height:20px}
+/* Drawer close — only for right-side drawers; matches hamburger size/look (bars→X). Left drawer uses the header hamburger. */
+.hnm-close{
+  position:absolute;top:12px;right:12px;left:auto;
+  display:none;align-items:center;justify-content:center;
+  width:var(--hn-ham-size,44px);height:var(--hn-ham-size,44px);padding:0;
+  border:var(--hn-ham-stroke-w,1.5px) solid currentColor;border-radius:var(--hn-ham-radius,10px);
+  background:transparent;color:inherit;cursor:pointer;z-index:2;box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+  transition:background .15s ease,transform .15s ease,opacity .15s ease
+}
+.hnm-panel.hnm-side-right .hnm-close{display:inline-flex}
+.hnm-panel.hnm-side-left .hnm-close{display:none!important}
+.hnm-close:hover{background:rgba(255,255,255,.12)}
+.hnm-close .ham-bars{display:flex;flex-direction:column;justify-content:center;gap:5px;width:54%;height:54%;position:relative}
+.hnm-close .ham-bars>span{display:block;height:2px;width:100%;border-radius:2px;background:currentColor;transform-origin:center}
+.hnm-close .ham-bars>span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.hnm-close .ham-bars>span:nth-child(2){opacity:0;width:0}
+.hnm-close .ham-bars>span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+.hnm-close .lp-ic{width:calc(var(--hn-ham-size,44px) * .5);height:calc(var(--hn-ham-size,44px) * .5)}
 .hnm-item,.hnm-parent{
   display:flex;align-items:center;gap:13px;padding:15px 6px;border:0;border-bottom:1px solid rgba(255,255,255,.13);
   color:var(--hn-ham-panel-fg,var(--hn-fg,inherit));text-decoration:none;background:none;width:100%;text-align:left;cursor:pointer;
@@ -982,8 +997,28 @@ header.site .hn-sub-link .lp-ic{width:17px;height:17px;flex:0 0 auto;color:inher
   box-shadow:0 0 0 var(--nm-sub-hover-stroke-w,0px) var(--nm-sub-hover-stroke,transparent)
 }
 .nm-sub-link .lp-ic{width:17px;height:17px;flex:0 0 auto;color:inherit}
-@media(max-width:900px){html.lp-compact-nav header.site .head-nav{display:none!important}html.lp-compact-nav header.site .head-menu-btn{display:inline-flex!important;position:absolute;right:12px;top:50%;transform:translateY(-50%);margin:0;order:0}html.lp-compact-nav header.site .bar{position:relative;padding-right:56px;box-sizing:border-box}html.lp-compact-nav header.site a.brand{max-width:calc(100% - 8px);min-width:0}html.lp-compact-nav .nav-menu-sec,html.lp-compact-nav section[data-sec="navMenu"].nav-menu-sec{display:none!important}}
-@media(max-width:760px){html.lp-compact-nav header.site .head-menu-btn{top:14px;transform:none}html.lp-compact-nav header.site .bar{padding-right:56px}html.lp-compact-nav header.site.lp-hdr-cta-hide-m .bar,html.lp-compact-nav header.site .bar:not(:has(.head-call)){padding-right:56px}}
+/* Compact mobile: reserve a hamburger slot; logo keeps the remaining bar width. Content below header stays full bleed. */
+html.lp-compact-nav{--hn-ham-slot:calc(var(--hn-ham-size,44px) + 24px)}
+@media(max-width:900px){
+  html.lp-compact-nav header.site .head-nav{display:none!important}
+  html.lp-compact-nav header.site .bar{position:relative;box-sizing:border-box;padding-right:var(--hn-ham-slot);padding-left:0}
+  html.lp-compact-nav.hnm-btn-left header.site .bar{padding-right:0;padding-left:var(--hn-ham-slot)}
+  html.lp-compact-nav header.site .head-menu-btn{
+    display:inline-flex!important;position:absolute;right:12px;left:auto;top:50%;transform:translateY(-50%);
+    margin:0;order:0;z-index:6
+  }
+  html.lp-compact-nav.hnm-btn-left header.site .head-menu-btn{right:auto;left:12px}
+  html.lp-compact-nav header.site a.brand{max-width:calc(100% - 8px);min-width:0;position:relative;z-index:1}
+  html.lp-compact-nav .nav-menu-sec,html.lp-compact-nav section[data-sec="navMenu"].nav-menu-sec{display:none!important}
+}
+@media(max-width:760px){
+  html.lp-compact-nav header.site .head-menu-btn{top:14px;transform:none}
+  html.lp-compact-nav header.site .bar{padding-right:var(--hn-ham-slot);padding-left:0}
+  html.lp-compact-nav.hnm-btn-left header.site .bar{padding-right:0;padding-left:var(--hn-ham-slot)}
+}
+/* Keep hamburger above the drawer so it stays the seamless close control (sticky header too). */
+html.hnm-menu-open header.site{z-index:85}
+html.hnm-menu-open header.site .head-menu-btn{z-index:86}
 @media(min-width:901px){.hnm-backdrop,.hnm-panel{display:none!important}}
 @media(prefers-reduced-motion:reduce){
   header.site .head-menu-btn,.hnm-backdrop,.hnm-panel,.hnm-panel.hnm-stagger .hnm-item,.hnm-panel.hnm-stagger .hnm-group,header.site .head-menu-btn .ham-bars>span{transition:none!important}
@@ -1385,7 +1420,7 @@ html.site-width-capped section[data-sec="heroSlider"] .hsl{max-width:var(--site-
     width:100%;max-width:100%;justify-content:center;box-sizing:border-box
   }
   header.site.lp-hdr-cta-hide-m .head-call{display:none!important}
-  header.site a.brand{max-width:min(92vw,440px)}html.lp-compact-nav header.site a.brand{max-width:calc(100% - 58px)}
+  header.site a.brand{max-width:min(92vw,440px)}html.lp-compact-nav header.site a.brand{max-width:calc(100% - var(--hn-ham-slot,56px))}
   header.site a.brand img.lp-logo{max-width:100%!important;height:var(--hdr-logo-mh,48px)!important;max-height:var(--hdr-logo-mh,48px)!important;width:auto!important;object-fit:contain}
   header.site a.brand .lp-logo-wrap{max-width:100%;max-height:none}
 }
