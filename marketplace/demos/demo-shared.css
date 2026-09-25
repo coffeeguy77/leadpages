@@ -1413,6 +1413,20 @@ html.site-width-capped section[data-sec="heroSlider"] .hsl{max-width:var(--site-
     gap:8px;padding:10px 12px;border-radius:12px;box-sizing:border-box;
     background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);
   }
+  /* Compact nav: bar keeps a ham slot for the logo row only — CTA / phone / specialist label go full bleed. */
+  html.lp-compact-nav header.site .bar.lp-logo-center .head-call,
+  html.lp-compact-nav header.site .bar.lp-logo-left .head-call,
+  html.lp-compact-nav header.site .bar.lp-logo-right .head-call,
+  html.lp-compact-nav header.site .head-call{
+    width:calc(100% + var(--hn-ham-slot));max-width:none;flex:1 1 calc(100% + var(--hn-ham-slot));
+    margin-right:calc(-1 * var(--hn-ham-slot));margin-left:0
+  }
+  html.lp-compact-nav.hnm-btn-left header.site .bar.lp-logo-center .head-call,
+  html.lp-compact-nav.hnm-btn-left header.site .bar.lp-logo-left .head-call,
+  html.lp-compact-nav.hnm-btn-left header.site .bar.lp-logo-right .head-call,
+  html.lp-compact-nav.hnm-btn-left header.site .head-call{
+    margin-right:0;margin-left:calc(-1 * var(--hn-ham-slot))
+  }
   header.site .head-call .head-phone{text-align:left;line-height:1.15}
   header.site .head-call .head-phone small{font-size:10px;letter-spacing:.1em;opacity:.9}
   header.site .head-call .head-phone a,.head-phone .head-phone-num,
