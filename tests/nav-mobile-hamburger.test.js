@@ -110,6 +110,8 @@ describe('nav mobile hamburger renderer', () => {
       assert.match(css, /--hn-ham-slot/);
       assert.match(css, /hnm-btn-left/);
       assert.match(css, /hnm-menu-open/);
+      assert.match(css, /hnm-pinned/);
+      assert.match(css, /\.hnm-panel\{[\s\S]*?z-index:101/);
       assert.match(css, /hnm-side-left \.hnm-close\{display:none/);
       assert.doesNotMatch(css, /border-left:2px solid var\(--hn-sub-stroke/);
       assert.doesNotMatch(css, /\.hnm-children \.hnm-item\{[\s\S]{0,200}color:var\(--hn-sub-fg,inherit\)/);
@@ -137,6 +139,8 @@ describe('nav mobile hamburger renderer', () => {
     assert.match(demoJs, /hamBtnPos/);
     assert.match(demoJs, /hnm-btn-left/);
     assert.match(demoJs, /hnm-menu-open/);
+    assert.match(demoJs, /_pinHam/);
+    assert.match(demoJs, /hnm-pinned/);
     assert.match(demoJs, /\(_btnPos==='left'\)\?'right':'left'/);
     assert.match(demoJs, /hamPanelOpacity/);
     assert.match(demoJs, /__hnmKeepOpen/);
