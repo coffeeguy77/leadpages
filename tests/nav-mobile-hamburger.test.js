@@ -129,6 +129,12 @@ describe('nav mobile hamburger renderer', () => {
       assert.match(css, /html\.lp-compact-nav header\.site \.bar\{[\s\S]*?position:relative;[\s\S]*?padding-right:var\(--hn-ham-slot/);
       assert.match(css, /hnm-btn-left header\.site \.bar\{[\s\S]*?padding-left:var\(--hn-ham-slot/);
     });
+
+    it(`${name}: CTA / phone row cancels ham-slot inset on mobile`, () => {
+      assert.match(css, /html\.lp-compact-nav header\.site \.head-call\{[\s\S]*?width:calc\(100% \+ var\(--hn-ham-slot\)\)/);
+      assert.match(css, /margin-right:calc\(-1 \* var\(--hn-ham-slot\)\)/);
+      assert.match(css, /html\.lp-compact-nav\.hnm-btn-left header\.site \.head-call\{[\s\S]*?margin-left:calc\(-1 \* var\(--hn-ham-slot\)\)/);
+    });
   }
 
   it('renderer applies ham style classes and CSS vars', () => {
