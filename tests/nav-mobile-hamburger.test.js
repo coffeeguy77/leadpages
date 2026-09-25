@@ -33,6 +33,8 @@ describe('nav mobile hamburger editor', () => {
     assert.match(manage, /id="nm-ham-btn-style"/);
     assert.match(manage, /id="nm-ham-effect"/);
     assert.match(manage, /id="nm-ham-side"/);
+    assert.match(manage, /id="nm-ham-btn-pos"/);
+    assert.match(manage, /Hamburger location/);
     assert.match(manage, /id="nm-ham-speed"/);
     assert.match(manage, /id="nm-ham-backdrop"/);
     assert.match(manage, /id="nm-ham-stagger"/);
@@ -44,6 +46,8 @@ describe('nav mobile hamburger editor', () => {
     assert.match(manage, /id="nm-ham-hover-fg"/);
     assert.match(manage, /id="nm-ham-sub-fg"/);
     assert.match(manage, /hamBtnStyle/);
+    assert.match(manage, /hamBtnPos/);
+    assert.match(manage, /_nmSel\('nm-ham-side','hamSide','left'\)/);
     assert.match(manage, /hamEffect/);
     assert.match(manage, /hamPanelBg/);
     assert.match(manage, /hamExpandAll/);
@@ -81,7 +85,7 @@ describe('nav mobile hamburger renderer', () => {
   ]) {
     it(`${name}: hides header + bar menus on compact mobile`, () => {
       assert.match(css, /html\.lp-compact-nav header\.site \.head-nav\{display:none/);
-      assert.match(css, /html\.lp-compact-nav header\.site \.head-menu-btn\{display:inline-flex/);
+      assert.match(css, /html\.lp-compact-nav[\s\S]*?\.head-menu-btn\{[\s\S]*?display:inline-flex/);
       assert.match(css, /html\.lp-compact-nav \.nav-menu-sec/);
     });
 
@@ -94,7 +98,7 @@ describe('nav mobile hamburger renderer', () => {
       assert.match(css, /\.hnm-side-left/);
       assert.match(css, /--hn-ham-fg/);
       assert.match(css, /--hn-ham-panel-bg/);
-      assert.match(css, /position:absolute;right:12px/);
+      assert.match(css, /position:absolute;[\s\S]*?right:12px/);
       assert.match(css, /hnm-fx-fade[\s\S]*transform:none!important/);
       assert.match(css, /\.hnm-btn-pills/);
       assert.match(css, /--hn-ham-hover-fg/);
@@ -103,6 +107,10 @@ describe('nav mobile hamburger renderer', () => {
       assert.match(css, /\.hnm-children\{[\s\S]*border-left:0/);
       assert.match(css, /\.hnm-bd-dim/);
       assert.match(css, /backdrop-filter:blur\(12px\)/);
+      assert.match(css, /--hn-ham-slot/);
+      assert.match(css, /hnm-btn-left/);
+      assert.match(css, /hnm-menu-open/);
+      assert.match(css, /hnm-side-left \.hnm-close\{display:none/);
       assert.doesNotMatch(css, /border-left:2px solid var\(--hn-sub-stroke/);
       assert.doesNotMatch(css, /\.hnm-children \.hnm-item\{[\s\S]{0,200}color:var\(--hn-sub-fg,inherit\)/);
     });
@@ -115,8 +123,9 @@ describe('nav mobile hamburger renderer', () => {
   ]) {
     it(`${name}: pins a contrast-safe hamburger on mobile`, () => {
       assert.match(css, /--hn-menu-btn-fg|--hn-ham-fg/);
-      assert.match(css, /head-menu-btn\{display:inline-flex!important;position:absolute;right:12px/);
-      assert.match(css, /html\.lp-compact-nav header\.site \.bar\{position:relative;padding-right:56px/);
+      assert.match(css, /head-menu-btn\{[\s\S]*?display:inline-flex!important;[\s\S]*?position:absolute;[\s\S]*?right:12px/);
+      assert.match(css, /html\.lp-compact-nav header\.site \.bar\{[\s\S]*?position:relative;[\s\S]*?padding-right:var\(--hn-ham-slot/);
+      assert.match(css, /hnm-btn-left header\.site \.bar\{[\s\S]*?padding-left:var\(--hn-ham-slot/);
     });
   }
 
@@ -125,6 +134,10 @@ describe('nav mobile hamburger renderer', () => {
     assert.match(demoJs, /hamEffect/);
     assert.match(demoJs, /hamExpandAll/);
     assert.match(demoJs, /hamDrawerBtnStyle/);
+    assert.match(demoJs, /hamBtnPos/);
+    assert.match(demoJs, /hnm-btn-left/);
+    assert.match(demoJs, /hnm-menu-open/);
+    assert.match(demoJs, /\(_btnPos==='left'\)\?'right':'left'/);
     assert.match(demoJs, /hamPanelOpacity/);
     assert.match(demoJs, /__hnmKeepOpen/);
     assert.match(demoJs, /--hn-ham-panel-bg-a/);
