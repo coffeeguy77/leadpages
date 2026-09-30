@@ -1,9 +1,11 @@
 // api/billing/admin.js — per-site billing actions for admins.
 //   POST { action, siteId, ... }
-//     protect   { on }            -> never auto-flag/delete this site (account protection)
-//     extend    { days } | { until } -> push the auto-delete date out
+//     protect   { on }            -> mark site protected (clears legacy delete flags)
+//     extend    { days } | { until } -> clear legacy delete_flagged_at / set snooze (cron no longer auto-deletes)
 //     unsuspend                   -> manual override back to active (use sparingly)
 //     system    { on }            -> mark as a "system" site (suspended-page variant)
+//
+// Sites and Cloudinary images are NEVER removed here. Delete only via Manage → Delete site.
 
 const { sb, getUser, isAdminEmail, json } = require('./_stripe');
 
