@@ -6501,6 +6501,7 @@ function heroCtaCard(c){
     if(!currentSiteId){ toast('No site loaded.'); return; }
     var nm=(currentBusinessName||currentSiteSlug||'this site').trim();
     var btn=$('btn-delsite'); if(btn){ btn.disabled=true; btn.textContent='Deleting…'; }
+    // Images are removed only on explicit site/account delete — never by billing cron.
     try{ await cwDeletePrefix('leadpages/'+cwSiteSeg()+'/'); }catch(_e){ try{console.error('[mm wiring]',_e&&_e.message);}catch(_x){} }
     try{ var _sl=cwSiteSegSlug(); if(_sl && _sl!==cwSiteSeg()) await cwDeletePrefix('leadpages/'+_sl+'/'); }catch(_e){ try{console.error('[mm wiring]',_e&&_e.message);}catch(_x){} }
     var res=await sb.from('sites').delete().eq('id',currentSiteId).select();
@@ -6509,7 +6510,7 @@ function heroCtaCard(c){
     if(!res.data || !res.data.length){ toast('Nothing was deleted — your database still needs the delete permission policy (see chat).'); return; }
     var delId=currentSiteId;
     allSites=allSites.filter(function(s){ return s.id!==delId; });
-    toast('Site “'+nm+'” deleted');
+    toast('Site “'+nm+'” deleted (images removed)');
     currentSiteId=null; window.currentSiteId=null; window.currentSiteName=''; window.currentSiteSlug=null;
     if(allSites.length){ showLanding(); }
     else { var lb=$('site-label'); if(lb) lb.innerHTML='<span>No sites left.</span>'; }
@@ -8008,7 +8009,7 @@ function heroCtaCard(c){
     var b=document.getElementById('bl-link'),m=document.getElementById('bl-link-msg');
     b.addEventListener('click',function(){ b.disabled=true; m.textContent='Linking\u2026'; m.style.color='var(--ink-soft)'; _billFetch('/api/billing/owner',{method:'POST',body:JSON.stringify({siteId:currentSiteId})}).then(function(r){return r.json();}).then(function(j){ if(j&&j.linked){ m.textContent=j.created?'Login created \u2014 loading\u2026':'Linked \u2014 loading\u2026'; m.style.color='#0a7d33'; BILL.owner=j; openBillingPage(); } else { b.disabled=false; m.textContent=(j&&j.error)||'Failed'; m.style.color='#b42318'; } }).catch(function(){ b.disabled=false; m.textContent='Failed'; m.style.color='#b42318'; }); });
   }
-  function _billPill(st){ var map={active:['Active','#0a7d33','#e7f6ec'],past_due:['Payment due','#b4690e','#fdf1e3'],suspended:['Suspended','#b42318','#fdecea'],flagged_deletion:['Flagged for deletion','#b42318','#fdecea'],none:['No plan','#667','#eef0f2'],canceled:['Cancelled','#667','#eef0f2']}; var m=map[st]||map.none; return '<span class="pill" style="color:'+m[1]+';background:'+m[2]+';">'+m[0]+'</span>'; }
+  function _billPill(st){ var map={active:['Active','#0a7d33','#e7f6ec'],past_due:['Payment due','#b4690e','#fdf1e3'],suspended:['Suspended','#b42318','#fdecea'],flagged_deletion:['Locked — review to delete','#b42318','#fdecea'],none:['No plan','#667','#eef0f2'],canceled:['Cancelled','#667','#eef0f2']}; var m=map[st]||map.none; return '<span class="pill" style="color:'+m[1]+';background:'+m[2]+';">'+m[0]+'</span>'; }
   function _billRender(){
     var body=document.getElementById('bl-body'); if(!body) return;
     var s=BILL.status; if(!s||s.error){ body.innerHTML='<div class="hint">Couldn\u2019t load billing \u2014 is the billing API deployed and the schema run?</div>'; return; }
@@ -8022,7 +8023,7 @@ function heroCtaCard(c){
         +'<div style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap;">'
         +(hasPlan?'<button type="button" class="btn ghost bl-change">Change plan</button>':'')
         +'<span class="bl-picker" style="display:'+(hasPlan?'none':'flex')+';gap:8px;align-items:center;flex-wrap:wrap;"><select class="bl-plan" style="padding:8px 10px;border:1px solid var(--line);border-radius:8px;">'+planOpts+'</select><button type="button" class="btn bl-apply">'+(hasPlan?'Switch plan':'Apply plan')+'</button></span>'
-        +(admin?('<button type="button" class="btn ghost bl-protect">'+(st.delete_protected?'Unprotect':'Protect')+'</button><button type="button" class="btn ghost bl-extend">Extend 90d</button>'+((st.billing_status==='suspended'||st.billing_status==='flagged_deletion')?'<button type="button" class="btn ghost bl-unsuspend">Unsuspend</button>':'')):'')
+        +(admin?('<button type="button" class="btn ghost bl-protect">'+(st.delete_protected?'Unprotect':'Protect')+'</button>'+((st.billing_status==='suspended'||st.billing_status==='flagged_deletion')?'<button type="button" class="btn ghost bl-unsuspend">Unsuspend</button>':'')):'')
         +'</div><div class="bl-msg" style="font-size:12.5px;margin-top:6px;"></div></div>';
     }).join('');
     var clientHead=(BILL.owner&&BILL.owner.owner_email)?('<div class="bl-muted" style="margin:0 0 10px;font-size:14px;">Client: <strong>'+_bEsc(BILL.owner.owner_email)+'</strong></div>'):'';
@@ -8038,7 +8039,6 @@ function heroCtaCard(c){
       var chg=row.querySelector('.bl-change'); if(chg) chg.addEventListener('click',function(){ var pk=row.querySelector('.bl-picker'); if(pk) pk.style.display=(pk.style.display==='none'?'flex':'none'); });
       var applyBtn=row.querySelector('.bl-apply'); if(applyBtn) applyBtn.addEventListener('click',function(){ var k=sel.value; if(!k){ say('Pick a plan first',true); return; } if(k===cur){ say('Already on the '+k+' plan',true); return; } say('Working\u2026'); _billFetch('/api/billing/checkout',{method:'POST',body:JSON.stringify({siteId:id,planKey:k,returnUrl:location.origin})}).then(function(r){return r.json();}).then(function(j){ if(!j){ say('Failed',true); return; } if(j.mode==='free'){ say('Free plan applied'); openBillingPage(); } else if(j.mode==='added'){ say('Added to the existing subscription'); openBillingPage(); } else if(j.mode==='checkout'&&j.url){ if(admin){ say('Link ready'); window.prompt('Send this payment link to the customer:', j.url); } else { location.href=j.url; } } else { say(j.error||'Failed',true); } }).catch(function(){ say('Failed',true); }); });
       var pb=row.querySelector('.bl-protect'); if(pb) pb.addEventListener('click',function(){ var on=(pb.textContent==='Protect'); _billFetch('/api/billing/admin',{method:'POST',body:JSON.stringify({action:'protect',siteId:id,on:on})}).then(function(r){return r.json();}).then(function(j){ if(j&&j.ok){ pb.textContent=on?'Unprotect':'Protect'; say(on?'Protected from deletion':'Protection removed'); } else say((j&&j.error)||'Failed',true); }); });
-      var eb=row.querySelector('.bl-extend'); if(eb) eb.addEventListener('click',function(){ _billFetch('/api/billing/admin',{method:'POST',body:JSON.stringify({action:'extend',siteId:id,days:90})}).then(function(r){return r.json();}).then(function(j){ if(j&&j.ok) say('Auto-delete extended 90 days'); else say((j&&j.error)||'Failed',true); }); });
       var ub=row.querySelector('.bl-unsuspend'); if(ub) ub.addEventListener('click',function(){ if(!window.confirm('Manually reactivate this site without payment?')) return; _billFetch('/api/billing/admin',{method:'POST',body:JSON.stringify({action:'unsuspend',siteId:id})}).then(function(r){return r.json();}).then(function(j){ if(j&&j.ok){ say('Reactivated'); openBillingPage(); } else say((j&&j.error)||'Failed',true); }); });
     });
     _contraWire(admin);

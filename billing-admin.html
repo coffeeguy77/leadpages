@@ -122,6 +122,11 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
         <div id="top-partner"></div>
       </div>
     </div>
+    <div class="ba-card">
+      <h2>Accounts needing review</h2>
+      <p class="sub">Past due, suspended, and locked accounts. <strong>Nothing here is auto-deleted</strong> — sites and Cloudinary images stay until you delete the site in Manage (Settings → Delete site), or the customer closes the account.</p>
+      <div id="review-list"></div>
+    </div>
     <div class="ba-grid">
       <div class="ba-card">
         <h2>Failed payments</h2>
@@ -129,8 +134,8 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
         <div id="failed-list"></div>
       </div>
       <div class="ba-card">
-        <h2>Suspended customers</h2>
-        <p class="sub">Hosting stopped after Stripe retries exhausted.</p>
+        <h2>Suspended / locked</h2>
+        <p class="sub">Hosting stopped after Stripe retries exhausted. Delete manually when you give up on payment.</p>
         <div id="suspended-list"></div>
       </div>
     </div>
@@ -364,7 +369,8 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
       ['Due to partners', money(s.commissions_due_cents), 'Pending + approved'],
       ['Paid to partners', money(s.commissions_paid_cents), 'Lifetime'],
       ['Failed payments', String(s.past_due_count), 'past_due'],
-      ['Suspended', String(s.suspended_count), 'Not live'],
+      ['Suspended / locked', String(s.suspended_count), 'Not live'],
+      ['Review queue', String(s.review_queue_count != null ? s.review_queue_count : ((s.past_due_count||0)+(s.suspended_count||0))), 'Manual delete only'],
       ['Maintenance MRR', money(s.maintenance_mrr_cents), s.maintenance_active+' packages'],
       ['Partners', String(s.partners_count), s.billing_customers+' Stripe customers']
     ];
@@ -405,10 +411,24 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
 
   function simpleList(el, rows, empty){
     if(!rows||!rows.length){ el.innerHTML='<p class="sub">'+esc(empty)+'</p>'; return; }
-    el.innerHTML='<table class="ba-table"><thead><tr><th>Business</th><th>Email</th><th>Monthly</th><th>Status</th></tr></thead><tbody>'
+    el.innerHTML='<table class="ba-table"><thead><tr><th>Business</th><th>Email</th><th>Monthly</th><th>Status</th><th></th></tr></thead><tbody>'
       +rows.map(function(r){
+        var open=r.slug?('<a class="btn ghost" style="padding:6px 10px;font-size:12px" href="/manage?site='+encodeURIComponent(r.slug)+'">Open</a>'):'';
         return '<tr><td><strong>'+esc(r.business_name||r.slug)+'</strong><div class="mono">'+esc(r.slug||'')+'</div></td>'
-          +'<td>'+esc(r.owner_email||'—')+'</td><td>'+money(r.monthly_amount)+'</td><td>'+statusPill(r.billing_status)+'</td></tr>';
+          +'<td>'+esc(r.owner_email||'—')+'</td><td>'+money(r.monthly_amount)+'</td><td>'+statusPill(r.billing_status)+'</td><td>'+open+'</td></tr>';
+      }).join('')+'</tbody></table>';
+  }
+
+  function reviewList(el, rows){
+    if(!rows||!rows.length){ el.innerHTML='<p class="sub">No accounts outside payment terms.</p>'; return; }
+    el.innerHTML='<table class="ba-table"><thead><tr><th>Business</th><th>Email</th><th>Monthly</th><th>Status</th><th>Suspended</th><th></th></tr></thead><tbody>'
+      +rows.map(function(r){
+        var when=r.suspended_at?String(r.suspended_at).slice(0,10):'—';
+        var open=r.slug?('<a class="btn ghost" style="padding:6px 10px;font-size:12px" href="/manage?site='+encodeURIComponent(r.slug)+'">Open → delete in Settings</a>'):'';
+        return '<tr><td><strong>'+esc(r.business_name||r.slug)+'</strong><div class="mono">'+esc(r.slug||'')+'</div>'
+          +(r.delete_protected?' <span class="ba-pill ok">protected</span>':'')
+          +(r.locked?' <span class="ba-pill bad">locked</span>':'')
+          +'</td><td>'+esc(r.owner_email||'—')+'</td><td>'+money(r.monthly_amount)+'</td><td>'+statusPill(r.billing_status)+'</td><td class="mono">'+esc(when)+'</td><td>'+open+'</td></tr>';
       }).join('')+'</tbody></table>';
   }
 
@@ -417,6 +437,7 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
     renderKpis(data.summary||{});
     renderChart((data.charts&&data.charts.income_by_month)||[]);
     renderTop(data.highest_earning_partner);
+    reviewList($('review-list'), data.review_queue || []);
     simpleList($('failed-list'), data.failed_payments, 'No failed payments.');
     simpleList($('suspended-list'), data.suspended_customers, 'No suspended customers.');
 

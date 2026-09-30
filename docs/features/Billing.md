@@ -126,7 +126,7 @@ Validated via `getUser()` → Supabase `/auth/v1/user`.
 | `active` | Paid / free plan active | Serves | Unlocked |
 | `past_due` | Stripe retry in progress | **Still serves** | Unlocked (warning) |
 | `suspended` | Unpaid / canceled subscription | **Suspended page** | **Locked** (`locked: true`) |
-| `flagged_deletion` | Suspended > 90 days (cron) | Suspended page | **Locked** |
+| `flagged_deletion` | Legacy review flag (cron no longer sets this) | Suspended page | **Locked** — images stay until you manually delete the site |
 | `canceled` | (UI label) | — | — |
 
 ### Account-level aggregation (`GET /api/billing/status`)
@@ -272,7 +272,7 @@ Data: `status`, `app-status`, `account` APIs per selected site.
 | Apply / switch plan | `POST /api/billing/checkout` | `free` / `added` / `checkout`+URL |
 | Stripe portal | `POST /api/billing/portal` | Redirect to `url` |
 | Protect site | `POST /api/billing/admin` `{action:'protect'}` | Toggle `delete_protected` |
-| Extend auto-delete | `{action:'extend', days:90}` | Clears `delete_flagged_at` |
+| Extend (legacy) | `{action:'extend', days:90}` | Clears `delete_flagged_at` — cron never auto-deletes sites/images |
 | Unsuspend | `{action:'unsuspend'}` | Confirm dialog; sets `active` |
 | Contra entry | `POST /api/billing/contra` `{action:'entry'}` | Reload |
 | Contra arrangement | `{action:'account'}` | Save mode, limit, accrue flag |
@@ -575,7 +575,7 @@ sequenceDiagram
 ### Daily cron
 
 1. **`accrue_monthly`** contra accounts → `_accrual.accrueOwner`
-2. Sites **`suspended`** with `suspended_at` > 90 days → **`flagged_deletion`** unless `delete_protected` or `delete_extend_until`
+2. **Does not** flag, delete sites, or remove Cloudinary images. Locked / past-due accounts appear on Accounting → Overview for **manual** delete when you choose.
 
 ---
 
@@ -792,8 +792,8 @@ stateDiagram-v2
   Suspended --> PublicSuspended: render.js
   LockedEditor --> StripePortal: Pay button
   StripePortal --> Active: card updated + paid
-  Suspended --> Flagged: cron 90 days
-  Flagged --> LockedEditor: still locked
+  Suspended --> ManualDelete: admin Delete site when unpaid forever
+  ManualDelete --> ImagesGone: Cloudinary prefix wiped on delete only
 ```
 
 ---

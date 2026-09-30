@@ -356,8 +356,8 @@ stateDiagram-v2
   past_due --> suspended: subscription unpaid/canceled
   active --> suspended: subscription deleted/unpaid
   suspended --> active: payment restored / admin unsuspend
-  suspended --> flagged_deletion: cron 90+ days
-  flagged_deletion --> active: admin unsuspend + payment
+  suspended --> active: admin unsuspend + payment
+  suspended --> deleted: manual Delete site (Cloudinary wiped then)
 ```
 
 | Status | Public site | Editor |
@@ -685,7 +685,7 @@ flowchart TD
 | Task | Behaviour |
 |------|-----------|
 | **Contra accrual** | For `contra_accounts` with `accrue_monthly`, run `_accrual.accrueOwner` |
-| **Deletion flag** | Sites `billing_status=suspended` and `suspended_at` > 90 days ago → `flagged_deletion` unless `delete_protected` or `delete_extend_until` |
+| **Deletion** | Cron does **not** delete sites or images. Accounting dashboard lists past_due/suspended for manual delete in Manage. |
 
 Cron does **not** delete sites — it only flags them for admin review.
 
@@ -860,7 +860,7 @@ stateDiagram-v2
 | **Owner** | Supabase auth user in `sites.owner_user_id`; one `billing_customers` row |
 | **Grace (`past_due`)** | Payment failed but site still live; Stripe retrying |
 | **Suspended** | Live site shows 503; editor locked for clients |
-| **Flagged for deletion** | Suspended > 90 days (cron); still 503, admin review |
+| **Flagged for deletion** | Legacy status; still 503 / locked. No auto image wipe — delete site manually when ready. |
 | **lpSplit** | Build commission split: platform max($750, half), partner remainder |
 | **Contra** | Non-cash ledger between platform and client; adjacent to Stripe billing |
 

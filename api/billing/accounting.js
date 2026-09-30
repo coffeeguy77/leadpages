@@ -38,7 +38,7 @@ module.exports = async function(req, res) {
       plansRes
     ] = await Promise.all([
       sb.from('sites')
-        .select('id,slug,business_name,owner_email,owner_user_id,plan_key,monthly_amount,billing_status,suspended_at,sale_price,is_mockup,is_partner_home,referring_partner_id,servicing_partner_id,commission_partner_id,created_at')
+        .select('id,slug,business_name,owner_email,owner_user_id,plan_key,monthly_amount,billing_status,suspended_at,delete_flagged_at,delete_protected,delete_extend_until,sale_price,is_mockup,is_partner_home,referring_partner_id,servicing_partner_id,commission_partner_id,created_at')
         .order('created_at', { ascending: false })
         .limit(2000),
       sb.from('partner_commissions')
@@ -103,6 +103,26 @@ module.exports = async function(req, res) {
     const pastDue = liveSites.filter(function(s) { return s.billing_status === 'past_due'; });
     const suspended = liveSites.filter(function(s) {
       return s.billing_status === 'suspended' || s.billing_status === 'flagged_deletion';
+    });
+    // Manual review queue: payment problems + locked accounts. Nothing here is auto-deleted.
+    const reviewQueue = liveSites.filter(function(s) {
+      return s.billing_status === 'past_due'
+        || s.billing_status === 'suspended'
+        || s.billing_status === 'flagged_deletion';
+    }).map(function(s) {
+      return {
+        id: s.id,
+        slug: s.slug,
+        business_name: s.business_name,
+        owner_email: s.owner_email,
+        plan_key: s.plan_key,
+        monthly_amount: s.monthly_amount,
+        billing_status: s.billing_status,
+        suspended_at: s.suspended_at,
+        delete_flagged_at: s.delete_flagged_at,
+        delete_protected: !!s.delete_protected,
+        locked: s.billing_status === 'suspended' || s.billing_status === 'flagged_deletion'
+      };
     });
 
     const mrrCents = sum(activeHosting, 'monthly_amount');
@@ -231,7 +251,9 @@ module.exports = async function(req, res) {
         plan_key: s.plan_key,
         monthly_amount: s.monthly_amount,
         billing_status: s.billing_status,
-        suspended_at: s.suspended_at
+        suspended_at: s.suspended_at,
+        delete_flagged_at: s.delete_flagged_at,
+        delete_protected: !!s.delete_protected
       };
     });
 
@@ -247,6 +269,7 @@ module.exports = async function(req, res) {
         live_sites: liveSites.length,
         past_due_count: pastDue.length,
         suspended_count: suspended.length,
+        review_queue_count: reviewQueue.length,
         sales_gross_cents: salesGrossCents,
         commissions_due_cents: dueToPartnersCents,
         commissions_paid_cents: paidToPartnersCents,
@@ -265,6 +288,12 @@ module.exports = async function(req, res) {
       payout_queue: payoutQueue,
       failed_payments: failedPayments,
       suspended_customers: suspendedCustomers,
+      review_queue: reviewQueue,
+      policy: {
+        auto_delete_sites: false,
+        auto_delete_images: false,
+        images_removed_on: 'manual_site_or_account_delete'
+      },
       clients: liveSites.slice(0, 400).map(function(s) {
         return {
           id: s.id,

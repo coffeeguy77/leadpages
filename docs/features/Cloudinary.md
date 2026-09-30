@@ -599,7 +599,7 @@ No direct Cloudinary billing integration. Locked accounts cannot reach upload UI
 
 ### Site deletion
 
-`deleteSiteNow` is the only automated **bulk** Cloudinary cleanup. Individual field clears rely on `cwDelete`.
+`deleteSiteNow` is the only **bulk** Cloudinary cleanup (explicit site/account delete in Manage). Billing cron never deletes images. Individual field clears/replaces still call `cwDelete`.
 
 ### Diagnostics
 
