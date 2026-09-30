@@ -18,6 +18,7 @@ const {
   sendAcceptanceNotifyEmail,
   contactEmailForSite
 } = require('../../lib/quote-system/portal-email');
+const { sendQuoteToEventureOS } = require('../../lib/quote-system/eventureos');
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return json(res, 405, { ok: false, error: 'method_not_allowed' });
@@ -66,6 +67,16 @@ module.exports = async function handler(req, res) {
         console.error('quote accept lead update:', leadErr && leadErr.message);
       }
     }
+
+    // EventureOS connector (only for sites switched on in env): tell the team it was accepted
+    await sendQuoteToEventureOS({
+      siteId: ctx.session.site_id,
+      session: Object.assign({}, ctx.session, { contact_name: acceptedName || ctx.session.contact_name }),
+      version: ctx.version,
+      stage: 'accepted',
+      acceptedBy: acceptedName,
+      portalUrl: portalUrl(req, token)
+    });
 
     const notifyTo = contactEmailForSite(ctx.site);
     const totalFormatted = formatMoney(ctx.quote.totalCents);

@@ -21,6 +21,7 @@ const {
 const { serializeQuoteResult, serializeSession } = require('../../lib/quote-system/serializers');
 const { RESPONSE_LEVEL, SESSION_STATUS } = require('../../lib/quote-system/constants');
 const { createQuoteLead } = require('../../lib/quote-system/crm');
+const { sendQuoteToEventureOS } = require('../../lib/quote-system/eventureos');
 const { assertQuoteAppEntitled } = require('../../lib/quote-system/billing');
 const { normalizeEmail, isEmailWhitelisted } = require('../../lib/quote-system/email-whitelist');
 const { ensureEmailVerificationSent } = require('../../lib/quote-system/verify');
@@ -130,6 +131,7 @@ module.exports = async function handler(req, res) {
     });
 
     const updatedSession = workingSession;
+    let eventureLead = false;
 
     if (!updatedSession.lead_id && updatedSession.contact_email && level !== RESPONSE_LEVEL.PUBLIC_PROGRESS) {
       const admin = require('../../lib/quote-system/supabase').getAdmin();
@@ -140,11 +142,32 @@ module.exports = async function handler(req, res) {
       if (siteRow) {
         try {
           const leadId = await createQuoteLead(siteRow, updatedSession, calc, configVersion.config);
-          if (leadId) await linkLeadToSession(updatedSession, leadId);
+          if (leadId) {
+            await linkLeadToSession(updatedSession, leadId);
+            eventureLead = true;
+          }
         } catch (leadErr) {
           console.error('quote lead create:', leadErr && leadErr.message);
         }
       }
+    }
+
+    // EventureOS connector (only for sites switched on in env): send each version once the
+    // customer is a real lead, so the draft quote there stays in step with their choices.
+    if ((eventureLead || updatedSession.lead_id) && level !== RESPONSE_LEVEL.PUBLIC_PROGRESS) {
+      await sendQuoteToEventureOS({
+        siteId: session.site_id,
+        session: updatedSession,
+        version: {
+          version_number: versionNumber,
+          inputs: calc.inputs,
+          breakdown: calc.breakdown,
+          subtotal_cents: calc.subtotalCents,
+          gst_cents: calc.gstCents,
+          total_cents: calc.totalCents
+        },
+        stage: 'submitted'
+      });
     }
 
     calc.versionNumber = versionNumber;
