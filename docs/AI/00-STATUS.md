@@ -3,7 +3,7 @@
 **Document:** `AI/00-STATUS`  
 **Status:** Canonical — update this when Brain phases or migration flags change  
 **Audience:** AI coding agents and engineers  
-**Last updated:** 2026-07-19  
+**Last updated:** 2026-10-10  
 
 > **Read this first** for any AI / Brain / Anthropic / OpenAI / Gemini / assist / landing-draft / Site Brain / AI Website Team work.  
 > Detail lives in the rest of `docs/AI/*` and `docs/ai-team/*`. Feature manuals under `docs/features/` may lag — trust this file + source when they conflict.
@@ -37,6 +37,7 @@
 | Website Studio docs | `docs/website-studio/` | Includes [ON-ICE](../website-studio/ON-ICE.md) |
 | Marketing Hub | `marketing-hub.html` + `api/brain/ads-*.js` | Phase 9 — suggest only; approve stores, no Ads mutate |
 | AI Domain Finder | `/domain-finder` + `api/domain-finder/*` + `lib/domain-finder/` | Generate → Dreamscape check → rank available only; AU TLDs; OpenAI via Brain |
+| AI Composer | `/ai-composer` + `api/ai-composer/*` + `lib/ai-composer/` | Design image → LeadPages apps → new live site. Super admin only. First Brain **vision** feature (Anthropic only). See [AI-Composer](../features/AI-Composer.md) |
 | Tests | `tests/brain-*.test.js` | No live network; injected `fetch` / mock |
 
 ---
@@ -78,6 +79,8 @@ Roadmap detail: [17-IMPLEMENTATION-ROADMAP](17-IMPLEMENTATION-ROADMAP.md).
 | `BRAIN_MARKETING_HUB` | on (`1`) | `0` disables Marketing Hub APIs |
 | `BRAIN_APP_CONTENT` | on (`1`) | `0` disables per-app section copy (`POST /api/brain/app-content`) |
 | `BRAIN_DOMAIN_FINDER` | on (`1`) | `0` disables AI Domain Finder APIs |
+| `AI_COMPOSER` | on (`1`) | `0` disables AI Composer APIs |
+| `AI_COMPOSER_MODEL` | — | Optional Anthropic model for AI Composer vision tasks (else `ANTHROPIC_MODEL`) |
 | `BRAIN_LANDING_PROVIDER` | — | Optional env override; prefer **AI Control Centre → Save provider** (durable `brain_settings`) |
 | `ANTHROPIC_API_KEY` | — | Anthropic adapter / legacy callers |
 | `OPENAI_API_KEY` | — | OpenAI adapter |
@@ -102,6 +105,7 @@ Roadmap detail: [17-IMPLEMENTATION-ROADMAP](17-IMPLEMENTATION-ROADMAP.md).
 | Website Studio | `/theme-studio-v2` → `api/theme-studio/*` | **Yes** (On Ice; superuser only; flag `THEME_STUDIO_V2`) |
 | AI Website Team / Site Brain | `manage.html` → `api/site-brain/*`, `api/ai-team/*` | Site Brain persistence + Atlas advisory (Phase 1; no live config mutation) |
 | Marketing Hub | `/marketing-hub` → `ads.*` tasks | **Yes** (product default on; no Ads mutate) |
+| AI Composer | `/ai-composer` → `composer.design_plan`, `composer.app_fill` | **Yes** — Anthropic only (image input), no mock fallback, no retries |
 
 Order / rollback: [16-MIGRATION-PLAN](16-MIGRATION-PLAN.md).
 
