@@ -74,6 +74,25 @@ String-content callers behave exactly as before.
 
 ---
 
+## Round 2 (2026-10-10) — fixes after the first live test
+
+Tested end to end with the ACT Truck Hire design through the real code, the AI steps answered by a Claude worker given the exact live prompts and images, and every result rendered through `api/render.js`.
+
+- **Quote form labels locked.** `lblName`, `lblPhone`, `lblJob`, `lblSuburb`, `lblDetail`, `suburbPh`, `detailPh` and `jobOptions` are never written by the AI (a booking form's "Pick up date" ended up labelling the Name box). Neutral job choices are set instead; a design form asking for other fields is reported as a gap.
+- **Photo tidying.** Model boxes are trimmed 3% per side, then `POST /api/ai-composer/refine-photos` (Brain task `composer.photo_check`) re-checks each crop with a margin and returns a tight box that leaves out text, buttons, overlay panels and card borders; icon/text crops are dropped. Runs automatically after analysis (10 photos per call, 3 calls at once); a failed batch keeps the first crops.
+- **Better app choice.** Planning rules: photo cards → Services; rows of figures/prices → Project Stats (second row → Activity Counter); location blocks → About Us; closing CTA banners → Special Offer; a form sharing a section with other content gets its own Quote section. Unused apps are tried before recording a gap.
+- **Layout choices.** The AI may set an approved list of select fields (`CHOICE_FIELDS` in `catalogue.js`): text box image side and alignment, service card image fit/size, project feed card style. Values must be one of the field's options.
+- **Colour safety.** Only accents, buttons, star colours, lines and light backgrounds are exposed (`SAFE_COLOR_NAMES`). Section backgrounds darker than luminance 0.6 and buttons with contrast below 3:1 are dropped — copied white headings were disappearing on LeadPages' light sections.
+- **No cramming / neighbours.** The fill step is told which other sections share its image ("handled elsewhere") and must not stuff badges or neighbouring text into headlines; addresses, hours and feature lists go into body text.
+- **Every app checked by rendering.** Each catalogue app was rendered with marker text in every field. Finance and Service Area Map render nothing from text alone and are no longer offered; dead playground fields were replaced (`specialOffer.cta`, `splitHero.subText`); emergency-availability hours are not offered (schedule mode only).
+- **Footer.** No links in the design → no empty "Services" column.
+- **FAQ answers (optional).** A tick-box on the review screen lets the AI draft missing FAQ answers using only facts visible in the design; drafted answers are flagged on the finish screen. Off by default.
+- **Upload warning** below 1200px wide (photos cropped from small designs look soft at full width).
+
+### Template bug found (not fixed — needs approval)
+
+`trade.template.json` has an unscoped `.tb-row{display:flex;flex-wrap:wrap;…}` rule meant for the Trust Bar. The Text Box app uses the same class, so its **"beside"** image layout wraps and drops the photo under the text on desktop — for every site, not just AI Composer. AI Composer works around it by using the Text Box **"wrap"** layout. A one-line scoped fix (e.g. `.tb-section .tb-row{flex-wrap:nowrap}` for desktop) would change how existing sites with "beside" render, so it is left for a decision.
+
 ## Limits (by design)
 
 - The result is LeadPages apps arranged like the design — not a pixel copy.
@@ -93,7 +112,7 @@ String-content callers behave exactly as before.
 | Area | Paths |
 |------|-------|
 | Page | `ai-composer.html`, rewrite `/ai-composer` in `vercel.json` |
-| APIs | `api/ai-composer/analyse.js`, `fill.js`, `create-site.js` |
+| APIs | `api/ai-composer/analyse.js`, `refine-photos.js`, `fill.js`, `create-site.js` |
 | Libraries | `lib/ai-composer/catalogue.js`, `tiles.js`, `prompts.js`, `plan.js`, `build-config.js`, `access.js` |
 | Tests | `tests/ai-composer.test.js` |
 

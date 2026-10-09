@@ -58,6 +58,13 @@ module.exports = async function aiComposerCreateSite(req, res) {
 
   try {
     const config = buildSiteConfig(plan, Array.isArray(body.fills) ? body.fills : [], { businessName: businessName });
+    if (body.options && body.options.draftFaq && config.sections.faq && config.sections.faq.on === true) {
+      config._aiComposer.gaps.push({
+        what: 'FAQ answers',
+        suggestion: 'Drafted by AI from the design — check every answer before relying on it.'
+      });
+      config._aiComposer.faqDrafted = true;
+    }
     const slug = await uniqueSlug(slugify(body.slug || businessName));
     const ins = await admin
       .from('sites')

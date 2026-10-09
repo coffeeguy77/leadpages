@@ -14,7 +14,7 @@ const { requireSuperAdmin } = require('../../lib/ai-composer/access');
 const { getPlatformBrain } = require('../../lib/brain/platform');
 const tiles = require('../../lib/ai-composer/tiles');
 const { appFieldSheet } = require('../../lib/ai-composer/catalogue');
-const { fillMessages, FILL_SCHEMA } = require('../../lib/ai-composer/prompts');
+const { fillMessages, FILL_SCHEMA, overlappingSections } = require('../../lib/ai-composer/prompts');
 const { sanitizeClientPlan } = require('../../lib/ai-composer/plan');
 const { normalizeFill } = require('../../lib/ai-composer/build-config');
 
@@ -52,16 +52,24 @@ module.exports = async function aiComposerFill(req, res) {
       photos: plan.photos
         .filter(function (p) { return p.sectionId === s.id; })
         .map(function (p) { return { id: p.id, description: p.description }; }),
-      imageUrls: tiles.sectionImageUrls(parsed, plan.design.width, s.rows)
+      imageUrls: tiles.sectionImageUrls(parsed, plan.design.width, s.rows),
+      neighbours: overlappingSections(plan, s)
     };
   });
+
+  // Optional: let the AI draft FAQ answers the design does not show, using facts
+  // from anywhere in the design (so the faq call also sees the overview tiles).
+  const draftFaq = !!(body.options && body.options.draftFaq) && batch.some(function (s) { return s.appKey === 'faq'; });
+  const overviewUrls = draftFaq
+    ? tiles.planTiles(plan.design.width, plan.design.height).map(function (t) { return tiles.tileUrl(parsed, plan.design.width, t); })
+    : [];
 
   const brain = getPlatformBrain();
   const result = await brain.generateStructured({
     taskId: 'composer.app_fill',
     promptId: 'composer.app_fill',
     actor: { userId: access.user.id, role: 'super' },
-    messages: fillMessages({ businessName: plan.businessName, items: items }),
+    messages: fillMessages({ businessName: plan.businessName, items: items, draftFaq: draftFaq, overviewUrls: overviewUrls }),
     temperature: 0.1,
     responseSchema: FILL_SCHEMA
   });
