@@ -89,6 +89,10 @@
       "destination": "/layout-composer.html"
     },
     {
+      "source": "/ai-composer",
+      "destination": "/ai-composer.html"
+    },
+    {
       "source": "/manage",
       "destination": "/manage.html"
     },
@@ -427,6 +431,12 @@
     },
     "api/domain-finder/rank.js": {
       "maxDuration": 30
+    },
+    "api/ai-composer/analyse.js": {
+      "maxDuration": 60
+    },
+    "api/ai-composer/fill.js": {
+      "maxDuration": 60
     }
   }
 }

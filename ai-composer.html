@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Composer — LeadPages</title>
+<link rel="icon" type="image/x-icon" href="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon-180.png">
+<meta name="theme-color" content="#12151a">
+<meta name="robots" content="noindex">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/lp-themes.css">
+<link rel="stylesheet" href="/assets/lp-admin-responsive.css">
+<link rel="stylesheet" href="/assets/lp-super-admin.css">
+<script src="/assets/lp-workspace-appearance.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
+<style>
+:root{--font-display:'Fraunces',Georgia,serif;--font-ui:'DM Sans',system-ui,sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--font-ui)}
+.hidden{display:none!important}
+.btn{appearance:none;border:1px solid var(--accent);background:transparent;color:var(--accent);font:600 13px/1 var(--font-ui);padding:9px 13px;border-radius:10px;cursor:pointer}
+.btn.solid{background:var(--accent);color:var(--accent-text,#fff)}
+.btn.ghost{border-color:var(--line-strong);color:var(--ink-soft)}
+.btn.small{padding:6px 9px;font-size:12px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.login-card{max-width:420px;margin:12vh auto;padding:28px;border:1px solid var(--line);border-radius:16px;background:var(--surface)}
+.field{margin:0 0 12px}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin:0 0 4px}
+.field input,.field textarea,.field select{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line-strong);background:var(--input-bg,transparent);color:var(--ink);font:inherit}
+.field textarea{min-height:70px;resize:vertical}
+.msg{font-size:13px;margin:8px 0 0}
+.msg.bad{color:var(--danger,#b91c1c)}
+.muted{color:var(--ink-soft)}
+.faint{color:var(--ink-faint)}
+
+/* Shell — uses the full width of large screens */
+.ac-top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:18px 24px;border-bottom:1px solid var(--line)}
+.ac-top h1{margin:0;font-family:var(--font-display);font-size:1.5rem}
+.ac-top .sub{margin:3px 0 0;color:var(--ink-soft);font-size:13px}
+.ac-steps{display:flex;gap:6px;flex-wrap:wrap}
+.ac-step{font-size:12px;font-weight:600;padding:6px 10px;border-radius:999px;border:1px solid var(--line);color:var(--ink-faint)}
+.ac-step.on{border-color:var(--accent);color:var(--accent)}
+.ac-step.done{background:var(--accent-soft,transparent);color:var(--accent);border-color:transparent}
+main{padding:20px 24px 48px}
+
+.card{padding:18px;border:1px solid var(--line);border-radius:14px;background:var(--surface);margin-bottom:16px}
+.card h2{margin:0 0 4px;font-family:var(--font-display);font-size:1.15rem}
+.card .lede{margin:0 0 14px;color:var(--ink-soft);font-size:13px;line-height:1.5}
+
+/* Upload */
+.drop{border:2px dashed var(--line-strong);border-radius:14px;padding:34px 20px;text-align:center;cursor:pointer;transition:border-color .15s}
+.drop:hover,.drop.over{border-color:var(--accent)}
+.drop strong{display:block;font-size:15px;margin-bottom:4px}
+.upload-wrap{max-width:760px;margin:0 auto}
+.preview-small{max-width:100%;max-height:340px;display:block;margin:14px auto 0;border-radius:10px;border:1px solid var(--line)}
+
+/* Working state */
+.working{display:flex;gap:14px;align-items:center;padding:22px;max-width:760px;margin:0 auto}
+.spin{width:22px;height:22px;border-radius:50%;border:3px solid var(--line-strong);border-top-color:var(--accent);animation:sp 0.9s linear infinite;flex:0 0 auto}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){.spin{animation:none}}
+
+/* Review */
+.review{display:grid;grid-template-columns:minmax(320px,1fr) minmax(420px,1.15fr);gap:20px;align-items:start}
+@media (max-width:980px){.review{grid-template-columns:1fr}}
+.design-pane{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto;border:1px solid var(--line);border-radius:14px;background:var(--surface-2,var(--surface))}
+@media (max-width:980px){.design-pane{position:static;max-height:70vh}}
+.design-stage{position:relative;width:100%}
+.design-stage img{display:block;width:100%;height:100%;object-fit:contain;object-position:top}
+.band{position:absolute;left:0;right:0;border:2px solid var(--accent);border-radius:4px;background:color-mix(in srgb,var(--accent) 7%,transparent);cursor:pointer}
+.band .tag{position:absolute;top:4px;left:4px;font:700 11px/1 var(--font-ui);background:var(--accent);color:var(--accent-text,#fff);padding:4px 6px;border-radius:5px;max-width:90%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.band.hot{background:color-mix(in srgb,var(--accent) 20%,transparent)}
+.pbox{position:absolute;border:2px dashed #f59e0b;border-radius:3px;pointer-events:none}
+.side{display:grid;grid-template-columns:1fr;gap:16px}
+@media (min-width:1700px){.side{grid-template-columns:1.25fr 1fr}.side .span2{grid-column:1 / -1}}
+.sec-list{list-style:none;margin:0;padding:0}
+.sec{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:start;padding:10px 0;border-bottom:1px solid var(--line)}
+.sec:last-child{border-bottom:0}
+.sec .n{font:700 12px/28px var(--font-ui);text-align:center;border-radius:8px;background:var(--bg-soft,transparent);color:var(--ink-soft)}
+.sec .what{font-size:13px;font-weight:600;margin:0 0 4px}
+.sec .why{font-size:12px;color:var(--ink-soft);margin:4px 0 0}
+.sec select{width:100%;padding:7px 9px;border-radius:8px;border:1px solid var(--line-strong);background:var(--input-bg,transparent);color:var(--ink);font:inherit;font-size:13px}
+.sec .acts{display:flex;gap:4px}
+.sec.hot{background:color-mix(in srgb,var(--accent) 6%,transparent)}
+.swatches{display:flex;gap:10px;flex-wrap:wrap}
+.sw{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-soft)}
+.sw i{width:22px;height:22px;border-radius:6px;border:1px solid var(--line-strong);display:inline-block}
+.photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.photos figure{margin:0}
+.photos img{width:100%;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--line);display:block;background:var(--bg-soft)}
+.photos figcaption{font-size:11px;color:var(--ink-faint);margin-top:3px;line-height:1.3}
+.gaps{margin:0;padding-left:18px;font-size:13px}
+.gaps li{margin:0 0 6px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:600px){.grid2{grid-template-columns:1fr}}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+/* Build progress */
+.prog{list-style:none;margin:0;padding:0;max-width:760px}
+.prog li{display:flex;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--line-strong);flex:0 0 auto}
+.dot.run{background:#f59e0b}
+.dot.ok{background:#16a34a}
+.dot.bad{background:#dc2626}
+.done-card{max-width:760px}
+</style>
+</head>
+<body class="lp-super-admin">
+
+<div id="gate" class="login-card">
+  <h1 style="margin:0 0 6px;font-family:var(--font-display)">AI Composer</h1>
+  <p class="muted" style="margin:0 0 16px">Platform admins only. Upload a design and build a LeadPages site from it.</p>
+  <div class="field"><label for="email">Email</label><input id="email" type="email" autocomplete="username"></div>
+  <div class="field"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password"></div>
+  <button class="btn solid" id="login-btn" type="button">Sign in</button>
+  <p class="msg bad hidden" id="gate-msg"></p>
+</div>
+
+<div id="app" class="hidden">
+  <header class="ac-top">
+    <div>
+      <h1>AI Composer</h1>
+      <p class="sub">Design image → LeadPages apps → a site you edit in the normal editor</p>
+    </div>
+    <div class="bar">
+      <div class="ac-steps" id="steps">
+        <span class="ac-step" data-step="upload">1 · Upload</span>
+        <span class="ac-step" data-step="review">2 · Review</span>
+        <span class="ac-step" data-step="build">3 · Build</span>
+      </div>
+      <a class="btn ghost small" href="/manage">Editor</a>
+      <button class="btn ghost small" id="signout" type="button">Sign out</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- 1. Upload -->
+    <section id="v-upload" class="upload-wrap">
+      <div class="card">
+        <h2>Upload a design</h2>
+        <p class="lede">A screenshot or mockup of a whole page works best (PNG or JPG, up to 10 MB). The AI picks the closest LeadPages apps, copies the text and crops the photos. Fonts stay as the LeadPages template font.</p>
+        <div class="drop" id="drop" tabindex="0" role="button" aria-label="Choose a design image">
+          <strong>Drop the design here, or click to choose</strong>
+          <span class="muted" style="font-size:13px">PNG, JPG or WebP</span>
+        </div>
+        <input type="file" id="file" accept="image/png,image/jpeg,image/webp" class="hidden">
+        <img id="up-preview" class="preview-small hidden" alt="Selected design">
+        <p class="msg muted hidden" id="up-info"></p>
+        <div class="field" style="margin-top:14px">
+          <label for="notes">Notes for the AI (optional)</label>
+          <textarea id="notes" placeholder="e.g. This is a café in Canberra. Ignore the cookie banner."></textarea>
+        </div>
+        <div class="bar">
+          <button class="btn solid" id="analyse-btn" type="button" disabled>Analyse design</button>
+          <span class="msg bad hidden" id="up-msg"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- working -->
+    <section id="v-working" class="hidden">
+      <div class="card working"><span class="spin"></span><div><strong id="work-title">Working…</strong><p class="muted" style="margin:4px 0 0;font-size:13px" id="work-sub"></p></div></div>
+    </section>
+
+    <!-- 2. Review -->
+    <section id="v-review" class="hidden">
+      <div class="review">
+        <div class="design-pane"><div class="design-stage" id="stage"></div></div>
+        <div class="side">
+          <div class="card span2">
+            <h2>Site details</h2>
+            <p class="lede">Read from the design. Change anything before building.</p>
+            <div class="grid2">
+              <div class="field"><label for="biz">Business name</label><input id="biz"></div>
+              <div class="field"><label for="slug">Site address (slug)</label><input id="slug" placeholder="made from the name if blank"></div>
+              <div class="field"><label for="phone">Phone</label><input id="phone"></div>
+              <div class="field"><label for="emailf">Email</label><input id="emailf"></div>
+            </div>
+            <div class="swatches" id="swatches"></div>
+            <p class="msg muted" id="logo-line"></p>
+          </div>
+
+          <div class="card">
+            <h2>Page sections</h2>
+            <p class="lede">Top to bottom. Change the app, move sections or remove them. Each app can be used once; there is one hero and the footer stays last.</p>
+            <ul class="sec-list" id="secs"></ul>
+            <div class="bar" style="margin-top:12px">
+              <button class="btn solid" id="build-btn" type="button">Build site</button>
+              <button class="btn ghost" id="restart-btn" type="button">Start again</button>
+              <span class="msg bad hidden" id="rev-msg"></span>
+            </div>
+          </div>
+
+          <div>
+            <div class="card">
+              <h2>Photos cropped from the design</h2>
+              <p class="lede">These become the site's images. Positions are approximate — swap any in the editor.</p>
+              <div class="photos" id="photos"></div>
+            </div>
+            <div class="card">
+              <h2>Not matched</h2>
+              <p class="lede">Parts of the design with no matching LeadPages app. Add these by hand if you need them.</p>
+              <ul class="gaps" id="gaps"></ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Build -->
+    <section id="v-build" class="hidden">
+      <div class="card done-card">
+        <h2 id="build-title">Building the site</h2>
+        <p class="lede" id="build-lede">Copying the design's text into each app. This takes about 20–40 seconds per group of sections.</p>
+        <ul class="prog" id="prog"></ul>
+        <div class="bar" style="margin-top:14px">
+          <button class="btn solid hidden" id="retry-btn" type="button">Retry failed sections</button>
+          <button class="btn ghost hidden" id="drop-failed-btn" type="button">Leave failed sections out</button>
+          <button class="btn ghost hidden" id="back-review-btn" type="button">Back to review</button>
+          <span class="msg bad hidden" id="build-msg"></span>
+        </div>
+      </div>
+      <div class="card done-card hidden" id="done">
+        <h2>Site created</h2>
+        <p class="lede" id="done-lede"></p>
+        <ul class="gaps hidden" id="done-gaps" style="margin:0 0 14px"></ul>
+        <div class="bar">
+          <a class="btn solid" id="open-editor" href="#">Open in the editor</a>
+          <button class="btn ghost" id="another-btn" type="button">Compose another</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  var sb = window.supabase.createClient(window.__LP.url, window.__LP.anon);
+  var $ = function(id){ return document.getElementById(id); };
+  var FILL_BATCH = 2;        // sections per fill call
+  var FILL_PARALLEL = 3;     // fill calls at once
+  var MAX_BYTES = 10 * 1024 * 1024;
+
+  var S = { file:null, upload:null, plan:null, apps:[], appsByKey:{}, fills:{}, status:{}, hot:null };
+
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];}); }
+  function show(id, on){ $(id).classList.toggle('hidden', !on); }
+  function msg(id, text){ var el=$(id); el.textContent=text||''; el.classList.toggle('hidden', !text); }
+
+  async function token(){
+    var r = await sb.auth.getSession();
+    return (r && r.data && r.data.session && r.data.session.access_token) || null;
+  }
+
+  async function api(path, body){
+    var t = await token();
+    if(!t) throw new Error('Please sign in again.');
+    var res;
+    try{
+      res = await fetch(path, { method:'POST', headers:{'content-type':'application/json', Authorization:'Bearer '+t}, body: JSON.stringify(body||{}) });
+    }catch(_e){ throw new Error('Network error — check your connection and try again.'); }
+    var j = await res.json().catch(function(){ return {}; });
+    if(res.status === 504) throw new Error('The AI took longer than the 60-second limit. Try again, or use a shorter design.');
+    if(!res.ok || !j.ok) throw new Error(j.error || ('Request failed ('+res.status+')'));
+    return j;
+  }
+
+  function setStep(name){
+    var order = ['upload','review','build'];
+    var at = order.indexOf(name);
+    Array.prototype.forEach.call(document.querySelectorAll('.ac-step'), function(el){
+      var i = order.indexOf(el.getAttribute('data-step'));
+      el.classList.toggle('on', i === at);
+      el.classList.toggle('done', i < at);
+    });
+  }
+  function view(name){
+    ['v-upload','v-working','v-review','v-build'].forEach(function(id){ show(id, id === 'v-'+name); });
+    if(name !== 'working') setStep(name);
+  }
+  function working(title, sub){ $('work-title').textContent = title; $('work-sub').textContent = sub || ''; view('working'); }
+
+  // ---------- auth ----------
+  function showApp(){ show('gate', false); show('app', true); }
+  function showGate(text){ show('app', false); show('gate', true); msg('gate-msg', text); }
+  $('login-btn').onclick = async function(){
+    msg('gate-msg', '');
+    var r = await sb.auth.signInWithPassword({ email: $('email').value.trim(), password: $('password').value });
+    if(r.error) return msg('gate-msg', r.error.message);
+    showApp(); view('upload');
+  };
+  $('signout').onclick = async function(){ await sb.auth.signOut(); showGate(); };
+  sb.auth.getSession().then(function(r){
+    if(r && r.data && r.data.session){ showApp(); view('upload'); }
+  });
+
+  // ---------- upload ----------
+  function pick(file){
+    msg('up-msg', '');
+    if(!file) return;
+    if(!/^image\/(png|jpeg|webp)$/.test(file.type)) return msg('up-msg', 'Use a PNG, JPG or WebP image.');
+    if(file.size > MAX_BYTES) return msg('up-msg', 'That image is over 10 MB. Export it smaller (keep it at least 1200px wide so text stays readable).');
+    S.file = file; S.upload = null;
+    var url = URL.createObjectURL(file);
+    var img = $('up-preview');
+    img.onload = function(){
+      var w = img.naturalWidth, h = img.naturalHeight;
+      var note = w + ' × ' + h + 'px';
+      if(w < 900) note += ' — narrow images can make small text hard to read.';
+      if(h > w * 7) note += ' — very long page: the overview is read at lower detail, but each section is re-read at full size when building.';
+      $('up-info').textContent = note; show('up-info', true);
+    };
+    img.src = url; show('up-preview', true);
+    $('analyse-btn').disabled = false;
+  }
+  $('drop').onclick = function(){ $('file').click(); };
+  $('drop').onkeydown = function(e){ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); $('file').click(); } };
+  $('file').onchange = function(){ pick(this.files && this.files[0]); };
+  ['dragenter','dragover'].forEach(function(ev){ $('drop').addEventListener(ev, function(e){ e.preventDefault(); $('drop').classList.add('over'); }); });
+  ['dragleave','drop'].forEach(function(ev){ $('drop').addEventListener(ev, function(e){ e.preventDefault(); $('drop').classList.remove('over'); }); });
+  $('drop').addEventListener('drop', function(e){ pick(e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]); });
+
+  function rand(){ return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+
+  async function uploadDesign(file){
+    var t = await token(); if(!t) throw new Error('Please sign in again.');
+    var d = new Date();
+    var folder = 'leadpages/ai-composer/' + d.getFullYear() + String(d.getMonth()+1).padStart(2,'0');
+    var pid = folder + '/design-' + rand();
+    var sr = await fetch('/api/cloudinary/sign', { method:'POST', headers:{'content-type':'application/json', Authorization:'Bearer '+t}, body: JSON.stringify({ publicId: pid, assetFolder: folder }) });
+    if(!sr.ok) throw new Error('Could not authorise the upload ('+sr.status+').');
+    var s = await sr.json();
+    var fd = new FormData();
+    fd.append('file', file, file.name || 'design.png');
+    fd.append('api_key', s.apiKey); fd.append('timestamp', s.timestamp); fd.append('public_id', s.publicId);
+    if(s.assetFolder) fd.append('asset_folder', s.assetFolder);
+    if(s.overwrite) fd.append('overwrite', s.overwrite);
+    fd.append('signature', s.signature);
+    var cloud = (s.cloudName && /^[a-zA-Z0-9_\-]+$/.test(s.cloudName)) ? s.cloudName : 'dzx6x1hou';
+    var ur;
+    try{ ur = await fetch('https://api.cloudinary.com/v1_1/' + cloud + '/image/upload', { method:'POST', body: fd }); }
+    catch(_e){ throw new Error('Network error reaching Cloudinary — try a smaller image.'); }
+    var uj = await ur.json().catch(function(){ return {}; });
+    if(!ur.ok || !uj.secure_url) throw new Error((uj.error && uj.error.message) || ('Cloudinary rejected the upload ('+ur.status+').'));
+    return { url: uj.secure_url, width: uj.width, height: uj.height };
+  }
+
+  $('analyse-btn').onclick = async function(){
+    if(!S.file) return;
+    msg('up-msg', '');
+    try{
+      working('Uploading the design…');
+      if(!S.upload) S.upload = await uploadDesign(S.file);
+      working('Reading the design…', 'The AI is looking at every section and matching it to LeadPages apps. Usually 20–50 seconds.');
+      var j = await api('/api/ai-composer/analyse', { imageUrl: S.upload.url, width: S.upload.width, height: S.upload.height, notes: $('notes').value.trim() });
+      S.plan = j.plan; S.apps = j.apps || []; S.appsByKey = {};
+      S.apps.forEach(function(a){ S.appsByKey[a.key] = a; });
+      S.fills = {}; S.status = {};
+      renderReview();
+      view('review');
+    }catch(e){
+      view('upload'); msg('up-msg', e.message || String(e));
+    }
+  };
+
+  // ---------- review ----------
+  function designThumb(url){
+    // Smaller copy for the screen; analysis used full-size crops.
+    return url.replace('/image/upload/', '/image/upload/c_limit,w_1400/q_auto,f_auto/');
+  }
+
+  function renderReview(){
+    var p = S.plan;
+    $('biz').value = p.businessName || '';
+    $('phone').value = p.phone || '';
+    $('emailf').value = p.email || '';
+    $('slug').value = '';
+    var names = { pipe:'Brand', hivis:'Buttons', steel:'Header/footer', safety:'Highlights', lightBg:'Page background' };
+    $('swatches').innerHTML = Object.keys(names).map(function(k){
+      var v = p.theme && p.theme[k];
+      return '<span class="sw"><i style="background:'+esc(v || 'transparent')+'"></i>'+esc(names[k])+(v?' '+esc(v):' — template default')+'</span>';
+    }).join('');
+    $('logo-line').innerHTML = p.logo && p.logo.url
+      ? 'Logo cropped from the design: <img src="'+esc(p.logo.url)+'" alt="Logo" style="height:26px;vertical-align:middle;margin-left:6px;border-radius:4px">'
+      : 'No logo image found — the business name is shown as text.';
+    renderSections(); renderStage(); renderPhotos(); renderGaps();
+  }
+
+  function appOptions(selected, ownIndex){
+    var taken = {};
+    S.plan.sections.forEach(function(s, i){ if(i !== ownIndex) taken[s.appKey] = true; });
+    return S.apps.map(function(a){
+      var dis = taken[a.key] && a.key !== selected;
+      return '<option value="'+esc(a.key)+'"'+(a.key===selected?' selected':'')+(dis?' disabled':'')+'>'+esc(a.label)+(a.hero?' (hero)':'')+'</option>';
+    }).join('');
+  }
+
+  function renderSections(){
+    var secs = S.plan.sections;
+    $('secs').innerHTML = secs.map(function(s, i){
+      var last = i === secs.length - 1;
+      return '<li class="sec'+(S.hot===s.id?' hot':'')+'" data-id="'+esc(s.id)+'">' +
+        '<span class="n">'+(i+1)+'</span>' +
+        '<div><p class="what">'+esc(s.label)+'</p>' +
+        '<select data-act="app" data-i="'+i+'" aria-label="App for section '+(i+1)+'">'+appOptions(s.appKey, i)+'</select>' +
+        (s.reason ? '<p class="why">'+esc(s.reason)+'</p>' : '') + '</div>' +
+        '<div class="acts">' +
+          '<button class="btn ghost small" data-act="up" data-i="'+i+'" type="button" aria-label="Move up"'+(i===0?' disabled':'')+'>↑</button>' +
+          '<button class="btn ghost small" data-act="down" data-i="'+i+'" type="button" aria-label="Move down"'+(last?' disabled':'')+'>↓</button>' +
+          '<button class="btn ghost small" data-act="del" data-i="'+i+'" type="button" aria-label="Remove section">✕</button>' +
+        '</div></li>';
+    }).join('') || '<li class="muted" style="padding:10px 0">No sections — start again with another design.</li>';
+  }
+
+  function renderStage(){
+    var p = S.plan, W = p.design.width, H = p.design.height;
+    var html = '<img src="'+esc(designThumb(p.design.url))+'" alt="Uploaded design">';
+    p.sections.forEach(function(s, i){
+      if(s.synthetic) return;
+      var top = (s.rows.y0 / H * 100), hgt = ((s.rows.y1 - s.rows.y0) / H * 100);
+      var app = S.appsByKey[s.appKey];
+      html += '<div class="band'+(S.hot===s.id?' hot':'')+'" data-id="'+esc(s.id)+'" style="top:'+top+'%;height:'+hgt+'%">' +
+        '<span class="tag">'+(i+1)+' · '+esc(app ? app.label : s.appKey)+'</span></div>';
+    });
+    p.photos.forEach(function(ph){
+      html += '<div class="pbox" style="left:'+(ph.px.x/W*100)+'%;top:'+(ph.px.y/H*100)+'%;width:'+(ph.px.w/W*100)+'%;height:'+(ph.px.h/H*100)+'%"></div>';
+    });
+    $('stage').innerHTML = html;
+    // Hold the design's shape while the image loads, so section bands line up.
+    $('stage').style.aspectRatio = W + ' / ' + H;
+  }
+
+  function renderPhotos(){
+    var ps = S.plan.photos;
+    $('photos').innerHTML = ps.length ? ps.map(function(ph){
+      return '<figure><img loading="lazy" src="'+esc(ph.url)+'" alt="'+esc(ph.description||'Cropped photo')+'"><figcaption>'+esc(ph.id)+' · '+esc(ph.description||ph.role||'photo')+'</figcaption></figure>';
+    }).join('') : '<p class="muted" style="margin:0;font-size:13px">No photos found in the design.</p>';
+  }
+
+  function renderGaps(){
+    var g = S.plan.gaps || [];
+    $('gaps').innerHTML = g.length ? g.map(function(x){
+      return '<li><strong>'+esc(x.what)+'</strong>'+(x.suggestion?' — <span class="muted">'+esc(x.suggestion)+'</span>':'')+'</li>';
+    }).join('') : '<li class="muted">Everything in the design matched an app.</li>';
+  }
+
+  function setHot(id){
+    S.hot = id;
+    Array.prototype.forEach.call(document.querySelectorAll('[data-id]'), function(el){
+      el.classList.toggle('hot', el.getAttribute('data-id') === id);
+    });
+  }
+
+  $('stage').addEventListener('click', function(e){
+    var b = e.target.closest('.band'); if(!b) return;
+    var id = b.getAttribute('data-id'); setHot(id);
+    var li = document.querySelector('.sec[data-id="'+id+'"]'); if(li) li.scrollIntoView({ block:'nearest', behavior:'smooth' });
+  });
+
+  $('secs').addEventListener('click', function(e){
+    var btn = e.target.closest('button[data-act]');
+    if(!btn){ var li = e.target.closest('.sec'); if(li && e.target.tagName !== 'SELECT') setHot(li.getAttribute('data-id')); return; }
+    var i = Number(btn.getAttribute('data-i')), secs = S.plan.sections, act = btn.getAttribute('data-act');
+    if(act === 'up' && i > 0){ var a = secs[i-1]; secs[i-1] = secs[i]; secs[i] = a; }
+    if(act === 'down' && i < secs.length - 1){ var b = secs[i+1]; secs[i+1] = secs[i]; secs[i] = b; }
+    if(act === 'del'){
+      var gone = secs.splice(i, 1)[0];
+      S.plan.photos.forEach(function(ph){ if(ph.sectionId === gone.id) ph.sectionId = ''; });
+    }
+    renderSections(); renderStage();
+  });
+
+  $('secs').addEventListener('change', function(e){
+    var sel = e.target.closest('select[data-act="app"]'); if(!sel) return;
+    var i = Number(sel.getAttribute('data-i'));
+    S.plan.sections[i].appKey = sel.value;
+    delete S.fills[S.plan.sections[i].id];
+    renderSections(); renderStage();
+  });
+
+  function validatePlan(){
+    var secs = S.plan.sections, heroes = 0, seen = {};
+    if(!secs.length) return 'Add at least one section.';
+    for(var i = 0; i < secs.length; i++){
+      var a = S.appsByKey[secs[i].appKey];
+      if(!a) return 'Section '+(i+1)+' has an unknown app.';
+      if(seen[a.key]) return a.label + ' is used twice — each app can appear once.';
+      seen[a.key] = true;
+      if(a.hero){ heroes++; if(i > 1 || (i === 1 && secs[0].appKey !== 'emerg')) return 'Move the hero to the top of the page.'; }
+    }
+    if(heroes > 1) return 'Only one hero app per page.';
+    if(!$('biz').value.trim()) return 'Add a business name.';
+    return '';
+  }
+
+  $('restart-btn').onclick = function(){ S.plan = null; S.upload = null; S.file = null; $('file').value=''; show('up-preview', false); show('up-info', false); $('analyse-btn').disabled = true; view('upload'); };
+
+  // ---------- build ----------
+  function planForServer(){
+    var p = JSON.parse(JSON.stringify(S.plan));
+    p.businessName = $('biz').value.trim();
+    p.phone = $('phone').value.trim();
+    p.email = $('emailf').value.trim();
+    return p;
+  }
+
+  function renderProg(){
+    $('prog').innerHTML = S.plan.sections.map(function(s, i){
+      var st = S.status[s.id] || 'queued';
+      var app = S.appsByKey[s.appKey];
+      var label = { queued:'Waiting', run:'Reading the design…', ok:'Done', empty:'Done — no text found for this app', bad:'Failed' }[st] || st;
+      var dot = st === 'run' ? 'run' : (st === 'ok' || st === 'empty') ? 'ok' : st === 'bad' ? 'bad' : '';
+      return '<li><span class="dot '+dot+'"></span><span><strong>'+(i+1)+'. '+esc(app ? app.label : s.appKey)+'</strong> <span class="muted">— '+esc(s.label)+'</span><br><span class="faint">'+esc(label)+'</span></span></li>';
+    }).join('');
+  }
+
+  async function fillBatch(plan, ids){
+    ids.forEach(function(id){ S.status[id] = 'run'; }); renderProg();
+    try{
+      var j = await api('/api/ai-composer/fill', { plan: plan, sectionIds: ids });
+      (j.fills || []).forEach(function(f){ S.fills[f.sectionId] = f; S.status[f.sectionId] = f.filled ? 'ok' : 'empty'; });
+      ids.forEach(function(id){ if(S.status[id] === 'run') S.status[id] = 'bad'; });
+    }catch(e){
+      ids.forEach(function(id){ S.status[id] = 'bad'; });
+      S.lastError = e.message || String(e);
+    }
+    renderProg();
+  }
+
+  async function runFills(){
+    var plan = planForServer();
+    var todo = plan.sections.filter(function(s){ return !S.fills[s.id]; }).map(function(s){ return s.id; });
+    var batches = [];
+    for(var i = 0; i < todo.length; i += FILL_BATCH) batches.push(todo.slice(i, i + FILL_BATCH));
+    var next = 0;
+    async function worker(){ while(next < batches.length){ var b = batches[next++]; await fillBatch(plan, b); } }
+    var workers = [];
+    for(var w = 0; w < Math.min(FILL_PARALLEL, batches.length); w++) workers.push(worker());
+    await Promise.all(workers);
+  }
+
+  async function createSite(){
+    $('build-title').textContent = 'Creating the site…';
+    var plan = planForServer();
+    var fills = plan.sections.map(function(s){ return S.fills[s.id]; }).filter(Boolean);
+    var j = await api('/api/ai-composer/create-site', { plan: plan, fills: fills, businessName: plan.businessName, slug: $('slug').value.trim() });
+    $('build-title').textContent = 'Built';
+    $('build-lede').textContent = 'Every section was filled from the design.';
+    $('open-editor').href = j.manageUrl;
+    var gapList = j.gaps || [];
+    $('done-lede').textContent = '“' + j.site.business_name + '” is live at /' + j.site.slug + ' with ' + (j.sections || []).length + ' sections. ' +
+      (gapList.length ? 'These parts of the design were not built — add them by hand if you need them:' : 'Open it in the editor to adjust text, images and colours.');
+    $('done-gaps').innerHTML = gapList.map(function(x){
+      return '<li><strong>'+esc(x.what)+'</strong>'+(x.suggestion?' — <span class="muted">'+esc(x.suggestion)+'</span>':'')+'</li>';
+    }).join('');
+    show('done-gaps', gapList.length > 0);
+    show('done', true);
+  }
+
+  async function buildAll(){
+    msg('build-msg', ''); show('retry-btn', false); show('drop-failed-btn', false); show('back-review-btn', false); show('done', false);
+    $('build-title').textContent = 'Building the site';
+    renderProg();
+    await runFills();
+    var failed = S.plan.sections.filter(function(s){ return S.status[s.id] === 'bad'; });
+    if(failed.length){
+      $('build-title').textContent = failed.length + ' section' + (failed.length === 1 ? '' : 's') + ' could not be filled';
+      msg('build-msg', S.lastError || 'The AI did not return content for those sections.');
+      show('retry-btn', true); show('drop-failed-btn', true); show('back-review-btn', true);
+      return;
+    }
+    try{ await createSite(); }
+    catch(e){ msg('build-msg', e.message || String(e)); show('back-review-btn', true); show('retry-btn', true); }
+  }
+
+  $('build-btn').onclick = function(){
+    var err = validatePlan(); msg('rev-msg', err); if(err) return;
+    S.status = {};
+    S.plan.sections.forEach(function(s){ if(S.fills[s.id]) S.status[s.id] = S.fills[s.id].filled ? 'ok' : 'empty'; });
+    view('build'); buildAll();
+  };
+  $('retry-btn').onclick = function(){ S.lastError = ''; buildAll(); };
+  $('drop-failed-btn').onclick = function(){
+    S.plan.sections = S.plan.sections.filter(function(s){ return S.status[s.id] !== 'bad'; });
+    if(!S.plan.sections.length){ view('review'); renderReview(); return msg('rev-msg', 'No sections left to build.'); }
+    buildAll();
+  };
+  $('back-review-btn').onclick = function(){ renderReview(); view('review'); };
+  $('another-btn').onclick = function(){ $('restart-btn').onclick(); };
+})();
+</script>
+</body>
+</html>
