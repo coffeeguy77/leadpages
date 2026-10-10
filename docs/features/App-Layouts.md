@@ -21,7 +21,7 @@ Opt-in layouts for existing trade-template apps, added so AI Composer (and anyon
 | About Us | `layout: 'location'` + `address`, `hours`, `mapQuery`, `features[{icon,text}]` (uses existing `eyebrow`, `heading`, `intro`, `image`, `ctaLabel` → Google Maps directions) |
 | Special Offer | `layout: 'banner'`, `bgImage`, `ctaHref`, `points[].icon` |
 | How It Works | `sideImage`, `calloutTitle`, `calloutText`, `calloutLinkLabel`, `calloutLinkHref`, `calloutIcon` |
-| FAQ | `columns: 2`, `ctaLabel`, `ctaHref` |
+| FAQ | `columns: 2`, `ctaLabel`, `ctaHref` (no link = the button opens every answer), `emptyAnswer` (line for a question with no answer; two columns default to "call us on …") |
 | Bookings | `layout: 'hire'`, `hireHeading`, `icon`, `hireCtaLabel`, `dateLabel`, `timeLabel`, `durationLabel`, `openTime`, `closeTime`, `timeStep`, `durations[{label,days}]`, `points[{icon,text}]`, `rates[{label,price,unit,note}]`, `overlapHero` (default on), `bg`, `accent` |
 
 Icons are LeadPages icon names from `icons.js` (a short emoji typed in the editor is shown as text).
@@ -30,7 +30,9 @@ Icons are LeadPages icon names from `icons.js` (a short emoji typed in the edito
 
 - Put Bookings straight under the hero in **Position**; the card overlaps the hero's bottom edge (`overlapHero: false` turns that off).
 - **Live mode** — when the site has Bookings enabled with a `resource_hire` service and hire resources: "Check availability" quotes every vehicle through `POST /api/bookings/hire/quote` (`public: true`), shows price + availability, and books through `POST /api/bookings/public` (status `pending`; staff confirm in Bookings).
-- **Enquiry mode** — otherwise the request is written into the quote form's details box and the page scrolls there; with no quote form, the visitor is shown the phone number (or email).
+- **Enquiry mode** — otherwise a short form opens inside the bar (name, phone, email, notes) and the request is saved as a lead through `/api/leads` with the pick-up date, time and duration, so it lands in the site's leads and the owner's email.
+- The editor's Bookings panel shows whether Bookings is set up for the site (not switched on / on but no hire service or vehicles / live).
+- Backend pricing supports a weekday rate, a weekend rate and a public-holiday rate per vehicle; a separate Friday rate is not supported yet (the rate cards are display copy).
 - The rate cards are display copy from the editor; live prices come from Bookings.
 
 ## Fixes made alongside

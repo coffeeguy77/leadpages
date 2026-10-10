@@ -249,26 +249,58 @@
     });
   }
 
-  /** No online hire set up: hand the request to the quote form, or show the phone number. */
+  /**
+   * No online hire set up for this site: take the request right here as a lead
+   * (POST /api/leads, the same endpoint as the quote form) with the dates attached,
+   * so it lands in the site's leads and the owner's email.
+   */
   function enquiry(node, S, v) {
     var res = node.querySelector('.bkh-result');
-    var line = 'Hire request — pick up ' + nice(v.date) + ' at ' + v.time + ', ' + v.daysLabel + '.';
-    var quote = document.querySelector('[data-sec="quote"]');
-    var visible = quote && quote.offsetParent !== null && getComputedStyle(quote).display !== 'none';
-    var detail = document.getElementById('detail');
-    if (visible && detail) {
-      detail.value = line + (detail.value ? '\n' + detail.value : '');
-      res.innerHTML = '<p class="bkh-msg">Add your details below and we’ll confirm availability.</p>';
-      try { quote.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
-      setTimeout(function () { var n = document.getElementById('name'); if (n) try { n.focus({ preventScroll: true }); } catch (e) {} }, 600);
-      return;
-    }
     var C = cfgOf() || {};
-    var phone = txt(C.phone), phoneText = txt(C.phoneText) || phone;
-    var email = txt(C.email);
-    res.innerHTML = '<p class="bkh-msg">' + esc(line) + ' ' +
-      (phone ? 'Call <a href="tel:' + esc(phone) + '">' + esc(phoneText) + '</a> to lock it in.' :
-        (email ? 'Email <a href="mailto:' + esc(email) + '?subject=' + encodeURIComponent('Hire request') + '&body=' + encodeURIComponent(line) + '">' + esc(email) + '</a> to lock it in.' : 'Contact us to lock it in.')) + '</p>';
+    var SC = (typeof SITE_CONFIG !== 'undefined' && SITE_CONFIG) || {};
+    var line = 'Hire request \u2014 pick up ' + nice(v.date) + ' at ' + v.time + ', ' + v.daysLabel + '.';
+    var phone = txt(C.phone).replace(/[^0-9+]/g, ''), phoneText = txt(C.phoneText) || txt(C.phone);
+    var started = Date.now();
+    res.innerHTML = '<form class="bkh-details" novalidate><p class="bkh-qhead">' + esc(nice(v.date)) + ' \u00b7 ' + esc(v.time) + ' \u00b7 ' + esc(v.daysLabel) + '</p>' +
+      '<p class="bkh-msg bkh-small" style="margin:0 0 10px">Leave your details and we\u2019ll confirm availability' + (phone ? ' \u2014 or call <a href="tel:' + esc(phone) + '">' + esc(phoneText) + '</a>' : '') + '.</p>' +
+      '<div class="bkh-dgrid">' +
+      '<label><span>Name</span><input name="name" autocomplete="name" required></label>' +
+      '<label><span>Phone</span><input name="phone" type="tel" autocomplete="tel"></label>' +
+      '<label><span>Email</span><input name="email" type="email" autocomplete="email"></label>' +
+      '<label class="bkh-wide"><span>Anything we should know? (optional)</span><textarea name="notes" rows="2"></textarea></label>' +
+      '</div>' +
+      '<input type="text" name="lp_hp" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">' +
+      '<div class="bkh-dact"><button type="submit" class="bkh-go">Send hire request' + ARROW + '</button></div></form>';
+    var f = res.querySelector('form');
+    try { f.querySelector('input[name=name]').focus({ preventScroll: true }); } catch (e) {}
+    f.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var name = txt(f.name.value), ph = txt(f.phone.value), em = txt(f.email.value);
+      var old = f.querySelector('.bkh-err'); if (old) old.parentNode.removeChild(old);
+      var bad = !name ? 'Add your name.' : (!ph && !em ? 'Add a phone number or email.' : '');
+      if (bad) { f.insertAdjacentHTML('beforeend', '<p class="bkh-msg bkh-err">' + esc(bad) + '</p>'); return; }
+      var btn = f.querySelector('.bkh-go'); btn.disabled = true;
+      var attr = {};
+      try { if (window.LPAttribution && LPAttribution.leadFields) attr = LPAttribution.leadFields() || {}; } catch (e) {}
+      var body = Object.assign({
+        site: C.business || SC.business || '', siteId: C.siteId || SC.siteId || '', slug: C.slug || SC.slug || '',
+        kind: 'trade', name: name, phone: ph, email: em,
+        lp_hp: f.lp_hp.value || '', _t: started,
+        details: { job: 'Hire request', detail: line + (txt(f.notes.value) ? '\n' + txt(f.notes.value) : '') }
+      }, attr);
+      fetch('/api/leads', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+        .catch(function () { return null; })
+        .then(function (r) {
+          if (!r) {
+            btn.disabled = false;
+            f.insertAdjacentHTML('beforeend', '<p class="bkh-msg bkh-err">Network error \u2014 please try again' + (phone ? ' or call ' + esc(phoneText) : '') + '.</p>');
+            return;
+          }
+          track('lead', { location: 'bookingStorefront', type: 'hire_enquiry' });
+          res.innerHTML = '<div class="bkh-done">' + CHECK_CIRCLE + '<div><strong>Hire request sent</strong>' +
+            '<p>We\u2019ll be in touch to confirm availability for ' + esc(nice(v.date)) + '.</p></div></div>';
+        });
+    });
   }
 
   /** Pull the bar up over the hero when it sits directly under one. */
