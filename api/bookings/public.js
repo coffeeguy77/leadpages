@@ -55,10 +55,10 @@ module.exports = async function (req, res) {
       const { data: resources } = await admin
         .from('booking_resources')
         .select(
-          'id,name,public_name,resource_type,calendar_colour,image_url,hire_status,default_daily_rate_cents,bond_cents,short_description,description'
+          'id,name,public_name,resource_type,make,model,calendar_colour,image_url,hire_status,default_daily_rate_cents,bond_cents,description'
         )
         .eq('booking_system_id', pub.system.id)
-        .neq('hire_status', 'archived')
+        .eq('hire_status', 'active') // repairs / unavailable / archived vehicles are not offered
         .order('name');
       hireResources = resources || [];
     }
@@ -83,7 +83,8 @@ module.exports = async function (req, res) {
         timezone: pub.system.timezone,
         currency: pub.system.currency,
         phone: pub.system.phone,
-        email: pub.system.email
+        email: pub.system.email,
+        accent: /^#[0-9a-fA-F]{6}$/.test(String((pub.site.config && pub.site.config.accent) || '')) ? pub.site.config.accent : null
       },
       categories: categories || [],
       services: services || [],
@@ -227,6 +228,7 @@ module.exports = async function (req, res) {
         formResponses: body.form_responses,
         source: 'public',
         idempotencyKey: body.idempotency_key || null,
+        holdKey: body.hold_key ? String(body.hold_key).slice(0, 120) : null,
         force: false
       });
       if (!result.ok) return json(res, 409, result);

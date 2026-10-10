@@ -337,11 +337,11 @@
     if (!S || S.layout !== 'hire' || S.on !== true) return;
     if (document.querySelector('script[src^="/assets/lp-booking-hire.js"]')) return;
     if (!document.querySelector('link[href^="/assets/lp-booking-hire.css"]')) {
-      var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = '/assets/lp-booking-hire.css?v=1';
+      var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = '/assets/lp-booking-hire.css?v=2';
       document.head.appendChild(l);
     }
     window.__lpBkhCfg = C;
-    var s = document.createElement('script'); s.src = '/assets/lp-booking-hire.js?v=1'; s.async = true;
+    var s = document.createElement('script'); s.src = '/assets/lp-booking-hire.js?v=2'; s.async = true;
     document.body.appendChild(s);
   }
 

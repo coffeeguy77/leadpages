@@ -1010,9 +1010,9 @@ function injectBookingStorefront(html, slug, cfg) {
  */
 function injectBookingHireBar(html) {
   const block =
-    '<link rel="stylesheet" href="/assets/lp-booking-hire.css?v=1">' +
+    '<link rel="stylesheet" href="/assets/lp-booking-hire.css?v=2">' +
     '<section data-sec="bookingStorefront" class="sec booking-storefront bk-hire" id="bookingStorefront"></section>' +
-    '<script src="/assets/lp-booking-hire.js?v=1" defer></script>';
+    '<script src="/assets/lp-booking-hire.js?v=2" defer></script>';
   if (BOOKING_SECTION_RE.test(html)) {
     return html.replace(BOOKING_SECTION_RE, block);
   }

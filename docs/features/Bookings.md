@@ -168,6 +168,44 @@ Configurable hire booking type on top of the shared Bookings subsystem (not a tr
 ### Apply schema
 
 Bootstrap now also runs `db/bookings_hire.sql`, or apply manually after `bookings_schema.sql`.
+`db/bookings_hire_rls.sql` (run after it) switches on RLS and removes anon access for the hire tables.
+
+### Hire v2 — fleet desk, public flow, phone bookings
+
+No schema changes. Everything new lives in existing columns:
+
+| Thing | Where it's stored |
+|-------|-------------------|
+| Per-weekday rates (e.g. Friday $220) | `booking_resources.hire_meta.day_rates` = `{mon..sun: cents}` (blank = normal rate) |
+| Vehicle features / staff notes | `booking_resources.hire_meta.features`, `.staff_notes` |
+| Unavailable (repairs / private job) | `booking_schedule_exceptions` scope `resource`, kind `maintenance` or `block` |
+| Hire settings (times, lengths, terms, holidays, closed days) | `booking_systems.settings.hire` |
+| Which preset a business started from | `booking_systems.settings.preset` |
+
+Rate order for a day: public holiday → weekday rate → weekend rate → default.
+
+**Public (customers)**
+- Site bar `assets/lp-booking-hire.js` + flow `assets/lp-booking-flow.js` (month calendar with “N left” pills, scarcity line, choose vehicle, details, terms, done page with .ics + manage link).
+- API `api/bookings/hire/public.js`: `GET action=calendar`, `POST options | book | card_return`.
+- Online bookings are always created **pending**; staff approve. A pending request holds the vehicle.
+- Card saving: Stripe Checkout (setup mode) on the business's connected account. Only offered when `stripe_connect_account_id` is set (`acct_…`). Nothing is charged at booking.
+- Emails (`lib/bookings/hire/messages.js`): request received (customer + business email), confirmed, declined, cancelled.
+
+**Staff (`/bookings`)** — `assets/bk-fleet-admin.js`, API `api/bookings/hire/fleet.js` (site access checked):
+- Hire desk: requests to approve/decline, today's pick-ups and returns.
+- Fleet calendar: 14-day timeline per vehicle; click an empty day to book; blocks shown hatched.
+- Fleet: add/edit vehicles (make, model, rego, rates, weekday rates, bond, km), mark unavailable, archive.
+- Phone booking: find free vehicles, book in a few clicks, optional “book anyway” override, optional email.
+- Booking panel: picked up / returned / no-show / cancel, charge the saved card.
+- Hire settings + presets.
+
+### Presets (all booking types)
+
+`lib/bookings/presets.js` — truck, car, trailer, equipment, venue hire; barber, hair, beauty, massage, physio, trades, cleaning, mechanic, dog grooming, consultations, photography, classes, fitness. Applying a preset only adds what's missing (services by slug, opening hours when none exist, slot spacing on a fresh set-up). **Prices start blank** (“price on enquiry”) — the business sets its own.
+
+### Public booking page (`/book?slug=`)
+
+Step cards (service → date & time → details → confirm), month calendar from `GET /api/bookings/availability?month=YYYY-MM` (per-day `slots`, `spots`, `best`), slots carry `capacity` and `remaining` so classes show “3 left”. Hire services open the hire flow instead. A customer's own hold no longer blocks their own booking (`createBooking` `holdKey`).
 
 ---
 
