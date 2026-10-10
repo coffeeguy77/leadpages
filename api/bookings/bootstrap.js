@@ -111,10 +111,10 @@ module.exports = async function (req, res) {
     const client = new Client({ connectionString: url, ssl: { rejectUnauthorized: false } });
     try {
       await client.connect();
-      const sql = readSql('bookings_hire.sql');
-      await client.query(sql);
+      await client.query(readSql('bookings_hire.sql'));
+      await client.query(readSql('bookings_hire_rls.sql'));
       await client.end();
-      return json(res, 200, { ok: true, applied: ['bookings_hire.sql'], hire_only: true });
+      return json(res, 200, { ok: true, applied: ['bookings_hire.sql', 'bookings_hire_rls.sql'], hire_only: true });
     } catch (e) {
       try { await client.end(); } catch (_e) {}
       return json(res, 500, { ok: false, error: 'hire_migration_failed', message: String((e && e.message) || e) });
@@ -166,7 +166,8 @@ module.exports = async function (req, res) {
       'bookings_schema.sql',
       'bookings_rls.sql',
       'bookings_phase2.sql',
-      'bookings_hire.sql'
+      'bookings_hire.sql',
+      'bookings_hire_rls.sql'
     ]) {
       const sql = readSql(file);
       await client.query(sql);

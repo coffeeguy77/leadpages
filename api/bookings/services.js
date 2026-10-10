@@ -154,10 +154,13 @@ module.exports = async function (req, res) {
           ? 'booking_service_categories'
           : 'booking_services';
     if (!id) return json(res, 400, { ok: false, error: 'id_required' });
-    const patch = Object.assign({}, body);
-    delete patch.id;
-    delete patch.kind;
-    delete patch.site_id;
+    // Only plain column names, and never the keys that tie a row to a site/system.
+    const LOCKED = ['id', 'kind', 'site_id', 'booking_system_id', 'created_at', 'updated_at'];
+    const patch = {};
+    Object.keys(body).forEach(function (k) {
+      if (LOCKED.indexOf(k) >= 0 || !/^[a-z][a-z0-9_]{0,62}$/.test(k)) return;
+      patch[k] = body[k];
+    });
     patch.updated_at = new Date().toISOString();
     const { data, error } = await admin.from(table).update(patch).eq('id', id).eq('booking_system_id', system.id).select('*').single();
     if (error) return json(res, 400, { ok: false, error: error.message });
