@@ -27,7 +27,8 @@
  *   sections.serviceProcess.calloutTitle / calloutText / calloutLinkLabel / calloutLinkHref / calloutIcon
  *                                                      card over that photo
  *   sections.faq.columns = 2                           two-column questions
- *   sections.faq.ctaLabel / ctaHref                    "view all" button in the heading row
+ *   sections.faq.ctaLabel / ctaHref                    "view all" button (no link = opens every answer)
+ *   sections.faq.emptyAnswer                           line shown for a question with no answer
  */
 (function () {
   'use strict';
@@ -74,8 +75,21 @@
     if (/^[\w-]+$/.test(s)) return '#' + s;
     return fallback || '#quote';
   }
+  function shown(id) {
+    var n = sec(id);
+    return !!(n && getComputedStyle(n).display !== 'none');
+  }
   function bookingHref() {
-    return sec('bookingStorefront') ? '#bookingStorefront' : '#quote';
+    return shown('bookingStorefront') ? '#bookingStorefront' : contactHref();
+  }
+  /** Where an enquiry button goes when no link is set: the quote form, else the
+   *  booking bar, else a phone call — never a link to a section that isn't there. */
+  function contactHref() {
+    if (shown('quote')) return '#quote';
+    if (shown('bookingStorefront')) return '#bookingStorefront';
+    var C = cfgOf() || {};
+    var ph = txt(C.phone).replace(/[^0-9+]/g, '');
+    return ph ? 'tel:' + ph : '#quote';
   }
   function isExternal(h) { return /^https?:\/\//i.test(h); }
   function linkAttrs(h) {
@@ -152,7 +166,7 @@
       }).join('') + '</ul>';
     }
     if (txt(TB.ctaLabel)) {
-      html += '<a class="lpl-btn lpl-btn-outline tbx-cta" data-lpl="tbx" ' + linkAttrs(hrefOf(TB.ctaHref, '#quote')) + '>' + esc(TB.ctaLabel) + ARROW + '</a>';
+      html += '<a class="lpl-btn lpl-btn-outline tbx-cta" data-lpl="tbx" ' + linkAttrs(hrefOf(TB.ctaHref, contactHref())) + '>' + esc(TB.ctaLabel) + ARROW + '</a>';
     }
     node.classList.toggle('tbx-has-feats', feats.length > 0);
     if (html) host.insertAdjacentHTML('beforeend', html);
@@ -169,7 +183,9 @@
     clear(node, 'rv');
     var S = { rating: RV.summaryRating, text: RV.summaryText, ctaLabel: RV.summaryCtaLabel, ctaHref: RV.summaryCtaHref };
     var head = node.querySelector('.section-head');
-    var hasSum = !!(txt(S.rating) || txt(S.text) || txt(S.ctaLabel));
+    // "View all" needs somewhere to go (e.g. the Google reviews page); without a link it is hidden.
+    var hasBtn = !!(txt(S.ctaLabel) && txt(S.ctaHref));
+    var hasSum = !!(txt(S.rating) || txt(S.text) || hasBtn);
     node.classList.toggle('rv-has-summary', hasSum);
     if (head && hasSum) {
       var stars = '';
@@ -177,7 +193,7 @@
       var line = [txt(S.rating), txt(S.text)].filter(Boolean).join(' ');
       head.insertAdjacentHTML('beforeend', '<div class="rv-summary" data-lpl="rv">' +
         (txt(S.rating) || txt(S.text) ? '<span class="rv-sstars" aria-hidden="true">' + stars + '</span><span class="rv-stext">' + esc(line) + '</span>' : '') +
-        (txt(S.ctaLabel) ? '<a class="lpl-btn lpl-btn-ghost rv-sbtn" ' + linkAttrs(hrefOf(S.ctaHref, '#reviews')) + '>' + esc(S.ctaLabel) + ARROW + '</a>' : '') +
+        (hasBtn ? '<a class="lpl-btn lpl-btn-ghost rv-sbtn" ' + linkAttrs(hrefOf(S.ctaHref, '#reviews')) + '>' + esc(S.ctaLabel) + ARROW + '</a>' : '') +
         '</div>');
     }
     var cards = node.querySelectorAll('.reviews .review');
@@ -235,7 +251,7 @@
     if (on && bg) node.style.setProperty('--so-bg', 'url("' + bg + '")'); else node.style.removeProperty('--so-bg');
     var cta = node.querySelector('.so-cta');
     if (cta) {
-      var want = txt(SO.ctaHref) ? hrefOf(SO.ctaHref, '#quote') : (on ? bookingHref() : '');
+      var want = txt(SO.ctaHref) ? hrefOf(SO.ctaHref, contactHref()) : (on ? bookingHref() : '');
       if (want) cta.setAttribute('href', want);
       if (on && !cta.querySelector('.lpl-arrow')) cta.insertAdjacentHTML('beforeend', ARROW);
     }
@@ -264,7 +280,7 @@
       (hasCo ? '<div class="sp-callout">' + (txt(co.title) ? '<strong>' + esc(co.title) + '</strong>' : '') +
         '<div class="sp-c-body">' + (icon(co.icon || 'map-pin') ? '<span class="sp-c-ic">' + icon(co.icon || 'map-pin') + '</span>' : '') +
         '<div>' + (txt(co.text) ? '<p>' + esc(co.text) + '</p>' : '') +
-        (txt(co.linkLabel) ? '<a ' + linkAttrs(hrefOf(co.linkHref, '#quote')) + '>' + esc(co.linkLabel) + ARROW + '</a>' : '') +
+        (txt(co.linkLabel) ? '<a ' + linkAttrs(hrefOf(co.linkHref, contactHref())) + '>' + esc(co.linkLabel) + ARROW + '</a>' : '') +
         '</div></div></div>' : '') + '</div>');
   }
 
@@ -278,16 +294,38 @@
     var has = !!txt(FQ.ctaLabel);
     node.classList.toggle('faq-has-cta', has);
     if (head && has) {
-      head.insertAdjacentHTML('beforeend', '<a class="lpl-btn lpl-btn-outline faq-all" data-lpl="fq" ' + linkAttrs(hrefOf(FQ.ctaHref, '#faq')) + '>' + esc(FQ.ctaLabel) + ARROW + '</a>');
+      if (txt(FQ.ctaHref)) {
+        head.insertAdjacentHTML('beforeend', '<a class="lpl-btn lpl-btn-outline faq-all" data-lpl="fq" ' + linkAttrs(hrefOf(FQ.ctaHref, '#faq')) + '>' + esc(FQ.ctaLabel) + ARROW + '</a>');
+      } else {
+        // No separate FAQ page: the button opens (and closes) every answer here.
+        head.insertAdjacentHTML('beforeend', '<button type="button" class="lpl-btn lpl-btn-outline faq-all" data-lpl="fq" aria-expanded="false">' + esc(FQ.ctaLabel) + ARROW + '</button>');
+        var btn = head.querySelector('button.faq-all');
+        btn.addEventListener('click', function () {
+          var all = node.querySelectorAll('.faq details');
+          var open = btn.getAttribute('aria-expanded') !== 'true';
+          for (var k = 0; k < all.length; k++) { if (open) all[k].setAttribute('open', ''); else all[k].removeAttribute('open'); }
+          btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+      }
     }
-    if (Number(FQ.columns) === 2) {
-      // Questions without an answer stay closed and show no empty panel.
+    // A question saved without an answer opens to a short "ask us" line instead of
+    // an empty panel (two-column layout, or when sections.faq.emptyAnswer is set).
+    var fb = txt(FQ.emptyAnswer);
+    if (Number(FQ.columns) === 2 || fb) {
+      var ph = txt(C.phone).replace(/[^0-9+]/g, '');
+      var phText = txt(C.phoneText) || txt(C.phone);
+      var fbHtml = fb ? esc(fb) : (ph
+        ? 'Good question \u2014 call us on <a href="tel:' + esc(ph) + '">' + esc(phText) + '</a> and we\u2019ll answer it for you.'
+        : 'Good question \u2014 get in touch and we\u2019ll answer it for you.');
       var ds = node.querySelectorAll('.faq details');
       for (var i = 0; i < ds.length; i++) {
         var p = ds[i].querySelector('p');
-        var empty = !p || !txt(p.textContent);
+        var empty = !p || !txt(p.textContent) || p.getAttribute('data-lpl-fb') === '1';
         ds[i].classList.toggle('faq-noans', empty);
-        if (empty) ds[i].removeAttribute('open');
+        if (!empty) continue;
+        if (!p) { p = document.createElement('p'); ds[i].appendChild(p); }
+        p.setAttribute('data-lpl-fb', '1');
+        p.innerHTML = fbHtml;
       }
     }
   }

@@ -71,8 +71,14 @@ body{margin:0;font-family:var(--font);background:var(--bg);color:var(--ink);min-
   async function load(){
     if(!slug){ err('Missing business link (?slug=)'); return; }
     var r=await fetch('/api/bookings/public?slug='+encodeURIComponent(slug));
-    var j=await r.json();
-    if(!r.ok||!j.ok){ err(j.message||j.error||'Bookings unavailable'); return; }
+    var j=await r.json().catch(function(){ return {}; });
+    if(!r.ok||!j.ok){
+      var code=j&&j.error;
+      err(code==='not_found'
+        ? 'Online booking isn\u2019t switched on for this business yet. Please contact them directly to book.'
+        : (j.message||(code==='rate_limit'?'Too many requests \u2014 please try again in a minute.':'')||'Bookings unavailable right now. Please try again later.'));
+      return;
+    }
     state.catalogue=j;
     $('biz-name').textContent=j.business.name||'Book online';
     $('biz-meta').textContent=(j.business.timezone||'')+(j.business.phone?' · '+j.business.phone:'');
