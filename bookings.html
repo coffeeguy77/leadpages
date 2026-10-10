@@ -111,7 +111,7 @@ body.embed .nav h1{font-size:13px}
   </main>
 </div>
 <div id="side" class="panel hidden" role="dialog" aria-modal="true"></div>
-<script src="/assets/bk-fleet-admin.js?v=1"></script>
+<script src="/assets/bk-fleet-admin.js?v=2"></script>
 
 <script>
 (function(){
@@ -150,6 +150,8 @@ body.embed .nav h1{font-size:13px}
     });
     var X=window.__BKX;
     if(X && (v==='hiredesk'||v==='trucks'||v==='hiresettings'||(v==='fleet'&&X.isHire()))){ X[v]($('view-'+v)); return; }
+    // Not in hire mode yet: the Fleet calendar tab offers the hire set-ups instead of an empty screen.
+    if(X && v==='fleet' && X.setupHire){ X.setupHire($('view-fleet')); return; }
     if(v==='overview') loadOverview();
     if(v==='calendar') loadCalendar();
     if(v==='fleet') loadFleetCalendar();
