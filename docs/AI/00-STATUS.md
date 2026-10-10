@@ -105,7 +105,7 @@ Roadmap detail: [17-IMPLEMENTATION-ROADMAP](17-IMPLEMENTATION-ROADMAP.md).
 | Website Studio | `/theme-studio-v2` → `api/theme-studio/*` | **Yes** (On Ice; superuser only; flag `THEME_STUDIO_V2`) |
 | AI Website Team / Site Brain | `manage.html` → `api/site-brain/*`, `api/ai-team/*` | Site Brain persistence + Atlas advisory (Phase 1; no live config mutation) |
 | Marketing Hub | `/marketing-hub` → `ads.*` tasks | **Yes** (product default on; no Ads mutate) |
-| AI Composer | `/ai-composer` → `composer.design_plan`, `composer.app_fill` | **Yes** — Anthropic only (image input), no mock fallback, no retries |
+| AI Composer | `/ai-composer` → `composer.design_plan`, `composer.photo_check`, `composer.app_fill` | **Yes** — Anthropic only (image input), no mock fallback, no retries |
 
 Order / rollback: [16-MIGRATION-PLAN](16-MIGRATION-PLAN.md).
 

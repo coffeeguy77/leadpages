@@ -6,9 +6,9 @@ const assert = require('node:assert/strict');
 const { createBrain, createAnthropicAdapter, createOpenAIAdapter } = require('../lib/brain');
 const catalogue = require('../lib/ai-composer/catalogue');
 const tiles = require('../lib/ai-composer/tiles');
-const { normalizePlan, sanitizeClientPlan } = require('../lib/ai-composer/plan');
+const { normalizePlan, sanitizeClientPlan, photoCheckItems, applyPhotoCheck } = require('../lib/ai-composer/plan');
 const { normalizeFill, buildSiteConfig } = require('../lib/ai-composer/build-config');
-const { planMessages, fillMessages, PLAN_SCHEMA } = require('../lib/ai-composer/prompts');
+const { planMessages, fillMessages, PLAN_SCHEMA, overlappingSections } = require('../lib/ai-composer/prompts');
 
 const DESIGN_URL = 'https://res.cloudinary.com/dzx6x1hou/image/upload/v1790000000/leadpages/ai-composer/202610/design-abc.png';
 const DESIGN = { url: DESIGN_URL, width: 1440, height: 3000 };
@@ -216,7 +216,8 @@ test.describe('AI Composer plan normalisation', () => {
     assert.equal(plan.photos.length, 2, 'tiny icon box dropped, logo kept separately');
     assert.ok(plan.logo && /c_crop/.test(plan.logo.url));
     const hero = plan.photos.find((p) => p.description === 'barista');
-    assert.equal(hero.px.y, 0);
+    assert.ok(hero.px.y > 0 && hero.px.y < 40, 'box trimmed inward a little');
+    assert.ok(hero.px.w < 1440, 'width trimmed too');
     assert.ok(hero.url.startsWith('https://res.cloudinary.com/dzx6x1hou/image/upload/c_crop'));
     assert.equal(hero.sectionId, plan.sections.find((s) => s.appKey === 'heroSlider').id);
   });
@@ -284,7 +285,7 @@ test.describe('AI Composer site config', () => {
     assert.equal(cfg.services[0].title, 'Latte');
     assert.equal(cfg.sections.services.heading, 'Our menu');
     assert.equal(cfg.sections.services.intro, '', 'unfilled copy field blanked, not left to defaults');
-    assert.deepEqual(cfg.sections.footer.services, [], 'unfilled list emptied');
+    assert.equal(cfg.sections.footer.services, undefined, 'no footer links → no empty links column');
     assert.equal(cfg.phone, '0261234567');
     assert.equal(cfg.phoneText, '(02) 6123 4567');
     assert.equal(cfg.logo.mode, 'image');
@@ -359,5 +360,88 @@ test.describe('AI Composer site config', () => {
     assert.match(text, /sections\.services\.heading/);
     assert.match(text, /p2 = latte/);
     assert.ok(msgs[1].content.some((b) => b.type === 'image'));
+  });
+});
+
+test.describe('AI Composer fixes (round 2)', () => {
+  function onePlan(sections, photos) {
+    return sanitizeClientPlan({ design: DESIGN, businessName: 'Fix Co', sections, photos: photos || [] });
+  }
+
+  test('quote form field labels and job options are locked from the AI', () => {
+    const sheet = catalogue.appFieldSheet('quote');
+    const paths = sheet.fields.map((f) => f.path);
+    ['lblName', 'lblPhone', 'lblJob', 'lblSuburb', 'lblDetail', 'suburbPh', 'detailPh'].forEach((k) => {
+      assert.ok(!paths.includes('sections.quote.' + k), k + ' must not be writable');
+    });
+    assert.ok(!sheet.lists.some((l) => l.path === 'sections.quote.jobOptions'));
+    const plan = onePlan([{ id: 's1', appKey: 'quote', rows: { y0: 0, y1: 500 } }]);
+    const fills = [{ sectionId: 's1', appKey: 'quote', scalars: { 'sections.quote.lblName': 'Pick up date', 'sections.quote.formTitle': 'Check Truck Availability' }, lists: { 'sections.quote.jobOptions': [{ text: '1 Day' }] } }];
+    const cfg = buildSiteConfig(plan, fills, { businessName: 'Fix Co' });
+    assert.equal(cfg.sections.quote.lblName, undefined, 'label from design ignored');
+    assert.deepEqual(cfg.sections.quote.jobOptions.map((o) => o.text), ['General enquiry', 'Quote request', 'Booking', 'Something else']);
+    assert.equal(cfg.sections.quote.heading, 'Check Truck Availability', 'card title reused as heading');
+  });
+
+  test('layout choices only accept listed option values; text box with photo uses wrap', () => {
+    const plan = onePlan([{ id: 's1', appKey: 'textBox', rows: { y0: 0, y1: 800 } }], [{ id: 'p1', sectionId: 's1', px: { x: 0, y: 0, w: 400, h: 300 } }]);
+    const [fill] = normalizeFill({ apps: [{ appKey: 'textBox', fields: {
+      'sections.textBox.heading': 'Hello', 'sections.textBox.image': 'p1',
+      'sections.textBox.imageSide': 'left', 'sections.textBox.textAlign': 'diagonal' }, lists: {} }] }, plan.sections, plan);
+    assert.equal(fill.scalars['sections.textBox.imageSide'], 'left');
+    assert.ok(!('sections.textBox.textAlign' in fill.scalars), 'invalid option dropped');
+    const cfg = buildSiteConfig(plan, [fill], { businessName: 'Fix Co' });
+    assert.equal(cfg.sections.textBox.imageLayout, 'wrap');
+  });
+
+  test('text colours are not exposed; dark backgrounds and unreadable buttons are dropped', () => {
+    const svc = catalogue.appFieldSheet('services');
+    assert.ok(!svc.fields.some((f) => /titleColor|introColor|eyebrowColor/.test(f.path)));
+    const plan = onePlan([
+      { id: 's1', appKey: 'aboutUs', rows: { y0: 0, y1: 500 } },
+      { id: 's2', appKey: 'quote', rows: { y0: 500, y1: 900 } }]);
+    const fills = [
+      { sectionId: 's1', appKey: 'aboutUs', scalars: { 'sections.aboutUs.heading': 'Hi', 'sections.aboutUs.bg': '#101010' }, lists: {} },
+      { sectionId: 's2', appKey: 'quote', scalars: { 'sections.quote.heading': 'Ask', 'sections.quote.btnBg': '#fafafa' }, lists: {} }];
+    const cfg = buildSiteConfig(plan, fills, { businessName: 'Fix Co' });
+    assert.ok(!cfg.sections.aboutUs.bg, 'dark background dropped');
+    assert.ok(!cfg.sections.quote.btnBg, 'white button with white text dropped');
+  });
+
+  test('photo check tightens boxes inside the context crop and drops rejected photos', () => {
+    const plan = onePlan([{ id: 's1', appKey: 'services', rows: { y0: 0, y1: 1000 } }], [
+      { id: 'p1', sectionId: 's1', px: { x: 100, y: 100, w: 400, h: 300 } },
+      { id: 'p2', sectionId: 's1', px: { x: 600, y: 100, w: 200, h: 200 } }]);
+    const items = photoCheckItems(plan, ['p1', 'p2']);
+    assert.ok(items[0].ctx.w > 400, 'context crop has a margin');
+    const r = applyPhotoCheck(plan, items, { photos: [{ id: 'p1', keep: true, x: 10, y: 10, w: 50, h: 50 }, { id: 'p2', keep: false }] });
+    assert.deepEqual(r.removed, ['p2']);
+    const p1 = r.photos.find((p) => p.id === 'p1');
+    assert.ok(p1.px.x > items[0].ctx.x && p1.px.w < items[0].ctx.w);
+    assert.ok(p1.url.includes('c_crop,x_' + p1.px.x));
+  });
+
+  test('fill prompt names overlapping sections handled by other apps', () => {
+    const plan = onePlan([
+      { id: 's1', appKey: 'quote', label: 'Form', rows: { y0: 0, y1: 500 } },
+      { id: 's2', appKey: 'projectStats', label: 'Prices', rows: { y0: 0, y1: 500 } },
+      { id: 's3', appKey: 'faq', label: 'FAQ', rows: { y0: 900, y1: 1200 } }]);
+    assert.deepEqual(overlappingSections(plan, plan.sections[0]), ['Prices (projectStats app)']);
+    assert.deepEqual(overlappingSections(plan, plan.sections[2]), []);
+  });
+
+  test('excluded and dead fields: finance and serviceAreaMap not offered; specialOffer uses cta', () => {
+    const keys = catalogue.listAppKeys();
+    assert.ok(!keys.includes('finance') && !keys.includes('serviceAreaMap'));
+    const so = catalogue.appFieldSheet('specialOffer').fields.map((f) => f.path);
+    assert.ok(so.includes('sections.specialOffer.cta') && !so.includes('sections.specialOffer.ctaText'));
+  });
+
+  test('FAQ drafting adds the overview images and the drafting rule only when asked', () => {
+    const base = { businessName: 'X', items: [], overviewUrls: ['https://res.cloudinary.com/t.jpg'] };
+    const off = fillMessages(base);
+    const on = fillMessages(Object.assign({}, base, { draftFaq: true }));
+    assert.ok(!/FAQ ANSWERS/.test(off[0].content) && !off[1].content.some((b) => b.type === 'image'));
+    assert.ok(/FAQ ANSWERS/.test(on[0].content) && on[1].content.some((b) => b.type === 'image'));
   });
 });

@@ -186,6 +186,10 @@ main{padding:20px 24px 48px}
             <h2>Page sections</h2>
             <p class="lede">Top to bottom. Change the app, move sections or remove them. Each app can be used once; there is one hero and the footer stays last.</p>
             <ul class="sec-list" id="secs"></ul>
+            <label class="faq-opt hidden" id="faq-opt" style="display:flex;gap:8px;align-items:flex-start;margin-top:12px;font-size:13px">
+              <input type="checkbox" id="draft-faq" style="margin-top:2px">
+              <span>Draft answers for FAQ questions the design doesn't answer <span class="muted">— uses only facts in the design; listed for checking on the finish screen.</span></span>
+            </label>
             <div class="bar" style="margin-top:12px">
               <button class="btn solid" id="build-btn" type="button">Build site</button>
               <button class="btn ghost" id="restart-btn" type="button">Start again</button>
@@ -197,6 +201,7 @@ main{padding:20px 24px 48px}
             <div class="card">
               <h2>Photos cropped from the design</h2>
               <p class="lede">These become the site's images. Positions are approximate — swap any in the editor.</p>
+              <p class="msg bad hidden" id="photo-note" style="margin:0 0 10px"></p>
               <div class="photos" id="photos"></div>
             </div>
             <div class="card">
@@ -309,7 +314,7 @@ main{padding:20px 24px 48px}
     img.onload = function(){
       var w = img.naturalWidth, h = img.naturalHeight;
       var note = w + ' × ' + h + 'px';
-      if(w < 900) note += ' — narrow images can make small text hard to read.';
+      if(w < 1200) note += ' — under 1200px wide: photos cropped from it will look soft at full width. Export the design at 1440px wide or more if you can.';
       if(h > w * 7) note += ' — very long page: the overview is read at lower detail, but each section is re-read at full size when building.';
       $('up-info').textContent = note; show('up-info', true);
     };
@@ -358,13 +363,43 @@ main{padding:20px 24px 48px}
       var j = await api('/api/ai-composer/analyse', { imageUrl: S.upload.url, width: S.upload.width, height: S.upload.height, notes: $('notes').value.trim() });
       S.plan = j.plan; S.apps = j.apps || []; S.appsByKey = {};
       S.apps.forEach(function(a){ S.appsByKey[a.key] = a; });
-      S.fills = {}; S.status = {};
+      S.fills = {}; S.status = {}; S.draftFaq = false;
+      if(S.plan.photos.length){
+        working('Tidying the photo crops…', 'Trimming text, buttons and borders off each photo. Usually 10–30 seconds.');
+        await refinePhotos();
+      }
       renderReview();
       view('review');
     }catch(e){
       view('upload'); msg('up-msg', e.message || String(e));
     }
   };
+
+  // Re-check every photo crop (10 per call, 3 calls at once). A failed batch keeps
+  // its original crops so the review can still go ahead.
+  async function refinePhotos(){
+    var ids = S.plan.photos.map(function(p){ return p.id; });
+    var batches = [];
+    for(var i = 0; i < ids.length; i += 10) batches.push(ids.slice(i, i + 10));
+    var removed = {}, updated = {}, failed = 0, next = 0;
+    async function worker(){
+      while(next < batches.length){
+        var b = batches[next++];
+        try{
+          var j = await api('/api/ai-composer/refine-photos', { plan: S.plan, photoIds: b });
+          (j.photos || []).forEach(function(p){ updated[p.id] = p; });
+          (j.removed || []).forEach(function(id){ removed[id] = true; });
+        }catch(_e){ failed++; }
+      }
+    }
+    var ws = [];
+    for(var w = 0; w < Math.min(3, batches.length); w++) ws.push(worker());
+    await Promise.all(ws);
+    S.plan.photos = S.plan.photos
+      .filter(function(p){ return !removed[p.id]; })
+      .map(function(p){ return updated[p.id] || p; });
+    S.photoNote = failed ? 'Some photos could not be re-checked; their first crops are shown.' : '';
+  }
 
   // ---------- review ----------
   function designThumb(url){
@@ -387,6 +422,7 @@ main{padding:20px 24px 48px}
       ? 'Logo cropped from the design: <img src="'+esc(p.logo.url)+'" alt="Logo" style="height:26px;vertical-align:middle;margin-left:6px;border-radius:4px">'
       : 'No logo image found — the business name is shown as text.';
     renderSections(); renderStage(); renderPhotos(); renderGaps();
+    $('draft-faq').checked = !!S.draftFaq;
   }
 
   function appOptions(selected, ownIndex){
@@ -400,6 +436,8 @@ main{padding:20px 24px 48px}
 
   function renderSections(){
     var secs = S.plan.sections;
+    var hasFaq = secs.some(function(s){ return s.appKey === 'faq'; });
+    $('faq-opt').classList.toggle('hidden', !hasFaq);
     $('secs').innerHTML = secs.map(function(s, i){
       var last = i === secs.length - 1;
       return '<li class="sec'+(S.hot===s.id?' hot':'')+'" data-id="'+esc(s.id)+'">' +
@@ -435,6 +473,7 @@ main{padding:20px 24px 48px}
 
   function renderPhotos(){
     var ps = S.plan.photos;
+    msg('photo-note', S.photoNote || '');
     $('photos').innerHTML = ps.length ? ps.map(function(ph){
       return '<figure><img loading="lazy" src="'+esc(ph.url)+'" alt="'+esc(ph.description||'Cropped photo')+'"><figcaption>'+esc(ph.id)+' · '+esc(ph.description||ph.role||'photo')+'</figcaption></figure>';
     }).join('') : '<p class="muted" style="margin:0;font-size:13px">No photos found in the design.</p>';
@@ -520,7 +559,7 @@ main{padding:20px 24px 48px}
   async function fillBatch(plan, ids){
     ids.forEach(function(id){ S.status[id] = 'run'; }); renderProg();
     try{
-      var j = await api('/api/ai-composer/fill', { plan: plan, sectionIds: ids });
+      var j = await api('/api/ai-composer/fill', { plan: plan, sectionIds: ids, options: { draftFaq: !!S.draftFaq } });
       (j.fills || []).forEach(function(f){ S.fills[f.sectionId] = f; S.status[f.sectionId] = f.filled ? 'ok' : 'empty'; });
       ids.forEach(function(id){ if(S.status[id] === 'run') S.status[id] = 'bad'; });
     }catch(e){
@@ -534,6 +573,14 @@ main{padding:20px 24px 48px}
     var plan = planForServer();
     var todo = plan.sections.filter(function(s){ return !S.fills[s.id]; }).map(function(s){ return s.id; });
     var batches = [];
+    // With FAQ drafting on, the FAQ call also reads the whole design, so it runs on its own.
+    if(S.draftFaq){
+      var faqSec = plan.sections.find(function(s){ return s.appKey === 'faq'; });
+      if(faqSec && todo.indexOf(faqSec.id) >= 0){
+        todo = todo.filter(function(id){ return id !== faqSec.id; });
+        batches.push([faqSec.id]);
+      }
+    }
     for(var i = 0; i < todo.length; i += FILL_BATCH) batches.push(todo.slice(i, i + FILL_BATCH));
     var next = 0;
     async function worker(){ while(next < batches.length){ var b = batches[next++]; await fillBatch(plan, b); } }
@@ -546,7 +593,7 @@ main{padding:20px 24px 48px}
     $('build-title').textContent = 'Creating the site…';
     var plan = planForServer();
     var fills = plan.sections.map(function(s){ return S.fills[s.id]; }).filter(Boolean);
-    var j = await api('/api/ai-composer/create-site', { plan: plan, fills: fills, businessName: plan.businessName, slug: $('slug').value.trim() });
+    var j = await api('/api/ai-composer/create-site', { plan: plan, fills: fills, businessName: plan.businessName, slug: $('slug').value.trim(), options: { draftFaq: !!S.draftFaq } });
     $('build-title').textContent = 'Built';
     $('build-lede').textContent = 'Every section was filled from the design.';
     $('open-editor').href = j.manageUrl;
@@ -575,6 +622,13 @@ main{padding:20px 24px 48px}
     try{ await createSite(); }
     catch(e){ msg('build-msg', e.message || String(e)); show('back-review-btn', true); show('retry-btn', true); }
   }
+
+  $('draft-faq').addEventListener('change', function(){
+    S.draftFaq = this.checked;
+    // FAQ content depends on this choice, so refill it.
+    var f = S.plan.sections.find(function(s){ return s.appKey === 'faq'; });
+    if(f) delete S.fills[f.id];
+  });
 
   $('build-btn').onclick = function(){
     var err = validatePlan(); msg('rev-msg', err); if(err) return;

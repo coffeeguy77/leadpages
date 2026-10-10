@@ -437,6 +437,9 @@
     },
     "api/ai-composer/fill.js": {
       "maxDuration": 60
+    },
+    "api/ai-composer/refine-photos.js": {
+      "maxDuration": 60
     }
   }
 }
