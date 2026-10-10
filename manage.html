@@ -37,7 +37,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/lp-themes.css?v=layout-composer-btn-1">
+<link rel="stylesheet" href="/assets/lp-themes.css?v=ai-composer-btn-1">
 <link rel="stylesheet" href="/assets/lp-messages-embed.css">
 <link rel="stylesheet" href="/assets/lp-admin-responsive.css?v=hero-editor-mobile-1">
 <link rel="stylesheet" href="/assets/lp-quote-builder.css?v=oq-portal-style-1">
@@ -744,6 +744,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       <p class="sub" style="margin:0 0 4px">Choose a customer, demo, or partner site to manage. You'll only edit a site after selecting it.</p>
     </div>
     <a href="/layout-composer" id="lpl-layout-composer-top" class="btn" style="margin-right:8px">Layout Composer</a>
+    <a href="/ai-composer" id="lpl-ai-composer-top" class="btn" style="margin-right:8px;display:none">AI Composer</a>
     <a href="#" id="lpl-signout" class="btn lpl-btn-outline lpl-signout-top">Sign Out</a>
   </div>
   <div class="lpl-card">
@@ -3349,6 +3350,8 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       var sob=document.getElementById('lpl-signout'); if(sob) sob.onclick=function(e){ e.preventDefault(); signOutLP(); };
       var lct=document.getElementById('lpl-layout-composer-top');
       if(lct) lct.style.display=(role==='super')?'':'none';
+      var act=document.getElementById('lpl-ai-composer-top');
+      if(act) act.style.display=(role==='super')?'':'none';
       var toprow=document.querySelector('#lp-landing .lpl-toprow');
       var laa=document.getElementById('lpl-appearance');
       if(!laa&&toprow){
@@ -3412,10 +3415,12 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   }
   function _lplNewCard(){
     if(!_lplCanCreateSite()) return '';
-    return '<div class="lpl-create-row">'
+    return '<div class="lpl-create-row lpl-create-row-3">'
       +'<div class="lpl-newcard" id="lpl-newcard">+ New Site</div>'
       +'<div class="lpl-newcard lpl-composer-card" id="lpl-layout-composer" title="Design the layout first, then fill every app">'
       +'<span aria-hidden="true">▦</span> Layout Composer</div>'
+      +'<div class="lpl-newcard lpl-composer-card" id="lpl-ai-composer" title="Upload a design image and AI builds the site from LeadPages apps">'
+      +'<span aria-hidden="true">✦</span> AI Composer</div>'
       +'</div>';
   }
   function _lplSort(items){ var mode=LPL.sort||'updated'; return items.slice().sort(function(a,b){ var fa=a.is_favorite?0:1, fb=b.is_favorite?0:1; if(fa!==fb) return fa-fb; if(mode==='name') return (a.business_name||a.slug||'').toLowerCase().localeCompare((b.business_name||b.slug||'').toLowerCase()); if(mode==='leads'){ var la=(LPL.leads&&LPL.leads[a.id])||0, lb=(LPL.leads&&LPL.leads[b.id])||0; if(la!==lb) return lb-la; } var ua=a.updated_at?new Date(a.updated_at).getTime():0, ub=b.updated_at?new Date(b.updated_at).getTime():0; if(ua!==ub) return ub-ua; return (a.business_name||a.slug||'').toLowerCase().localeCompare((b.business_name||b.slug||'').toLowerCase()); }); }
@@ -3426,6 +3431,8 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     if(nc) nc.onclick=function(){ hideLanding(); openCreateSite(); };
     var lc=document.getElementById('lpl-layout-composer');
     if(lc) lc.onclick=function(){ window.location.href='/layout-composer'; };
+    var aic=document.getElementById('lpl-ai-composer');
+    if(aic) aic.onclick=function(){ window.location.href='/ai-composer'; };
   }
   function lplUpdateCounts(){
     var all=allSites||[];
@@ -6427,7 +6434,7 @@ function heroCtaCard(c){
     var ov=document.createElement('div'); ov.className='cs-ov'; ov.id='cs-ov';
     ov.innerHTML='<div class="cs-modal"><h2 style="margin:0 0 4px;">Create a new site</h2>'
       +'<p class="lede" style="margin:0 0 12px;">Same community trade system as Partner Demos \u2014 business name, location, and starter content. Create missing trades here too.</p>'
-      +'<p style="margin:0 0 16px;"><a class="btn ghost" href="/layout-composer" id="cs-layout-composer">Or use Layout Composer</a> <span class="hint">Layout first, then fill every app</span></p>'
+      +'<p style="margin:0 0 16px;"><a class="btn ghost" href="/layout-composer" id="cs-layout-composer">Or use Layout Composer</a> <a class="btn ghost" href="/ai-composer" id="cs-ai-composer">Or build from a design (AI Composer)</a> <span class="hint">Layout first, or upload a design image</span></p>'
       +'<div class="f"><label for="cs-biz">Business name</label><input id="cs-biz" class="tin" type="text" placeholder="e.g. Sparky Bros Electrical"></div>'
       +'<div class="row"><div class="f"><label for="cs-slug">Web address</label><input id="cs-slug" class="tin" type="text" placeholder="sparky-bros"><div id="cs-slug-stat" style="font-size:12.5px;min-height:16px;margin-top:4px;"></div></div>'
       +'<div class="f"><label for="cs-tpl">Type</label><select id="cs-tpl" class="tin"><option value="trade">Trade landing page</option><option value="broker-leads">Broker landing page</option><option value="broker-app">Broker calculator app</option></select></div></div>'
@@ -11879,6 +11886,18 @@ function heroCtaCard(c){
       var after=$('btn-newsite');
       if(after && after.parentNode) after.parentNode.insertBefore(lb, after.nextSibling);
       else bar.appendChild(lb);
+    }
+    // AI Composer — build a new site from an uploaded design image (super admins).
+    if(currentRole==='super' && !$('btn-ai-composer')){
+      var ab=document.createElement('button');
+      ab.className='btn';
+      ab.id='btn-ai-composer';
+      ab.textContent='AI Composer';
+      ab.title='Upload a design image and AI builds the site from LeadPages apps';
+      ab.addEventListener('click',function(){ window.location.href='/ai-composer'; });
+      var afterLc=$('btn-layout-composer')||$('btn-newsite');
+      if(afterLc && afterLc.parentNode) afterLc.parentNode.insertBefore(ab, afterLc.nextSibling);
+      else bar.appendChild(ab);
     }
     if(!$('btn-billing')){
       const bb=document.createElement('button'); bb.className='btn ghost'; bb.id='btn-billing'; bb.title='Billing'; bb.textContent='Billing';
