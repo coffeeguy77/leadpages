@@ -16,7 +16,7 @@ const {
 } = require('../../lib/bookings/auth');
 const { getAvailableSlots, explainUnavailable } = require('../../lib/bookings/availability');
 const { loadAvailabilityContext } = require('../../lib/bookings/service');
-const { addMinutes } = require('../../lib/bookings/time');
+const { addMinutes, ymdInZone } = require('../../lib/bookings/time');
 
 async function resolveSystemPublic(slug) {
   const admin = getAdmin();
@@ -93,6 +93,52 @@ module.exports = async function (req, res) {
       teamMemberId: teamMemberId
     });
     return json(res, 200, Object.assign({ ok: true }, result));
+  }
+
+  // Month view: ?month=YYYY-MM → per-day counts for the booking calendar.
+  const month = url.searchParams.get('month') || body.month;
+  if (month && !dateYmd) {
+    if (!/^\d{4}-\d{2}$/.test(String(month))) return json(res, 400, { ok: false, error: 'bad_month' });
+    const y = Number(month.slice(0, 4));
+    const m = Number(month.slice(5, 7));
+    const daysIn = new Date(Date.UTC(y, m, 0)).getUTCDate();
+    const first = month + '-01T00:00:00.000Z';
+    const mctx = await loadAvailabilityContext(system, service, {
+      from: addMinutes(new Date(first), -24 * 60).toISOString(),
+      to: addMinutes(new Date(first), (daysIn + 2) * 24 * 60).toISOString(),
+      teamMemberId: teamMemberId
+    });
+    const days = {};
+    for (let d = 1; d <= daysIn; d++) {
+      const ymd = month + '-' + (d < 10 ? '0' : '') + d;
+      const r = getAvailableSlots({
+        system: system,
+        service: service,
+        dateYmd: ymd,
+        businessRules: mctx.businessRules,
+        serviceRules: mctx.serviceRules,
+        teamRules: mctx.teamRules,
+        exceptions: mctx.exceptions,
+        existingBookings: mctx.existingBookings,
+        holds: mctx.holds,
+        teamMemberId: teamMemberId
+      });
+      const slots = r.slots || [];
+      days[ymd] = {
+        slots: slots.length,
+        spots: slots.reduce(function (n, x) { return n + (Number(x.remaining) || 0); }, 0),
+        best: slots.reduce(function (n, x) { return Math.max(n, Number(x.remaining) || 0); }, 0),
+        closed: !slots.length && (r.reasons || []).some(function (x) { return x.code !== 'no_slots'; })
+      };
+    }
+    return json(res, 200, {
+      ok: true,
+      month: month,
+      timezone: system.timezone,
+      today: ymdInZone(new Date(), system.timezone || 'Australia/Sydney'),
+      capacity: Number(service.capacity) || 1,
+      days: days
+    });
   }
 
   if (!dateYmd) return json(res, 400, { ok: false, error: 'date_required' });

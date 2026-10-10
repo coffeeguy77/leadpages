@@ -26,7 +26,7 @@ const TEMPLATE_LIKE = '<html><head><style id="lp-fouc-guard">html:not(.lp-cfg-re
 test.describe('Bookings section rendering', () => {
   test('hire layout injects the bar shell, its stylesheet and script before the quote form', () => {
     const html = injectBooking(TEMPLATE_LIKE, 'hire-co', { sections: { bookingStorefront: { on: true, layout: 'hire' } } });
-    assert.match(html, /<link rel="stylesheet" href="\/assets\/lp-booking-hire\.css\?v=1"><section data-sec="bookingStorefront" class="sec booking-storefront bk-hire" id="bookingStorefront"><\/section><script src="\/assets\/lp-booking-hire\.js\?v=1" defer><\/script><section data-sec="quote"/);
+    assert.match(html, /<link rel="stylesheet" href="\/assets\/lp-booking-hire\.css\?v=\d+"><section data-sec="bookingStorefront" class="sec booking-storefront bk-hire" id="bookingStorefront"><\/section><script src="\/assets\/lp-booking-hire\.js\?v=\d+" defer><\/script><section data-sec="quote"/);
   });
 
   test('CTA layout is placed even though the page CSS mentions the section (was skipped before)', () => {

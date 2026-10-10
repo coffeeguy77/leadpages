@@ -3,12 +3,12 @@
  * Layout: sections.bookingStorefront.layout = 'hire'. render.js injects the
  * section shell + this script; everything else is drawn here from site config.
  *
- * Live mode: when the site has Bookings enabled with a resource_hire service and
- * hire resources, "Check availability" quotes each vehicle through
- * /api/bookings/hire/quote, shows price + availability, and books through
- * POST /api/bookings/public (status pending — staff confirm in Bookings).
- * Enquiry mode: otherwise the request is passed to the quote form (prefilled)
- * or, with no form on the page, the visitor is shown the phone number.
+ * Live mode: when the site has Bookings switched on with a hire service and vehicles,
+ * the date field opens a calendar showing how many vehicles are left each day, a
+ * "only 1 left" line nudges visitors, and "Check availability" opens the booking
+ * flow (assets/lp-booking-flow.js → /api/bookings/hire/public). Requests arrive as
+ * pending for staff to approve.
+ * Enquiry mode: otherwise the request is taken in the bar as a lead (/api/leads).
  *
  * Config (sections.bookingStorefront):
  *   hireHeading, icon, dateLabel, timeLabel, durationLabel, hireCtaLabel,
@@ -19,7 +19,7 @@
 (function () {
   'use strict';
 
-  var LAST = null, BOUND = false, PUB = null, STATE = { quotes: null, picked: null, done: null };
+  var LAST = null, BOUND = false;
 
   function cfgOf() { return LAST || window.__lpLiveCfg || ((typeof SITE_CONFIG !== 'undefined') ? SITE_CONFIG : null); }
   function esc(s) {
@@ -102,6 +102,7 @@
         (pts.length ? '<ul class="bkh-points">' + pts.map(function (p) {
           return '<li><span class="bkh-pic">' + (icon(p.icon) || CHECK_CIRCLE) + '</span>' + esc(p.text) + '</li>';
         }).join('') + '</ul>' : '') +
+        '<p class="bkh-scarce" hidden></p>' +
         '<div class="bkh-result" aria-live="polite"></div>' +
       '</div>' +
       (rates.length ? '<div class="bkh-rates">' + rates.map(function (r) {
@@ -115,137 +116,116 @@
     wire(node, S);
   }
 
+  function slugOf() {
+    var C = cfgOf() || {};
+    return txt(C.slug) || ((typeof SITE_CONFIG !== 'undefined' && SITE_CONFIG.slug) || '');
+  }
+
+  /** Loads the booking flow script once; resolves with window.LPBookingFlow. */
+  var FLOW_P = null;
+  function flowScript() {
+    if (window.LPBookingFlow) return Promise.resolve(window.LPBookingFlow);
+    if (FLOW_P) return FLOW_P;
+    FLOW_P = new Promise(function (resolve) {
+      var sc = document.createElement('script');
+      sc.src = '/assets/lp-booking-flow.js?v=1';
+      sc.async = true;
+      sc.onload = function () { resolve(window.LPBookingFlow || null); };
+      sc.onerror = function () { resolve(null); };
+      document.head.appendChild(sc);
+    });
+    return FLOW_P;
+  }
+
+  /** Live = Bookings on, a hire service and at least one vehicle. */
+  function liveCalendar() {
+    var slug = slugOf();
+    if (!slug) return Promise.resolve(null);
+    return flowScript().then(function (F) {
+      if (!F) return null;
+      return F.load(slug).then(function (cal) { return cal && cal.live ? { F: F, cal: cal } : null; });
+    });
+  }
+
+  /** "Only 1 truck left this Saturday" — nearest nearly-full day in the next fortnight. */
+  function scarcity(node, live) {
+    var box = node.querySelector('.bkh-scarce');
+    if (!box || !live) return;
+    var cal = live.cal, days = cal.days || {}, keys = Object.keys(days).sort();
+    var terms = (cal.settings && cal.settings.terms) || { singular: 'truck', plural: 'trucks' };
+    var hit = null;
+    for (var i = 0; i < keys.length && i < 15; i++) {
+      var d = days[keys[i]];
+      if (d && !d.past && !d.closed && d.total > 1 && d.free > 0 && d.free <= Math.max(1, Math.floor(d.total / 3))) { hit = { ymd: keys[i], d: d }; break; }
+    }
+    if (!hit) { box.hidden = true; return; }
+    var label = hit.d.free === 1 ? 'Only 1 ' + terms.singular.toLowerCase() + ' left' : 'Only ' + hit.d.free + ' ' + terms.plural.toLowerCase() + ' left';
+    box.innerHTML = '<span class="bkh-scarce-dot" aria-hidden="true"></span><strong>' + esc(label) + '</strong> for ' + esc(nice(hit.ymd)) + ' \u2014 ' + (hit.d.total - hit.d.free) + ' of ' + hit.d.total + ' already booked. Lock in your date now.';
+    box.hidden = false;
+  }
+
   function wire(node, S) {
     var form = node.querySelector('.bkh-form');
     var date = form.querySelector('input[name=date]');
-    date.addEventListener('focus', function () {
-      if (date.type !== 'date') {
-        date.type = 'date';
-        date.min = todayYmd();
-        try { if (date.showPicker) date.showPicker(); } catch (e) {}
-      }
+    var LIVE = null;
+
+    function nativeDate() {
+      date.addEventListener('focus', function () {
+        if (LIVE) return;
+        if (date.type !== 'date') {
+          date.type = 'date';
+          date.min = todayYmd();
+          try { if (date.showPicker) date.showPicker(); } catch (e) {}
+        }
+      });
+      date.addEventListener('blur', function () { if (!LIVE && !date.value) date.type = 'text'; });
+    }
+    nativeDate();
+
+    liveCalendar().then(function (live) {
+      if (!live || !node.isConnected) return;
+      LIVE = live;
+      node.classList.add('bkh-live');
+      date.type = 'text';
+      date.readOnly = true;
+      var openCal = function (e) {
+        if (e) e.preventDefault();
+        live.F.calendarPopover(date, date.getAttribute('data-ymd') || '', function (ymd) {
+          date.setAttribute('data-ymd', ymd);
+          date.value = nice(ymd);
+          var info = live.F.dayInfo(ymd);
+          var res = node.querySelector('.bkh-result');
+          if (info && info.free === 1) res.innerHTML = '<p class="bkh-msg bkh-hot">Only one left for ' + esc(nice(ymd)) + ' \u2014 book now to lock it in.</p>';
+          else res.innerHTML = '';
+        });
+      };
+      date.addEventListener('click', openCal);
+      date.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') openCal(e); });
+      scarcity(node, live);
     });
-    date.addEventListener('blur', function () { if (!date.value) date.type = 'text'; });
+
     form.addEventListener('submit', function (ev) {
       ev.preventDefault();
-      var v = { date: date.value, time: form.time.value, days: Number(form.days.value) || 1,
+      var ymd = LIVE ? (date.getAttribute('data-ymd') || '') : date.value;
+      var v = { date: ymd, time: form.time.value, days: Number(form.days.value) || 1,
         daysLabel: form.days.options[form.days.selectedIndex] ? form.days.options[form.days.selectedIndex].text : '' };
       var res = node.querySelector('.bkh-result');
+      track('cta_click', { location: 'bookingStorefront', action: 'check_availability' });
+      if (LIVE) {
+        res.innerHTML = '';
+        LIVE.F.open({
+          date: ymd || '',
+          time: v.time || '',
+          days: v.days,
+          durations: durations(S),
+          accent: getComputedStyle(node).getPropertyValue('--bkh-a').trim() || ''
+        });
+        return;
+      }
       if (!v.date) { res.innerHTML = '<p class="bkh-msg bkh-err">Choose a pick up date.</p>'; date.focus(); return; }
       if (v.date < todayYmd()) { res.innerHTML = '<p class="bkh-msg bkh-err">Choose a date from today onwards.</p>'; return; }
       if (!v.time) { res.innerHTML = '<p class="bkh-msg bkh-err">Choose a pick up time.</p>'; form.time.focus(); return; }
-      track('cta_click', { location: 'bookingStorefront', action: 'check_availability' });
-      check(node, S, v);
-    });
-  }
-
-  function loadPublic() {
-    if (PUB) return PUB;
-    var C = cfgOf() || {};
-    var slug = txt(C.slug) || ((typeof SITE_CONFIG !== 'undefined' && SITE_CONFIG.slug) || '');
-    PUB = fetch('/api/bookings/public?slug=' + encodeURIComponent(slug), { credentials: 'omit' })
-      .then(function (r) { return r.ok ? r.json() : null; })
-      .catch(function () { return null; });
-    return PUB;
-  }
-
-  function check(node, S, v) {
-    var res = node.querySelector('.bkh-result');
-    var btn = node.querySelector('.bkh-go');
-    btn.disabled = true;
-    res.innerHTML = '<p class="bkh-msg">Checking availability…</p>';
-    loadPublic().then(function (pub) {
-      var svc = pub && pub.ok && (pub.services || []).filter(function (s) { return s.booking_type === 'resource_hire'; })[0];
-      var resources = pub && pub.ok ? (pub.hire_resources || []).filter(function (r) { return r.hire_status !== 'unavailable'; }) : [];
-      if (!svc || !resources.length) { btn.disabled = false; return enquiry(node, S, v); }
-      var C = cfgOf() || {};
-      var siteId = C.siteId || ((typeof SITE_CONFIG !== 'undefined' && SITE_CONFIG.siteId) || '');
-      var tasks = resources.slice(0, 8).map(function (r) {
-        return fetch('/api/bookings/hire/quote', {
-          method: 'POST', headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ public: true, site_id: siteId, service_id: svc.id, resource_id: r.id, pickup_ymd: v.date, pickup_hm: v.time, duration_mode: 'multi_day', hire_days: v.days })
-        }).then(function (x) { return x.json().catch(function () { return null; }); })
-          .then(function (j) { return { r: r, q: j }; })
-          .catch(function () { return { r: r, q: null }; });
-      });
-      Promise.all(tasks).then(function (rows) {
-        btn.disabled = false;
-        var ok = rows.filter(function (x) { return x.q && x.q.ok; });
-        if (!ok.length) return enquiry(node, S, v);
-        STATE.quotes = { svc: svc, v: v, rows: ok };
-        showQuotes(node, S);
-      });
-    });
-  }
-
-  function showQuotes(node, S) {
-    var res = node.querySelector('.bkh-result');
-    var Q = STATE.quotes;
-    var any = Q.rows.some(function (x) { return x.q.availability && x.q.availability.ok !== false; });
-    res.innerHTML = '<div class="bkh-quotes"><p class="bkh-qhead">' + esc(nice(Q.v.date)) + ' · ' + esc(Q.v.daysLabel) + '</p>' +
-      Q.rows.map(function (x, i) {
-        var free = !x.q.availability || x.q.availability.ok !== false;
-        var q = x.q.quote || {};
-        var name = x.r.public_name || x.r.name;
-        return '<div class="bkh-q' + (free ? '' : ' bkh-q-off') + '">' +
-          (x.r.image_url ? '<img src="' + esc(x.r.image_url) + '" alt="" loading="lazy">' : '<span class="bkh-qic">' + icon('truck') + '</span>') +
-          '<div class="bkh-qtx"><strong>' + esc(name) + '</strong>' +
-            (q.total_cents != null ? '<span>' + money(q.total_cents) + ' total' + (q.bond_cents ? ' + ' + money(q.bond_cents) + ' bond' : '') + '</span>' : '') + '</div>' +
-          (free ? '<button type="button" class="bkh-pick" data-i="' + i + '">Book</button>' : '<span class="bkh-full">Booked out</span>') + '</div>';
-      }).join('') +
-      (any ? '' : '<p class="bkh-msg">Nothing free for those dates — try another day or call us.</p>') + '</div>';
-    Array.prototype.forEach.call(res.querySelectorAll('.bkh-pick'), function (b) {
-      b.addEventListener('click', function () { STATE.picked = Q.rows[Number(b.getAttribute('data-i'))]; showDetails(node, S); });
-    });
-  }
-
-  function showDetails(node, S) {
-    var res = node.querySelector('.bkh-result');
-    var P = STATE.picked, Q = STATE.quotes;
-    res.innerHTML = '<form class="bkh-details" novalidate><p class="bkh-qhead">' + esc(P.r.public_name || P.r.name) + ' · ' + esc(nice(Q.v.date)) + ' · ' + esc(Q.v.daysLabel) + '</p>' +
-      '<div class="bkh-dgrid">' +
-      '<label><span>Name</span><input name="name" autocomplete="name" required></label>' +
-      '<label><span>Phone</span><input name="phone" type="tel" autocomplete="tel"></label>' +
-      '<label><span>Email</span><input name="email" type="email" autocomplete="email"></label>' +
-      '<label class="bkh-wide"><span>Anything we should know? (optional)</span><textarea name="notes" rows="2"></textarea></label>' +
-      '</div>' +
-      '<label class="bkh-agree"><input type="checkbox" name="agree"> I accept the hire terms and cancellation policy</label>' +
-      '<div class="bkh-dact"><button type="submit" class="bkh-go">Request booking' + ARROW + '</button><button type="button" class="bkh-back">Back</button></div>' +
-      '<p class="bkh-msg bkh-small">We’ll confirm your booking by phone or email.</p></form>';
-    var f = res.querySelector('form');
-    f.querySelector('.bkh-back').addEventListener('click', function () { showQuotes(node, S); });
-    f.addEventListener('submit', function (ev) {
-      ev.preventDefault();
-      var name = txt(f.name.value), phone = txt(f.phone.value), email = txt(f.email.value);
-      var err = !name ? 'Add your name.' : (!phone && !email ? 'Add a phone number or email.' : (!f.agree.checked ? 'Please accept the hire terms.' : ''));
-      var old = f.querySelector('.bkh-err'); if (old) old.parentNode.removeChild(old);
-      if (err) { f.insertAdjacentHTML('beforeend', '<p class="bkh-msg bkh-err">' + esc(err) + '</p>'); return; }
-      var btn = f.querySelector('.bkh-go'); btn.disabled = true;
-      var C = cfgOf() || {};
-      var slug = txt(C.slug) || ((typeof SITE_CONFIG !== 'undefined' && SITE_CONFIG.slug) || '');
-      fetch('/api/bookings/public', {
-        method: 'POST', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          slug: slug, service_id: Q.svc.id, resource_id: P.r.id, booking_type: 'resource_hire',
-          pickup_ymd: Q.v.date, pickup_hm: Q.v.time, duration_mode: 'multi_day', hire_days: Q.v.days,
-          customer_name: name, customer_phone: phone, customer_email: email, customer_notes: txt(f.notes.value),
-          cancellation_policy_accepted: true,
-          idempotency_key: 'bkh-' + slug + '-' + P.r.id + '-' + Q.v.date + '-' + Q.v.time + '-' + (email || phone)
-        })
-      }).then(function (r) { return r.json().catch(function () { return { ok: false }; }); }).then(function (j) {
-        btn.disabled = false;
-        if (!j || !j.ok) {
-          var why = j && (j.error === 'capacity_full' || j.error === 'resource_unavailable' || j.error === 'conflict') ? 'That vehicle was just booked — pick another or another date.' : 'We couldn’t take the booking online. Please call us.';
-          f.insertAdjacentHTML('beforeend', '<p class="bkh-msg bkh-err">' + esc(why) + '</p>');
-          return;
-        }
-        track('lead', { location: 'bookingStorefront', type: 'hire_booking' });
-        res.innerHTML = '<div class="bkh-done">' + CHECK_CIRCLE + '<div><strong>Booking request received' + (j.booking && j.booking.reference ? ' — ' + esc(j.booking.reference) : '') + '</strong>' +
-          '<p>We’ll be in touch to confirm. ' + (j.portal_url ? '<a href="' + esc(j.portal_url) + '">Manage your booking</a>' : '') + '</p></div></div>';
-      }).catch(function () {
-        btn.disabled = false;
-        f.insertAdjacentHTML('beforeend', '<p class="bkh-msg bkh-err">Network error — please try again.</p>');
-      });
+      enquiry(node, S, v);
     });
   }
 
@@ -365,7 +345,7 @@
       node.classList.add('bk-hire'); node.__bkhKey = null;
     }
     var key = JSON.stringify(S) + '|' + (C.phone || '') + '|' + (C.email || '');
-    if (node.__bkhKey !== key) { node.__bkhKey = key; STATE.quotes = null; render(node, C); }
+    if (node.__bkhKey !== key) { node.__bkhKey = key; render(node, C); }
     overlap(node, S);
     return created;
   }
@@ -382,7 +362,16 @@
       w.__bkhWrapped = true; window.__applyTradeConfig = w; BOUND = true;
     }
   }
-  function init() { bind(); var c = window.__lpBkhCfg; window.__lpBkhCfg = null; var made = run(c || undefined); if (made && typeof window.__applyTradeConfig === 'function') { try { window.__applyTradeConfig(c || cfgOf()); } catch (e) {} } }
+  function init() {
+    bind();
+    var c = window.__lpBkhCfg; window.__lpBkhCfg = null;
+    var made = run(c || undefined);
+    if (made && typeof window.__applyTradeConfig === 'function') { try { window.__applyTradeConfig(c || cfgOf()); } catch (e) {} }
+    // Back from Stripe after saving a card: show the confirmation.
+    if (/[?&]bkh_ref=/.test(location.search)) {
+      flowScript().then(function (F) { if (F) F.resumeFromStripe(slugOf()); });
+    }
+  }
   if (document.readyState !== 'loading') init(); else document.addEventListener('DOMContentLoaded', init);
   setTimeout(bind, 0);
   window.addEventListener('load', function () { setTimeout(function () { try { run(); } catch (e) {} }, 60); });
