@@ -1519,8 +1519,10 @@ html[data-lp-site-theme="electric-blue"] #site-label .lp-sitepick-sel{
   width: 100%;
   box-sizing: border-box;
 }
+.lpl-create-row-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 @media (max-width: 640px) {
-  .lpl-create-row { grid-template-columns: 1fr; }
+  .lpl-create-row,
+  .lpl-create-row-3 { grid-template-columns: 1fr; }
 }
 .lpl-newcard {
   display: flex;

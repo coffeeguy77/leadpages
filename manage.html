@@ -37,7 +37,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/lp-themes.css?v=layout-composer-btn-1">
+<link rel="stylesheet" href="/assets/lp-themes.css?v=ai-composer-btn-1">
 <link rel="stylesheet" href="/assets/lp-messages-embed.css">
 <link rel="stylesheet" href="/assets/lp-admin-responsive.css?v=hero-editor-mobile-1">
 <link rel="stylesheet" href="/assets/lp-quote-builder.css?v=oq-portal-style-1">
@@ -744,6 +744,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       <p class="sub" style="margin:0 0 4px">Choose a customer, demo, or partner site to manage. You'll only edit a site after selecting it.</p>
     </div>
     <a href="/layout-composer" id="lpl-layout-composer-top" class="btn" style="margin-right:8px">Layout Composer</a>
+    <a href="/ai-composer" id="lpl-ai-composer-top" class="btn" style="margin-right:8px;display:none">AI Composer</a>
     <a href="#" id="lpl-signout" class="btn lpl-btn-outline lpl-signout-top">Sign Out</a>
   </div>
   <div class="lpl-card">
@@ -3349,6 +3350,8 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       var sob=document.getElementById('lpl-signout'); if(sob) sob.onclick=function(e){ e.preventDefault(); signOutLP(); };
       var lct=document.getElementById('lpl-layout-composer-top');
       if(lct) lct.style.display=(role==='super')?'':'none';
+      var act=document.getElementById('lpl-ai-composer-top');
+      if(act) act.style.display=(role==='super')?'':'none';
       var toprow=document.querySelector('#lp-landing .lpl-toprow');
       var laa=document.getElementById('lpl-appearance');
       if(!laa&&toprow){
@@ -3412,10 +3415,12 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   }
   function _lplNewCard(){
     if(!_lplCanCreateSite()) return '';
-    return '<div class="lpl-create-row">'
+    return '<div class="lpl-create-row lpl-create-row-3">'
       +'<div class="lpl-newcard" id="lpl-newcard">+ New Site</div>'
       +'<div class="lpl-newcard lpl-composer-card" id="lpl-layout-composer" title="Design the layout first, then fill every app">'
       +'<span aria-hidden="true">▦</span> Layout Composer</div>'
+      +'<div class="lpl-newcard lpl-composer-card" id="lpl-ai-composer" title="Upload a design image and AI builds the site from LeadPages apps">'
+      +'<span aria-hidden="true">✦</span> AI Composer</div>'
       +'</div>';
   }
   function _lplSort(items){ var mode=LPL.sort||'updated'; return items.slice().sort(function(a,b){ var fa=a.is_favorite?0:1, fb=b.is_favorite?0:1; if(fa!==fb) return fa-fb; if(mode==='name') return (a.business_name||a.slug||'').toLowerCase().localeCompare((b.business_name||b.slug||'').toLowerCase()); if(mode==='leads'){ var la=(LPL.leads&&LPL.leads[a.id])||0, lb=(LPL.leads&&LPL.leads[b.id])||0; if(la!==lb) return lb-la; } var ua=a.updated_at?new Date(a.updated_at).getTime():0, ub=b.updated_at?new Date(b.updated_at).getTime():0; if(ua!==ub) return ub-ua; return (a.business_name||a.slug||'').toLowerCase().localeCompare((b.business_name||b.slug||'').toLowerCase()); }); }
@@ -3426,6 +3431,8 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     if(nc) nc.onclick=function(){ hideLanding(); openCreateSite(); };
     var lc=document.getElementById('lpl-layout-composer');
     if(lc) lc.onclick=function(){ window.location.href='/layout-composer'; };
+    var aic=document.getElementById('lpl-ai-composer');
+    if(aic) aic.onclick=function(){ window.location.href='/ai-composer'; };
   }
   function lplUpdateCounts(){
     var all=allSites||[];
@@ -4135,7 +4142,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     var rb=$('ord-reset'); if(rb) rb.onclick=function(){ var prev=rects(); delete c.sectionOrder; persist(); previewApply(); draw(false); flip(prev); };
   }
   function presetKeyForSite(c){ var t=(c&&c.trade)||'Plumber'; if(TRADE_COLOUR_PRESETS[t]) return t; for(var k in TRADE_PACKS){ if(TRADE_PACKS[k].tradeType===t && TRADE_COLOUR_PRESETS[TRADE_PACKS[k].label]) return TRADE_PACKS[k].label; } return 'Plumber'; }
-  const TRADE_SUBTABS=[['details','Details'],['emerg','Top bar'],['hero','Hero'],['trustBar','Trust Bar'],['scrollingSponsorBanner','Scrolling Sponsor Banner'],['services','Services'],['serviceProcess','How It Works Steps'],['featureStrip','Feature Strip'],['why','Why us'],['area','Where'],['reviews','Reviews'],['promotions','Promotions'],['certifications','Certifications'],['finance','Finance Options'],['estimateBuilder','Estimate Builder'],['serviceAreaMap','Service Area Map'],['emergencyAvailability','Emergency Availability'],['seoTokens','Local tokens'],['beforeAfter','Before & After'],['responseCards','Response Cards'],['projectStats','Project Stats'],['serviceAreas','Service Areas'],['reviewHighlights','Review Highlights'],['featuredProjects','Project Portfolio'],['premiumGallery','Premium Gallery'],['specialOffer','Special Offer'],['heroBeforeAfter','Hero B/A Slider'],['heroSlider','Hero Slider'],['splitHero','Split Hero'],['activityCounter','Activity Counter'],['proofStream','Proof Stream'],['projectFeed','Project Feed'],['jobsFeed','Jobs Feed'],['beforeAfterFeed','Before/After Feed'],['videoReels','Video Reels'],['activityTimeline','Activity Timeline'],['customerReactions','Customer Reactions'],['searchCanvas','SearchCanvas'],['seoText','SEO Text'],['textBox','Text Box'],['aboutUs','About Us'],['crew','Team Members'],['onlineQuote','Online Quote'],['orderStorefront','Order Storefront'],['customHtml','Custom HTML'],['quote','Quote'],['faq','FAQ'],['mobileBar','Mobile'],['footer','Footer'],['branding','Branding'],['logo','Logo'],['navMenu','Menu'],['sectionOrder','Position'],['instaGallery','Instagram Gallery'],['igProjectFeed','Instagram Feed'],['lpFooter','LeadPages footer']];
+  const TRADE_SUBTABS=[['details','Details'],['emerg','Top bar'],['hero','Hero'],['trustBar','Trust Bar'],['scrollingSponsorBanner','Scrolling Sponsor Banner'],['services','Services'],['serviceProcess','How It Works Steps'],['featureStrip','Feature Strip'],['why','Why us'],['area','Where'],['reviews','Reviews'],['promotions','Promotions'],['certifications','Certifications'],['finance','Finance Options'],['estimateBuilder','Estimate Builder'],['serviceAreaMap','Service Area Map'],['emergencyAvailability','Emergency Availability'],['seoTokens','Local tokens'],['beforeAfter','Before & After'],['responseCards','Response Cards'],['projectStats','Project Stats'],['serviceAreas','Service Areas'],['reviewHighlights','Review Highlights'],['featuredProjects','Project Portfolio'],['premiumGallery','Premium Gallery'],['specialOffer','Special Offer'],['heroBeforeAfter','Hero B/A Slider'],['heroSlider','Hero Slider'],['splitHero','Split Hero'],['activityCounter','Activity Counter'],['proofStream','Proof Stream'],['projectFeed','Project Feed'],['jobsFeed','Jobs Feed'],['beforeAfterFeed','Before/After Feed'],['videoReels','Video Reels'],['activityTimeline','Activity Timeline'],['customerReactions','Customer Reactions'],['searchCanvas','SearchCanvas'],['seoText','SEO Text'],['textBox','Text Box'],['aboutUs','About Us'],['crew','Team Members'],['onlineQuote','Online Quote'],['orderStorefront','Order Storefront'],['bookingStorefront','Bookings'],['customHtml','Custom HTML'],['quote','Quote'],['faq','FAQ'],['mobileBar','Mobile'],['footer','Footer'],['branding','Branding'],['logo','Logo'],['navMenu','Menu'],['sectionOrder','Position'],['instaGallery','Instagram Gallery'],['igProjectFeed','Instagram Feed'],['lpFooter','LeadPages footer']];
   let landingSub='hero';
   const DEFAULT_TRADE_LISTS={'estimateBuilder.options':[
     {on:true,step:'What do you need?',label:'Tap or mixer repair',min:'150',max:'300'},
@@ -4261,7 +4268,13 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     premiumGalleryCategories:{secId:'premiumGallery',key:'categories',addLabel:'Add category',item:[{k:'name',label:'Name'},{k:'eyebrow',label:'Eyebrow'},{k:'intro',label:'Intro',type:'ta'},{k:'cover',type:'image',label:'Cover image'},{k:'slug',label:'URL slug'},{k:'badge',label:'Badge'}],defaultItem:{on:true,name:'New category',eyebrow:'',intro:'',cover:'',slug:'',badge:''}},
     premiumGalleryAlbums:{secId:'premiumGallery',key:'albums',addLabel:'Add album',item:[{k:'title',label:'Title'},{k:'categoryId',label:'Category id'},{k:'eyebrow',label:'Eyebrow'},{k:'intro',label:'Intro',type:'ta'},{k:'location',label:'Location'},{k:'cover',type:'image',label:'Cover image'},{k:'slug',label:'URL slug'}],defaultItem:{on:true,title:'New album',categoryId:'',eyebrow:'',intro:'',location:'',cover:'',slug:''}},
 featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project',item:[{k:'title',label:'Project title'},{k:'tag',label:'Type'},{k:'location',label:'Location'},{k:'services',label:'Services used (comma separated)',w:'1 1 100%'},{k:'description',label:'Description',type:'ta'},{k:'image',type:'image',label:'Cover image',ph:'https://\u2026 (optional)',hint:'\u2248 1200\u00d7800 px (3:2 landscape)'},{k:'imageFit',label:'Image fit',type:'select',opts:[['cover','Cover (fill & crop)'],['contain','Contain (fit, no crop)'],['fill','Stretch to fill']]},{k:'imagePos',label:'Image position',type:'select',opts:[['center','Centre'],['left','Left'],['right','Right'],['top','Top'],['bottom','Bottom']]},{k:'images',label:'Gallery image URLs (one per line)',type:'ta'}],defaultItem:{title:'New project',tag:'',location:'',services:'',description:'',image:'',imageFit:'cover',imagePos:'center',images:''}},
-    specialOfferPoints:{secId:'specialOffer',key:'points',addLabel:'Add point',item:[{k:'text',label:'Point'}],defaultItem:{text:''}},
+    specialOfferPoints:{secId:'specialOffer',key:'points',addLabel:'Add point',item:[{k:'icon',label:'Icon (photo banner layout)',type:'icon'},{k:'text',label:'Point'}],defaultItem:{text:''}},
+    heroSliderBadges:{secId:'heroSlider',key:'badges',addLabel:'Add badge',item:[{k:'icon',label:'Icon',type:'icon'},{k:'title',label:'Title'},{k:'text',label:'Small text'}],defaultItem:{on:true,icon:'circle-check',title:'New badge',text:''}},
+    textBoxFeatures:{secId:'textBox',key:'features',addLabel:'Add feature',item:[{k:'icon',label:'Icon',type:'icon'},{k:'text',label:'Feature'}],defaultItem:{on:true,icon:'circle-check',text:''}},
+    aboutUsFeatures:{secId:'aboutUs',key:'features',addLabel:'Add point',item:[{k:'icon',label:'Icon',type:'icon'},{k:'text',label:'Point'}],defaultItem:{on:true,icon:'circle-check',text:''}},
+    bookingPoints:{secId:'bookingStorefront',key:'points',addLabel:'Add point',item:[{k:'icon',label:'Icon',type:'icon'},{k:'text',label:'Point'}],defaultItem:{on:true,icon:'circle-check',text:''}},
+    bookingRates:{secId:'bookingStorefront',key:'rates',addLabel:'Add rate card',item:[{k:'label',label:'Label',ph:'Mon \u2013 Thu'},{k:'price',label:'Price',ph:'$150'},{k:'unit',label:'Unit',ph:'per 24 hours'},{k:'note',label:'Note',ph:'200km included'}],defaultItem:{on:true,label:'',price:'',unit:'',note:''}},
+    bookingDurations:{secId:'bookingStorefront',key:'durations',addLabel:'Add duration',item:[{k:'label',label:'Label',ph:'1 Day (24 hours)'},{k:'days',label:'Days',w:'90px',ph:'1'}],defaultItem:{on:true,label:'',days:'1'}},
     heroBeforeAfterFeatures:{secId:'heroBeforeAfter',key:'features',addLabel:'Add feature',item:[{k:'icon',label:'Icon (optional)',type:'icon'},{k:'label',label:'Feature text'}],defaultItem:{on:true,icon:'circle-check',label:''}},
     heroSlides:{secId:'heroSlider',key:'slides',addLabel:'Add slide',item:[{k:'imageUrl',label:'Background image',type:'image',ph:'https://\u2026 (optional)',hint:'\u2248 1920\u00d71080 px (landscape)'},{k:'imageFit',label:'Image fit',type:'select',opts:[['cover','Cover (fill & crop)'],['contain','Contain (fit, no crop)'],['fill','Fill'],['stretch','Stretch (distort)'],['blend','Cover + blend sides']]},{k:'imagePos',label:'Image position',type:'select',opts:[['center','Centre'],['left','Left'],['right','Right'],['top','Top'],['bottom','Bottom']]},{k:'bgColour',label:'Background / blend colour',type:'color'},{k:'eyebrow',label:'Eyebrow'},{k:'eyebrowColor',label:'Eyebrow colour',type:'color'},{k:'heading',label:'Heading'},{k:'headingColor',label:'Heading colour',type:'color'},{k:'highlightText',label:'Highlighted words'},{k:'highlightColor',label:'Highlight colour',type:'color'},{k:'subText',label:'Sub text',type:'ta'},{k:'featureTextColor',label:'Feature text colour',type:'color'},{k:'slideTextAlign',label:'Text alignment (this slide)',type:'select',opts:[['','Use slider default'],['left','Left'],['center','Centre'],['right','Right']]},{k:'primaryCtaText',label:'Primary button text'},{k:'primaryCtaAction',label:'Primary action',type:'select',opts:[['call','Call'],['quote','Quote'],['scroll','Custom app position'],['page','Landing page'],['url','URL (_blank)'],['none','Hidden']]},{k:'primaryCtaTarget',label:'Primary app / section',type:'select',opts:[['quote','Quote form'],['onlineQuote','Online Quote'],['customHtml','Custom HTML'],['estimateBuilder','Estimate Builder'],['finance','Finance Options'],['specialOffer','Special Offer'],['promotions','Promotions'],['emergencyAvailability','Emergency Availability'],['services','Services'],['serviceProcess','How It Works'],['why','Why us'],['reviews','Reviews'],['faq','FAQ'],['area','Where we work'],['crew','Team'],['beforeAfter','Before & After'],['featuredProjects','Project Portfolio'],['premiumGallery','Premium Gallery'],['serviceAreaMap','Service Area Map'],['projectFeed','Project Feed'],['jobsFeed','Jobs Feed']]},{k:'primaryCtaPage',label:'Primary landing page',type:'landingPage',w:'1 1 100%'},{k:'primaryCtaUrl',label:'Primary URL',ph:'https://\u2026',w:'1 1 100%'},{k:'primaryCtaBlank',label:'Primary: open URL in new tab',type:'check'},{k:'primaryCtaIcon',label:'Primary icon',type:'icon'},{k:'primaryCtaIconOnly',label:'Primary: icon only (no text)',type:'check'},{k:'primaryCtaBg',label:'Primary button colour',type:'color'},{k:'primaryCtaFill',label:'Primary: fill background',type:'check'},{k:'primaryCtaOutline',label:'Primary: outline / stroke',type:'check'},{k:'primaryCtaBorder',label:'Primary stroke colour',type:'color'},{k:'primaryCtaStrokeWidth',label:'Primary stroke thickness',type:'select',opts:[['fine','Fine (1px)'],['thin','Thin (1.5px)'],['medium','Medium (2px)'],['normal','Normal (2.5px)']]},{k:'primaryCtaFg',label:'Primary text colour',type:'color'},{k:'primaryCtaOpacity',label:'Primary background transparency',type:'range',min:0,max:100,def:100,suf:'%'},{k:'primaryCtaGlow',label:'Primary: outer glow',type:'check'},{k:'primaryCtaGlowColor',label:'Primary glow colour',type:'color'},{k:'secondaryCtaText',label:'Secondary button text'},{k:'secondaryCtaAction',label:'Secondary action',type:'select',opts:[['call','Call'],['quote','Quote'],['scroll','Custom app position'],['page','Landing page'],['url','URL (_blank)'],['none','Hidden']]},{k:'secondaryCtaTarget',label:'Secondary app / section',type:'select',opts:[['quote','Quote form'],['onlineQuote','Online Quote'],['customHtml','Custom HTML'],['estimateBuilder','Estimate Builder'],['finance','Finance Options'],['specialOffer','Special Offer'],['promotions','Promotions'],['emergencyAvailability','Emergency Availability'],['services','Services'],['serviceProcess','How It Works'],['why','Why us'],['reviews','Reviews'],['faq','FAQ'],['area','Where we work'],['crew','Team'],['beforeAfter','Before & After'],['featuredProjects','Project Portfolio'],['premiumGallery','Premium Gallery'],['serviceAreaMap','Service Area Map'],['projectFeed','Project Feed'],['jobsFeed','Jobs Feed']]},{k:'secondaryCtaPage',label:'Secondary landing page',type:'landingPage',w:'1 1 100%'},{k:'secondaryCtaUrl',label:'Secondary URL',ph:'https://\u2026',w:'1 1 100%'},{k:'secondaryCtaBlank',label:'Secondary: open URL in new tab',type:'check'},{k:'secondaryCtaIcon',label:'Secondary icon',type:'icon'},{k:'secondaryCtaIconOnly',label:'Secondary: icon only (no text)',type:'check'},{k:'secondaryCtaBg',label:'Secondary button colour',type:'color'},{k:'secondaryCtaFill',label:'Secondary: fill background',type:'check'},{k:'secondaryCtaOutline',label:'Secondary: outline / stroke',type:'check'},{k:'secondaryCtaBorder',label:'Secondary stroke colour',type:'color'},{k:'secondaryCtaStrokeWidth',label:'Secondary stroke thickness',type:'select',opts:[['fine','Fine (1px)'],['thin','Thin (1.5px)'],['medium','Medium (2px)'],['normal','Normal (2.5px)']]},{k:'secondaryCtaFg',label:'Secondary text colour',type:'color'},{k:'secondaryCtaOpacity',label:'Secondary background transparency',type:'range',min:0,max:100,def:100,suf:'%'},{k:'secondaryCtaGlow',label:'Secondary: outer glow',type:'check'},{k:'secondaryCtaGlowColor',label:'Secondary glow colour',type:'color'}],defaultItem:{imageUrl:'',imageFit:'cover',imagePos:'center',bgColour:'',slideTextAlign:'',eyebrow:'',eyebrowColor:'',heading:'',headingColor:'',highlightText:'',highlightColor:'',subText:'',featureTextColor:'',primaryCtaText:'Call Now',primaryCtaAction:'call',primaryCtaTarget:'quote',primaryCtaFill:true,primaryCtaOutline:false,primaryCtaStrokeWidth:'medium',primaryCtaBlank:true,secondaryCtaText:'Get A Fast Quote',secondaryCtaAction:'quote',secondaryCtaTarget:'customHtml',secondaryCtaFill:false,secondaryCtaOutline:true,secondaryCtaStrokeWidth:'medium',secondaryCtaBlank:true},rowHeader:heroSlideRowHeader},
     proofStream:{secId:'proofStream',key:'items',addLabel:'Add proof card',item:[{k:'type',label:'Card type',type:'select',opts:[['job','Completed job'],['photo','Photo'],['review','Review'],['video','Video'],['beforeafter','Before / After']]},{k:'title',label:'Title'},{k:'location',label:'Location'},{k:'time',label:'Time label'},{k:'text',label:'Result / quote',type:'ta'},{k:'who',label:'Reviewer name (review)'},{k:'rating',label:'Stars (review)',w:'120px'},{k:'image',type:'image',label:'Image URL'},{k:'afterImage',type:'image',label:'After image URL (before/after)'},{k:'videoUrl',label:'Video link (video)'},{k:'ctaText',label:'Button text'},{k:'ctaAction',label:'Button action',type:'select',opts:[['quote','Quote'],['call','Call'],['none','Hidden']]}],defaultItem:{type:'job',title:'New proof card',location:'',time:'Just now',text:'',who:'',rating:'\u2605\u2605\u2605\u2605\u2605',image:'',afterImage:'',videoUrl:'',ctaText:'Get a quote',ctaAction:'quote'}},
@@ -5310,7 +5323,7 @@ function wireQuoteStyle(c){
 
   function servicesModeCard(c){
     var SV=(c.sections&&c.sections.services)||{};
-    var mode=(SV.mode==='split'||SV.mode==='columns')?'split':((SV.mode==='cards'||SV.mode==='homepage'||SV.mode==='cap')?'cards':'grid');
+    var mode=(SV.mode==='split'||SV.mode==='columns')?'split':((SV.mode==='cards'||SV.mode==='homepage'||SV.mode==='cap')?'cards':(SV.mode==='tick'?'tick':'grid'));
     var accentOn=SV.accentOn!==false;
     var ac=(SV.accentColor&&/^#[0-9a-fA-F]{6}$/.test(SV.accentColor))?SV.accentColor:'';
     var defAc='#ff6a1f';
@@ -5327,7 +5340,7 @@ function wireQuoteStyle(c){
       return '<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:200px;"><label>'+label+'</label><div style="display:flex;align-items:center;gap:8px;"><input type="color" id="'+id+'-clr" value="'+(val||defv)+'" style="width:46px;height:34px;padding:0;border:1px solid var(--line);border-radius:8px;cursor:pointer;flex:0 0 auto;"><input type="text" id="'+id+'-tx" class="tin" value="'+val+'" placeholder="'+defv+' (default)" style="flex:1;min-width:0;"><button type="button" class="btn ghost" id="'+id+'-def" style="padding:6px 10px;">Default</button></div></div>';
     }
     var h='<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Layout</h2><p class="lede" style="margin:0 0 12px;">Classic grid keeps the heading above the cards. Split columns puts copy on the left. Image cards match the LeadPages homepage — photo on top, optional icon in a circle, title and text below.</p>';
-    h+='<div class="row"><div class="f"><label>Style</label><select id="svc-mode" class="tin"><option value="grid"'+(mode==='grid'?' selected':'')+'>Classic grid</option><option value="split"'+(mode==='split'?' selected':'')+'>Split columns (text left)</option><option value="cards"'+(mode==='cards'?' selected':'')+'>Image cards (homepage)</option></select></div><div class="f"></div></div>';
+    h+='<div class="row"><div class="f"><label>Style</label><select id="svc-mode" class="tin"><option value="grid"'+(mode==='grid'?' selected':'')+'>Classic grid</option><option value="split"'+(mode==='split'?' selected':'')+'>Split columns (text left)</option><option value="cards"'+(mode==='cards'?' selected':'')+'>Image cards (homepage)</option><option value="tick"'+(mode==='tick'?' selected':'')+'>Included items (photo + tick cards)</option></select></div>'+lpSel('Tick cards band','svc-tick-theme',[['dark','Dark band'],['light','Light band']],SV.tickTheme==='light'?'light':'dark')+'</div>';
     h+='<div id="svc-split-opts" style="'+(mode==='split'?'':'display:none;')+'margin-top:14px;padding-top:14px;border-top:1px solid var(--line);">';
     h+='<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 12px;"><input type="checkbox" id="svc-accent-on"'+(accentOn?' checked':'')+'> Accent line under title</label>';
     h+='<div class="f" style="max-width:340px;margin:0;"><label>Accent colour</label><div style="display:flex;align-items:center;gap:8px;"><input type="color" id="svc-accent-clr" value="'+(ac||defAc)+'" style="width:46px;height:34px;padding:0;border:1px solid var(--line);border-radius:8px;cursor:pointer;flex:0 0 auto;"><input type="text" id="svc-accent-tx" class="tin" value="'+ac+'" placeholder="'+defAc+' (theme)" style="flex:1;min-width:0;"><button type="button" class="btn ghost" id="svc-accent-def" style="padding:6px 10px;">Default</button></div></div>';
@@ -5351,12 +5364,13 @@ function wireQuoteStyle(c){
   }
   function wireServicesMode(c){
     function SV(){ if(!c.sections)c.sections={}; if(!c.sections.services)c.sections.services={}; return c.sections.services; }
-    function modeOf(){ var m=SV().mode; return (m==='split'||m==='columns')?'split':((m==='cards'||m==='homepage'||m==='cap')?'cards':'grid'); }
+    function modeOf(){ var m=SV().mode; return (m==='split'||m==='columns')?'split':((m==='cards'||m==='homepage'||m==='cap')?'cards':(m==='tick'?'tick':'grid')); }
     function syncSplitUi(){
       var mode=modeOf();
       var opts=$('svc-split-opts'); if(opts) opts.style.display=(mode==='split')?'':'none';
       var cops=$('svc-cards-opts'); if(cops) cops.style.display=(mode==='cards')?'':'none';
-      var box=$('svc-list'); if(box) box.setAttribute('data-svc-mode', mode);
+      var box=$('svc-list'); if(box) box.setAttribute('data-svc-mode', mode==='tick'?'grid':mode);
+      var tth=$('svc-tick-theme'); if(tth&&tth.closest('.f')) tth.closest('.f').style.display=(mode==='tick')?'':'none';
       var lede=$('svc-cards-lede');
       if(lede){
         if(mode==='split') lede.textContent='Add columns with a title, subtitle, icon list and optional Learn more link (URL, landing page, or app position). Untick cards you do not need.';
@@ -5368,6 +5382,7 @@ function wireQuoteStyle(c){
     }
     var md=$('svc-mode');
     if(md){ md.value=modeOf(); md.addEventListener('change',function(){ SV().mode=md.value; syncSplitUi(); persist(); previewApply(); }); }
+    var tthm=$('svc-tick-theme'); if(tthm) tthm.addEventListener('change',function(){ SV().tickTheme=tthm.value; persist(); previewApply(); });
     var ao=$('svc-accent-on'); if(ao) ao.addEventListener('change',function(){ SV().accentOn=ao.checked; persist(); previewApply(); });
     var clr=$('svc-accent-clr'), tx=$('svc-accent-tx'), df=$('svc-accent-def');
     if(clr) clr.addEventListener('input',function(){ SV().accentColor=clr.value; if(tx) tx.value=clr.value; persist(); previewApply(); });
@@ -5613,6 +5628,90 @@ function heroCtaCard(c){
   function renderColourLibrary(c){ var box=$('trade-colour-library'); if(!box) return; var ks=Object.keys(TRADE_COLOUR_PRESETS); var sw=function(p){ return ['dark','brand','accent','cta','highlight','lightBg'].map(function(k){ return '<span style="width:14px;height:14px;border-radius:3px;background:'+p[k]+';box-shadow:inset 0 0 0 1px rgba(0,0,0,.16);display:inline-block;"></span>'; }).join(''); }; box.innerHTML=ks.map(function(name){ var p=TRADE_COLOUR_PRESETS[name]; return '<button type="button" class="lib-btn" data-trade="'+name+'" data-find="'+(name+' '+p.presetName).toLowerCase()+'" style="text-align:left;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 9px;cursor:pointer;display:flex;flex-direction:column;gap:6px;"><span style="display:flex;gap:3px;">'+sw(p)+'</span><span style="font-size:12px;font-weight:700;line-height:1.15;">'+p.presetName+'</span><span style="font-size:10.5px;color:#64748b;line-height:1.1;">'+name+'</span></button>'; }).join(''); box.onclick=function(e){ var b=e.target.closest('.lib-btn'); if(!b) return; applyColourPreset(c,b.getAttribute('data-trade')); }; var fil=$('lib-filter'); if(fil){ fil.oninput=function(){ var q=fil.value.trim().toLowerCase(); Array.prototype.forEach.call(box.children,function(btn){ var f=btn.getAttribute('data-find')||''; btn.style.display=(!q||f.indexOf(q)>=0)?'':'none'; }); }; } var rb=$('reset-trade-colours'); if(rb){ rb.onclick=function(){ applyColourPreset(c, presetKeyForSite(c)); }; } markActiveTheme(c); }
   function getList(c,sk){ var sc=LIST_SCHEMAS[sk]; var o=c.sections&&c.sections[sc.secId]; var cur=o&&o[sc.key]; if(Array.isArray(cur)) return cur.map(function(it){return Object.assign({},it);}); var def=DEFAULT_TRADE_LISTS[sc.secId+'.'+sc.key]||[]; return def.map(function(it){ var n={}; for(var k in it){ n[k]=(typeof it[k]==='string')?it[k].replace(/\{\{\s*businessName\s*\}\}/g,currentBusinessName||'us'):it[k]; } return n; }); }
   function setList(c,sk,arr){ var sc=LIST_SCHEMAS[sk]; if(!c.sections) c.sections={}; if(!c.sections[sc.secId]) c.sections[sc.secId]={}; c.sections[sc.secId][sc.key]=arr; persist(); previewApply(); }
+  /* ===== Extra app layouts (assets/lp-layouts.js, assets/lp-booking-hire.js) =====
+     One "Layout options" card per app. Every option is off until chosen, so existing sites are unchanged. */
+  var LPL_LAYOUT_SPECS={
+    heroSlider:{lede:'Optional icon badges under the sub-headline, and whether the headline keeps the theme’s capitals.',rows:[
+      {t:'sel',k:'textCase',label:'Headline case',opts:[['','Theme default'],['normal','As typed (no forced capitals)']]}],
+      lists:[['heroSliderBadges','Hero badges','Icon + title + small text, shown in a row on every slide. Leave empty for none.']]},
+    activityCounter:{rows:[{t:'sel',k:'style',label:'Style',opts:[['','Big counters'],['strip','Compact spec strip (icon, figure, label)']]}]},
+    textBox:{lede:'Icon feature list and an outline button under the text.',rows:[
+      {t:'sel',k:'eyebrowStyle',label:'Eyebrow style',opts:[['','Plain text'],['tag','Solid tag']]},
+      {t:'text',k:'ctaLabel',label:'Button label',ph:'e.g. View details'},{t:'text',k:'ctaHref',label:'Button link',ph:'#services, /page or https://…'}],
+      lists:[['textBoxFeatures','Feature list','Two-column icon list under the text. Leave empty for none.']]},
+    reviews:{rows:[
+      {t:'sel',k:'theme',label:'Band',opts:[['','Light (default)'],['dark','Dark band, white cards']]},
+      {t:'sel',k:'badge',label:'Card badge',opts:[['','None'],['google','Google “G” on each card']]},
+      {t:'image',k:'bgImage',label:'Dark band photo (optional)'},
+      {t:'text',k:'summaryRating',label:'Rating',ph:'4.9'},{t:'text',k:'summaryText',label:'Rating text',ph:'from 100+ reviews'},
+      {t:'text',k:'summaryCtaLabel',label:'“View all” button',ph:'View All Reviews'},{t:'text',k:'summaryCtaHref',label:'“View all” link',ph:'https://g.page/…'}]},
+    aboutUs:{rows:[
+      {t:'sel',k:'layout',label:'Layout',opts:[['story','Story (default)'],['location','Location — address, hours, map, photo']]},
+      {t:'ta',k:'address',label:'Address',when:'layout=location'},{t:'ta',k:'hours',label:'Opening hours',when:'layout=location'},
+      {t:'text',k:'mapQuery',label:'Map search (optional)',ph:'Defaults to the address',when:'layout=location'}],
+      lists:[['aboutUsFeatures','Photo points','Location layout: icon points over the photo.']]},
+    specialOffer:{rows:[
+      {t:'sel',k:'layout',label:'Layout',opts:[['','Offer card (default)'],['banner','Photo banner']]},
+      {t:'image',k:'bgImage',label:'Banner photo',when:'layout=banner'},
+      {t:'text',k:'ctaHref',label:'Button link',ph:'Defaults to Bookings or the quote form'}]},
+    serviceProcess:{lede:'Optional photo beside the steps with a small card over it.',rows:[
+      {t:'image',k:'sideImage',label:'Side photo'},
+      {t:'text',k:'calloutTitle',label:'Card title'},{t:'ta',k:'calloutText',label:'Card text'},
+      {t:'text',k:'calloutLinkLabel',label:'Card link label'},{t:'text',k:'calloutLinkHref',label:'Card link',ph:'#quote'}]},
+    faq:{rows:[
+      {t:'sel',k:'columns',label:'Columns',opts:[['','One column'],['2','Two columns']]},
+      {t:'text',k:'ctaLabel',label:'“View all” button',ph:'View All FAQs'},{t:'text',k:'ctaHref',label:'“View all” link',ph:'/faq'}]},
+    bookingStorefront:{lede:'Hire bar: pick-up date, time and duration with rate cards. Put it straight under the hero in Section order and it overlaps the hero edge. With Bookings hire set up (resource-hire service + vehicles) it quotes and takes bookings live; otherwise it hands the request to your quote form.',rows:[
+      {t:'sel',k:'layout',label:'Layout',opts:[['','Call-to-action (default)'],['hire','Hire bar — date, time, duration, rates']]},
+      {t:'text',k:'hireHeading',label:'Bar heading',ph:'Check availability',when:'layout=hire'},
+      {t:'text',k:'icon',label:'Heading icon',ph:'truck',when:'layout=hire'},
+      {t:'text',k:'hireCtaLabel',label:'Button label',ph:'Check availability',when:'layout=hire'},
+      {t:'text',k:'dateLabel',label:'Date label',ph:'Pick up date',when:'layout=hire'},
+      {t:'text',k:'timeLabel',label:'Time label',ph:'Pick up time',when:'layout=hire'},
+      {t:'text',k:'durationLabel',label:'Duration label',ph:'Hire duration',when:'layout=hire'},
+      {t:'text',k:'openTime',label:'First pick-up time',ph:'07:30',when:'layout=hire'},
+      {t:'text',k:'closeTime',label:'Last pick-up time',ph:'17:00',when:'layout=hire'},
+      {t:'sel',k:'overlapHero',label:'Under the hero',opts:[['','Overlap the hero edge'],['false','Sit below the hero']],when:'layout=hire'}],
+      lists:[['bookingRates','Rate cards','Hire bar: price cards on the right. Leave empty to hide.'],['bookingPoints','Points','Hire bar: icon points under the form.'],['bookingDurations','Durations','Hire bar: options in the duration list. Empty uses 1, 2, 3 days and 1 week.']]}
+  };
+  function lplMountLayoutCard(body,c,sub){
+    var spec=LPL_LAYOUT_SPECS[sub]; if(!spec||!body) return;
+    function ens(){ if(!c.sections) c.sections={}; if(!c.sections[sub]) c.sections[sub]={}; return c.sections[sub]; }
+    var S=(c.sections&&c.sections[sub])||{};
+    function cur(k){ var v=S[k]; if(sub==='aboutUs'&&k==='layout'&&!v) return 'story'; if(k==='overlapHero') return v===false?'false':''; return v==null?'':String(v); }
+    var h='<div class="card lpl-layout-card" style="margin-bottom:22px;"><h2>Layout options</h2>'+(spec.lede?'<p class="lede">'+spec.lede+'</p>':'')+'<div style="display:flex;flex-wrap:wrap;gap:12px;">';
+    spec.rows.forEach(function(r){
+      var id='lpl-'+sub+'-'+r.k, full=(r.t==='ta'||r.t==='image');
+      var st=' style="margin:0;'+(full?'flex:1 1 100%;':'flex:1 1 calc(50% - 6px);min-width:190px;')+'"'+(r.when?' data-lpl-when="'+r.when+'"':'');
+      if(r.t==='sel') h+='<div class="f"'+st+'><label>'+r.label+'</label><select id="'+id+'" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#fff;">'+r.opts.map(function(o){ return '<option value="'+o[0]+'"'+(cur(r.k)===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('')+'</select></div>';
+      else if(r.t==='ta') h+='<div class="f"'+st+'><label>'+r.label+'</label><textarea class="tin" id="'+id+'" rows="2" style="min-height:64px;resize:vertical;width:100%;box-sizing:border-box;"></textarea></div>';
+      else if(r.t==='image') h+='<div class="f"'+st+'><label>'+r.label+'</label>'+cwImgHTML('id="'+id+'"','')+'</div>';
+      else h+='<div class="f"'+st+'><label>'+r.label+'</label><input type="text" class="tin" id="'+id+'" placeholder="'+(r.ph||'').replace(/"/g,'&quot;')+'"></div>';
+    });
+    h+='</div></div>';
+    (spec.lists||[]).forEach(function(l){ h+=listCard(l[0],l[1],l[2]); });
+    var first=body.querySelector('.card');
+    if(first) first.insertAdjacentHTML('afterend',h); else body.insertAdjacentHTML('afterbegin',h);
+    function syncWhen(){
+      body.querySelectorAll('[data-lpl-when]').forEach(function(el){ var w=el.getAttribute('data-lpl-when').split('='); var v=String(((c.sections&&c.sections[sub])||{})[w[0]]||''); el.style.display=(v===w[1])?'':'none'; });
+    }
+    spec.rows.forEach(function(r){
+      var el=$('lpl-'+sub+'-'+r.k); if(!el) return;
+      if(r.t==='sel'){ el.addEventListener('change',function(){ var o=ens(), v=el.value;
+          if(r.k==='overlapHero'){ if(v==='false') o.overlapHero=false; else delete o.overlapHero; }
+          else if(r.k==='columns'){ if(v) o.columns=+v; else delete o.columns; }
+          else if(v==='') delete o[r.k]; else o[r.k]=v;
+          syncWhen(); persist(); previewApply(); });
+        return; }
+      el.value=cur(r.k);
+      el.addEventListener('input',function(){ var o=ens(); if(el.value==='') delete o[r.k]; else o[r.k]=el.value; persist(); previewApply(); });
+      if(r.t==='image'){ var row=el.closest('.cw-row'); var up=row&&row.querySelector('.cw-up'), clr=row&&row.querySelector('.cw-clr');
+        if(up) up.addEventListener('click',function(){ var prev=ens()[r.k+'_pid']||''; cwPick(function(file){ cwBusy(up,true); cwUpload(file,[sub,r.k]).then(function(res){ var o=ens(); o[r.k]=res.url; o[r.k+'_pid']=res.publicId; el.value=res.url; persist(); previewApply(); if(prev&&prev!==res.publicId) cwDelete(prev); }).catch(function(err){ toast('Upload failed: '+((err&&err.message)||err)); }).then(function(){ cwBusy(up,false); }); }); });
+        if(clr) clr.addEventListener('click',function(){ var o=ens(); if(o[r.k+'_pid']){ cwDelete(o[r.k+'_pid']); delete o[r.k+'_pid']; } delete o[r.k]; el.value=''; persist(); previewApply(); }); }
+    });
+    (spec.lists||[]).forEach(function(l){ listEditor($('le-'+l[0]),c,l[0]); });
+    syncWhen();
+  }
   function listCard(sk,title,lede){ return '<div class="card" style="margin-bottom:22px;"><h2>'+title+'</h2><p class="lede">'+lede+'</p><div id="le-'+sk+'"></div></div>'; }
   function iconBtnInner(v){ if(v&&String(v).trim()){ var n=String(v).trim(); if(/^[a-z0-9-]+$/.test(n)&&window.LP_ICONS&&window.LP_ICONS[n]) return '<svg class="lp-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+window.LP_ICONS[n]+'</svg>'; if(window.LP_ICONS&&window.LP_ICONS['circle-help']) return '<svg class="lp-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+window.LP_ICONS['circle-help']+'</svg>'; return esc(n); } return '<span style="opacity:.35;">\uFF0B</span>'; }
   window.iconBtnInner = iconBtnInner;
@@ -6335,7 +6434,7 @@ function heroCtaCard(c){
     var ov=document.createElement('div'); ov.className='cs-ov'; ov.id='cs-ov';
     ov.innerHTML='<div class="cs-modal"><h2 style="margin:0 0 4px;">Create a new site</h2>'
       +'<p class="lede" style="margin:0 0 12px;">Same community trade system as Partner Demos \u2014 business name, location, and starter content. Create missing trades here too.</p>'
-      +'<p style="margin:0 0 16px;"><a class="btn ghost" href="/layout-composer" id="cs-layout-composer">Or use Layout Composer</a> <span class="hint">Layout first, then fill every app</span></p>'
+      +'<p style="margin:0 0 16px;"><a class="btn ghost" href="/layout-composer" id="cs-layout-composer">Or use Layout Composer</a> <a class="btn ghost" href="/ai-composer" id="cs-ai-composer">Or build from a design (AI Composer)</a> <span class="hint">Layout first, or upload a design image</span></p>'
       +'<div class="f"><label for="cs-biz">Business name</label><input id="cs-biz" class="tin" type="text" placeholder="e.g. Sparky Bros Electrical"></div>'
       +'<div class="row"><div class="f"><label for="cs-slug">Web address</label><input id="cs-slug" class="tin" type="text" placeholder="sparky-bros"><div id="cs-slug-stat" style="font-size:12.5px;min-height:16px;margin-top:4px;"></div></div>'
       +'<div class="f"><label for="cs-tpl">Type</label><select id="cs-tpl" class="tin"><option value="trade">Trade landing page</option><option value="broker-leads">Broker landing page</option><option value="broker-app">Broker calculator app</option></select></div></div>'
@@ -10881,6 +10980,7 @@ function heroCtaCard(c){
       body.innerHTML='<div class="card" style="margin-bottom:22px;"><div class="card-head" style="display:flex;justify-content:space-between;align-items:center;gap:12px;"><h2 style="margin:0;">Position \u2014 section order</h2><button class="btn ghost" id="ord-reset" type="button">Reset to default</button></div><p class="lede" style="margin:0 0 12px;">Drag the sections into the order you want them on the page \u2014 including <strong>Online Quote</strong>, <strong>How It Works Steps</strong> and <strong>Team Members</strong>. Switch other components on in Page Content, then drag them into position here.</p><div id="ord-list"></div></div>';
       wireOrder(c);
     }
+    try{ lplMountLayoutCard(body, c, sub); }catch(_lpl){ try{ console.warn('[layout options]', _lpl); }catch(_x){} }
     try {
       if (window.LP_APP_AI && window.LP_APP_AI.spec(sub)) {
         window.LP_APP_AI.mount(body, sub, {
@@ -11786,6 +11886,18 @@ function heroCtaCard(c){
       var after=$('btn-newsite');
       if(after && after.parentNode) after.parentNode.insertBefore(lb, after.nextSibling);
       else bar.appendChild(lb);
+    }
+    // AI Composer — build a new site from an uploaded design image (super admins).
+    if(currentRole==='super' && !$('btn-ai-composer')){
+      var ab=document.createElement('button');
+      ab.className='btn';
+      ab.id='btn-ai-composer';
+      ab.textContent='AI Composer';
+      ab.title='Upload a design image and AI builds the site from LeadPages apps';
+      ab.addEventListener('click',function(){ window.location.href='/ai-composer'; });
+      var afterLc=$('btn-layout-composer')||$('btn-newsite');
+      if(afterLc && afterLc.parentNode) afterLc.parentNode.insertBefore(ab, afterLc.nextSibling);
+      else bar.appendChild(ab);
     }
     if(!$('btn-billing')){
       const bb=document.createElement('button'); bb.className='btn ghost'; bb.id='btn-billing'; bb.title='Billing'; bb.textContent='Billing';
