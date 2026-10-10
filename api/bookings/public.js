@@ -166,7 +166,8 @@ module.exports = async function (req, res) {
         paymentAuthorityAccepted: !!body.payment_authority_accepted,
         cancellationPolicyAccepted: !!body.cancellation_policy_accepted,
         source: 'public',
-        status: body.status || 'pending',
+        // Public requests always arrive as pending; staff confirm them in Bookings.
+        status: 'pending',
         idempotencyKey: body.idempotency_key || null
       });
       if (!hireResult.ok) return json(res, 409, hireResult);
