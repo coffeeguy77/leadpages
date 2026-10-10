@@ -114,7 +114,8 @@ Tested end to end with the ACT Truck Hire design through the real code, the AI s
 | Page | `ai-composer.html`, rewrite `/ai-composer` in `vercel.json` |
 | APIs | `api/ai-composer/analyse.js`, `refine-photos.js`, `fill.js`, `create-site.js` |
 | Libraries | `lib/ai-composer/catalogue.js`, `tiles.js`, `prompts.js`, `plan.js`, `build-config.js`, `access.js` |
-| Tests | `tests/ai-composer.test.js` |
+| Tests | `tests/ai-composer.test.js`, `tests/ai-composer-layouts.test.js` |
+| Extra layouts | See [App-Layouts.md](App-Layouts.md) — the composer can set the extra app layouts and the Bookings hire bar |
 
 ## Test checklist
 

@@ -964,9 +964,14 @@ function injectOrderStorefront(html, slug, cfg) {
     : (html + block);
 }
 
+// A real <section data-sec="bookingStorefront"> tag. (A plain includes() also matched the
+// FOUC-guard CSS selector added by prepareTradeLiveHtml, so the block was never placed.)
+const BOOKING_SECTION_RE = /<section[^>]*data-sec="bookingStorefront"[^>]*>[\s\S]*?<\/section>/i;
+
 function injectBookingStorefront(html, slug, cfg) {
   const sec = cfg && cfg.sections && cfg.sections.bookingStorefront;
   if (!sec || sec.on !== true) return html;
+  if (sec.layout === 'hire') return injectBookingHireBar(html);
   const safeSlug = esc(slug || (cfg && cfg.slug) || '');
   const eyebrow = esc(sec.eyebrow || 'Book online');
   const heading = esc(sec.heading || 'Book an appointment');
@@ -985,8 +990,31 @@ function injectBookingStorefront(html, slug, cfg) {
     (intro ? '<p class="intro" style="color:var(--muted,#667066);font-size:17px;line-height:1.45;margin:0 0 18px">' + intro + '</p>' : '') +
     '<a class="btn" href="' + href + '" style="display:inline-block;background:var(--bk-accent,var(--accent,#155c4a));color:#fff;text-decoration:none;padding:12px 18px;border-radius:999px;font-weight:700">' + cta + '</a>' +
     '</div></section>';
-  if (html.includes('data-sec="bookingStorefront"')) {
-    return html.replace(/<section[^>]*data-sec="bookingStorefront"[^>]*>[\s\S]*?<\/section>/i, block);
+  if (BOOKING_SECTION_RE.test(html)) {
+    return html.replace(BOOKING_SECTION_RE, block);
+  }
+  if (html.includes('<section data-sec="quote"')) {
+    return html.replace('<section data-sec="quote"', block + '<section data-sec="quote"');
+  }
+  return html.indexOf('</body>') !== -1
+    ? html.replace('</body>', block + '</body>')
+    : (html + block);
+}
+
+/**
+ * Bookings "hire" layout (sections.bookingStorefront.layout === 'hire'): vehicle /
+ * equipment hire bar — pick up date, time, duration, rate cards. The shell is placed
+ * like the CTA layout; /assets/lp-booking-hire.js draws it from SITE_CONFIG and talks
+ * to /api/bookings/public + /api/bookings/hire/quote. Section order (e.g. straight
+ * under the hero) comes from cfg.sectionOrder as for every other section.
+ */
+function injectBookingHireBar(html) {
+  const block =
+    '<link rel="stylesheet" href="/assets/lp-booking-hire.css?v=1">' +
+    '<section data-sec="bookingStorefront" class="sec booking-storefront bk-hire" id="bookingStorefront"></section>' +
+    '<script src="/assets/lp-booking-hire.js?v=1" defer></script>';
+  if (BOOKING_SECTION_RE.test(html)) {
+    return html.replace(BOOKING_SECTION_RE, block);
   }
   if (html.includes('<section data-sec="quote"')) {
     return html.replace('<section data-sec="quote"', block + '<section data-sec="quote"');
@@ -1444,3 +1472,5 @@ module.exports = async (req, res) => {
     return res.status(500).send('Server error');
   }
 };
+// Test hooks (no behaviour change).
+module.exports._injectBookingStorefront = injectBookingStorefront;
