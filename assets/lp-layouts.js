@@ -345,7 +345,21 @@
     document.body.appendChild(s);
   }
 
-  var STEPS = [heroSlider, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, bookingHire];
+  /** "Bold" design: render.js includes it for saved sites; this loads it in the editor
+   *  preview when the design is switched to Bold before the page has been re-rendered. */
+  function boldDesign(C) {
+    if (C.design !== 'bold') return;
+    if (window.LPSkinBold || document.querySelector('script[src^="/assets/lp-skin-bold.js"]')) return;
+    var head = document.head;
+    [['https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap'], ['/assets/lp-skin-bold.css?v=1']].forEach(function (h) {
+      var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = h[0]; head.appendChild(l);
+    });
+    var s = document.createElement('script'); s.src = '/assets/lp-skin-bold.js?v=1'; s.async = true;
+    s.onload = function () { try { window.LPSkinBold.mount(C); } catch (e) {} };
+    document.body.appendChild(s);
+  }
+
+  var STEPS = [heroSlider, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, bookingHire, boldDesign];
 
   function run(cfg) {
     if (cfg) LAST = cfg;

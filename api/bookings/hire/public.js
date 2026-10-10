@@ -19,6 +19,7 @@
 const { json, readBody, getAdmin, getBookingSystemForSite } = require('../../../lib/bookings/auth');
 const { issuePortalToken, hashToken } = require('../../../lib/bookings/service');
 const { createHireBooking, quoteHireBooking } = require('../../../lib/bookings/hire/service');
+const { resolveDailyRateCents } = require('../../../lib/bookings/hire/pricing');
 const fleet = require('../../../lib/bookings/hire/fleet');
 const { computeHireWindow } = require('../../../lib/bookings/hire/duration');
 const { resolveTerminology } = require('../../../lib/bookings/hire/terminology');
@@ -176,6 +177,18 @@ module.exports = async function (req, res) {
     const settings = publicSettings(system, pub.site);
     const pickupHm = okHm(url.searchParams.get('pickup_hm')) ? url.searchParams.get('pickup_hm') : settings.open_time;
     const days = fleet.fleetDays({ system: system, resources: resources, reservations: reservations, blocks: blocks, fromYmd: from, toYmd: to, pickupHm: pickupHm });
+    // Lowest day rate across bookable vehicles, so a calendar can show each day's price.
+    const bookable = resources.filter(fleet.isBookable);
+    if (bookable.length) {
+      Object.keys(days.days).forEach(function (ymd) {
+        let low = null;
+        bookable.forEach(function (r) {
+          const c = resolveDailyRateCents(r, service, system, ymd);
+          if (c > 0 && (low == null || c < low)) low = c;
+        });
+        if (low != null) days.days[ymd].from_cents = low;
+      });
+    }
     return json(res, 200, {
       ok: true,
       live: !!service && days.total > 0,
