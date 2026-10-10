@@ -649,6 +649,7 @@
     hiresettings: hiresettings,
     phoneBooking: phoneBooking,
     presets: paintPresets,
+    setupHire: function (root) { ensureCss(); notSetUp(root); },
     isHire: function () { var s = B() && B().state && B().state.system; return !!(s && Array.isArray(s.booking_types) && s.booking_types.indexOf('resource_hire') >= 0); }
   };
 })();
