@@ -9437,12 +9437,29 @@ function heroCtaCard(c){
         +'<div class="card" style="margin-bottom:22px;"><h2>How it works</h2>'
         +'<p class="lede">Adds a Bookings call-to-action on the live site. Full scheduling lives under the <strong>Bookings</strong> tab (services, calendar, availability).</p>'
         +'<p class="hint" style="margin:0 0 12px;">Public book URL: <code>/book?slug='+esc(currentSiteSlug||'your-slug')+'</code></p>'
+        +'<p id="bk-status" class="hint" style="margin:0 0 12px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;">Checking Bookings set-up\u2026</p>'
         +'<p style="margin:0;display:flex;flex-wrap:wrap;gap:8px;">'
         +'<button type="button" class="btn" id="bk-goto-admin">Open Bookings</button>'
         +'<a class="btn ghost" href="/book?slug='+esc(currentSiteSlug||'')+'" target="_blank" rel="noopener" style="text-decoration:none;">Preview booking page ↗</a>'
         +'</p></div>';
       wireSec(c,'bookingStorefront',true,[['eyebrow'],['heading'],['intro'],['ctaLabel']]);
       var bg=$('bk-goto-admin'); if(bg) bg.addEventListener('click',function(){ if(typeof showView==='function') showView('bookings'); });
+      // Tell the user whether Bookings is actually set up — the hire bar and /book need it for online bookings.
+      (function(){
+        var st=$('bk-status'); if(!st||!currentSiteSlug) { if(st) st.textContent=''; return; }
+        fetch('/api/bookings/public?slug='+encodeURIComponent(currentSiteSlug)).then(function(r){ return r.json().catch(function(){return {};}).then(function(j){ return {status:r.status,j:j}; }); }).then(function(x){
+          var st2=$('bk-status'); if(!st2) return;
+          var j=x.j||{};
+          if(!j.ok){
+            st2.innerHTML='<strong>Bookings isn\u2019t switched on for this site yet.</strong> The booking page shows \u201cnot set up\u201d and the hire bar sends each request to you as a lead (with dates) instead of booking it. Open Bookings to switch it on and add a hire service and vehicles.';
+            return;
+          }
+          var hire=(j.services||[]).some(function(s){ return s.booking_type==='resource_hire'; });
+          var n=(j.hire_resources||[]).filter(function(r){ return r.hire_status!=='unavailable'; }).length;
+          if(hire&&n) st2.innerHTML='<strong>Live:</strong> the hire bar quotes and books '+n+' vehicle'+(n===1?'':'s')+' online.';
+          else st2.innerHTML='<strong>Bookings is on</strong>, but '+(hire?'no vehicles are available':'there is no hire service')+' yet \u2014 the hire bar sends requests to you as leads until '+(hire?'vehicles are added':'a hire service and vehicles are added')+'.';
+        }).catch(function(){ var st3=$('bk-status'); if(st3) st3.textContent='Could not check Bookings set-up.'; });
+      })();
     } else if(sub==='customHtml'){
       if(!c.sections) c.sections={}; if(!c.sections.customHtml) c.sections.customHtml=JSON.parse(JSON.stringify(DEFAULT_TRADE_SECTIONS.customHtml||{}));
       var CH=c.sections.customHtml;
