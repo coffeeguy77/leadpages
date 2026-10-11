@@ -118,3 +118,11 @@ test('icon row honours each card\'s own size presets and % slider', () => {
   assert.match(js, /s\.mediaScale/);
 });
 
+test('booking card: tap a start and end day for a range (accommodation-style), option to turn it off', () => {
+  assert.match(js, /function hbPickDay\(ymd\)/);
+  assert.match(js, /HS0\(\)\.bookRange !== false/);
+  assert.match(js, /days: hbDays\(\)/);
+  assert.match(css, /\.hbk-day\.rng,\.hbk-day\.hov\{/);
+  assert.match(manage, /k:'bookRange'/);
+});
+
