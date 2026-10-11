@@ -139,6 +139,45 @@ const ABOUT_US_APP = {
   updated_at: new Date().toISOString()
 };
 
+/** Map & Hours / CTA Banner — drawn by /assets/lp-layouts.js (sections.mapHours / sections.ctaBanner). */
+const MAP_HOURS_APP = {
+  name: 'Map & Hours',
+  slug: 'map-hours',
+  section_key: 'mapHours',
+  tier: 'free',
+  price_monthly_aud: 0,
+  price_annual_aud: 0,
+  tagline: 'Find us: address, live map and opening hours',
+  description:
+    'Address with a pinned Google map (look the address up in the editor), opening hours, '
+    + 'phone number and a "Get directions" button. Off by default; enable from App Marketplace or Page editor.',
+  default_position: 'lower',
+  marketplace_status: 'live',
+  builder_visible: true,
+  can_reposition: true,
+  hero_exclusive: false,
+  sort_order: 76
+};
+
+const CTA_BANNER_APP = {
+  name: 'CTA Banner',
+  slug: 'cta-banner',
+  section_key: 'ctaBanner',
+  tier: 'free',
+  price_monthly_aud: 0,
+  price_annual_aud: 0,
+  tagline: 'A bold call to action with one or two buttons',
+  description:
+    'Heading, short text and up to two buttons. Each button can open the booking calendar, call, '
+    + 'go to the quote form, scroll to an app or open a link. Brand, dark, light or photo styles.',
+  default_position: 'lower',
+  marketplace_status: 'live',
+  builder_visible: true,
+  can_reposition: true,
+  hero_exclusive: false,
+  sort_order: 77
+};
+
 const STALE_PROMOTIONS_SECTION_KEYS = ['promotions-hero', 'promotions-inline'];
 
 async function ensureLpAccessibilityApp() {
@@ -322,6 +361,19 @@ async function ensureAboutUsApp() {
   }
 }
 
+/** Register an app once (by section_key). Later admin edits to the row are left alone. */
+async function ensureNewApp(app) {
+  const { data: existing } = await sb.from('app_registry')
+    .select('id')
+    .eq('section_key', app.section_key)
+    .maybeSingle();
+  if (existing) return;
+  await sb.from('app_registry').upsert(
+    Object.assign({}, app, { updated_at: new Date().toISOString() }),
+    { onConflict: 'slug' }
+  );
+}
+
 /**
  * Register / heal Promotions & Offers (sections.promotions).
  * Production historically had split promotions-hero / promotions-inline rows that
@@ -432,6 +484,8 @@ module.exports = async (req, res) => {
       await ensurePromotionsApp();
       await ensureScrollingSponsorBannerApp();
       await ensureAboutUsApp();
+      await ensureNewApp(MAP_HOURS_APP);
+      await ensureNewApp(CTA_BANNER_APP);
     }
     // Public marketplace list should also auto-register SearchCanvas / Custom HTML / Promotions once.
     if (!all && !slug) {
@@ -440,6 +494,8 @@ module.exports = async (req, res) => {
       try { await ensurePromotionsApp(); } catch (_e) { /* non-fatal */ }
       try { await ensureScrollingSponsorBannerApp(); } catch (_e) { /* non-fatal */ }
       try { await ensureAboutUsApp(); } catch (_e) { /* non-fatal */ }
+      try { await ensureNewApp(MAP_HOURS_APP); } catch (_e) { /* non-fatal */ }
+      try { await ensureNewApp(CTA_BANNER_APP); } catch (_e) { /* non-fatal */ }
     }
     const {data:apps,error:ae} = await q;
     if (ae) return res.status(500).json({error:ae.message});

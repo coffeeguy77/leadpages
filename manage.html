@@ -3641,6 +3641,8 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   const DEFAULT_TRADE_THEME={ pipe:'#1f7bb8', hivis:'#ff6a1f', steel:'#1a2230', safety:'#ffc400', lightBg:'#eef2f6' };
   const TRADE_COLOURS=[['pipe','Brand','buttons, links, accents'],['hivis','Call-to-action','the orange call buttons'],['steel','Header & dark bands','top bar, hero, footer'],['safety','Highlight','badges & small accents'],['lightBg','Page background','behind the content sections']];
   const DEFAULT_TRADE_SECTIONS={
+    mapHours:{on:false,eyebrow:'Find us',heading:'Visit us',intro:'',address:'',mapQuery:'',ctaLabel:'Get directions',showPhone:true},
+    ctaBanner:{on:false,eyebrow:'',heading:'Ready to get started?',text:'Get in touch today \u2014 we\u2019ll get back to you fast.',tone:'brand',btn1Label:'Get a quote',btn1Action:'quote',btn2Label:'Call us',btn2Action:'call'},
     navMenu:{on:false,style:'pills',align:'left',placement:'header',icons:'both',items:[]},
     textBox:{on:false,eyebrow:'About us',heading:'Built for {{businessName}}',intro:'A short introduction that sets the scene for what follows.',content:'Use this space for a longer paragraph of text — your story, your approach, what makes you different. Add an image to the side, or leave it text-only for a clean full-width block.',image:'',imageSide:'right',textAlign:'left'},
     aboutUs:{on:false,layout:'story',eyebrow:'About {{businessName}}',heading:'Built on trade skills.\nDriven by people.',intro:'We were founded by a tradesperson with a passion for helping people through life\u2019s big home transitions.',body:'From renovation and maintenance through to specialist work, we bring the right people to every job.\n\nWe take pride in honest advice and quality workmanship for homeowners in our local area.',ctaLabel:'Our Story',ctaAction:'scroll',ctaTarget:'quote',ctaUrl:'',image:'',imageAlt:'',imageFit:'cover',imagePos:'center',quoteOn:true,quoteStyle:'handwriting',quote:'Good work helps people move forward.',quoteAttr:'Founder',quoteSize:100,quoteX:50,quoteY:78,quoteMaxW:86,quoteScrim:86,quoteAlign:'left',quoteColor:'',quoteAttrColor:'',accent:'',eyebrowColor:'',headingColor:'',introColor:'',bodyColor:'',ctaColor:'',ctaBorderColor:'',bg:'',bandOn:false,bandBg:'#0a2744',bandHeading:'You don\u2019t have to\nmanage it all yourself.',bandSub:'Let\u2019s talk about how we can help with your next step.',bandCtaLabel:'Start the Conversation',bandCtaAction:'scroll',bandCtaTarget:'quote',bandCtaUrl:'',bandTagline:'Same home.\nNew possibilities.',bandDecor:true,bandHeadingColor:'',bandSubColor:'',bandTagColor:''},
@@ -3825,12 +3827,12 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   function themeFromPreset(tradeKey){ var p=getTradeColourPreset(tradeKey); return { pipe:p.brand, hivis:p.cta, steel:p.dark, safety:p.highlight, accent:p.accent, lightBg:p.lightBg, presetName:p.presetName, presetKey:tradeKey }; }
   const LAYOUTS = { classic: { id: "classic", name: "Classic Conversion", description: "Current tradie landing page.", sections: ["emerg","hero","services","serviceProcess","featureStrip","why","crew","area","reviews","quote","faq","footer"], features: [] }, "quote-first": { id: "quote-first", name: "Quote First", description: "Hero and quote form appear together above the fold for paid traffic.", sections: ["emerg","hero","quote","services","serviceProcess","featureStrip","why","crew","reviews","area","faq","footer"], features: ["heroQuote"] }, "photo-proof": { id: "photo-proof", name: "Photo Proof", description: "Shows project proof early with a before and after gallery.", sections: ["emerg","hero","services","serviceProcess","featureStrip","beforeAfter","reviews","why","crew","area","quote","faq","footer"], features: ["beforeAfter"] }, "emergency-response": { id: "emergency-response", name: "Emergency Response", description: "Urgency-first page: trust badges and quote form pushed high for emergency trades.", sections: ["emerg","hero","responseCards","quote","services","serviceProcess","featureStrip","reviews","why","crew","faq","area","footer"], features: ["responseCards"] }, "authority-builder": { id: "authority-builder", name: "Authority Builder", description: "Leads with big credibility numbers to establish an experienced, established business.", sections: ["emerg","hero","projectStats","services","serviceProcess","featureStrip","why","crew","area","reviews","quote","faq","footer"], features: ["projectStats"] }, "service-area-dominator": { id: "service-area-dominator", name: "Service Area Dominator", description: "Leads with a large suburb coverage grid under the hero to dominate local SEO and paid search.", sections: ["emerg","hero","serviceAreas","services","serviceProcess","featureStrip","why","crew","reviews","area","quote","faq","footer"], features: ["serviceAreas"] }, "reviews-first": { id: "reviews-first", name: "Reviews First", description: "Leads with star-rated review highlights under the hero so visitors hit social proof first.", sections: ["emerg","hero","reviewHighlights","quote","services","serviceProcess","featureStrip","reviews","faq","why","crew","area","footer"], features: ["reviewHighlights"] }, "premium-showcase": { id: "premium-showcase", name: "Premium Showcase", description: "A mini portfolio of large project image cards under the hero \u2014 for high-end visual trades.", sections: ["emerg","hero","featuredProjects","services","serviceProcess","featureStrip","reviews","why","crew","area","quote","faq","footer"], features: ["featuredProjects"] }, "offer-funnel": { id: "offer-funnel", name: "Offer Funnel", description: "AdWords lead-gen layout: a bold special-offer banner under the hero, straight into the quote form.", sections: ["emerg","hero","specialOffer","quote","services","serviceProcess","featureStrip","reviews","faq","why","crew","area","footer"], features: ["specialOffer"] }, "ba-hero-slider": { id: "ba-hero-slider", name: "Before / After Hero Slider", description: "A large interactive before/after wipe slider near the top of the page.", sections: ["emerg","hero","heroBeforeAfter","services","serviceProcess","featureStrip","reviews","why","crew","area","quote","faq","footer"], features: ["heroBeforeAfter"] }, "hero-image-slider": { id: "hero-image-slider", name: "Hero Image Slider", description: "Large image hero with editable slides, overlay text, CTA buttons and transitions.", sections: ["emerg","heroSlider","services","serviceProcess","featureStrip","why","crew","reviews","area","quote","faq","footer"], features: ["heroSlider"] }, "social-proof-feed": { id: "social-proof-feed", name: "Social Proof Feed", description: "A live, modern \u201cproof feed\u201d of jobs, reviews, videos and before/afters \u2014 every card links to a CTA.", sections: ["emerg","splitHero","activityCounter","activityTimeline","proofStream","projectFeed","jobsFeed","beforeAfterFeed","videoReels","services","serviceProcess","featureStrip","reviews","customerReactions","why","crew","area","quote","faq","footer"], features: ["proofStream","splitHero","activityCounter","crew","jobsFeed","beforeAfterFeed","videoReels","activityTimeline","customerReactions","projectFeed"] } };
   function getLayout(layoutId){ return (layoutId && LAYOUTS[layoutId]) ? LAYOUTS[layoutId] : LAYOUTS.classic; }
-  const OFF_BY_DEFAULT_SECTIONS=['searchCanvas','featureStrip','instaGallery','igProjectFeed','lpAccessibility','navMenu','mobileBar','emergencyAvailability','onlineQuote','orderStorefront','bookingStorefront','customHtml','estimateBuilder','finance','serviceAreaMap','beforeAfter','responseCards','projectStats','serviceAreas','reviewHighlights','featuredProjects','premiumGallery','specialOffer','heroBeforeAfter','heroSlider','splitHero','activityCounter','proofStream','projectFeed','jobsFeed','beforeAfterFeed','videoReels','activityTimeline','customerReactions','textBox','aboutUs','seoText','scrollingSponsorBanner'];
-  const OPTIONAL_COMPONENTS=['searchCanvas','featureStrip','instaGallery','igProjectFeed','beforeAfter','responseCards','projectStats','serviceAreas','reviewHighlights','featuredProjects','premiumGallery','specialOffer','heroBeforeAfter','heroSlider','splitHero','activityCounter','proofStream','projectFeed','jobsFeed','beforeAfterFeed','videoReels','activityTimeline','customerReactions','textBox','aboutUs','seoText','onlineQuote','orderStorefront','bookingStorefront','customHtml','estimateBuilder','finance','serviceAreaMap','emergencyAvailability','certifications','promotions','scrollingSponsorBanner'];
+  const OFF_BY_DEFAULT_SECTIONS=['searchCanvas','featureStrip','instaGallery','igProjectFeed','lpAccessibility','navMenu','mobileBar','emergencyAvailability','onlineQuote','orderStorefront','bookingStorefront','customHtml','estimateBuilder','finance','serviceAreaMap','beforeAfter','responseCards','projectStats','serviceAreas','reviewHighlights','featuredProjects','premiumGallery','specialOffer','heroBeforeAfter','heroSlider','splitHero','activityCounter','proofStream','projectFeed','jobsFeed','beforeAfterFeed','videoReels','activityTimeline','customerReactions','textBox','aboutUs','seoText','scrollingSponsorBanner','mapHours','ctaBanner'];
+  const OPTIONAL_COMPONENTS=['searchCanvas','featureStrip','instaGallery','igProjectFeed','beforeAfter','responseCards','projectStats','serviceAreas','reviewHighlights','featuredProjects','premiumGallery','specialOffer','heroBeforeAfter','heroSlider','splitHero','activityCounter','proofStream','projectFeed','jobsFeed','beforeAfterFeed','videoReels','activityTimeline','customerReactions','textBox','aboutUs','seoText','onlineQuote','orderStorefront','bookingStorefront','customHtml','estimateBuilder','finance','serviceAreaMap','emergencyAvailability','certifications','promotions','scrollingSponsorBanner','mapHours','ctaBanner'];
   const PAGE_CONTENT_EDITONLY=['details','seoTokens','branding','logo','sectionOrder','lpFooter'];
   function layoutHasFeature(c,feat){ try{ var f=getLayout((c&&c.layout)||"classic").features||[]; return f.indexOf(feat)>=0; }catch(e){ return false; } }
   function wireLayout(c){ var el=$('layout-pick'); if(!el) return; el.value=getLayout(c.layout).id; el.onchange=function(){ c.layout=getLayout(el.value).id; persist(); previewApply(); renderDetails(); }; }
-  var HERO_CTA_SCROLL_TARGETS=[['quote','Quote form'],['onlineQuote','Online Quote'],['orderStorefront','Order Storefront'],['bookingStorefront','Bookings'],['customHtml','Custom HTML'],['aboutUs','About Us'],['estimateBuilder','Estimate Builder'],['finance','Finance Options'],['specialOffer','Special Offer'],['promotions','Promotions'],['scrollingSponsorBanner','Scrolling Sponsor Banner'],['emergencyAvailability','Emergency Availability'],['services','Services'],['serviceProcess','How It Works'],['why','Why us'],['reviews','Reviews'],['faq','FAQ'],['area','Where we work'],['crew','Team'],['beforeAfter','Before & After'],['featuredProjects','Project Portfolio'],['premiumGallery','Premium Gallery'],['serviceAreaMap','Service Area Map'],['projectFeed','Project Feed'],['jobsFeed','Jobs Feed']];
+  var HERO_CTA_SCROLL_TARGETS=[['quote','Quote form'],['onlineQuote','Online Quote'],['orderStorefront','Order Storefront'],['bookingStorefront','Bookings'],['customHtml','Custom HTML'],['aboutUs','About Us'],['mapHours','Map & Hours'],['ctaBanner','CTA Banner'],['estimateBuilder','Estimate Builder'],['finance','Finance Options'],['specialOffer','Special Offer'],['promotions','Promotions'],['scrollingSponsorBanner','Scrolling Sponsor Banner'],['emergencyAvailability','Emergency Availability'],['services','Services'],['serviceProcess','How It Works'],['why','Why us'],['reviews','Reviews'],['faq','FAQ'],['area','Where we work'],['crew','Team'],['beforeAfter','Before & After'],['featuredProjects','Project Portfolio'],['premiumGallery','Premium Gallery'],['serviceAreaMap','Service Area Map'],['projectFeed','Project Feed'],['jobsFeed','Jobs Feed']];
   function heroCtaScrollOptsHtml(sel){ return HERO_CTA_SCROLL_TARGETS.map(function(o){ return '<option value="'+o[0]+'"'+(sel===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join(''); }
   /* ── Site Button look (law) ── fill / outline / stroke thickness / text + link targets */
   var LP_BTN_STROKE_PRESETS=[['fine','Fine (1px)'],['thin','Thin (1.5px)'],['medium','Medium (2px)'],['normal','Normal (2.5px)']];
@@ -4070,6 +4072,15 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     list.unshift(key);
     return list;
   }
+  /** Map & Hours / CTA Banner default to just above the footer (same rule as lib/section-order.js). */
+  var LP_BEFORE_FOOTER_APPS=['mapHours','ctaBanner'];
+  function _lpBeforeFooterSlot(order, id){
+    var list=Array.isArray(order)?order.slice():[];
+    var ex=list.indexOf(id); if(ex>=0) list.splice(ex,1);
+    var fi=list.indexOf('footer');
+    if(fi>=0) list.splice(fi,0,id); else list.push(id);
+    return list;
+  }
   /** Move About Us / Text Box out from after footer (broken first-enable). Manual mid-page placement kept. */
   function _lpRepairAboutUsAfterFooter(order, id){
     var list=Array.isArray(order)?order.slice():[];
@@ -4154,6 +4165,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
         if(id==='searchCanvas'){ _orderEnsure(base,'searchCanvas',['serviceProcess','services','hero','heroSlider','splitHero']); return; }
         if(id==='scrollingSponsorBanner'){ _orderEnsure(base,'scrollingSponsorBanner',['trustBar','hero','heroSlider','splitHero']); return; }
         if(id==='navMenu'){ base.unshift(id); return; }
+        if(LP_BEFORE_FOOTER_APPS.indexOf(id)>=0){ base=_lpBeforeFooterSlot(base,id); return; }
         if(id==='onlineQuote'||id==='orderStorefront'||id==='customHtml'){
           var qi=base.indexOf('quote');
           if(qi>=0){ base.splice(qi,0,id); return; }
@@ -4188,6 +4200,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
         saved=_lpDefaultAboutUsSlot(saved,x);
         return;
       }
+      if(LP_BEFORE_FOOTER_APPS.indexOf(x)>=0){ saved=_lpBeforeFooterSlot(saved,x); return; }
       saved.push(x);
     });
     var out=saved.filter(function(x){
@@ -4207,6 +4220,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     // Heal About Us / Text Box stuck after footer from the old enable path.
     if(out.indexOf('aboutUs')>=0) out=_lpRepairAboutUsAfterFooter(out,'aboutUs');
     if(out.indexOf('textBox')>=0) out=_lpRepairAboutUsAfterFooter(out,'textBox');
+    LP_BEFORE_FOOTER_APPS.forEach(function(id){ var _ix=out.indexOf(id), _fx=out.indexOf('footer'); if(_ix>=0&&_fx>=0&&_ix>_fx) out=_lpBeforeFooterSlot(out,id); });
     // SearchCanvas position is user-controlled via Position (including above How It Works).
     // FAQ sits directly under SearchCanvas when both are on.
     if(out.indexOf('searchCanvas')>=0 && _secOn(c,'searchCanvas') && _secOn(c,'faq')){
@@ -4247,9 +4261,9 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     var rb=$('ord-reset'); if(rb) rb.onclick=function(){ var prev=rects(); delete c.sectionOrder; persist(); previewApply(); draw(false); flip(prev); };
   }
   function presetKeyForSite(c){ var t=(c&&c.trade)||'Plumber'; if(TRADE_COLOUR_PRESETS[t]) return t; for(var k in TRADE_PACKS){ if(TRADE_PACKS[k].tradeType===t && TRADE_COLOUR_PRESETS[TRADE_PACKS[k].label]) return TRADE_PACKS[k].label; } return 'Plumber'; }
-  const TRADE_SUBTABS=[['details','Details'],['emerg','Top bar'],['hero','Hero'],['trustBar','Trust Bar'],['scrollingSponsorBanner','Scrolling Sponsor Banner'],['services','Services'],['serviceProcess','How It Works Steps'],['featureStrip','Feature Strip'],['why','Why us'],['area','Where'],['reviews','Reviews'],['promotions','Promotions'],['certifications','Certifications'],['finance','Finance Options'],['estimateBuilder','Estimate Builder'],['serviceAreaMap','Service Area Map'],['emergencyAvailability','Emergency Availability'],['seoTokens','Local tokens'],['beforeAfter','Before & After'],['responseCards','Response Cards'],['projectStats','Project Stats'],['serviceAreas','Service Areas'],['reviewHighlights','Review Highlights'],['featuredProjects','Project Portfolio'],['premiumGallery','Premium Gallery'],['specialOffer','Special Offer'],['heroBeforeAfter','Hero B/A Slider'],['heroSlider','Hero Slider'],['splitHero','Split Hero'],['activityCounter','Activity Counter'],['proofStream','Proof Stream'],['projectFeed','Project Feed'],['jobsFeed','Jobs Feed'],['beforeAfterFeed','Before/After Feed'],['videoReels','Video Reels'],['activityTimeline','Activity Timeline'],['customerReactions','Customer Reactions'],['searchCanvas','SearchCanvas'],['seoText','SEO Text'],['textBox','Text Box'],['aboutUs','About Us'],['crew','Team Members'],['onlineQuote','Online Quote'],['orderStorefront','Order Storefront'],['bookingStorefront','Bookings'],['customHtml','Custom HTML'],['quote','Quote'],['faq','FAQ'],['mobileBar','Mobile'],['footer','Footer'],['branding','Branding'],['logo','Logo'],['navMenu','Menu'],['sectionOrder','Position'],['instaGallery','Instagram Gallery'],['igProjectFeed','Instagram Feed'],['lpFooter','LeadPages footer']];
+  const TRADE_SUBTABS=[['details','Details'],['emerg','Top bar'],['hero','Hero'],['trustBar','Trust Bar'],['scrollingSponsorBanner','Scrolling Sponsor Banner'],['services','Services'],['serviceProcess','How It Works Steps'],['featureStrip','Feature Strip'],['why','Why us'],['area','Where'],['reviews','Reviews'],['promotions','Promotions'],['certifications','Certifications'],['finance','Finance Options'],['estimateBuilder','Estimate Builder'],['serviceAreaMap','Service Area Map'],['emergencyAvailability','Emergency Availability'],['seoTokens','Local tokens'],['beforeAfter','Before & After'],['responseCards','Response Cards'],['projectStats','Project Stats'],['serviceAreas','Service Areas'],['reviewHighlights','Review Highlights'],['featuredProjects','Project Portfolio'],['premiumGallery','Premium Gallery'],['specialOffer','Special Offer'],['heroBeforeAfter','Hero B/A Slider'],['heroSlider','Hero Slider'],['splitHero','Split Hero'],['activityCounter','Activity Counter'],['proofStream','Proof Stream'],['projectFeed','Project Feed'],['jobsFeed','Jobs Feed'],['beforeAfterFeed','Before/After Feed'],['videoReels','Video Reels'],['activityTimeline','Activity Timeline'],['customerReactions','Customer Reactions'],['searchCanvas','SearchCanvas'],['seoText','SEO Text'],['textBox','Text Box'],['aboutUs','About Us'],['mapHours','Map & Hours'],['ctaBanner','CTA Banner'],['crew','Team Members'],['onlineQuote','Online Quote'],['orderStorefront','Order Storefront'],['bookingStorefront','Bookings'],['customHtml','Custom HTML'],['quote','Quote'],['faq','FAQ'],['mobileBar','Mobile'],['footer','Footer'],['branding','Branding'],['logo','Logo'],['navMenu','Menu'],['sectionOrder','Position'],['instaGallery','Instagram Gallery'],['igProjectFeed','Instagram Feed'],['lpFooter','LeadPages footer']];
   let landingSub='hero';
-  const DEFAULT_TRADE_LISTS={'estimateBuilder.options':[
+  const DEFAULT_TRADE_LISTS={'mapHours.rows':[{on:true,label:'Monday \u2013 Friday',value:'7:00am \u2013 5:00pm'},{on:true,label:'Saturday',value:'8:00am \u2013 12:00pm'},{on:true,label:'Sunday',value:'Closed'}],'estimateBuilder.options':[
     {on:true,step:'What do you need?',label:'Tap or mixer repair',min:'150',max:'300'},
     {on:true,step:'What do you need?',label:'Blocked drain clearing',min:'180',max:'450'},
     {on:true,step:'What do you need?',label:'Hot water repair',min:'250',max:'650'},
@@ -4379,6 +4393,7 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
     aboutUsFeatures:{secId:'aboutUs',key:'features',addLabel:'Add point',item:[{k:'icon',label:'Icon',type:'icon'},{k:'text',label:'Point'}],defaultItem:{on:true,icon:'circle-check',text:''}},
     bookingPoints:{secId:'bookingStorefront',key:'points',addLabel:'Add point',item:[{k:'icon',label:'Icon',type:'icon'},{k:'text',label:'Point'}],defaultItem:{on:true,icon:'circle-check',text:''}},
     bookingRates:{secId:'bookingStorefront',key:'rates',addLabel:'Add rate card',item:[{k:'label',label:'Label',ph:'Mon \u2013 Thu'},{k:'price',label:'Price',ph:'$150'},{k:'unit',label:'Unit',ph:'per 24 hours'},{k:'note',label:'Note',ph:'200km included'}],defaultItem:{on:true,label:'',price:'',unit:'',note:''}},
+    mapHoursRows:{secId:'mapHours',key:'rows',addLabel:'Add row',item:[{k:'label',label:'Days',ph:'Monday \u2013 Friday'},{k:'value',label:'Hours',ph:'7:00am \u2013 5:00pm'}],defaultItem:{on:true,label:'',value:''}},
     bookingDurations:{secId:'bookingStorefront',key:'durations',addLabel:'Add duration',item:[{k:'label',label:'Label',ph:'1 Day (24 hours)'},{k:'days',label:'Days',w:'90px',ph:'1'}],defaultItem:{on:true,label:'',days:'1'}},
     heroBeforeAfterFeatures:{secId:'heroBeforeAfter',key:'features',addLabel:'Add feature',item:[{k:'icon',label:'Icon (optional)',type:'icon'},{k:'label',label:'Feature text'}],defaultItem:{on:true,icon:'circle-check',label:''}},
     heroSlides:{secId:'heroSlider',key:'slides',addLabel:'Add slide',item:[{k:'imageUrl',label:'Background image',type:'image',ph:'https://\u2026 (optional)',hint:'\u2248 1920\u00d71080 px (landscape)'},{k:'imageFit',label:'Image fit',type:'select',opts:[['cover','Cover (fill & crop)'],['contain','Contain (fit, no crop)'],['fill','Fill'],['stretch','Stretch (distort)'],['blend','Cover + blend sides']]},{k:'imagePos',label:'Image position',type:'select',opts:[['center','Centre'],['left','Left'],['right','Right'],['top','Top'],['bottom','Bottom']]},{k:'bgColour',label:'Background / blend colour',type:'color'},{k:'eyebrow',label:'Eyebrow'},{k:'eyebrowColor',label:'Eyebrow colour',type:'color'},{k:'heading',label:'Heading'},{k:'headingColor',label:'Heading colour',type:'color'},{k:'highlightText',label:'Highlighted words'},{k:'highlightColor',label:'Highlight colour',type:'color'},{k:'subText',label:'Sub text',type:'ta'},{k:'featureTextColor',label:'Feature text colour',type:'color'},{k:'slideTextAlign',label:'Text alignment (this slide)',type:'select',opts:[['','Use slider default'],['left','Left'],['center','Centre'],['right','Right']]},{k:'primaryCtaText',label:'Primary button text'},{k:'primaryCtaAction',label:'Primary action',type:'select',opts:[['call','Call'],['quote','Quote'],['scroll','Custom app position'],['page','Landing page'],['url','URL (_blank)'],['none','Hidden']]},{k:'primaryCtaTarget',label:'Primary app / section',type:'select',opts:[['quote','Quote form'],['onlineQuote','Online Quote'],['customHtml','Custom HTML'],['estimateBuilder','Estimate Builder'],['finance','Finance Options'],['specialOffer','Special Offer'],['promotions','Promotions'],['emergencyAvailability','Emergency Availability'],['services','Services'],['serviceProcess','How It Works'],['why','Why us'],['reviews','Reviews'],['faq','FAQ'],['area','Where we work'],['crew','Team'],['beforeAfter','Before & After'],['featuredProjects','Project Portfolio'],['premiumGallery','Premium Gallery'],['serviceAreaMap','Service Area Map'],['projectFeed','Project Feed'],['jobsFeed','Jobs Feed']]},{k:'primaryCtaPage',label:'Primary landing page',type:'landingPage',w:'1 1 100%'},{k:'primaryCtaUrl',label:'Primary URL',ph:'https://\u2026',w:'1 1 100%'},{k:'primaryCtaBlank',label:'Primary: open URL in new tab',type:'check'},{k:'primaryCtaIcon',label:'Primary icon',type:'icon'},{k:'primaryCtaIconOnly',label:'Primary: icon only (no text)',type:'check'},{k:'primaryCtaBg',label:'Primary button colour',type:'color'},{k:'primaryCtaFill',label:'Primary: fill background',type:'check'},{k:'primaryCtaOutline',label:'Primary: outline / stroke',type:'check'},{k:'primaryCtaBorder',label:'Primary stroke colour',type:'color'},{k:'primaryCtaStrokeWidth',label:'Primary stroke thickness',type:'select',opts:[['fine','Fine (1px)'],['thin','Thin (1.5px)'],['medium','Medium (2px)'],['normal','Normal (2.5px)']]},{k:'primaryCtaFg',label:'Primary text colour',type:'color'},{k:'primaryCtaOpacity',label:'Primary background transparency',type:'range',min:0,max:100,def:100,suf:'%'},{k:'primaryCtaGlow',label:'Primary: outer glow',type:'check'},{k:'primaryCtaGlowColor',label:'Primary glow colour',type:'color'},{k:'secondaryCtaText',label:'Secondary button text'},{k:'secondaryCtaAction',label:'Secondary action',type:'select',opts:[['call','Call'],['quote','Quote'],['scroll','Custom app position'],['page','Landing page'],['url','URL (_blank)'],['none','Hidden']]},{k:'secondaryCtaTarget',label:'Secondary app / section',type:'select',opts:[['quote','Quote form'],['onlineQuote','Online Quote'],['customHtml','Custom HTML'],['estimateBuilder','Estimate Builder'],['finance','Finance Options'],['specialOffer','Special Offer'],['promotions','Promotions'],['emergencyAvailability','Emergency Availability'],['services','Services'],['serviceProcess','How It Works'],['why','Why us'],['reviews','Reviews'],['faq','FAQ'],['area','Where we work'],['crew','Team'],['beforeAfter','Before & After'],['featuredProjects','Project Portfolio'],['premiumGallery','Premium Gallery'],['serviceAreaMap','Service Area Map'],['projectFeed','Project Feed'],['jobsFeed','Jobs Feed']]},{k:'secondaryCtaPage',label:'Secondary landing page',type:'landingPage',w:'1 1 100%'},{k:'secondaryCtaUrl',label:'Secondary URL',ph:'https://\u2026',w:'1 1 100%'},{k:'secondaryCtaBlank',label:'Secondary: open URL in new tab',type:'check'},{k:'secondaryCtaIcon',label:'Secondary icon',type:'icon'},{k:'secondaryCtaIconOnly',label:'Secondary: icon only (no text)',type:'check'},{k:'secondaryCtaBg',label:'Secondary button colour',type:'color'},{k:'secondaryCtaFill',label:'Secondary: fill background',type:'check'},{k:'secondaryCtaOutline',label:'Secondary: outline / stroke',type:'check'},{k:'secondaryCtaBorder',label:'Secondary stroke colour',type:'color'},{k:'secondaryCtaStrokeWidth',label:'Secondary stroke thickness',type:'select',opts:[['fine','Fine (1px)'],['thin','Thin (1.5px)'],['medium','Medium (2px)'],['normal','Normal (2.5px)']]},{k:'secondaryCtaFg',label:'Secondary text colour',type:'color'},{k:'secondaryCtaOpacity',label:'Secondary background transparency',type:'range',min:0,max:100,def:100,suf:'%'},{k:'secondaryCtaGlow',label:'Secondary: outer glow',type:'check'},{k:'secondaryCtaGlowColor',label:'Secondary glow colour',type:'color'}],defaultItem:{imageUrl:'',imageFit:'cover',imagePos:'center',bgColour:'',slideTextAlign:'',eyebrow:'',eyebrowColor:'',heading:'',headingColor:'',highlightText:'',highlightColor:'',subText:'',featureTextColor:'',primaryCtaText:'Call Now',primaryCtaAction:'call',primaryCtaTarget:'quote',primaryCtaFill:true,primaryCtaOutline:false,primaryCtaStrokeWidth:'medium',primaryCtaBlank:true,secondaryCtaText:'Get A Fast Quote',secondaryCtaAction:'quote',secondaryCtaTarget:'customHtml',secondaryCtaFill:false,secondaryCtaOutline:true,secondaryCtaStrokeWidth:'medium',secondaryCtaBlank:true},rowHeader:heroSlideRowHeader},
@@ -4677,10 +4692,10 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
     var CORE_GROUPS=[
       ['Business Identity & Hero Area',['branding','logo','details','hero','splitHero','heroBeforeAfter','heroSlider','emerg','mobileBar','sectionOrder']],
       ['Services & Selling Content',['services','serviceProcess','featureStrip','serviceAreas','serviceAreaMap','seoTokens','finance','searchCanvas','seoText','textBox','aboutUs','videoReels']],
-      ['Lead Capture & Conversion',['quote','onlineQuote','orderStorefront','bookingStorefront','customHtml','promotions','faq','estimateBuilder','jobsFeed','emergencyAvailability','specialOffer','responseCards']],
+      ['Lead Capture & Conversion',['quote','onlineQuote','orderStorefront','bookingStorefront','customHtml','promotions','faq','estimateBuilder','jobsFeed','emergencyAvailability','specialOffer','ctaBanner','responseCards']],
       ['Trust, Proof & Authority',['trustBar','scrollingSponsorBanner','certifications','reviews','reviewHighlights','customerReactions','proofStream','activityCounter','activityTimeline']],
       ['Projects, Gallery & Before/After',['projectFeed','igProjectFeed','instaGallery','featuredProjects','premiumGallery','projectStats','beforeAfter','beforeAfterFeed']],
-      ['Company & Location Details',['crew','area','why','navMenu','footer','lpFooter']]
+      ['Company & Location Details',['crew','area','why','mapHours','navMenu','footer','lpFooter']]
     ];
     var PRESET_GROUPS=[
       ['Authority & Trust Presets',['authority-builder','premium-showcase','photo-proof','social-proof-feed','reviews-first']],
@@ -5759,6 +5774,7 @@ function heroCtaCard(c){
   function setList(c,sk,arr){ var sc=LIST_SCHEMAS[sk]; if(!c.sections) c.sections={}; if(!c.sections[sc.secId]) c.sections[sc.secId]={}; c.sections[sc.secId][sc.key]=arr; persist(); previewApply(); }
   /* ===== Extra app layouts (assets/lp-layouts.js, assets/lp-booking-hire.js) =====
      One "Layout options" card per app. Every option is off until chosen, so existing sites are unchanged. */
+  var LP_CTA_BANNER_ACTIONS=[['quote','Go to the quote form'],['booking','Open the booking calendar'],['call','Call the phone number'],['section','Scroll to an app on this page'],['link','Go to a link or page']];
   var LPL_LAYOUT_SPECS={
     heroSlider:{lede:'Optional icon badges under the sub-headline, and whether the headline keeps the theme’s capitals.',rows:[
       {t:'sel',k:'textCase',label:'Headline case',opts:[['','Theme default'],['normal','As typed (no forced capitals)']]}],
@@ -5801,18 +5817,46 @@ function heroCtaCard(c){
       {t:'text',k:'openTime',label:'First pick-up time',ph:'07:30',when:'layout=hire'},
       {t:'text',k:'closeTime',label:'Last pick-up time',ph:'17:00',when:'layout=hire'},
       {t:'sel',k:'overlapHero',label:'Under the hero',opts:[['','Overlap the hero edge'],['false','Sit below the hero']],when:'layout=hire'}],
-      lists:[['bookingRates','Rate cards','Hire bar: price cards on the right. Leave empty to hide.'],['bookingPoints','Points','Hire bar: icon points under the form.'],['bookingDurations','Durations','Hire bar: options in the duration list. Empty uses 1, 2, 3 days and 1 week.']]}
+      lists:[['bookingRates','Rate cards','Hire bar: price cards on the right. Leave empty to hide.'],['bookingPoints','Points','Hire bar: icon points under the form.'],['bookingDurations','Durations','Hire bar: options in the duration list. Empty uses 1, 2, 3 days and 1 week.']]},
+    mapHours:{title:'Address, map & hours',lede:'Type the address, then press <b>Find on map</b> and pick the right result to pin the map. The directions button opens Google Maps.',rows:[
+      {t:'addr',k:'address',label:'Address (as shown on the page)'},
+      {t:'text',k:'ctaLabel',label:'Directions button',ph:'Get directions (empty = hidden)'},
+      {t:'chk',k:'showPhone',label:'Show the phone number',def:true},
+      {t:'sel',k:'mapSide',label:'Map side',opts:[['','Map on the right'],['left','Map on the left']]},
+      {t:'sel',k:'tone',label:'Background',opts:[['','Light'],['dark','Dark']]},
+      {t:'sel',k:'mapZoom',label:'Map zoom',opts:[['','Street (default)'],['17','Close up'],['13','Suburb'],['11','City']]},
+      {t:'text',k:'addressTitle',label:'Address label',ph:'Address'},
+      {t:'text',k:'hoursTitle',label:'Hours label',ph:'Opening hours'},
+      {t:'text',k:'phoneTitle',label:'Phone label',ph:'Phone'}],
+      lists:[['mapHoursRows','Opening hours','One row per day or group of days. Leave empty to hide the hours.']]},
+    ctaBanner:{title:'Banner style & buttons',lede:'Leave a button\u2019s text empty to hide it. \u201cOpen the booking calendar\u201d opens the live hire calendar when Bookings is set up, otherwise it goes to the booking bar or quote form.',rows:[
+      {t:'sel',k:'tone',label:'Style',opts:[['','Brand colour (default)'],['dark','Dark'],['light','Light card'],['photo','Photo background']]},
+      {t:'sel',k:'align',label:'Layout',opts:[['','Text left, buttons right'],['center','Centred']]},
+      {t:'image',k:'bgImage',label:'Background photo',when:'tone=photo'},
+      {t:'text',k:'btn1Label',label:'Main button text',ph:'e.g. Pick a day'},
+      {t:'sel',k:'btn1Action',label:'Main button does',def:'quote',opts:LP_CTA_BANNER_ACTIONS},
+      {t:'secsel',k:'btn1Target',label:'Scroll to',when:'btn1Action=section'},
+      {t:'text',k:'btn1Url',label:'Link',ph:'/page or https://\u2026',when:'btn1Action=link'},
+      {t:'text',k:'btn2Label',label:'Second button text',ph:'e.g. Call us'},
+      {t:'sel',k:'btn2Action',label:'Second button does',def:'call',opts:LP_CTA_BANNER_ACTIONS},
+      {t:'secsel',k:'btn2Target',label:'Scroll to',when:'btn2Action=section'},
+      {t:'text',k:'btn2Url',label:'Link',ph:'/page or https://\u2026',when:'btn2Action=link'}]}
   };
   function lplMountLayoutCard(body,c,sub){
     var spec=LPL_LAYOUT_SPECS[sub]; if(!spec||!body) return;
     function ens(){ if(!c.sections) c.sections={}; if(!c.sections[sub]) c.sections[sub]={}; return c.sections[sub]; }
     var S=(c.sections&&c.sections[sub])||{};
-    function cur(k){ var v=S[k]; if(sub==='aboutUs'&&k==='layout'&&!v) return 'story'; if(k==='overlapHero') return v===false?'false':''; return v==null?'':String(v); }
-    var h='<div class="card lpl-layout-card" style="margin-bottom:22px;"><h2>Layout options</h2>'+(spec.lede?'<p class="lede">'+spec.lede+'</p>':'')+'<div style="display:flex;flex-wrap:wrap;gap:12px;">';
+    function cur(k,def){ var v=S[k]; if(sub==='aboutUs'&&k==='layout'&&!v) return 'story'; if(k==='overlapHero') return v===false?'false':''; if((v==null||v==='')&&def!=null) return String(def); return v==null?'':String(v); }
+    var h='<div class="card lpl-layout-card" style="margin-bottom:22px;"><h2>'+(spec.title||'Layout options')+'</h2>'+(spec.lede?'<p class="lede">'+spec.lede+'</p>':'')+'<div style="display:flex;flex-wrap:wrap;gap:12px;">';
     spec.rows.forEach(function(r){
       var id='lpl-'+sub+'-'+r.k, full=(r.t==='ta'||r.t==='image');
       var st=' style="margin:0;'+(full?'flex:1 1 100%;':'flex:1 1 calc(50% - 6px);min-width:190px;')+'"'+(r.when?' data-lpl-when="'+r.when+'"':'');
-      if(r.t==='sel') h+='<div class="f"'+st+'><label>'+r.label+'</label><select id="'+id+'" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#fff;">'+r.opts.map(function(o){ return '<option value="'+o[0]+'"'+(cur(r.k)===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('')+'</select></div>';
+      if(r.t==='sel'||r.t==='secsel'){ var _opts=(r.t==='secsel')?HERO_CTA_SCROLL_TARGETS.filter(function(o){ return o[0]!==sub; }):r.opts;
+        h+='<div class="f"'+st+'><label>'+r.label+'</label><select id="'+id+'" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#fff;">'+_opts.map(function(o){ return '<option value="'+o[0]+'"'+(cur(r.k,r.def)===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('')+'</select></div>'; }
+      else if(r.t==='chk'){ var _ck=(S[r.k]==null)?(r.def!==false):(S[r.k]!==false); h+='<div class="f"'+st+'><label style="display:flex;gap:8px;align-items:center;font-weight:600;margin-top:26px;cursor:pointer;"><input type="checkbox" id="'+id+'"'+(_ck?' checked':'')+'> '+r.label+'</label></div>'; }
+      else if(r.t==='addr') h+='<div class="f"'+st+'><label>'+r.label+'</label><textarea class="tin" id="'+id+'" rows="2" style="min-height:64px;resize:vertical;width:100%;box-sizing:border-box;" placeholder="Unit 3, 47 Example St\nSuburb STATE 2600"></textarea>'
+        +'<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px;"><button type="button" class="btn ghost" id="'+id+'-find" style="padding:7px 12px;">Find on map</button><span class="hint" id="'+id+'-pin" style="margin:0;"></span></div>'
+        +'<div id="'+id+'-res" style="display:none;margin-top:8px;border:1px solid var(--line);border-radius:10px;overflow:hidden;"></div></div>';
       else if(r.t==='ta') h+='<div class="f"'+st+'><label>'+r.label+'</label><textarea class="tin" id="'+id+'" rows="2" style="min-height:64px;resize:vertical;width:100%;box-sizing:border-box;"></textarea></div>';
       else if(r.t==='image') h+='<div class="f"'+st+'><label>'+r.label+'</label>'+cwImgHTML('id="'+id+'"','')+'</div>';
       else h+='<div class="f"'+st+'><label>'+r.label+'</label><input type="text" class="tin" id="'+id+'" placeholder="'+(r.ph||'').replace(/"/g,'&quot;')+'"></div>';
@@ -5822,11 +5866,13 @@ function heroCtaCard(c){
     var first=body.querySelector('.card');
     if(first) first.insertAdjacentHTML('afterend',h); else body.insertAdjacentHTML('afterbegin',h);
     function syncWhen(){
-      body.querySelectorAll('[data-lpl-when]').forEach(function(el){ var w=el.getAttribute('data-lpl-when').split('='); var v=String(((c.sections&&c.sections[sub])||{})[w[0]]||''); el.style.display=(v===w[1])?'':'none'; });
+      body.querySelectorAll('[data-lpl-when]').forEach(function(el){ var w=el.getAttribute('data-lpl-when').split('='); var v=String(((c.sections&&c.sections[sub])||{})[w[0]]||''); el.style.display=(String(w[1]).split('|').indexOf(v)>=0)?'':'none'; });
     }
     spec.rows.forEach(function(r){
       var el=$('lpl-'+sub+'-'+r.k); if(!el) return;
-      if(r.t==='sel'){ el.addEventListener('change',function(){ var o=ens(), v=el.value;
+      if(r.t==='chk'){ el.addEventListener('change',function(){ ens()[r.k]=!!el.checked; persist(); previewApply(); }); return; }
+      if(r.t==='addr') lplWireAddressLookup(el,ens,sub);
+      if(r.t==='sel'||r.t==='secsel'){ el.addEventListener('change',function(){ var o=ens(), v=el.value;
           if(r.k==='overlapHero'){ if(v==='false') o.overlapHero=false; else delete o.overlapHero; }
           else if(r.k==='columns'){ if(v) o.columns=+v; else delete o.columns; }
           else if(v==='') delete o[r.k]; else o[r.k]=v;
@@ -5840,6 +5886,38 @@ function heroCtaCard(c){
     });
     (spec.lists||[]).forEach(function(l){ listEditor($('le-'+l[0]),c,l[0]); });
     syncWhen();
+  }
+  /** Address lookup (OpenStreetMap Nominatim): "Find on map" lists matches; picking one fills the
+   *  address and pins the map (sections[sub].mapQuery = "lat,lng"). Editing the text keeps the pin. */
+  function lplWireAddressLookup(el,ens,sub){
+    var id=el.id, btn=$(id+'-find'), res=$(id+'-res'), pinEl=$(id+'-pin');
+    function showPin(){ var q=String(ens().mapQuery||''); if(!pinEl) return; pinEl.innerHTML=q?('Map pinned \u00b7 <a href="#" id="'+id+'-unpin">Use the address text instead</a>'):'Map uses the address text'; var u=$(id+'-unpin'); if(u) u.onclick=function(e){ e.preventDefault(); delete ens().mapQuery; persist(); previewApply(); showPin(); }; }
+    function line(a){ a=a||{}; var st=String(a['ISO3166-2-lvl4']||'').replace(/^[A-Z]{2}-/,'')||a.state||'';
+      var l1=[a.house_number,a.road].filter(Boolean).join(' ');
+      var l2=[a.suburb||a.town||a.city||a.village||a.hamlet||'',st,a.postcode||''].filter(Boolean).join(' ');
+      return [l1,l2].filter(Boolean).join('\n'); }
+    function search(q,cc){ var u='https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=5&q='+encodeURIComponent(q)+(cc?'&countrycodes='+cc:''); return fetch(u,{headers:{'Accept':'application/json'}}).then(function(r){ return r.ok?r.json():[]; }); }
+    showPin();
+    if(!btn||!res) return;
+    btn.addEventListener('click',function(){
+      var q=String(el.value||'').replace(/\s*\n+\s*/g,', ').trim();
+      if(!q){ toast('Type the address first'); el.focus(); return; }
+      btn.disabled=true; btn.textContent='Searching\u2026';
+      search(q,'au').then(function(list){ return (list&&list.length)?list:search(q,''); }).then(function(list){
+        res.style.display='';
+        if(!list||!list.length){ res.innerHTML='<div class="hint" style="margin:0;padding:10px 12px;">No match found. Check the street and suburb, or leave the text as is \u2014 the map will search for it.</div>'; return; }
+        res.innerHTML=list.map(function(it,i){ return '<button type="button" data-i="'+i+'" style="display:block;width:100%;text-align:left;padding:9px 12px;border:0;border-bottom:1px solid var(--line);background:var(--panel,#fff);color:inherit;font:inherit;font-size:13px;cursor:pointer;">'+esc(it.display_name||'')+'</button>'; }).join('')+'<div class="hint" style="margin:0;padding:6px 12px;font-size:11px;">Search \u00a9 OpenStreetMap contributors</div>';
+        res.querySelectorAll('button[data-i]').forEach(function(b){ b.addEventListener('click',function(){ var it=list[+b.getAttribute('data-i')]||{}; var o=ens(); var ln=line(it.address);
+          var typed=String(el.value||'').trim(), keepUnit=/^(unit|shop|suite|level|lot)\b/i.test(typed);
+          // Keep a typed unit / shop number (lookups drop it) and add the suburb line when it is missing.
+          if(keepUnit&&ln&&typed.indexOf('\n')<0&&ln.indexOf('\n')>0) ln=typed+'\n'+ln.split('\n')[1];
+          else if(keepUnit) ln='';
+          if(ln){ o.address=ln; el.value=ln; }
+          if(it.lat&&it.lon) o.mapQuery=(+it.lat).toFixed(6)+','+(+it.lon).toFixed(6);
+          res.style.display='none'; res.innerHTML=''; persist(); previewApply(); showPin(); }); });
+      }).catch(function(){ res.style.display=''; res.innerHTML='<div class="hint" style="margin:0;padding:10px 12px;">Address search is unavailable right now \u2014 the map will search for the address text.</div>'; })
+      .then(function(){ btn.disabled=false; btn.textContent='Find on map'; });
+    });
   }
   function listCard(sk,title,lede){ return '<div class="card" style="margin-bottom:22px;"><h2>'+title+'</h2><p class="lede">'+lede+'</p><div id="le-'+sk+'"></div></div>'; }
   function iconBtnInner(v){ if(v&&String(v).trim()){ var n=String(v).trim(); if(/^[a-z0-9-]+$/.test(n)&&window.LP_ICONS&&window.LP_ICONS[n]) return '<svg class="lp-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+window.LP_ICONS[n]+'</svg>'; if(window.LP_ICONS&&window.LP_ICONS['circle-help']) return '<svg class="lp-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+window.LP_ICONS['circle-help']+'</svg>'; return esc(n); } return '<span style="opacity:.35;">\uFF0B</span>'; }
@@ -7765,6 +7843,34 @@ function heroCtaCard(c){
         can_reposition:true,
         hero_exclusive:false,
         sort_order:74
+      },
+      {
+        name:'Map & Hours',
+        slug:'map-hours',
+        section_key:'mapHours',
+        tier:'free',
+        tagline:'Find us: address, live map and opening hours',
+        description:'Address with a pinned map, opening hours, phone and a directions button.',
+        default_position:'lower',
+        marketplace_status:'live',
+        builder_visible:true,
+        can_reposition:true,
+        hero_exclusive:false,
+        sort_order:76
+      },
+      {
+        name:'CTA Banner',
+        slug:'cta-banner',
+        section_key:'ctaBanner',
+        tier:'free',
+        tagline:'A bold call to action with one or two buttons',
+        description:'Heading, short text and up to two buttons \u2014 open the booking calendar, call, go to the quote form, scroll to an app or open a link.',
+        default_position:'lower',
+        marketplace_status:'live',
+        builder_visible:true,
+        can_reposition:true,
+        hero_exclusive:false,
+        sort_order:77
       }
     ];
     builtins.forEach(function(b){
@@ -11135,6 +11241,14 @@ function heroCtaCard(c){
 
         +_faviconCard(c)+headerCtaCard(c);
       wireTradeBranding(c); wireLogoSize(c); wireHeaderCta(c); wireFavicon(c);
+    } else if(sub==='mapHours'){
+      if(!c.sections||!c.sections.mapHours){ try{ lpSeedComponent(c,'mapHours'); c.sections.mapHours.on=false; }catch(_mhSeed){} }
+      body.innerHTML=secCard(c,'mapHours','Map & Hours',true,[['eyebrow','Eyebrow (small label above heading)'],['heading','Heading'],['intro','Intro (optional)','ta']]);
+      wireSec(c,'mapHours',true,[['eyebrow'],['heading'],['intro']]);
+    } else if(sub==='ctaBanner'){
+      if(!c.sections||!c.sections.ctaBanner){ try{ lpSeedComponent(c,'ctaBanner'); c.sections.ctaBanner.on=false; }catch(_cbSeed){} }
+      body.innerHTML=secCard(c,'ctaBanner','CTA Banner',true,[['eyebrow','Eyebrow (optional)'],['heading','Heading'],['text','Text (optional)','ta']]);
+      wireSec(c,'ctaBanner',true,[['eyebrow'],['heading'],['text']]);
     } else if(sub==='sectionOrder'){
       body.innerHTML='<div class="card" style="margin-bottom:22px;"><div class="card-head" style="display:flex;justify-content:space-between;align-items:center;gap:12px;"><h2 style="margin:0;">Position \u2014 section order</h2><button class="btn ghost" id="ord-reset" type="button">Reset to default</button></div><p class="lede" style="margin:0 0 12px;">Drag the sections into the order you want them on the page \u2014 including <strong>Online Quote</strong>, <strong>How It Works Steps</strong> and <strong>Team Members</strong>. Switch other components on in Page Content, then drag them into position here.</p><div id="ord-list"></div></div>';
       wireOrder(c);
@@ -13945,7 +14059,7 @@ function heroCtaCard(c){
 
     // Icon map: section_key -> icon name (stroke icons from icons.js)
     var APP_ICONS={
-      customHtml:'code',
+      customHtml:'code',mapHours:'map-pin',ctaBanner:'mouse-pointer-click',
       'quote':'message-square','hero':'layout','heroSlider':'sliders',
       'splitHero':'columns','heroBeforeAfter':'toggle-left','services':'grid',
       'serviceProcess':'list','featureStrip':'panels-top-left','serviceAreaMap':'map','serviceAreas':'map-pin',

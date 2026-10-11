@@ -3389,5 +3389,149 @@
         }
       }
     ]
+  },
+  "mapHours": {
+    "name": "Map & Hours",
+    "tagline": "Find us: address, live map and opening hours",
+    "summary": "Address, pinned Google map, opening hours, phone and a directions button in one section.",
+    "hero_image_url": "https://images.unsplash.com/photo-1569336415962-a4bd9f69cd83?w=1400&h=560&fit=crop&q=80",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Map & Hours",
+          "text": "The \u201cFind us\u201d section every local business needs. Type the address in the editor, press Find on map to pin it, add opening hours row by row and switch the phone number on or off."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1524661135-423995f22d0b?w=1200&h=720&fit=crop&q=80",
+          "alt": "Map with a location pin",
+          "caption": "Address, hours and a live map side by side."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "Key features",
+          "items": [
+            {
+              "title": "Address lookup",
+              "text": "Find the address and pin the map in one click."
+            },
+            {
+              "title": "Opening hours",
+              "text": "One row per day or group of days \u2014 edit, hide or reorder."
+            },
+            {
+              "title": "Get directions",
+              "text": "Button opens Google Maps directions to the business."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "Why partners sell it",
+          "items": [
+            {
+              "title": "Every local client needs it",
+              "text": "Shopfronts, yards and workshops all get a proper Find us section."
+            },
+            {
+              "title": "No map keys",
+              "text": "Works without a Google Maps API key or extra setup."
+            },
+            {
+              "title": "Local SEO",
+              "text": "Address and hours on the page support local search."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "section_key": "mapHours",
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
+  },
+  "ctaBanner": {
+    "name": "CTA Banner",
+    "tagline": "A bold call to action with one or two buttons",
+    "summary": "Heading, short text and two buttons that open the booking calendar, call, quote or link anywhere.",
+    "hero_image_url": "https://images.unsplash.com/photo-1607083206869-4c7672e72a8a?w=1400&h=560&fit=crop&q=80",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "CTA Banner",
+          "text": "Drop a strong call to action anywhere on the page. Each button can open the live booking calendar, call the business, jump to the quote form, scroll to any app or open a link \u2014 brand, dark, light or photo styles."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=1200&h=720&fit=crop&q=80",
+          "alt": "Call to action banner",
+          "caption": "A bold banner with one or two buttons."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "Key features",
+          "items": [
+            {
+              "title": "Two buttons",
+              "text": "Main and second button, each with its own action."
+            },
+            {
+              "title": "Booking calendar",
+              "text": "Opens the live hire calendar when Bookings is set up."
+            },
+            {
+              "title": "Four styles",
+              "text": "Brand colour, dark, light card or a photo background."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "Why partners sell it",
+          "items": [
+            {
+              "title": "Close every page",
+              "text": "A clear next step between long sections."
+            },
+            {
+              "title": "Campaign ready",
+              "text": "Change the headline and button for each promotion."
+            },
+            {
+              "title": "Works with Bookings",
+              "text": "Turns browsers into booked jobs."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "section_key": "ctaBanner",
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
   }
 }
