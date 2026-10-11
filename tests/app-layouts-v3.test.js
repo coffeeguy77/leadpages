@@ -104,3 +104,11 @@ test('layout details match the design: quotes without stars by default, title-ca
   assert.match(manage, /k:'quoteStars'/);
 });
 
+
+test('icon row shows an uploaded image or the icon, at the chosen size; box width line sits on the box edge', () => {
+  assert.match(js, /SV\.iconRowSize/);
+  assert.match(js, /svr-img/);
+  assert.match(css, /\.svr-ic \.lp-ic\{width:var\(--svr-size,40px\)/);
+  assert.match(manage, /'svc-row-sz'/);
+  assert.match(js, /M52 126 L152 66/);
+});
