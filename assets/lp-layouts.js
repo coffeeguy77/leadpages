@@ -138,13 +138,20 @@
     node.classList.toggle('svcs-tick-dark', on && SV.tickTheme !== 'light');
     node.classList.toggle('svcs-iconrow', row);
     ['brand', 'dark', 'light'].forEach(function (t) { node.classList.toggle('svcs-band-' + t, row && band === t); });
+    if (!row) node.style.removeProperty('--svr-size');
     if (!on && !row) return;
     var grid = node.querySelector('.svcs'); if (!grid) return;
     var items = live(C.services).filter(function (s) { return txt(s.title) || txt(s.image); });
     if (row) {
       // Icon row: icon, title and a short line per item (e.g. "Included with every hire").
+      // Size applies to both icons and images (sections.services.iconRowSize, px).
+      var rsz = Math.max(20, Math.min(160, Math.round(Number(SV.iconRowSize) || 40)));
+      node.style.setProperty('--svr-size', rsz + 'px');
       grid.innerHTML = items.map(function (s) {
-        return '<div class="svc svr"><span class="svr-ic">' + (icon(s.icon) || CHECK) + '</span>' +
+        var im = bgUrl(s.image);
+        var media = im ? '<span class="svr-ic svr-media"><img class="svr-img" src="' + esc(im) + '" alt="' + esc(s.title || '') + '" loading="lazy"></span>'
+          : '<span class="svr-ic">' + (icon(s.icon) || CHECK) + '</span>';
+        return '<div class="svc svr">' + media +
           (txt(s.title) ? '<h3>' + esc(s.title) + '</h3>' : '') + (txt(s.body) ? '<p>' + esc(s.body) + '</p>' : '') + '</div>';
       }).join('');
       return;
@@ -213,9 +220,10 @@
       '<g fill="currentColor" font-weight="800" font-size="22">' +
       (L ? '<path d="M60 350 L380 350 M60 343 v14 M380 343 v14" stroke="currentColor" stroke-width="1.5"/><text x="220" y="380" text-anchor="middle">' + L + ' long</text>' : '') +
       (H ? '<path d="M30 140 L30 320 M23 140 h14 M23 320 h14" stroke="currentColor" stroke-width="1.5"/><text x="-230" y="20" transform="rotate(-90)" text-anchor="middle">' + H + ' high</text>' : '') +
-      (W ? '<path d="M398 132 L498 72" stroke="currentColor" stroke-width="1.5"/><text x="502" y="112">' + W + ' wide</text>' : '') +
+      // Width runs along the box's top-left depth edge, offset outwards, with end ticks.
+      (W ? '<path d="M52 126 L152 66 M49 121 L55 131 M149 61 L155 71" stroke="currentColor" stroke-width="1.5"/><text x="94" y="82" text-anchor="middle" transform="rotate(-31 94 82)">' + W + ' wide</text>' : '') +
       (lift ? '<text x="500" y="300" font-size="15" font-weight="700">' + lift + '</text>' : '') +
-      '</g><text x="64" y="40" font-size="14" fill="currentColor" fill-opacity=".75">Dimensions are approximate</text></svg>';
+      '</g><text x="630" y="40" text-anchor="end" font-size="14" fill="currentColor" fill-opacity=".75">Dimensions are approximate</text></svg>';
   }
   function textBand(node, C, TB) {
     var feats = liveIdx(TB.features).filter(function (x) { return txt(x.it.text); });
