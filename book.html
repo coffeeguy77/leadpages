@@ -234,7 +234,7 @@ textarea.in{height:auto;padding:12px 14px;resize:vertical}
       });
     }
     if(window.LPBookingFlow) return go();
-    if(!document.querySelector('link[data-bkh]')){ var l=document.createElement('link'); l.rel='stylesheet'; l.href='/assets/lp-booking-hire.css?v=2'; l.setAttribute('data-bkh','1'); document.head.appendChild(l); }
+    if(!document.querySelector('link[data-bkh]')){ var l=document.createElement('link'); l.rel='stylesheet'; l.href='/assets/lp-booking-hire.css?v=3'; l.setAttribute('data-bkh','1'); document.head.appendChild(l); }
     var sc=document.createElement('script'); sc.src='/assets/lp-booking-flow.js?v=1'; sc.onload=go; document.head.appendChild(sc);
     render();
   }
