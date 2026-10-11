@@ -4760,5 +4760,229 @@
       "key": "sections.aboutUs.quoteAttrColor",
       "label": "Quote attribution colour"
     }
+  ],
+  "mapHours": [
+    {
+      "type": "text",
+      "key": "sections.mapHours.eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "key": "sections.mapHours.heading",
+      "label": "Heading"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.mapHours.intro",
+      "label": "Intro",
+      "rows": 3
+    },
+    {
+      "type": "textarea",
+      "key": "sections.mapHours.address",
+      "label": "Address",
+      "rows": 2
+    },
+    {
+      "type": "text",
+      "key": "sections.mapHours.rows.0.label",
+      "label": "Days"
+    },
+    {
+      "type": "text",
+      "key": "sections.mapHours.rows.0.value",
+      "label": "Hours"
+    },
+    {
+      "type": "text",
+      "key": "sections.mapHours.rows.1.label",
+      "label": "Days"
+    },
+    {
+      "type": "text",
+      "key": "sections.mapHours.rows.1.value",
+      "label": "Hours"
+    },
+    {
+      "type": "text",
+      "key": "sections.mapHours.rows.2.label",
+      "label": "Days"
+    },
+    {
+      "type": "text",
+      "key": "sections.mapHours.rows.2.value",
+      "label": "Hours"
+    },
+    {
+      "type": "text",
+      "key": "sections.mapHours.ctaLabel",
+      "label": "Directions button"
+    },
+    {
+      "type": "select",
+      "key": "sections.mapHours.mapSide",
+      "label": "Map side",
+      "options": [
+        {
+          "value": "",
+          "label": "Right"
+        },
+        {
+          "value": "left",
+          "label": "Left"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "key": "sections.mapHours.tone",
+      "label": "Background",
+      "options": [
+        {
+          "value": "",
+          "label": "Light"
+        },
+        {
+          "value": "dark",
+          "label": "Dark"
+        }
+      ]
+    },
+    {
+      "type": "color",
+      "key": "theme.hivis",
+      "label": "Accent colour"
+    }
+  ],
+  "ctaBanner": [
+    {
+      "type": "text",
+      "key": "sections.ctaBanner.eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "key": "sections.ctaBanner.heading",
+      "label": "Heading"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.ctaBanner.text",
+      "label": "Text",
+      "rows": 3
+    },
+    {
+      "type": "select",
+      "key": "sections.ctaBanner.tone",
+      "label": "Style",
+      "options": [
+        {
+          "value": "brand",
+          "label": "Brand colour"
+        },
+        {
+          "value": "dark",
+          "label": "Dark"
+        },
+        {
+          "value": "light",
+          "label": "Light card"
+        },
+        {
+          "value": "photo",
+          "label": "Photo background"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "key": "sections.ctaBanner.align",
+      "label": "Layout",
+      "options": [
+        {
+          "value": "",
+          "label": "Text left, buttons right"
+        },
+        {
+          "value": "center",
+          "label": "Centred"
+        }
+      ]
+    },
+    {
+      "type": "image",
+      "key": "sections.ctaBanner.bgImage",
+      "label": "Background photo"
+    },
+    {
+      "type": "text",
+      "key": "sections.ctaBanner.btn1Label",
+      "label": "Main button text"
+    },
+    {
+      "type": "select",
+      "key": "sections.ctaBanner.btn1Action",
+      "label": "Main button does",
+      "options": [
+        {
+          "value": "quote",
+          "label": "Go to the quote form"
+        },
+        {
+          "value": "booking",
+          "label": "Open the booking calendar"
+        },
+        {
+          "value": "call",
+          "label": "Call the phone number"
+        },
+        {
+          "value": "section",
+          "label": "Scroll to an app"
+        },
+        {
+          "value": "link",
+          "label": "Go to a link"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "key": "sections.ctaBanner.btn2Label",
+      "label": "Second button text"
+    },
+    {
+      "type": "select",
+      "key": "sections.ctaBanner.btn2Action",
+      "label": "Second button does",
+      "options": [
+        {
+          "value": "quote",
+          "label": "Go to the quote form"
+        },
+        {
+          "value": "booking",
+          "label": "Open the booking calendar"
+        },
+        {
+          "value": "call",
+          "label": "Call the phone number"
+        },
+        {
+          "value": "section",
+          "label": "Scroll to an app"
+        },
+        {
+          "value": "link",
+          "label": "Go to a link"
+        }
+      ]
+    },
+    {
+      "type": "color",
+      "key": "theme.hivis",
+      "label": "Brand colour"
+    }
   ]
 }

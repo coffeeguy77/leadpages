@@ -2669,5 +2669,60 @@
       "imageFit": "cover",
       "imagePos": "center"
     }
+  },
+  "mapHours": {
+    "business": "Ace Plumbing Co.",
+    "trade": "plumber",
+    "phone": "(02) 6100 0000",
+    "theme": {
+      "pipe": "#1f7bb8",
+      "hivis": "#ff6a1f"
+    },
+    "mapHours": {
+      "on": true,
+      "eyebrow": "Find us",
+      "heading": "Visit our workshop",
+      "intro": "Drop in to collect parts, talk through a job or pick up a quote. Plenty of parking out front.",
+      "address": "12 Example Street\nFyshwick ACT 2609",
+      "ctaLabel": "Get directions",
+      "showPhone": true,
+      "rows": [
+        {
+          "on": true,
+          "label": "Monday – Friday",
+          "value": "7:00am – 5:00pm"
+        },
+        {
+          "on": true,
+          "label": "Saturday",
+          "value": "8:00am – 12:00pm"
+        },
+        {
+          "on": true,
+          "label": "Sunday & public holidays",
+          "value": "Closed"
+        }
+      ]
+    }
+  },
+  "ctaBanner": {
+    "business": "Ace Plumbing Co.",
+    "trade": "plumber",
+    "phone": "(02) 6100 0000",
+    "theme": {
+      "pipe": "#1f7bb8",
+      "hivis": "#ff6a1f"
+    },
+    "ctaBanner": {
+      "on": true,
+      "eyebrow": "Same-day service",
+      "heading": "Book your plumber today",
+      "text": "Tell us what’s going on and we’ll lock in a time that suits you — usually the same day.",
+      "tone": "brand",
+      "btn1Label": "Get a free quote",
+      "btn1Action": "quote",
+      "btn2Label": "Call (02) 6100 0000",
+      "btn2Action": "call"
+    }
   }
 }

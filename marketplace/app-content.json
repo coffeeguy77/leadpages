@@ -1802,5 +1802,79 @@
     "presets": [
       "default"
     ]
+  },
+  "mapHours": {
+    "name": "Map & Hours",
+    "tagline": "Find us: address, live map and opening hours",
+    "summary": "Address, pinned Google map, opening hours, phone and a directions button in one section.",
+    "pitch": "The \u201cFind us\u201d section every local business needs. Type the address in the editor, press Find on map to pin it, add opening hours row by row and switch the phone number on or off.",
+    "features": [
+      {
+        "title": "Address lookup",
+        "text": "Find the address and pin the map in one click."
+      },
+      {
+        "title": "Opening hours",
+        "text": "One row per day or group of days \u2014 edit, hide or reorder."
+      },
+      {
+        "title": "Get directions",
+        "text": "Button opens Google Maps directions to the business."
+      }
+    ],
+    "partnerBenefits": [
+      {
+        "title": "Every local client needs it",
+        "text": "Shopfronts, yards and workshops all get a proper Find us section."
+      },
+      {
+        "title": "No map keys",
+        "text": "Works without a Google Maps API key or extra setup."
+      },
+      {
+        "title": "Local SEO",
+        "text": "Address and hours on the page support local search."
+      }
+    ],
+    "presets": [
+      "default"
+    ]
+  },
+  "ctaBanner": {
+    "name": "CTA Banner",
+    "tagline": "A bold call to action with one or two buttons",
+    "summary": "Heading, short text and two buttons that open the booking calendar, call, quote or link anywhere.",
+    "pitch": "Drop a strong call to action anywhere on the page. Each button can open the live booking calendar, call the business, jump to the quote form, scroll to any app or open a link \u2014 brand, dark, light or photo styles.",
+    "features": [
+      {
+        "title": "Two buttons",
+        "text": "Main and second button, each with its own action."
+      },
+      {
+        "title": "Booking calendar",
+        "text": "Opens the live hire calendar when Bookings is set up."
+      },
+      {
+        "title": "Four styles",
+        "text": "Brand colour, dark, light card or a photo background."
+      }
+    ],
+    "partnerBenefits": [
+      {
+        "title": "Close every page",
+        "text": "A clear next step between long sections."
+      },
+      {
+        "title": "Campaign ready",
+        "text": "Change the headline and button for each promotion."
+      },
+      {
+        "title": "Works with Bookings",
+        "text": "Turns browsers into booked jobs."
+      }
+    ],
+    "presets": [
+      "default"
+    ]
   }
 }

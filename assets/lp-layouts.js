@@ -29,6 +29,15 @@
  *   sections.faq.columns = 2                           two-column questions
  *   sections.faq.ctaLabel / ctaHref                    "view all" button (no link = opens every answer)
  *   sections.faq.emptyAnswer                           line shown for a question with no answer
+ *
+ * Apps drawn entirely here (empty <section> placeholders in the template):
+ *   sections.mapHours  — Map & Hours: eyebrow, heading, intro, address, mapQuery (pin "lat,lng"
+ *                        from the editor's address lookup), mapZoom, rows[{label,value}],
+ *                        showPhone, ctaLabel (directions), mapSide 'left', tone 'dark',
+ *                        addressTitle / hoursTitle / phoneTitle
+ *   sections.ctaBanner — CTA Banner: eyebrow, heading, text, tone brand|dark|light|photo,
+ *                        bgImage, align 'center', btn1/btn2 Label + Action
+ *                        (booking|call|quote|section|link) + Target (section) / Url (link)
  */
 (function () {
   'use strict';
@@ -330,6 +339,161 @@
     }
   }
 
+  function phoneOf(C) {
+    var ph = txt(C.phone).replace(/[^0-9+]/g, '');
+    return ph ? { href: 'tel:' + ph, text: txt(C.phoneText) || txt(C.phone) } : null;
+  }
+  /** List items with their index in the saved list (so the editor can find the row). */
+  function liveIdx(list) {
+    return (Array.isArray(list) ? list : []).map(function (it, i) { return { it: it, i: i }; })
+      .filter(function (x) { return x.it && x.it.on !== false; });
+  }
+
+  /* ---------- Map & Hours app (sections.mapHours) ---------- */
+  function mapHours(C) {
+    var node = sec('mapHours'); if (!node) return;
+    var M = (C.sections && C.sections.mapHours) || {};
+    node.classList.toggle('mh-map-left', M.mapSide === 'left');
+    node.classList.toggle('mh-dark', M.tone === 'dark');
+    if (M.on !== true) { clear(node, 'mh'); return; }
+    var addr = txt(M.address);
+    var pin = txt(M.mapQuery);
+    var q = pin || addr.replace(/\s*\n+\s*/g, ', ');
+    var zoom = Math.min(20, Math.max(3, Math.round(Number(M.mapZoom) || 15)));
+    var rows = liveIdx(M.rows).filter(function (x) { return txt(x.it.label) || txt(x.it.value); });
+    var ph = M.showPhone === false ? null : phoneOf(C);
+    var dir = q ? 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(q) : '';
+    var lines = function (s) { return esc(s).replace(/\n/g, '<br>'); };
+    var block = function (ic, title, body, lpe) {
+      return '<div class="mh-block"' + (lpe ? ' data-lpe="' + lpe + '"' : '') + '><span class="mh-ic">' + icon(ic) + '</span><div class="mh-bbody">' +
+        (title ? '<strong class="mh-bt">' + esc(title) + '</strong>' : '') + body + '</div></div>';
+    };
+    var text = (txt(M.eyebrow) ? '<span class="eyebrow mh-eyebrow" data-lpe="eyebrow">' + esc(M.eyebrow) + '</span>' : '') +
+      (txt(M.heading) ? '<h2 class="mh-h" data-lpe="heading">' + esc(M.heading) + '</h2>' : '') +
+      (txt(M.intro) ? '<p class="mh-intro" data-lpe="intro">' + lines(M.intro) + '</p>' : '') +
+      '<div class="mh-blocks">' +
+      (addr ? block('map-pin', txt(M.addressTitle) || 'Address', '<p class="mh-addr">' + lines(addr) + '</p>', 'address') : '') +
+      (rows.length ? block('clock', txt(M.hoursTitle) || 'Opening hours', '<dl class="mh-hours">' + rows.map(function (x) {
+        return '<div class="mh-row"><dt data-lpe="list:mapHoursRows:' + x.i + ':label">' + esc(x.it.label) + '</dt>' +
+          '<dd data-lpe="list:mapHoursRows:' + x.i + ':value">' + esc(x.it.value) + '</dd></div>';
+      }).join('') + '</dl>', '') : '') +
+      (ph ? block('phone', txt(M.phoneTitle) || 'Phone', '<a class="mh-phone" href="' + esc(ph.href) + '">' + esc(ph.text) + '</a>', 'showPhone') : '') +
+      '</div>' +
+      ((txt(M.ctaLabel) && dir) ? '<a class="lpl-btn mh-cta" data-lpe="ctaLabel" ' + linkAttrs(dir) + '>' + icon('navigation') + esc(M.ctaLabel) + '</a>' : '');
+    var box = node.querySelector('[data-lpl="mh"]');
+    if (!box) {
+      node.insertAdjacentHTML('afterbegin', '<div class="wrap mh" data-lpl="mh"><div class="mh-text"></div><div class="mh-map"></div></div>');
+      box = node.querySelector('[data-lpl="mh"]');
+    }
+    box.querySelector('.mh-text').innerHTML = text;
+    node.classList.toggle('mh-nomap', !q);
+    // The map is only redrawn when its address changes (and not on every keystroke),
+    // so editing other fields never reloads it.
+    var map = box.querySelector('.mh-map');
+    var src = q ? 'https://maps.google.com/maps?q=' + encodeURIComponent(q) + '&z=' + zoom + '&output=embed' : '';
+    if (map.getAttribute('data-src') === src && map.firstChild) return;
+    var draw = function () {
+      map.setAttribute('data-src', src);
+      map.classList.toggle('mh-map-empty', !src);
+      if (src) {
+        map.removeAttribute('data-lpe');
+        map.innerHTML = '<iframe title="Map" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="' + esc(src) + '"></iframe>' +
+          '<div class="lp-as-shield" data-lpe="address" aria-hidden="true"></div>';
+      } else {
+        map.setAttribute('data-lpe', 'address');
+        map.innerHTML = '<span>' + icon('map-pin') + 'Add an address to show the map</span>';
+      }
+    };
+    clearTimeout(node.__mhT);
+    if (!map.firstChild) draw(); else node.__mhT = setTimeout(draw, 700);
+  }
+
+  /* ---------- CTA Banner app (sections.ctaBanner) ---------- */
+  var FLOW_P = null;
+  function flowScript() {
+    if (window.LPBookingFlow) return Promise.resolve(window.LPBookingFlow);
+    if (FLOW_P) return FLOW_P;
+    if (!document.querySelector('link[href^="/assets/lp-booking-hire.css"]')) {
+      var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = '/assets/lp-booking-hire.css?v=2';
+      document.head.appendChild(l);
+    }
+    FLOW_P = new Promise(function (resolve) {
+      var sc = document.createElement('script');
+      sc.src = '/assets/lp-booking-flow.js?v=1'; sc.async = true;
+      sc.onload = function () { resolve(window.LPBookingFlow || null); };
+      sc.onerror = function () { FLOW_P = null; resolve(null); };
+      document.head.appendChild(sc);
+    });
+    return FLOW_P;
+  }
+  function goTo(href) {
+    if (!href) return;
+    if (href.charAt(0) === '#') {
+      var t = document.getElementById(href.slice(1)) || sec(href.slice(1));
+      if (t) { try { t.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) { t.scrollIntoView(); } return; }
+    }
+    window.location.href = href;
+  }
+  /** "Open the booking calendar": the live hire calendar when Bookings is set up,
+   *  otherwise the booking bar, the quote form or a phone call. */
+  function openBooking() {
+    var C = cfgOf() || {};
+    var slug = txt(C.slug) || ((typeof SITE_CONFIG !== 'undefined' && SITE_CONFIG && SITE_CONFIG.slug) || '');
+    var fallback = function () { goTo(bookingHref()); };
+    if (!slug) { fallback(); return; }
+    flowScript().then(function (F) {
+      if (!F) return fallback();
+      return F.load(slug).then(function (cal) {
+        if (!cal || !cal.live) return fallback();
+        var accent = '';
+        try { accent = getComputedStyle(document.documentElement).getPropertyValue('--hivis').trim(); } catch (e) {}
+        F.open({ accent: accent });
+      });
+    }).catch(fallback);
+  }
+  function ctaBtn(C, M, n) {
+    var label = txt(M['btn' + n + 'Label']);
+    if (!label) return '';
+    var act = M['btn' + n + 'Action'] || (n === 1 ? 'quote' : 'call');
+    var cls = 'lpl-btn cb-btn ' + (n === 1 ? 'cb-btn1' : 'cb-btn2');
+    var lpe = ' data-lpe="btn' + n + 'Label"';
+    if (act === 'booking') {
+      return '<button type="button" class="' + cls + '" data-cb-act="booking"' + lpe + '>' + icon('calendar-days') + esc(label) + '</button>';
+    }
+    var href, ic = '';
+    if (act === 'call') { var ph = phoneOf(C); href = ph ? ph.href : contactHref(); ic = icon('phone'); }
+    else if (act === 'section') { var t = txt(M['btn' + n + 'Target']).replace(/[^\w-]/g, ''); href = t ? '#' + t : contactHref(); }
+    else if (act === 'link') { href = hrefOf(M['btn' + n + 'Url'], contactHref()); }
+    else { href = contactHref(); }
+    return '<a class="' + cls + '"' + lpe + ' ' + linkAttrs(href) + '>' + ic + esc(label) + (ic ? '' : ARROW) + '</a>';
+  }
+  function ctaBanner(C) {
+    var node = sec('ctaBanner'); if (!node) return;
+    var M = (C.sections && C.sections.ctaBanner) || {};
+    clear(node, 'cb');
+    var tone = ({ brand: 1, dark: 1, light: 1, photo: 1 })[M.tone] ? M.tone : 'brand';
+    ['brand', 'dark', 'light', 'photo'].forEach(function (t) { node.classList.toggle('cb-tone-' + t, t === tone); });
+    node.classList.toggle('cb-center', M.align === 'center');
+    var bg = bgUrl(M.bgImage);
+    if (tone === 'photo' && bg) node.style.setProperty('--cb-bg', 'url("' + bg + '")'); else node.style.removeProperty('--cb-bg');
+    if (M.on !== true) return;
+    var btns = ctaBtn(C, M, 1) + ctaBtn(C, M, 2);
+    node.insertAdjacentHTML('afterbegin', '<div class="wrap cb-wrap" data-lpl="cb"><div class="cb"><div class="cb-text">' +
+      (txt(M.eyebrow) ? '<span class="cb-eyebrow" data-lpe="eyebrow">' + esc(M.eyebrow) + '</span>' : '') +
+      (txt(M.heading) ? '<h2 class="cb-h" data-lpe="heading">' + esc(M.heading) + '</h2>' : '') +
+      (txt(M.text) ? '<p class="cb-p" data-lpe="text">' + esc(M.text).replace(/\n/g, '<br>') + '</p>' : '') +
+      '</div>' + (btns ? '<div class="cb-btns">' + btns + '</div>' : '') + '</div></div>');
+    if (!node.__cbBound) {
+      node.__cbBound = true;
+      node.addEventListener('click', function (e) {
+        var b = e.target && e.target.closest ? e.target.closest('[data-cb-act="booking"]') : null;
+        if (!b || e.defaultPrevented) return;
+        e.preventDefault();
+        openBooking();
+      });
+    }
+  }
+
   /** Bookings hire bar: render.js loads it for saved sites; this loads it in the editor
    *  preview when the layout is switched to 'hire' before the page has been re-rendered. */
   function bookingHire(C) {
@@ -359,7 +523,7 @@
     document.body.appendChild(s);
   }
 
-  var STEPS = [heroSlider, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, bookingHire, boldDesign];
+  var STEPS = [heroSlider, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, mapHours, ctaBanner, bookingHire, boldDesign];
 
   function run(cfg) {
     if (cfg) LAST = cfg;
