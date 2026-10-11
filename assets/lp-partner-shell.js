@@ -140,7 +140,7 @@
     if (!grid || !global.LPWorkspaceAppearance) return;
     var prefs = global.LPWorkspaceAppearance.load();
     var meta = global.LPWorkspaceAppearance.THEME_META || {};
-    var keys = ['classic-light', 'command-dark', 'neon-pink', 'electric-blue', 'blush', 'blueprint', 'system'];
+    var keys = ['classic-light', 'command-dark', 'neon-pink', 'electric-blue', 'blush', 'blueprint', 'studio-light', 'studio-dark', 'system'];
     grid.innerHTML = keys.map(function (k) {
       var m = meta[k] || { name: k, description: '' };
       var on = (prefs.theme || 'classic-light') === k;

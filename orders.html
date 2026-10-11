@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="/assets/lp-ui-boot.js?v=1"></script>
 <script>
 (function(){
   try{
@@ -12,10 +13,10 @@
     if(theme==='system'){
       theme=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'command-dark':'classic-light';
     }
-    var allowed=['classic-light','command-dark','neon-pink','electric-blue','blush','blueprint'];
+    var allowed=['classic-light','command-dark','neon-pink','electric-blue','blush','blueprint','studio-light','studio-dark'];
     if(allowed.indexOf(theme)<0) theme='classic-light';
     document.documentElement.dataset.theme=theme;
-    var dark=(theme==='command-dark'||theme==='neon-pink'||theme==='electric-blue');
+    var dark=(theme==='command-dark'||theme==='neon-pink'||theme==='electric-blue'||theme==='studio-dark');
     document.documentElement.style.colorScheme=dark?'dark':'light';
     var bg=dark?(theme==='neon-pink'?'#140f14':(theme==='electric-blue'?'#0f1419':'#12151a'))
       :(theme==='blush'?'#faf3f2':(theme==='blueprint'?'#f0f4f8':'#f6f4ef'));
@@ -575,6 +576,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
   body.embed .menu-toggle{display:none}
 }
 </style>
+<link rel="stylesheet" href="/assets/lp-ui.css?v=1">
 </head>
 <body data-lp-admin-page="orders">
 <div id="gate" class="gate">

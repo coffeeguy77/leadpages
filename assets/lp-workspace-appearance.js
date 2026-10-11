@@ -15,7 +15,9 @@
     'neon-pink': { accent: '#ff4da6', ink: '#fce8f3' },
     'electric-blue': { accent: '#3b9eff', ink: '#e8f2ff' },
     blush: { accent: '#c45c7a', ink: '#2a1f2e' },
-    blueprint: { accent: '#2563eb', ink: '#1a2a3a' }
+    blueprint: { accent: '#2563eb', ink: '#1a2a3a' },
+    'studio-light': { accent: '#127a5a', ink: '#0f1115' },
+    'studio-dark': { accent: '#3ddc97', ink: '#f1f2f4' }
   };
 
   var DEFAULTS = {
@@ -24,7 +26,12 @@
     textSize: 'standard',
     reducedMotion: false,
     highContrast: false,
-    strongFocus: true
+    strongFocus: true,
+    // Interface: 'classic' (current look) or 'v2' (new look, opt-in) — assets/lp-ui.css.
+    ui: 'classic',
+    // New look menu: 'side' (sidebar, icons + text) or 'top' (top menu).
+    nav: 'side',
+    sideCollapsed: false
   };
 
   var THEME_META = {
@@ -57,6 +64,16 @@
       name: 'Blueprint',
       description: 'Professional blue theme for service and trade businesses.',
       mode: 'light'
+    },
+    'studio-light': {
+      name: 'Studio Light',
+      description: 'Crisp neutral workspace — made for the new look.',
+      mode: 'light'
+    },
+    'studio-dark': {
+      name: 'Studio Dark',
+      description: 'Deep, quiet dark workspace — made for the new look.',
+      mode: 'dark'
     },
     system: {
       name: 'System Default',
@@ -99,7 +116,7 @@
         return 'classic-light';
       }
     }
-    var allowed = ['classic-light', 'command-dark', 'neon-pink', 'electric-blue', 'blush', 'blueprint'];
+    var allowed = ['classic-light', 'command-dark', 'neon-pink', 'electric-blue', 'blush', 'blueprint', 'studio-light', 'studio-dark'];
     return allowed.indexOf(theme) >= 0 ? theme : 'classic-light';
   }
 
@@ -129,6 +146,21 @@
     }
   }
 
+  /** The new look stylesheet — pages may link it themselves; this loads it on any page that doesn't. */
+  var UI_CSS = '/assets/lp-ui.css?v=1';
+  function ensureUiCss() {
+    var d = global.document;
+    if (!d || !d.head) return;
+    if (!d.getElementById('lp-ui-font')) {
+      var f = d.createElement('link'); f.rel = 'stylesheet'; f.id = 'lp-ui-font';
+      f.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap';
+      d.head.appendChild(f);
+    }
+    if (d.querySelector('link[href^="/assets/lp-ui.css"]')) return;
+    var l = d.createElement('link'); l.rel = 'stylesheet'; l.href = UI_CSS; l.id = 'lp-ui-css';
+    d.head.appendChild(l);
+  }
+
   function apply(prefs) {
     var p = Object.assign({}, DEFAULTS, prefs || {});
     var root = global.document && global.document.documentElement;
@@ -143,6 +175,10 @@
     root.dataset.lpReducedMotion = p.reducedMotion ? 'true' : 'false';
     root.dataset.lpHighContrast = p.highContrast ? 'true' : 'false';
     root.dataset.lpStrongFocus = p.strongFocus !== false ? 'true' : 'false';
+    root.dataset.lpUi = p.ui === 'v2' ? 'v2' : 'classic';
+    root.dataset.lpNav = p.nav === 'top' ? 'top' : 'side';
+    root.dataset.lpSideCollapsed = p.sideCollapsed ? 'true' : 'false';
+    if (p.ui === 'v2') ensureUiCss();
 
     applyLogos(resolved);
 

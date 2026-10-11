@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="/assets/lp-ui-boot.js?v=1"></script>
   <title>Search Console — LeadPages Integrations</title>
   <link rel="icon" href="/favicon.ico">
   <meta name="theme-color" content="#1f7a63">
@@ -15,10 +16,10 @@
       if(theme==='system'){
         theme=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'command-dark':'classic-light';
       }
-      var allowed=['classic-light','command-dark','neon-pink','electric-blue','blush','blueprint'];
+      var allowed=['classic-light','command-dark','neon-pink','electric-blue','blush','blueprint','studio-light','studio-dark'];
       if(allowed.indexOf(theme)<0) theme='classic-light';
       document.documentElement.dataset.theme=theme;
-      var dark=(theme==='command-dark'||theme==='neon-pink'||theme==='electric-blue');
+      var dark=(theme==='command-dark'||theme==='neon-pink'||theme==='electric-blue'||theme==='studio-dark');
       document.documentElement.style.colorScheme=dark?'dark':'light';
     }catch(e){}
   })();
@@ -48,6 +49,7 @@
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
+<link rel="stylesheet" href="/assets/lp-ui.css?v=1">
 </head>
 <body>
   <div class="wrap">

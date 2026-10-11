@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="/assets/lp-ui-boot.js?v=1"></script>
 <title>Domain Manager — LeadPages</title>
 <script>
 (function(){
@@ -13,10 +14,10 @@
     if(theme==='system'){
       theme=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'command-dark':'classic-light';
     }
-    var allowed=['classic-light','command-dark','neon-pink','electric-blue','blush','blueprint'];
+    var allowed=['classic-light','command-dark','neon-pink','electric-blue','blush','blueprint','studio-light','studio-dark'];
     if(allowed.indexOf(theme)<0) theme='classic-light';
     document.documentElement.dataset.theme=theme;
-    var dark=(theme==='command-dark'||theme==='neon-pink'||theme==='electric-blue');
+    var dark=(theme==='command-dark'||theme==='neon-pink'||theme==='electric-blue'||theme==='studio-dark');
     var bg=dark?'#12151a':(theme==='blush'?'#faf3f2':(theme==='blueprint'?'#f0f4f8':'#f6f4ef'));
     document.documentElement.style.colorScheme=dark?'dark':'light';
     document.documentElement.style.background=bg;
@@ -162,6 +163,7 @@ input:focus,select:focus{outline:2px solid var(--brand);outline-offset:0;border-
 code{font-family:ui-monospace,Menlo,monospace;font-size:12px;background:transparent;padding:1px 6px;border-radius:4px;border:1px solid var(--line);color:var(--ink);}
 .hide{display:none!important;}
 </style>
+<link rel="stylesheet" href="/assets/lp-ui.css?v=1">
 </head>
 <body class="domains-page" data-lp-admin-page="manage-domains">
 <div class="wrap">
@@ -304,7 +306,7 @@ if(window.LPWorkspaceAppearance){ try{ LPWorkspaceAppearance.init(); }catch(e){}
   function paint(){
     try{
       var t=(document.documentElement.dataset.theme||'');
-      var dark=(t==='command-dark'||t==='neon-pink'||t==='electric-blue');
+      var dark=(t==='command-dark'||t==='neon-pink'||t==='electric-blue'||t==='studio-dark');
       var bg=dark?'#12151a':(t==='blush'?'#faf3f2':(t==='blueprint'?'#f0f4f8':'#f6f4ef'));
       var ink=dark?'#eef2f7':'#1b2430';
       document.documentElement.style.colorScheme=dark?'dark':'light';

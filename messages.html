@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="/assets/lp-ui-boot.js?v=1"></script>
 <link rel="icon" type="image/x-icon" href="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico">
 <link rel="shortcut icon" href="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico">
 <title>Messages · LeadPages</title>
@@ -20,22 +21,22 @@
 html,body{margin:0;height:100%}
 body{font-family:var(--font-ui);color:var(--ink);background:var(--surface);-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;min-height:100%}
 a{color:var(--brand)}
-.top{border-bottom:1px solid var(--line);background:#fff}
+.top{border-bottom:1px solid var(--line);background:var(--panel,#fff)}
 .top .wrap{max-width:1100px;margin:0 auto;padding:12px 18px;display:flex;align-items:center;gap:12px}
 .brand{display:flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:800;font-size:18px;color:var(--ink);text-decoration:none}
 .brand .mark{width:24px;height:24px;border-radius:7px;background:linear-gradient(135deg,var(--brand),#2f9b7e)}
 .top .who{margin-left:auto;font-size:13px;color:var(--ink-soft);display:flex;align-items:center;gap:12px}
 .top .who a{color:var(--ink-soft);text-decoration:none;font-weight:600}
-.btn{appearance:none;border:1px solid var(--line-strong);background:#fff;border-radius:10px;padding:9px 14px;font:inherit;font-weight:600;font-size:14px;color:var(--ink);cursor:pointer}
+.btn{appearance:none;border:1px solid var(--line-strong);background:var(--panel,#fff);border-radius:10px;padding:9px 14px;font:inherit;font-weight:600;font-size:14px;color:var(--ink);cursor:pointer}
 .btn:hover{border-color:var(--brand)}
-.btn-brand{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn-brand{background:var(--brand);border-color:var(--brand);color:var(--accent-text,#fff)}
 .btn-brand:hover{background:var(--brand-deep)}
 .btn-sm{padding:6px 11px;font-size:13px}
-input,textarea,select{font:inherit;color:var(--ink);border:1px solid var(--line-strong);border-radius:10px;padding:10px 12px;background:#fff;width:100%}
+input,textarea,select{font:inherit;color:var(--ink);border:1px solid var(--line-strong);border-radius:10px;padding:10px 12px;background:var(--panel,#fff);width:100%}
 input:focus,textarea:focus,select:focus{outline:none;border-color:var(--brand)}
 .main{flex:1;max-width:1100px;width:100%;margin:0 auto;padding:16px 18px;display:flex;gap:16px;min-height:0}
 /* login */
-.login{max-width:420px;margin:8vh auto;background:#fff;border:1px solid var(--line);border-radius:16px;padding:28px}
+.login{max-width:420px;margin:8vh auto;background:var(--panel,#fff);border:1px solid var(--line);border-radius:16px;padding:28px}
 .login h1{font-family:var(--font-display);font-weight:800;font-size:24px;margin:0 0 6px}
 .login p{color:var(--ink-soft);margin:0 0 18px;font-size:14px}
 .login .row{margin-bottom:10px}
@@ -44,7 +45,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--brand)}
 .msg-ok{background:var(--brand-tint);color:var(--brand-deep);border:1px solid #cfe6dd;border-radius:10px;padding:10px 12px;font-size:13.5px;margin-bottom:10px}
 .msg-err{background:#fceeea;color:var(--bad);border:1px solid #f2ccc2;border-radius:10px;padding:10px 12px;font-size:13.5px;margin-bottom:10px}
 /* panes */
-.pane{background:#fff;border:1px solid var(--line);border-radius:16px;display:flex;flex-direction:column;min-height:0}
+.pane{background:var(--panel,#fff);border:1px solid var(--line);border-radius:16px;display:flex;flex-direction:column;min-height:0}
 .list{width:320px;flex:0 0 320px}
 .list .lhead{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:8px}
 .list .lhead h2{font-family:var(--font-display);font-size:16px;margin:0}
@@ -72,7 +73,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--brand)}
 .b.them .bub{background:var(--surface-2);border:1px solid var(--line);border-top-left-radius:5px}
 .b.me{align-self:flex-end}
 .b.me .meta{text-align:right}
-.b.me .bub{background:var(--brand);color:#fff;border-top-right-radius:5px}
+.b.me .bub{background:var(--brand);color:var(--accent-text,#fff);border-top-right-radius:5px}
 .composer{border-top:1px solid var(--line);padding:12px;display:flex;gap:10px;align-items:flex-end}
 .composer textarea{resize:none;min-height:44px;max-height:140px}
 .empty{flex:1;display:flex;align-items:center;justify-content:center;color:var(--ink-faint);text-align:center;padding:30px;font-size:14px}
@@ -95,6 +96,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--brand)}
 <script src="/assets/lp-hub-embed.js"></script>
 <link rel="stylesheet" href="/assets/lp-logo.css">
 <script src="/assets/lp-logo.js" defer></script>
+<link rel="stylesheet" href="/assets/lp-ui.css?v=1">
 </head>
 <body class="messages-page" data-lp-admin-page="messages">
 <div class="top lp-hub-chrome"><div class="wrap">
