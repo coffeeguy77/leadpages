@@ -654,7 +654,7 @@
   }
 
   /* ---------- Hero slider: "Booking card" layout (headline, photo, live calendar) ---------- */
-  var HB = { month: '', sel: '', today: '', live: false, settings: null, days: {}, fetched: {}, total: 0, slug: '', week: null, bound: false };
+  var HB = { month: '', sel: '', end: '', today: '', live: false, settings: null, days: {}, fetched: {}, total: 0, slug: '', week: null, bound: false };
   function pad2(n) { return (n < 10 ? '0' : '') + n; }
   function addDays(ymd, n) { var p = ymd.split('-').map(Number); var d = new Date(Date.UTC(p[0], p[1] - 1, p[2] + n, 12)); return d.getUTCFullYear() + '-' + pad2(d.getUTCMonth() + 1) + '-' + pad2(d.getUTCDate()); }
   function dow(ymd) { var p = ymd.split('-').map(Number); return (new Date(Date.UTC(p[0], p[1] - 1, p[2], 12)).getUTCDay() + 6) % 7; }
@@ -666,6 +666,38 @@
     var d = HB.days[ymd];
     if (d && d.from_cents) return d.from_cents;
     return HB.week ? centsOf(HB.week[dow(ymd)].price) : 0;
+  }
+  /** Range picking (like an accommodation calendar): tap a start day, then an end day.
+   *  sections.heroSlider.bookRange === false turns it off (single day + duration list). */
+  function hbRangeOn() { return HS0().bookRange !== false; }
+  function hbBlocked(ymd) {
+    var firstOk = addDays(HB.today, (HB.settings && HB.settings.min_notice_days) || 0);
+    if (ymd < firstOk) return true;
+    var dd = HB.days[ymd];
+    return !!(HB.live && dd && (dd.closed || !dd.free));
+  }
+  function hbSpan(a, b) { var n = 0, d = a; while (d <= b && n < 400) { n++; d = addDays(d, 1); } return n; }
+  /** Number of hire days: the picked range, else the duration list, else 1. */
+  function hbDays() {
+    if (HB.sel && HB.end) return hbSpan(HB.sel, HB.end);
+    return Number((hq('len') || {}).value) || 1;
+  }
+  function hbPickDay(ymd) {
+    if (!hbRangeOn() || !HB.sel || HB.end || ymd <= HB.sel) { HB.sel = ymd; HB.end = ''; return; }
+    var span = hbSpan(HB.sel, ymd);
+    // A booked-out / closed day inside the range (or a range longer than the longest hire) starts again from this day.
+    for (var d = HB.sel, i = 0; i < span; i++, d = addDays(d, 1)) { if (hbBlocked(d)) { HB.sel = ymd; HB.end = ''; return; } }
+    if (span > ((HB.settings && Number(HB.settings.max_days)) || 60)) { HB.sel = ymd; HB.end = ''; return; }
+    HB.end = ymd;
+  }
+  function hbHover(ymd) {
+    var host = hq('days'); if (!host) return;
+    var on = hbRangeOn() && HB.sel && !HB.end && ymd && ymd > HB.sel;
+    var btns = host.querySelectorAll('.hbk-day[data-ymd]');
+    for (var i = 0; i < btns.length; i++) {
+      var y = btns[i].getAttribute('data-ymd');
+      btns[i].classList.toggle('hov', !!(on && y > HB.sel && y <= ymd));
+    }
   }
   function hbFetch(from, to) {
     var key = from + '|' + to;
@@ -696,7 +728,9 @@
         else if (dd.free <= 2) cls += ' few';
         else cls += ' free';
       }
-      if (ymd === HB.sel) cls += ' sel';
+      if (ymd === HB.sel) cls += ' sel' + (HB.end ? ' rs' : '');
+      if (HB.end && ymd === HB.end) cls += ' sel re';
+      if (HB.end && ymd > HB.sel && ymd < HB.end) cls += ' rng';
       var off = past || / full/.test(cls);
       h += '<button type="button" class="' + cls + '" data-ymd="' + ymd + '"' + (off ? ' disabled' : '') + ' aria-label="' + esc(niceDay(ymd) + (state ? ', ' + state : (price ? ', ' + money(price) : ''))) + '">' +
         '<span class="n">' + d + '</span>' + (past ? '' : '<span class="p">' + (state || (price ? money(price) : '')) + '</span>') + '<span class="l"></span></button>';
@@ -719,13 +753,34 @@
   function hbQuote() {
     var when = hq('qwhen'), amt = hq('qamt'), left = hq('left');
     if (!when) return;
-    if (!HB.sel) { when.textContent = 'Choose a day'; amt.textContent = ''; left.textContent = ''; return; }
-    var n = Number((hq('len') || {}).value) || 1, sum = 0, all = true;
-    for (var i = 0; i < n; i++) { var p = hbPrice(addDays(HB.sel, i)); if (!p) all = false; sum += p; }
-    when.textContent = niceDay(HB.sel) + ' · ' + (n === 1 ? '1 day' : n === 7 ? '1 week' : n + ' days');
+    hbLen();
+    if (!HB.sel) { when.textContent = hbRangeOn() ? 'Choose a start day' : 'Choose a day'; amt.textContent = ''; left.textContent = ''; return; }
+    var n = hbDays(), sum = 0, all = true, minFree = null;
+    for (var i = 0; i < n; i++) {
+      var dy = addDays(HB.sel, i), p = hbPrice(dy), dd = HB.days[dy];
+      if (!p) all = false; sum += p;
+      if (dd && dd.free != null && (minFree === null || dd.free < minFree)) minFree = dd.free;
+    }
+    var len = n === 1 ? '1 day' : n === 7 ? '1 week' : n + ' days';
+    when.textContent = (HB.end ? niceDay(HB.sel) + ' \u2013 ' + niceDay(HB.end) : niceDay(HB.sel)) + ' · ' + len;
     amt.textContent = sum && all ? ((HB.days[HB.sel] && HB.days[HB.sel].from_cents) ? 'from ' : '') + money(sum) : '';
-    var dd = HB.days[HB.sel];
-    left.textContent = HB.live && dd && dd.free && dd.free <= 2 ? (dd.free === 1 ? 'Only 1' : 'Only ' + dd.free) + (HB.total ? ' of ' + HB.total : '') + ' left that day.' : '';
+    left.textContent = HB.live && minFree && minFree <= 2
+      ? (minFree === 1 ? 'Only 1' : 'Only ' + minFree) + (HB.total ? ' of ' + HB.total : '') + ' left ' + (n > 1 ? 'for those days.' : 'that day.')
+      : (hbRangeOn() && !HB.end ? 'Tap another day for a longer hire.' : '');
+  }
+  /** With a range picked, the duration list shows it and is locked; one day frees it again. */
+  function hbLen() {
+    var l = hq('len'); if (!l) return;
+    var x = l.querySelector('option[data-range]');
+    if (HB.sel && HB.end) {
+      var n = hbSpan(HB.sel, HB.end);
+      if (!x) { x = document.createElement('option'); x.setAttribute('data-range', '1'); l.insertBefore(x, l.firstChild); }
+      x.value = String(n); x.textContent = n + ' days (picked on the calendar)';
+      l.value = String(n); x.selected = true; l.disabled = true;
+    } else {
+      if (x) { l.removeChild(x); l.selectedIndex = 0; }
+      l.disabled = false;
+    }
   }
   function HS0() { var C = cfgOf() || {}; return (C.sections && C.sections.heroSlider) || {}; }
   /** The card button reads "Continue" when online booking is live, "Call to book" until then. */
@@ -737,12 +792,12 @@
     var go = hq('go'), sub = hq('sub'), fine = hq('fine'), ph = phoneOf(C);
     if (!go) return;
     if (HB.live) {
-      if (sub) sub.textContent = 'Each day shows its price. The dot shows what’s free.';
+      if (sub) sub.textContent = 'Each day shows its price. The dot shows what’s free.' + (hbRangeOn() ? ' Tap a start and end day for a longer hire.' : '');
       hbPick();
       go.removeAttribute('data-call');
       hbLabel(go, 'bookCta', txt(HS0().bookCta) || 'Continue');
     } else {
-      if (sub) sub.textContent = HB.week ? 'Each day shows its price.' : '';
+      if (sub) sub.textContent = (HB.week ? 'Each day shows its price.' : '') + (hbRangeOn() ? ' Tap a start and end day for a longer hire.' : '');
       go.setAttribute('data-call', '1');
       hbLabel(go, 'bookCtaCall', txt(HS0().bookCtaCall) || (ph ? 'Call to book' : 'Get in touch'));
       if (fine && ph && !fine.getAttribute('data-set')) fine.innerHTML = 'Prefer to talk? Call <a href="' + esc(ph.href) + '">' + esc(ph.text) + '</a>.';
@@ -767,7 +822,7 @@
       var root = document.querySelector('[data-lpl="hbk"]'); if (!root || !root.contains(e.target) || e.defaultPrevented) return;
       var C = cfgOf() || {};
       var day = e.target.closest('.hbk-day[data-ymd]');
-      if (day && !day.disabled) { HB.sel = day.getAttribute('data-ymd'); hbPaint(); hbQuote(); return; }
+      if (day && !day.disabled) { hbPickDay(day.getAttribute('data-ymd')); hbPaint(); hbQuote(); return; }
       if (e.target.closest('[data-hb="prev"]')) { var p = HB.month.split('-').map(Number); hbMonth(p[1] === 1 ? (p[0] - 1) + '-12' : p[0] + '-' + pad2(p[1] - 1), C); return; }
       if (e.target.closest('[data-hb="next"]')) { var n = HB.month.split('-').map(Number); hbMonth(n[1] === 12 ? (n[0] + 1) + '-01' : n[0] + '-' + pad2(n[1] + 1), C); return; }
       var go = e.target.closest('[data-hb="go"]');
@@ -780,9 +835,16 @@
         if (!F) { goTo(ph ? ph.href : contactHref()); return; }
         F.load(HB.slug).then(function () {
           var accent = ''; try { accent = getComputedStyle(document.documentElement).getPropertyValue('--hivis').trim(); } catch (x) {}
-          F.open({ date: HB.sel, time: (hq('time') || {}).value, days: Number((hq('len') || {}).value) || 1, accent: accent });
+          F.open({ date: HB.sel, time: (hq('time') || {}).value, days: hbDays(), accent: accent });
         });
       });
+    });
+    document.addEventListener('mouseover', function (e) {
+      var day = e.target && e.target.closest ? e.target.closest('[data-lpl="hbk"] .hbk-day[data-ymd]') : null;
+      if (day) hbHover(day.getAttribute('data-ymd'));
+    });
+    document.addEventListener('mouseout', function (e) {
+      var host = hq('days'); if (host && e.target && host.contains(e.target) && !(e.relatedTarget && host.contains(e.relatedTarget))) hbHover('');
     });
     document.addEventListener('change', function (e) {
       var k = e.target && e.target.getAttribute && e.target.getAttribute('data-hb');

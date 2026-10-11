@@ -5770,6 +5770,7 @@ function heroCtaCard(c){
       {t:'sel',k:'layout',label:'Layout',opts:[['','Image slider (default)'],['booking','Booking card \u2014 headline, photo, calendar']]},
       {t:'sel',k:'textCase',label:'Headline case',opts:[['','Theme default'],['normal','As typed (no forced capitals)']]},
       {t:'text',k:'bookTitle',label:'Card heading',ph:'Pick your day',when:'layout=booking'},
+      {t:'chk',k:'bookRange',label:'Pick a date range (tap a start day, then an end day)',def:true,when:'layout=booking'},
       {t:'text',k:'bookCta',label:'Card button (online booking live)',ph:'Continue',when:'layout=booking'},
       {t:'text',k:'bookCtaCall',label:'Card button (until online booking is set up)',ph:'Call to book',when:'layout=booking'},
       {t:'text',k:'bookNote',label:'Small print under the button',ph:'Prefer to talk? Call …',when:'layout=booking'},
