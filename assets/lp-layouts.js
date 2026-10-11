@@ -132,11 +132,23 @@
     var node = sec('services'); if (!node) return;
     var SV = (C.sections && C.sections.services) || {};
     var on = SV.mode === 'tick';
+    var row = SV.mode === 'iconrow';
+    var band = ({ brand: 1, light: 1 })[SV.tickTheme] ? SV.tickTheme : 'dark';
     node.classList.toggle('svcs-tick', on);
     node.classList.toggle('svcs-tick-dark', on && SV.tickTheme !== 'light');
-    if (!on) return;
+    node.classList.toggle('svcs-iconrow', row);
+    ['brand', 'dark', 'light'].forEach(function (t) { node.classList.toggle('svcs-band-' + t, row && band === t); });
+    if (!on && !row) return;
     var grid = node.querySelector('.svcs'); if (!grid) return;
     var items = live(C.services).filter(function (s) { return txt(s.title) || txt(s.image); });
+    if (row) {
+      // Icon row: icon, title and a short line per item (e.g. "Included with every hire").
+      grid.innerHTML = items.map(function (s) {
+        return '<div class="svc svr"><span class="svr-ic">' + (icon(s.icon) || CHECK) + '</span>' +
+          (txt(s.title) ? '<h3>' + esc(s.title) + '</h3>' : '') + (txt(s.body) ? '<p>' + esc(s.body) + '</p>' : '') + '</div>';
+      }).join('');
+      return;
+    }
     grid.innerHTML = items.map(function (s) {
       var img = bgUrl(s.image);
       var media = img
@@ -165,6 +177,11 @@
     var TB = (C.sections && C.sections.textBox) || {};
     node.classList.toggle('tbx-tag', TB.eyebrowStyle === 'tag');
     clear(node, 'tbx');
+    clear(node, 'tbb');
+    var bandOn = TB.layout === 'band';
+    node.classList.toggle('tbx-band', bandOn);
+    node.classList.toggle('tbx-band-dark', bandOn && TB.bandTone === 'dark');
+    if (bandOn) { textBand(node, C, TB); return; }
     var host = node.querySelector('.tb-text'); if (!host) return;
     var feats = live(TB.features).filter(function (f) { return txt(f.text); });
     var html = '';
@@ -181,10 +198,56 @@
     if (html) host.insertAdjacentHTML('beforeend', html);
   }
 
+  /* ---------- Text box: brand band (spec rows, ticks, photo or box drawing) ---------- */
+  /** "GVM: 4.5 tonne" or "GVM — 4.5 tonne" → spec row; anything else → tick item. */
+  function specOf(t) {
+    var m = /^(.{1,40}?)\s*(?::|\u2014|\u2013|\s-\s)\s*(.+)$/.exec(txt(t));
+    return m ? { label: m[1], value: m[2] } : null;
+  }
+  function boxFigure(L, W, H, lift) {
+    L = esc(txt(L)); W = esc(txt(W)); H = esc(txt(H)); lift = esc(txt(lift));
+    return '<svg class="tbb-box" viewBox="0 0 640 400" role="img" aria-label="' + [L && L + ' long', W && W + ' wide', H && H + ' high'].filter(Boolean).join(', ') + '">' +
+      '<g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"><path d="M60 140 L380 140 L380 320 L60 320 Z"/><path d="M60 140 L160 80 L480 80 L380 140"/><path d="M480 80 L480 260 L380 320"/></g>' +
+      '<g fill="none" stroke="currentColor" stroke-opacity=".55" stroke-width="1.5" stroke-dasharray="5 5"><path d="M60 320 L160 260 L480 260"/><path d="M160 80 L160 260"/></g>' +
+      (lift ? '<path d="M380 320 L480 260 L480 300 L380 360 Z" fill="#000" opacity=".3"/>' : '') +
+      '<g fill="currentColor" font-weight="800" font-size="22">' +
+      (L ? '<path d="M60 350 L380 350 M60 343 v14 M380 343 v14" stroke="currentColor" stroke-width="1.5"/><text x="220" y="380" text-anchor="middle">' + L + ' long</text>' : '') +
+      (H ? '<path d="M30 140 L30 320 M23 140 h14 M23 320 h14" stroke="currentColor" stroke-width="1.5"/><text x="-230" y="20" transform="rotate(-90)" text-anchor="middle">' + H + ' high</text>' : '') +
+      (W ? '<path d="M398 132 L498 72" stroke="currentColor" stroke-width="1.5"/><text x="502" y="112">' + W + ' wide</text>' : '') +
+      (lift ? '<text x="500" y="300" font-size="15" font-weight="700">' + lift + '</text>' : '') +
+      '</g><text x="64" y="40" font-size="14" fill="currentColor" fill-opacity=".75">Dimensions are approximate</text></svg>';
+  }
+  function textBand(node, C, TB) {
+    var feats = liveIdx(TB.features).filter(function (x) { return txt(x.it.text); });
+    var specs = [], ticks = [];
+    feats.forEach(function (x) { var sp = specOf(x.it.text); if (sp) specs.push({ sp: sp, i: x.i }); else ticks.push(x); });
+    var hasBox = !!(txt(TB.dimLength) || txt(TB.dimWidth) || txt(TB.dimHeight));
+    var img = bgUrl(TB.image);
+    var lines = function (v) { return esc(v).replace(/\n/g, '<br>'); };
+    var html = '<div class="wrap tbb" data-lpl="tbb"><div class="tbb-text">' +
+      (txt(TB.eyebrow) ? '<span class="tbb-eyebrow" data-lpe="eyebrow">' + esc(TB.eyebrow) + '</span>' : '') +
+      (txt(TB.heading) ? '<h2 class="tbb-h" data-lpe="heading">' + esc(TB.heading) + '</h2>' : '') +
+      (txt(TB.intro) ? '<p class="tbb-intro" data-lpe="intro">' + lines(TB.intro) + '</p>' : '') +
+      (txt(TB.content) ? '<div class="tbb-content" data-lpe="content">' + lines(TB.content) + '</div>' : '') +
+      (specs.length ? '<dl class="tbb-specs">' + specs.map(function (x) {
+        return '<div data-lpe="list:textBoxFeatures:' + x.i + ':text"><dt>' + esc(x.sp.label) + '</dt><dd>' + esc(x.sp.value) + '</dd></div>';
+      }).join('') + '</dl>' : '') +
+      (ticks.length ? '<ul class="tbb-ticks">' + ticks.map(function (x) {
+        return '<li data-lpe="list:textBoxFeatures:' + x.i + ':text">' + (icon(x.it.icon) || CHECK) + '<span>' + esc(x.it.text) + '</span></li>';
+      }).join('') + '</ul>' : '') +
+      (txt(TB.ctaLabel) ? '<a class="lpl-btn tbb-cta" data-lpe="ctaLabel" ' + linkAttrs(hrefOf(TB.ctaHref, contactHref())) + '>' + esc(TB.ctaLabel) + ARROW + '</a>' : '') +
+      '</div>' +
+      (hasBox ? '<div class="tbb-fig" data-lpe="dimLength">' + boxFigure(TB.dimLength, TB.dimWidth, TB.dimHeight, TB.dimLift) + '</div>'
+        : (img ? '<div class="tbb-fig tbb-photo" data-lpe="image"><img src="' + esc(img) + '" alt="' + esc(TB.imageAlt || '') + '" loading="lazy"></div>' : '')) +
+      '</div>';
+    node.insertAdjacentHTML('afterbegin', html);
+  }
+
   /* ---------- Reviews: summary row, dark band, Google badge ---------- */
   function reviews(C) {
     var node = sec('reviews'); if (!node) return;
     var RV = (C.sections && C.sections.reviews) || {};
+    node.classList.toggle('rv-quotes', RV.layout === 'quotes');
     node.classList.toggle('rv-dark', RV.theme === 'dark');
     var bg = bgUrl(RV.bgImage);
     if (RV.theme === 'dark' && bg) node.style.setProperty('--rv-dark-img', 'url("' + bg + '")');
@@ -281,8 +344,23 @@
     var img = bgUrl(SP.sideImage);
     var co = { title: SP.calloutTitle, text: SP.calloutText, linkLabel: SP.calloutLinkLabel, linkHref: SP.calloutLinkHref, icon: SP.calloutIcon };
     var hasCo = !!(txt(co.title) || txt(co.text));
-    node.classList.toggle('sp-has-side', !!img);
+    var numbered = SP.layout === 'numbered';
+    node.classList.toggle('sp-numbered', numbered);
+    node.classList.toggle('sp-has-side', !!img && !numbered);
     clear(node, 'sp');
+    if (numbered) {
+      // Callout panel under the steps; the button calls the business unless a link is set.
+      if (!hasCo) return;
+      var wrapN = node.querySelector('.wrap'); if (!wrapN) return;
+      var ph = phoneOf(C);
+      var btn = txt(co.linkLabel)
+        ? '<a class="lpl-btn lpl-btn-outline sp-co-btn" data-lpe="calloutLinkLabel" ' + linkAttrs(hrefOf(co.linkHref, contactHref())) + '>' + esc(co.linkLabel) + ARROW + '</a>'
+        : (ph ? '<a class="lpl-btn lpl-btn-outline sp-co-btn" data-lpe="calloutLinkLabel" href="' + esc(ph.href) + '">' + icon('phone') + 'Call ' + esc(ph.text) + '</a>' : '');
+      wrapN.insertAdjacentHTML('beforeend', '<div class="sp-co" data-lpl="sp"><div>' +
+        (txt(co.title) ? '<h3 data-lpe="calloutTitle">' + esc(co.title) + '</h3>' : '') +
+        (txt(co.text) ? '<p data-lpe="calloutText">' + esc(co.text) + '</p>' : '') + '</div>' + btn + '</div>');
+      return;
+    }
     if (!img) return;
     var wrap = node.querySelector('.wrap'); if (!wrap) return;
     wrap.insertAdjacentHTML('beforeend', '<div class="sp-side" data-lpl="sp"><img src="' + esc(img) + '" alt="" loading="lazy">' +
@@ -297,7 +375,9 @@
   function faq(C) {
     var node = sec('faq'); if (!node) return;
     var FQ = (C.sections && C.sections.faq) || {};
-    node.classList.toggle('faq-2col', Number(FQ.columns) === 2);
+    var split = FQ.layout === 'split';
+    node.classList.toggle('faq-split', split);
+    node.classList.toggle('faq-2col', Number(FQ.columns) === 2 && !split);
     clear(node, 'fq');
     var head = node.querySelector('.section-head');
     var has = !!txt(FQ.ctaLabel);
@@ -320,7 +400,7 @@
     // A question saved without an answer opens to a short "ask us" line instead of
     // an empty panel (two-column layout, or when sections.faq.emptyAnswer is set).
     var fb = txt(FQ.emptyAnswer);
-    if (Number(FQ.columns) === 2 || fb) {
+    if (Number(FQ.columns) === 2 || split || fb) {
       var ph = txt(C.phone).replace(/[^0-9+]/g, '');
       var phText = txt(C.phoneText) || txt(C.phone);
       var fbHtml = fb ? esc(fb) : (ph
@@ -355,6 +435,8 @@
     var M = (C.sections && C.sections.mapHours) || {};
     node.classList.toggle('mh-map-left', M.mapSide === 'left');
     node.classList.toggle('mh-dark', M.tone === 'dark');
+    node.classList.toggle('mh-grey', M.tone === 'grey');
+    node.classList.toggle('mh-mapgrey', M.mapStyle === 'grey');
     if (M.on !== true) { clear(node, 'mh'); return; }
     var addr = txt(M.address);
     var pin = txt(M.mapQuery);
@@ -474,6 +556,7 @@
     var tone = ({ brand: 1, dark: 1, light: 1, photo: 1 })[M.tone] ? M.tone : 'brand';
     ['brand', 'dark', 'light', 'photo'].forEach(function (t) { node.classList.toggle('cb-tone-' + t, t === tone); });
     node.classList.toggle('cb-center', M.align === 'center');
+    node.classList.toggle('cb-full', M.width === 'full');
     var bg = bgUrl(M.bgImage);
     if (tone === 'photo' && bg) node.style.setProperty('--cb-bg', 'url("' + bg + '")'); else node.style.removeProperty('--cb-bg');
     if (M.on !== true) return;
@@ -494,6 +577,241 @@
     }
   }
 
+  /* ---------- Shared: a week of prices from the Bookings rate cards ---------- */
+  var DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  var DAY_SHORT = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  /** Rate cards labelled by day ("Mon – Thu", "Friday", "Weekends & Public Holidays") → 7 days,
+   *  each { price, unit, i } (i = the rate card's row). null when the labels don't cover every day. */
+  function weekFromRates(rates) {
+    var out = [null, null, null, null, null, null, null];
+    var idx = { mon: 0, tue: 1, wed: 2, thu: 3, fri: 4, sat: 5, sun: 6 };
+    liveIdx(rates).forEach(function (x) {
+      var l = txt(x.it.label).toLowerCase(), p = txt(x.it.price);
+      if (!p) return;
+      var cell = { price: p, unit: txt(x.it.unit), i: x.i };
+      var put = function (d) { if (!out[d]) out[d] = cell; };
+      if (/weekend/.test(l)) { put(5); put(6); }
+      if (/weekday/.test(l)) { for (var w = 0; w < 5; w++) put(w); }
+      var range = l.match(/(mon|tue|wed|thu|fri|sat|sun)[a-z]*\.?\s*(?:-|–|—|to)\s*(mon|tue|wed|thu|fri|sat|sun)/);
+      if (range) { for (var i = idx[range[1]]; i <= idx[range[2]]; i++) put(i); return; }
+      Object.keys(idx).forEach(function (k) { if (new RegExp('\\b' + k).test(l)) put(idx[k]); });
+    });
+    return out.every(Boolean) ? out : null;
+  }
+  function centsOf(s) { var n = Number(String(s || '').replace(/[^0-9.]/g, '')); return isFinite(n) && n > 0 ? Math.round(n * 100) : 0; }
+  function money(c) { return '$' + (c / 100).toFixed(c % 100 ? 2 : 0).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+  function slugOfCfg(C) { return txt(C && C.slug) || ((typeof SITE_CONFIG !== 'undefined' && SITE_CONFIG && SITE_CONFIG.slug) || ''); }
+
+  /* ---------- Bookings: "Price week" layout ---------- */
+  function bookingWeek(C) {
+    var node = sec('bookingStorefront'); if (!node) return;
+    var S = (C.sections && C.sections.bookingStorefront) || {};
+    var on = S.layout === 'priceweek';
+    node.classList.toggle('bkw-on', on);
+    clear(node, 'bkw');
+    if (!on) return;
+    var week = weekFromRates(S.rates);
+    var cards = liveIdx(S.rates).filter(function (x) { return txt(x.it.label) || txt(x.it.price); });
+    var notes = liveIdx(S.points).filter(function (x) { return txt(x.it.text); });
+    var base = week ? week[0].price : '';
+    var cells = week
+      ? week.map(function (c, d) {
+        var cls = c.price === base ? '' : (d >= 5 && c.price === week[5].price ? ' we' : ' mid');
+        return '<div class="bkw-d' + cls + '" data-lpe="list:bookingRates:' + c.i + ':price"><span class="bkw-day">' + DAY_NAMES[d] + '</span>' +
+          '<span class="bkw-amt">' + esc(c.price) + '</span>' + (c.unit ? '<span class="bkw-u">' + esc(c.unit) + '</span>' : '') + '</div>';
+      }).join('')
+      : cards.map(function (x) {
+        return '<div class="bkw-d" data-lpe="list:bookingRates:' + x.i + ':price"><span class="bkw-day">' + esc(x.it.label) + '</span>' +
+          '<span class="bkw-amt">' + esc(x.it.price) + '</span>' + (txt(x.it.unit) ? '<span class="bkw-u">' + esc(x.it.unit) + '</span>' : '') + '</div>';
+      }).join('');
+    var head = txt(S.weekHeading), intro = txt(S.weekIntro);
+    node.insertAdjacentHTML('afterbegin', '<div class="wrap bkw" data-lpl="bkw">' +
+      ((head || intro) ? '<div class="bkw-head">' + (head ? '<h2 class="bkw-h" data-lpe="weekHeading">' + esc(head) + '</h2>' : '') +
+        (intro ? '<p data-lpe="weekIntro">' + esc(intro) + '</p>' : '') + '</div>' : '') +
+      (cells ? '<div class="bkw-week' + (week ? ' bkw-7' : '') + '" style="--bkw-n:' + (week ? 7 : Math.max(1, cards.length)) + '">' + cells + '</div>'
+        : '<p class="bkw-empty" data-lpe="list:bookingRates:0:price">Add rate cards in Bookings to show prices here.</p>') +
+      (notes.length ? '<p class="bkw-notes">' + notes.map(function (x) {
+        return '<span data-lpe="list:bookingPoints:' + x.i + ':text">' + (icon(x.it.icon) || CHECK) + esc(x.it.text) + '</span>';
+      }).join('') + '</p>' : '') + '</div>');
+  }
+
+  /* ---------- Hero slider: "Booking card" layout (headline, photo, live calendar) ---------- */
+  var HB = { month: '', sel: '', today: '', live: false, settings: null, days: {}, fetched: {}, total: 0, slug: '', week: null, bound: false };
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+  function addDays(ymd, n) { var p = ymd.split('-').map(Number); var d = new Date(Date.UTC(p[0], p[1] - 1, p[2] + n, 12)); return d.getUTCFullYear() + '-' + pad2(d.getUTCMonth() + 1) + '-' + pad2(d.getUTCDate()); }
+  function dow(ymd) { var p = ymd.split('-').map(Number); return (new Date(Date.UTC(p[0], p[1] - 1, p[2], 12)).getUTCDay() + 6) % 7; }
+  function localToday() { var d = new Date(); try { return d.toLocaleDateString('en-CA', { timeZone: 'Australia/Sydney' }); } catch (e) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); } }
+  function niceDay(ymd) { var p = ymd.split('-').map(Number); return DAY_SHORT[dow(ymd)] + ' ' + p[2] + ' ' + MONTHS[p[1] - 1].slice(0, 3); }
+  function hm12(hm) { var p = hm.split(':').map(Number); return (p[0] % 12 || 12) + (p[1] ? ':' + pad2(p[1]) : '') + (p[0] < 12 ? 'am' : 'pm'); }
+  function hq(k) { return document.querySelector('[data-lpl="hbk"] [data-hb="' + k + '"]'); }
+  function hbPrice(ymd) {
+    var d = HB.days[ymd];
+    if (d && d.from_cents) return d.from_cents;
+    return HB.week ? centsOf(HB.week[dow(ymd)].price) : 0;
+  }
+  function hbFetch(from, to) {
+    var key = from + '|' + to;
+    if (HB.fetched[key]) return HB.fetched[key];
+    HB.fetched[key] = fetch('/api/bookings/hire/public?slug=' + encodeURIComponent(HB.slug) + '&action=calendar&from=' + from + '&to=' + to, { credentials: 'omit' })
+      .then(function (r) { return r.json(); }).then(function (j) {
+        if (!j || !j.ok) return null;
+        Object.keys(j.days || {}).forEach(function (k) { HB.days[k] = j.days[k]; });
+        HB.live = !!j.live; HB.settings = j.settings || HB.settings; HB.today = j.today || HB.today; HB.total = j.fleet_total || 0;
+        return j;
+      }).catch(function () { return null; });
+    return HB.fetched[key];
+  }
+  function hbPaint() {
+    var host = hq('days'); if (!host) return;
+    var ym = HB.month, y = Number(ym.slice(0, 4)), mo = Number(ym.slice(5, 7));
+    var mn = hq('mname'); if (mn) mn.textContent = MONTHS[mo - 1] + ' ' + y;
+    var lead = dow(ym + '-01'), dim = new Date(Date.UTC(y, mo, 0)).getUTCDate();
+    var firstOk = addDays(HB.today, (HB.settings && HB.settings.min_notice_days) || 0);
+    var h = '';
+    for (var b = 0; b < lead; b++) h += '<span class="hbk-day blank"></span>';
+    for (var d = 1; d <= dim; d++) {
+      var ymd = ym + '-' + pad2(d), past = ymd < firstOk, dd = HB.days[ymd], price = hbPrice(ymd), cls = 'hbk-day', state = '';
+      if (past) cls += ' past';
+      else if (HB.live && dd) {
+        if (dd.closed) { cls += ' full'; state = 'Closed'; }
+        else if (!dd.free) { cls += ' full'; state = 'Full'; }
+        else if (dd.free <= 2) cls += ' few';
+        else cls += ' free';
+      }
+      if (ymd === HB.sel) cls += ' sel';
+      var off = past || / full/.test(cls);
+      h += '<button type="button" class="' + cls + '" data-ymd="' + ymd + '"' + (off ? ' disabled' : '') + ' aria-label="' + esc(niceDay(ymd) + (state ? ', ' + state : (price ? ', ' + money(price) : ''))) + '">' +
+        '<span class="n">' + d + '</span>' + (past ? '' : '<span class="p">' + (state || (price ? money(price) : '')) + '</span>') + '<span class="l"></span></button>';
+    }
+    host.innerHTML = h;
+    var lg = hq('legend'); if (lg) lg.hidden = !HB.live;
+    var pv = hq('prev'); if (pv) pv.disabled = ym <= HB.today.slice(0, 7);
+  }
+  function hbPick() {
+    var s = HB.settings || {}, t = hq('time'), l = hq('len'), pk = hq('pick');
+    if (!t || !l || !pk) return;
+    if (!t.options.length) {
+      var o = String(s.open_time || '07:30').split(':').map(Number), c = String(s.close_time || '17:00').split(':').map(Number), st = Number(s.time_step) || 30;
+      for (var m = o[0] * 60 + (o[1] || 0); m <= c[0] * 60 + (c[1] || 0); m += st) { var hm = pad2(Math.floor(m / 60)) + ':' + pad2(m % 60); t.insertAdjacentHTML('beforeend', '<option value="' + hm + '">' + hm12(hm) + '</option>'); }
+      var ds = Array.isArray(s.durations) && s.durations.length ? s.durations : [{ label: '1 day (24 hours)', days: 1 }, { label: '2 days', days: 2 }, { label: '3 days', days: 3 }, { label: '1 week', days: 7 }];
+      ds.forEach(function (x) { l.insertAdjacentHTML('beforeend', '<option value="' + Number(x.days) + '">' + esc(x.label) + '</option>'); });
+    }
+    pk.hidden = false;
+  }
+  function hbQuote() {
+    var when = hq('qwhen'), amt = hq('qamt'), left = hq('left');
+    if (!when) return;
+    if (!HB.sel) { when.textContent = 'Choose a day'; amt.textContent = ''; left.textContent = ''; return; }
+    var n = Number((hq('len') || {}).value) || 1, sum = 0, all = true;
+    for (var i = 0; i < n; i++) { var p = hbPrice(addDays(HB.sel, i)); if (!p) all = false; sum += p; }
+    when.textContent = niceDay(HB.sel) + ' · ' + (n === 1 ? '1 day' : n === 7 ? '1 week' : n + ' days');
+    amt.textContent = sum && all ? ((HB.days[HB.sel] && HB.days[HB.sel].from_cents) ? 'from ' : '') + money(sum) : '';
+    var dd = HB.days[HB.sel];
+    left.textContent = HB.live && dd && dd.free && dd.free <= 2 ? (dd.free === 1 ? 'Only 1' : 'Only ' + dd.free) + (HB.total ? ' of ' + HB.total : '') + ' left that day.' : '';
+  }
+  function hbState(C) {
+    var go = hq('go'), sub = hq('sub'), fine = hq('fine'), ph = phoneOf(C);
+    if (!go) return;
+    if (HB.live) {
+      if (sub) sub.textContent = 'Each day shows its price. The dot shows what’s free.';
+      hbPick();
+      go.removeAttribute('data-call');
+    } else {
+      if (sub) sub.textContent = HB.week ? 'Each day shows its price.' : '';
+      go.setAttribute('data-call', '1');
+      if (fine && ph && !fine.getAttribute('data-set')) fine.innerHTML = 'Prefer to talk? Call <a href="' + esc(ph.href) + '">' + esc(ph.text) + '</a>.';
+    }
+  }
+  function hbMonth(ym, C) {
+    HB.month = ym;
+    var y = Number(ym.slice(0, 4)), mo = Number(ym.slice(5, 7));
+    var from = ym + '-01', to = ym + '-' + pad2(new Date(Date.UTC(y, mo, 0)).getUTCDate());
+    if (from < HB.today) from = HB.today;
+    hbPaint(); hbState(C);
+    if (!HB.slug) return;
+    var host = hq('days'); if (host) host.classList.add('loading');
+    hbFetch(from, to).then(function () {
+      var h2 = hq('days'); if (h2) h2.classList.remove('loading');
+      hbState(cfgOf() || C); hbPaint(); hbQuote();
+    });
+  }
+  function hbBind() {
+    if (HB.bound) return; HB.bound = true;
+    document.addEventListener('click', function (e) {
+      var root = document.querySelector('[data-lpl="hbk"]'); if (!root || !root.contains(e.target) || e.defaultPrevented) return;
+      var C = cfgOf() || {};
+      var day = e.target.closest('.hbk-day[data-ymd]');
+      if (day && !day.disabled) { HB.sel = day.getAttribute('data-ymd'); hbPaint(); hbQuote(); return; }
+      if (e.target.closest('[data-hb="prev"]')) { var p = HB.month.split('-').map(Number); hbMonth(p[1] === 1 ? (p[0] - 1) + '-12' : p[0] + '-' + pad2(p[1] - 1), C); return; }
+      if (e.target.closest('[data-hb="next"]')) { var n = HB.month.split('-').map(Number); hbMonth(n[1] === 12 ? (n[0] + 1) + '-01' : n[0] + '-' + pad2(n[1] + 1), C); return; }
+      var go = e.target.closest('[data-hb="go"]');
+      if (!go) return;
+      var ph = phoneOf(C);
+      if (go.getAttribute('data-call') === '1' || !HB.live) { goTo(ph ? ph.href : contactHref()); return; }
+      go.disabled = true;
+      flowScript().then(function (F) {
+        go.disabled = false;
+        if (!F) { goTo(ph ? ph.href : contactHref()); return; }
+        F.load(HB.slug).then(function () {
+          var accent = ''; try { accent = getComputedStyle(document.documentElement).getPropertyValue('--hivis').trim(); } catch (x) {}
+          F.open({ date: HB.sel, time: (hq('time') || {}).value, days: Number((hq('len') || {}).value) || 1, accent: accent });
+        });
+      });
+    });
+    document.addEventListener('change', function (e) {
+      var k = e.target && e.target.getAttribute && e.target.getAttribute('data-hb');
+      if (k === 'len' || k === 'time') hbQuote();
+    });
+  }
+  function heroBooking(C) {
+    var node = sec('heroSlider'); if (!node) return;
+    var HS = (C.sections && C.sections.heroSlider) || {};
+    var on = HS.layout === 'booking';
+    node.classList.toggle('hbk-on', on);
+    var old = node.querySelector('[data-lpl="hbk"]');
+    if (!on) { if (old) old.parentNode.removeChild(old); return; }
+    var slides = liveIdx(HS.slides);
+    var s0 = slides.length ? slides[0] : { it: {}, i: 0 };
+    var S = s0.it, si = s0.i;
+    var badges = liveIdx(HS.badges).filter(function (x) { return txt(x.it.title) || txt(x.it.text); });
+    var BS = (C.sections && C.sections.bookingStorefront) || {};
+    var img = bgUrl(S.imageUrl);
+    var L = function (k) { return 'list:heroSlides:' + si + ':' + k; };
+    var intro = '<div class="hbk-intro">' +
+      (txt(S.eyebrow) ? '<span class="eyebrow hbk-eyebrow" data-lpe="' + L('eyebrow') + '">' + esc(S.eyebrow) + '</span>' : '') +
+      '<h1 class="hbk-h">' + (txt(S.heading) ? '<span data-lpe="' + L('heading') + '">' + esc(S.heading) + '</span>' : '') +
+      (txt(S.highlightText) ? ' <span class="hl" data-lpe="' + L('highlightText') + '">' + esc(S.highlightText) + '</span>' : '') + '</h1>' +
+      (txt(S.subText) ? '<p class="hbk-sub" data-lpe="' + L('subText') + '">' + esc(S.subText) + '</p>' : '') +
+      (badges.length ? '<ul class="hbk-facts">' + badges.map(function (x) {
+        return '<li data-lpe="list:heroSliderBadges:' + x.i + ':title">' + (icon(x.it.icon) || CHECK) + '<span>' + esc(txt(x.it.title) || txt(x.it.text)) + '</span></li>';
+      }).join('') + '</ul>' : '') + '</div>';
+    var photo = img ? '<figure class="hbk-photo" data-lpe="' + L('imageUrl') + '"><img src="' + esc(img) + '" alt="' + esc(txt(HS.imageCaption) || txt(S.heading)) + '">' +
+      (txt(HS.imageCaption) ? '<figcaption data-lpe="imageCaption">' + esc(HS.imageCaption) + '</figcaption>' : '') + '</figure>' : '';
+    var card = '<aside class="hbk-card" aria-label="' + esc(txt(HS.bookTitle) || 'Pick your day') + '">' +
+      '<h2 data-lpe="bookTitle">' + esc(txt(HS.bookTitle) || 'Pick your day') + '</h2><p class="hbk-csub" data-hb="sub"></p>' +
+      '<div class="hbk-mhead"><button type="button" class="hbk-mnav" data-hb="prev" aria-label="Previous month">‹</button><strong data-hb="mname"></strong><button type="button" class="hbk-mnav" data-hb="next" aria-label="Next month">›</button></div>' +
+      '<div class="hbk-wd" aria-hidden="true">' + DAY_SHORT.map(function (d) { return '<span>' + d + '</span>'; }).join('') + '</div>' +
+      '<div class="hbk-days" data-hb="days"></div>' +
+      '<div class="hbk-legend" data-hb="legend" hidden><span><i class="free"></i>Free</span><span><i class="few"></i>1–2 left</span><span><i class="out"></i>Booked out</span></div>' +
+      '<div class="hbk-pick" data-hb="pick" hidden><label>' + esc(txt(BS.timeLabel) || 'Pick-up time') + '<select data-hb="time"></select></label><label>' + esc(txt(BS.durationLabel) || 'How long') + '<select data-hb="len"></select></label></div>' +
+      '<div class="hbk-quote"><span data-hb="qwhen">Choose a day</span><b data-hb="qamt"></b></div><p class="hbk-left" data-hb="left" aria-live="polite"></p>' +
+      '<button type="button" class="lpl-btn hbk-go" data-hb="go" data-lpe="bookCta">' + esc(txt(HS.bookCta) || 'Continue') + '</button>' +
+      '<p class="hbk-fine" data-hb="fine"' + (txt(HS.bookNote) ? ' data-set="1" data-lpe="bookNote">' + esc(HS.bookNote) : '>') + '</p></aside>';
+    var key = JSON.stringify([HS.layout, S.eyebrow, S.heading, S.highlightText, S.subText, S.imageUrl, HS.badges, HS.bookTitle, HS.bookCta, HS.bookNote, HS.imageCaption, BS.rates, BS.timeLabel, BS.durationLabel, C.phone, C.phoneText]);
+    if (old && old.__key === key) return;
+    var html = '<div class="hbk" data-lpl="hbk"><div class="wrap hbk-grid">' + intro + photo + card + '</div></div>';
+    if (old) old.outerHTML = html; else node.insertAdjacentHTML('afterbegin', html);
+    node.querySelector('[data-lpl="hbk"]').__key = key;
+    HB.slug = slugOfCfg(C);
+    HB.week = weekFromRates(BS.rates);
+    HB.today = HB.today || localToday();
+    if (HB.sel && HB.sel < HB.today) HB.sel = '';
+    hbBind();
+    hbMonth(HB.month || HB.today.slice(0, 7), C);
+    hbQuote();
+  }
+
   /** Bookings hire bar: render.js loads it for saved sites; this loads it in the editor
    *  preview when the layout is switched to 'hire' before the page has been re-rendered. */
   function bookingHire(C) {
@@ -509,21 +827,7 @@
     document.body.appendChild(s);
   }
 
-  /** "Bold" design: render.js includes it for saved sites; this loads it in the editor
-   *  preview when the design is switched to Bold before the page has been re-rendered. */
-  function boldDesign(C) {
-    if (C.design !== 'bold') return;
-    if (window.LPSkinBold || document.querySelector('script[src^="/assets/lp-skin-bold.js"]')) return;
-    var head = document.head;
-    [['https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap'], ['/assets/lp-skin-bold.css?v=1']].forEach(function (h) {
-      var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = h[0]; head.appendChild(l);
-    });
-    var s = document.createElement('script'); s.src = '/assets/lp-skin-bold.js?v=1'; s.async = true;
-    s.onload = function () { try { window.LPSkinBold.mount(C); } catch (e) {} };
-    document.body.appendChild(s);
-  }
-
-  var STEPS = [heroSlider, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, mapHours, ctaBanner, bookingHire, boldDesign];
+  var STEPS = [heroSlider, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, mapHours, ctaBanner, bookingWeek, heroBooking, bookingHire];
 
   function run(cfg) {
     if (cfg) LAST = cfg;
@@ -542,6 +846,8 @@
         var r, err = null;
         try { r = o.apply(this, arguments); } catch (e) { err = e; }
         try { run(cfg); } catch (e) {}
+        // Scripts wrapped around this one (e.g. the Bookings bar) can redraw a section after us.
+        setTimeout(function () { try { run(); } catch (e) {} }, 0);
         if (err) throw err;
         return r;
       };

@@ -4782,20 +4782,6 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
     var _mswEl=$('d-max-site-width'); if(_mswEl){ var _mswRaw=c.maxSiteWidth; _mswEl.value=(_mswRaw==='full'||_mswRaw==='1440'||_mswRaw==='1920')?_mswRaw:'1920'; }
     on('d-biz',function(v){ currentBusinessName=v; }); on('d-domain',function(v){ currentCustomDomain=v; }); on('d-owner',function(v){ currentOwnerEmail=v; }); var __dsv=$('d-save'); if(__dsv){ __dsv.addEventListener('click',async function(){ var st=$('d-saved'); __dsv.disabled=true; var o=__dsv.textContent; __dsv.textContent='Saving\u2026'; if(st){ st.style.color='#0a7d33'; st.textContent=''; } try{ await publishToDB(); __dsv.textContent='Saved \u2713'; if(st) st.textContent='Saved and live.'; }catch(e){ __dsv.textContent='Save failed'; if(st){ st.style.color='#b42318'; st.textContent='Could not save \u2014 try again.'; } } setTimeout(function(){ __dsv.disabled=false; __dsv.textContent=o; },1800); }); } on('d-phoneText',function(v){ c.phoneText=v; }); on('d-phone',function(v){ c.phone=v; }); on('d-email',function(v){ c.email=v; }); on('d-region',function(v){ c.region=v; });
     if(_mswEl){ _mswEl.addEventListener('change',function(){ c.maxSiteWidth=_mswEl.value||'1920'; persist(); previewApply(); }); }
-    var _dsEl=$('d-design');
-    if(_dsEl){
-      var _bf=$('d-bold-fields');
-      var _B=function(){ if(!c.bold||typeof c.bold!=='object') c.bold={}; return c.bold; };
-      var _setBold=function(k,v){ var b=_B(); if(v===''||v==null) delete b[k]; else b[k]=v; };
-      _dsEl.value=(c.design==='bold')?'bold':'';
-      if(_bf) _bf.style.display=(c.design==='bold')?'':'none';
-      var _b0=c.bold||{};
-      setv('d-bold-title',_b0.heroTitle||''); setv('d-bold-sub',_b0.heroSub||''); setv('d-bold-logo',_b0.logoLight||''); setv('d-bold-brand',_b0.brand||'');
-      Array.prototype.forEach.call(document.querySelectorAll('.d-bold-wk'),function(el){ var w=Array.isArray(_b0.week)?_b0.week:[]; el.value=w[+el.getAttribute('data-i')]||''; });
-      _dsEl.addEventListener('change',function(){ if(_dsEl.value==='bold') c.design='bold'; else delete c.design; if(_bf) _bf.style.display=(c.design==='bold')?'':'none'; persist(); previewApply(); });
-      [['d-bold-title','heroTitle'],['d-bold-sub','heroSub'],['d-bold-logo','logoLight'],['d-bold-brand','brand']].forEach(function(f){ var el=$(f[0]); if(el) el.addEventListener('input',function(){ _setBold(f[1],el.value.trim()?el.value:''); persist(); previewApply(); }); });
-      Array.prototype.forEach.call(document.querySelectorAll('.d-bold-wk'),function(el){ el.addEventListener('input',function(){ var vals=Array.prototype.map.call(document.querySelectorAll('.d-bold-wk'),function(x){ return x.value.trim(); }); _setBold('week', vals.some(Boolean)?vals:''); persist(); previewApply(); }); });
-    }
     try{ wireBreakpointSettings(c); }catch(_wbp){}
     if(t==='trade'){ setv('d-trade',c.trade); setv('d-licence',c.licence); on('d-trade',function(v){ c.trade=v; }); on('d-licence',function(v){ c.licence=v; }); }
     if(t==='broker-leads'){ var r=c.rates||{}; setv('d-suburb',c.suburb); setv('d-var',r.variableRate); setv('d-comp',r.comparisonRate); setv('d-rupd',r.updatedAt);
@@ -5467,7 +5453,7 @@ function wireQuoteStyle(c){
 
   function servicesModeCard(c){
     var SV=(c.sections&&c.sections.services)||{};
-    var mode=(SV.mode==='split'||SV.mode==='columns')?'split':((SV.mode==='cards'||SV.mode==='homepage'||SV.mode==='cap')?'cards':(SV.mode==='tick'?'tick':'grid'));
+    var mode=(SV.mode==='split'||SV.mode==='columns')?'split':((SV.mode==='cards'||SV.mode==='homepage'||SV.mode==='cap')?'cards':(SV.mode==='tick'?'tick':(SV.mode==='iconrow'?'iconrow':'grid')));
     var accentOn=SV.accentOn!==false;
     var ac=(SV.accentColor&&/^#[0-9a-fA-F]{6}$/.test(SV.accentColor))?SV.accentColor:'';
     var defAc='#ff6a1f';
@@ -5484,7 +5470,7 @@ function wireQuoteStyle(c){
       return '<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:200px;"><label>'+label+'</label><div style="display:flex;align-items:center;gap:8px;"><input type="color" id="'+id+'-clr" value="'+(val||defv)+'" style="width:46px;height:34px;padding:0;border:1px solid var(--line);border-radius:8px;cursor:pointer;flex:0 0 auto;"><input type="text" id="'+id+'-tx" class="tin" value="'+val+'" placeholder="'+defv+' (default)" style="flex:1;min-width:0;"><button type="button" class="btn ghost" id="'+id+'-def" style="padding:6px 10px;">Default</button></div></div>';
     }
     var h='<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Layout</h2><p class="lede" style="margin:0 0 12px;">Classic grid keeps the heading above the cards. Split columns puts copy on the left. Image cards match the LeadPages homepage — photo on top, optional icon in a circle, title and text below.</p>';
-    h+='<div class="row"><div class="f"><label>Style</label><select id="svc-mode" class="tin"><option value="grid"'+(mode==='grid'?' selected':'')+'>Classic grid</option><option value="split"'+(mode==='split'?' selected':'')+'>Split columns (text left)</option><option value="cards"'+(mode==='cards'?' selected':'')+'>Image cards (homepage)</option><option value="tick"'+(mode==='tick'?' selected':'')+'>Included items (photo + tick cards)</option></select></div>'+lpSel('Tick cards band','svc-tick-theme',[['dark','Dark band'],['light','Light band']],SV.tickTheme==='light'?'light':'dark')+'</div>';
+    h+='<div class="row"><div class="f"><label>Style</label><select id="svc-mode" class="tin"><option value="grid"'+(mode==='grid'?' selected':'')+'>Classic grid</option><option value="split"'+(mode==='split'?' selected':'')+'>Split columns (text left)</option><option value="cards"'+(mode==='cards'?' selected':'')+'>Image cards (homepage)</option><option value="tick"'+(mode==='tick'?' selected':'')+'>Included items (photo + tick cards)</option><option value="iconrow"'+(mode==='iconrow'?' selected':'')+'>Icon row (icon, title, short line)</option></select></div>'+lpSel('Band colour','svc-tick-theme',[['dark','Dark band'],['light','Light band'],['brand','Brand colour']],(SV.tickTheme==='light'||SV.tickTheme==='brand')?SV.tickTheme:'dark')+'</div>';
     h+='<div id="svc-split-opts" style="'+(mode==='split'?'':'display:none;')+'margin-top:14px;padding-top:14px;border-top:1px solid var(--line);">';
     h+='<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 12px;"><input type="checkbox" id="svc-accent-on"'+(accentOn?' checked':'')+'> Accent line under title</label>';
     h+='<div class="f" style="max-width:340px;margin:0;"><label>Accent colour</label><div style="display:flex;align-items:center;gap:8px;"><input type="color" id="svc-accent-clr" value="'+(ac||defAc)+'" style="width:46px;height:34px;padding:0;border:1px solid var(--line);border-radius:8px;cursor:pointer;flex:0 0 auto;"><input type="text" id="svc-accent-tx" class="tin" value="'+ac+'" placeholder="'+defAc+' (theme)" style="flex:1;min-width:0;"><button type="button" class="btn ghost" id="svc-accent-def" style="padding:6px 10px;">Default</button></div></div>';
@@ -5508,13 +5494,13 @@ function wireQuoteStyle(c){
   }
   function wireServicesMode(c){
     function SV(){ if(!c.sections)c.sections={}; if(!c.sections.services)c.sections.services={}; return c.sections.services; }
-    function modeOf(){ var m=SV().mode; return (m==='split'||m==='columns')?'split':((m==='cards'||m==='homepage'||m==='cap')?'cards':(m==='tick'?'tick':'grid')); }
+    function modeOf(){ var m=SV().mode; return (m==='split'||m==='columns')?'split':((m==='cards'||m==='homepage'||m==='cap')?'cards':(m==='tick'?'tick':(m==='iconrow'?'iconrow':'grid'))); }
     function syncSplitUi(){
       var mode=modeOf();
       var opts=$('svc-split-opts'); if(opts) opts.style.display=(mode==='split')?'':'none';
       var cops=$('svc-cards-opts'); if(cops) cops.style.display=(mode==='cards')?'':'none';
-      var box=$('svc-list'); if(box) box.setAttribute('data-svc-mode', mode==='tick'?'grid':mode);
-      var tth=$('svc-tick-theme'); if(tth&&tth.closest('.f')) tth.closest('.f').style.display=(mode==='tick')?'':'none';
+      var box=$('svc-list'); if(box) box.setAttribute('data-svc-mode', (mode==='tick'||mode==='iconrow')?'grid':mode);
+      var tth=$('svc-tick-theme'); if(tth&&tth.closest('.f')) tth.closest('.f').style.display=(mode==='tick'||mode==='iconrow')?'':'none';
       var lede=$('svc-cards-lede');
       if(lede){
         if(mode==='split') lede.textContent='Add columns with a title, subtitle, icon list and optional Learn more link (URL, landing page, or app position). Untick cards you do not need.';
@@ -5776,15 +5762,27 @@ function heroCtaCard(c){
      One "Layout options" card per app. Every option is off until chosen, so existing sites are unchanged. */
   var LP_CTA_BANNER_ACTIONS=[['quote','Go to the quote form'],['booking','Open the booking calendar'],['call','Call the phone number'],['section','Scroll to an app on this page'],['link','Go to a link or page']];
   var LPL_LAYOUT_SPECS={
-    heroSlider:{lede:'Optional icon badges under the sub-headline, and whether the headline keeps the theme’s capitals.',rows:[
-      {t:'sel',k:'textCase',label:'Headline case',opts:[['','Theme default'],['normal','As typed (no forced capitals)']]}],
+    heroSlider:{lede:'Optional icon badges under the sub-headline, and whether the headline keeps the theme’s capitals. <b>Booking card</b> shows the first slide as a headline and photo beside a calendar: each day shows its price (from the Bookings rate cards) and, with Bookings hire set up, what\u2019s free \u2014 the button opens the booking.',rows:[
+      {t:'sel',k:'layout',label:'Layout',opts:[['','Image slider (default)'],['booking','Booking card \u2014 headline, photo, calendar']]},
+      {t:'sel',k:'textCase',label:'Headline case',opts:[['','Theme default'],['normal','As typed (no forced capitals)']]},
+      {t:'text',k:'bookTitle',label:'Card heading',ph:'Pick your day',when:'layout=booking'},
+      {t:'text',k:'bookCta',label:'Card button',ph:'Continue',when:'layout=booking'},
+      {t:'text',k:'bookNote',label:'Small print under the button',ph:'Prefer to talk? Call …',when:'layout=booking'},
+      {t:'text',k:'imageCaption',label:'Photo caption',ph:'e.g. Our 4.5T Isuzu NNR',when:'layout=booking'}],
       lists:[['heroSliderBadges','Hero badges','Icon + title + small text, shown in a row on every slide. Leave empty for none.']]},
     activityCounter:{rows:[{t:'sel',k:'style',label:'Style',opts:[['','Big counters'],['strip','Compact spec strip (icon, figure, label)']]}]},
-    textBox:{lede:'Icon feature list and an outline button under the text.',rows:[
+    textBox:{lede:'Icon feature list and an outline button under the text. <b>Brand band</b>: a coloured band; a feature written as \u201cLabel: value\u201d (e.g. \u201cPayload: 850kg\u201d) shows as a spec row, others as ticks; add dimensions to draw a box instead of the photo.',rows:[
+      {t:'sel',k:'layout',label:'Layout',opts:[['','Standard'],['band','Brand band \u2014 specs, ticks, photo or box drawing']]},
+      {t:'sel',k:'bandTone',label:'Band colour',opts:[['','Brand colour'],['dark','Dark']],when:'layout=band'},
+      {t:'text',k:'dimLength',label:'Box length',ph:'e.g. 4.2m',when:'layout=band'},
+      {t:'text',k:'dimWidth',label:'Box width',ph:'e.g. 2.1m',when:'layout=band'},
+      {t:'text',k:'dimHeight',label:'Box height',ph:'e.g. 2.1m',when:'layout=band'},
+      {t:'text',k:'dimLift',label:'Tail-lift label (optional)',ph:'e.g. 500kg tail-lift',when:'layout=band'},
       {t:'sel',k:'eyebrowStyle',label:'Eyebrow style',opts:[['','Plain text'],['tag','Solid tag']]},
       {t:'text',k:'ctaLabel',label:'Button label',ph:'e.g. View details'},{t:'text',k:'ctaHref',label:'Button link',ph:'#services, /page or https://…'}],
       lists:[['textBoxFeatures','Feature list','Two-column icon list under the text. Leave empty for none.']]},
     reviews:{rows:[
+      {t:'sel',k:'layout',label:'Layout',opts:[['','Cards (default)'],['quotes','Quotes \u2014 large text under a brand line']]},
       {t:'sel',k:'theme',label:'Band',opts:[['','Light (default)'],['dark','Dark band, white cards']]},
       {t:'sel',k:'badge',label:'Card badge',opts:[['','None'],['google','Google “G” on each card']]},
       {t:'image',k:'bgImage',label:'Dark band photo (optional)'},
@@ -5799,15 +5797,19 @@ function heroCtaCard(c){
       {t:'sel',k:'layout',label:'Layout',opts:[['','Offer card (default)'],['banner','Photo banner']]},
       {t:'image',k:'bgImage',label:'Banner photo',when:'layout=banner'},
       {t:'text',k:'ctaHref',label:'Button link',ph:'Defaults to Bookings or the quote form'}]},
-    serviceProcess:{lede:'Optional photo beside the steps with a small card over it.',rows:[
+    serviceProcess:{lede:'Optional photo beside the steps with a small card over it. <b>Numbered</b>: big step numbers in a row, with the card shown as a panel underneath (its button calls you unless a link is set).',rows:[
+      {t:'sel',k:'layout',label:'Layout',opts:[['','Standard'],['numbered','Numbered \u2014 big numbers + callout panel']]},
       {t:'image',k:'sideImage',label:'Side photo'},
       {t:'text',k:'calloutTitle',label:'Card title'},{t:'ta',k:'calloutText',label:'Card text'},
       {t:'text',k:'calloutLinkLabel',label:'Card link label'},{t:'text',k:'calloutLinkHref',label:'Card link',ph:'#quote'}]},
     faq:{rows:[
+      {t:'sel',k:'layout',label:'Layout',opts:[['','Standard'],['split','Split \u2014 heading left, questions right']]},
       {t:'sel',k:'columns',label:'Columns',opts:[['','One column'],['2','Two columns']]},
       {t:'text',k:'ctaLabel',label:'“View all” button',ph:'View All FAQs'},{t:'text',k:'ctaHref',label:'“View all” link',ph:'/faq'}]},
     bookingStorefront:{lede:'Hire bar: pick-up date, time and duration with rate cards. Put it straight under the hero in Section order and it overlaps the hero edge. With Bookings hire set up (resource-hire service + vehicles) it quotes and takes bookings live; otherwise it hands the request to your quote form.',rows:[
-      {t:'sel',k:'layout',label:'Layout',opts:[['','Call-to-action (default)'],['hire','Hire bar — date, time, duration, rates']]},
+      {t:'sel',k:'layout',label:'Layout',opts:[['','Call-to-action (default)'],['hire','Hire bar — date, time, duration, rates'],['priceweek','Price week \u2014 each day\u2019s price from the rate cards']]},
+      {t:'text',k:'weekHeading',label:'Heading',ph:'e.g. One price a day',when:'layout=priceweek'},
+      {t:'text',k:'weekIntro',label:'Intro',ph:'e.g. Every hire includes 200km a day.',when:'layout=priceweek'},
       {t:'text',k:'hireHeading',label:'Bar heading',ph:'Check availability',when:'layout=hire'},
       {t:'text',k:'icon',label:'Heading icon',ph:'truck',when:'layout=hire'},
       {t:'text',k:'hireCtaLabel',label:'Button label',ph:'Check availability',when:'layout=hire'},
@@ -5817,13 +5819,14 @@ function heroCtaCard(c){
       {t:'text',k:'openTime',label:'First pick-up time',ph:'07:30',when:'layout=hire'},
       {t:'text',k:'closeTime',label:'Last pick-up time',ph:'17:00',when:'layout=hire'},
       {t:'sel',k:'overlapHero',label:'Under the hero',opts:[['','Overlap the hero edge'],['false','Sit below the hero']],when:'layout=hire'}],
-      lists:[['bookingRates','Rate cards','Hire bar: price cards on the right. Leave empty to hide.'],['bookingPoints','Points','Hire bar: icon points under the form.'],['bookingDurations','Durations','Hire bar: options in the duration list. Empty uses 1, 2, 3 days and 1 week.']]},
+      lists:[['bookingRates','Rate cards','Hire bar: price cards on the right. Price week: label each card by its days (\u201cMon \u2013 Thu\u201d, \u201cFriday\u201d, \u201cWeekends\u201d) to show one price per day. Leave empty to hide.'],['bookingPoints','Points','Hire bar: icon points under the form. Price week: notes under the prices.'],['bookingDurations','Durations','Hire bar: options in the duration list. Empty uses 1, 2, 3 days and 1 week.']]},
     mapHours:{title:'Address, map & hours',lede:'Type the address, then press <b>Find on map</b> and pick the right result to pin the map. The directions button opens Google Maps.',rows:[
       {t:'addr',k:'address',label:'Address (as shown on the page)'},
       {t:'text',k:'ctaLabel',label:'Directions button',ph:'Get directions (empty = hidden)'},
       {t:'chk',k:'showPhone',label:'Show the phone number',def:true},
       {t:'sel',k:'mapSide',label:'Map side',opts:[['','Map on the right'],['left','Map on the left']]},
-      {t:'sel',k:'tone',label:'Background',opts:[['','Light'],['dark','Dark']]},
+      {t:'sel',k:'tone',label:'Background',opts:[['','Light'],['grey','Grey'],['dark','Dark']]},
+      {t:'sel',k:'mapStyle',label:'Map colours',opts:[['','Colour'],['grey','Greyscale']]},
       {t:'sel',k:'mapZoom',label:'Map zoom',opts:[['','Street (default)'],['17','Close up'],['13','Suburb'],['11','City']]},
       {t:'text',k:'addressTitle',label:'Address label',ph:'Address'},
       {t:'text',k:'hoursTitle',label:'Hours label',ph:'Opening hours'},
@@ -5832,6 +5835,7 @@ function heroCtaCard(c){
     ctaBanner:{title:'Banner style & buttons',lede:'Leave a button\u2019s text empty to hide it. \u201cOpen the booking calendar\u201d opens the live hire calendar when Bookings is set up, otherwise it goes to the booking bar or quote form.',rows:[
       {t:'sel',k:'tone',label:'Style',opts:[['','Brand colour (default)'],['dark','Dark'],['light','Light card'],['photo','Photo background']]},
       {t:'sel',k:'align',label:'Layout',opts:[['','Text left, buttons right'],['center','Centred']]},
+      {t:'sel',k:'width',label:'Width',opts:[['','Card'],['full','Full-width band']]},
       {t:'image',k:'bgImage',label:'Background photo',when:'tone=photo'},
       {t:'text',k:'btn1Label',label:'Main button text',ph:'e.g. Pick a day'},
       {t:'sel',k:'btn1Action',label:'Main button does',def:'quote',opts:LP_CTA_BANNER_ACTIONS},
@@ -7264,19 +7268,6 @@ function heroCtaCard(c){
       +'<option value="full">Full width (edge to edge)</option>'
       +'</select>'
       +'<p class="hint" style="margin:8px 0 0;">Limits overall content width and keeps hero slider images at a 16:9 aspect ratio so wide screens do not stretch photos. Trust bar image tiles follow the same cap.</p></div>'
-      +((currentRole==='super'&&currentSiteTemplate==='trade')?(
-        '<div class="f" style="margin-top:14px;"><label for="d-design">Page design</label>'
-        +'<select id="d-design" class="tin" style="max-width:420px;"><option value="">Classic (the page sections as set up in the editor)</option><option value="bold">Bold — brand-colour header, price calendar, week of prices</option></select>'
-        +'<p class="hint" style="margin:8px 0 0;">Bold redraws the page from this site\u2019s own content (hero, rates, specs, included items, steps, FAQ, location). Switch back to Classic at any time \u2014 nothing is deleted.</p>'
-        +'<div id="d-bold-fields" style="margin-top:12px;display:none;padding:12px 14px;border:1px solid var(--line);border-radius:10px;">'
-        +'<div class="f"><label for="d-bold-title">Bold headline (new line = Enter)</label><textarea id="d-bold-title" class="tin" rows="3" placeholder="Uses the hero heading when empty"></textarea></div>'
-        +'<div class="f"><label for="d-bold-sub">Line under the headline</label><textarea id="d-bold-sub" class="tin" rows="2" placeholder="Uses the hero sub-headline when empty"></textarea></div>'
-        +'<div class="f"><label for="d-bold-logo">White logo for the coloured header (image URL)</label><input id="d-bold-logo" class="tin" placeholder="https://… (empty = normal logo on a white tag)"></div>'
-        +'<div class="f"><label for="d-bold-brand">Brand colour</label><input id="d-bold-brand" class="tin" style="max-width:160px" placeholder="#CD1F21"></div>'
-        +'<div class="f"><label>Price for each pick-up day (Mon \u2192 Sun)</label><div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;">'
-        +['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(function(d,i){ return '<input class="tin d-bold-wk" data-i="'+i+'" placeholder="'+d+'" aria-label="'+d+' price">'; }).join('')
-        +'</div><p class="hint" style="margin:6px 0 0;">Leave all empty to use the rate cards on the booking bar.</p></div>'
-        +'</div></div>'):'')
       +_bpSettingsCardHtml(c0())
       +'<div style="margin-top:6px;"><button class="btn" id="d-save">Save details</button><span id="d-saved" style="margin-left:10px;font-size:13px;color:#0a7d33;"></span></div></div>';
     var assignPartnerCard='';
