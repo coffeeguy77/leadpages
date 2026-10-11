@@ -24,6 +24,26 @@ Opt-in layouts for existing trade-template apps, added so AI Composer (and anyon
 | FAQ | `columns: 2`, `ctaLabel`, `ctaHref` (no link = the button opens every answer), `emptyAnswer` (line for a question with no answer; two columns default to "call us on …") |
 | Bookings | `layout: 'hire'`, `hireHeading`, `icon`, `hireCtaLabel`, `dateLabel`, `timeLabel`, `durationLabel`, `openTime`, `closeTime`, `timeStep`, `durations[{label,days}]`, `points[{icon,text}]`, `rates[{label,price,unit,note}]`, `overlapHero` (default on), `bg`, `accent` |
 
+## Layouts added October 2026 (replace the old "Bold" page design)
+
+Every one is a choice in the app's **Layout options** card (Services: the **Style** list), off by default.
+All drawn markup carries `data-lpe` hooks, so app tags, the editing outline and **Auto-select** work on every part.
+
+| App | Key | What it draws |
+|---|---|---|
+| Hero Slider | `layout: 'booking'` + `bookTitle`, `bookCta`, `bookNote`, `imageCaption` | First slide as headline (`heading` + `highlightText`), sub-line, badges as ticks, slide photo, and a month calendar card. Each day shows its price — `from_cents` from `GET /api/bookings/hire/public?action=calendar` when Bookings hire is live, otherwise the Bookings rate cards. Live: free / 1–2 left / booked-out dots, pick-up time and length, total, button opens `LPBookingFlow`. Not live: the button calls the business. |
+| Bookings | `layout: 'priceweek'` + `weekHeading`, `weekIntro` | Seven day cells from the rate cards (labels like "Mon – Thu", "Friday", "Weekends"); falls back to the cards as they are when the labels don't cover the week. `points` show as notes. |
+| Text Box | `layout: 'band'` + `bandTone: 'dark'`, `dimLength`, `dimWidth`, `dimHeight`, `dimLift` | Brand-colour band. A feature written "Label: value" becomes a spec row; others are ticks. Dimensions draw a labelled box instead of the photo. |
+| Services | `mode: 'iconrow'`, `tickTheme: 'light'|'dark'|'brand'` | Icon, title and short line per item. |
+| How It Works | `layout: 'numbered'` | Big step numbers in a row; the callout becomes a panel under the steps (its button calls the business unless a link is set). |
+| Reviews | `layout: 'quotes'` | Large quote text under a brand line instead of cards. |
+| FAQ | `layout: 'split'` | Heading (and "view all") on the left, questions on the right. Empty answers show the "call us on …" line. |
+| Map & Hours | `tone: 'grey'`, `mapStyle: 'grey'` | Grey band / greyscale map. |
+| CTA Banner | `width: 'full'` | Full-width band instead of a card. |
+
+The whole-page "Bold" design (`config.design = 'bold'`, `assets/lp-skin-bold.*`) is removed: it drew a fixed page that
+could not be edited with the apps. A site that still has `design: 'bold'` saved now renders its normal apps.
+
 Icons are LeadPages icon names from `icons.js` (a short emoji typed in the editor is shown as text).
 
 ## Bookings hire bar

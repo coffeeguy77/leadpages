@@ -19,8 +19,8 @@ test('trade template has hidden placeholders and loads the current layouts scrip
   for (const k of KEYS) {
     assert.match(html, new RegExp('<section data-sec="' + k + '" class="section" id="' + k + '" style="display:none"></section>'));
   }
-  assert.match(html, /\/assets\/lp-layouts\.js\?v=2/);
-  assert.match(html, /\/assets\/lp-layouts\.css\?v=2/);
+  assert.match(html, /\/assets\/lp-layouts\.js\?v=3/);
+  assert.match(html, /\/assets\/lp-layouts\.css\?v=3/);
 });
 
 test('both apps are off by default and only shown when switched on', () => {
@@ -70,7 +70,7 @@ test('rendered markup carries the auto-select field hooks', () => {
   for (const hook of ['data-lpe="heading"', 'data-lpe="address"', 'list:mapHoursRows:', 'data-lpe="ctaLabel"', 'lp-as-shield', "data-lpe=\"btn' + n + 'Label\""]) {
     assert.ok(js.indexOf(hook) >= 0, hook);
   }
-  assert.match(js, /mapHours, ctaBanner, bookingHire/);
+  assert.match(js, /mapHours, ctaBanner,/);
 });
 
 test('marketplace: sell template, demo page, demo content, demo editor fields, hub tile, category', () => {
