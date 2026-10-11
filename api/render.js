@@ -564,6 +564,7 @@ function buildTradeHtml(site, host) {
     } catch (_guardErr) { /* never break live render */ }
   }
   html = injectSeoJsonLd(html, cfg);
+  html = injectBoldDesign(html, cfg);
   return html;
 }
 
@@ -962,6 +963,53 @@ function injectOrderStorefront(html, slug, cfg) {
   return html.indexOf('</body>') !== -1
     ? html.replace('</body>', block + '</body>')
     : (html + block);
+}
+
+// ---- "Bold" design (opt-in: config.design === 'bold') ----
+// Draws the page from the site's own content (assets/lp-skin-bold.js) on the server, so the
+// first paint and search engines get it; the same script redraws it in the editor preview.
+// Sites without config.design = 'bold' are returned unchanged.
+let _boldSkin = null;
+let _lpIcons = null;
+function boldSkin() {
+  if (_boldSkin === null) {
+    try { _boldSkin = require('../assets/lp-skin-bold.js'); } catch (_e) { _boldSkin = false; }
+  }
+  return _boldSkin;
+}
+function lpIcons() {
+  if (_lpIcons === null) {
+    try {
+      const src = require('fs').readFileSync(require('path').join(__dirname, '..', 'icons.js'), 'utf8');
+      const box = { window: {} };
+      require('vm').runInNewContext(src, box, { timeout: 2000 });
+      _lpIcons = box.window.LP_ICONS || {};
+    } catch (_e) { _lpIcons = {}; }
+  }
+  return _lpIcons;
+}
+function injectBoldDesign(html, cfg) {
+  if (!cfg || cfg.design !== 'bold') return html;
+  const skin = boldSkin();
+  if (!skin || typeof skin.render !== 'function') return html;
+  let body;
+  try {
+    body = skin.render(cfg, { icons: lpIcons(), noun: (cfg.bold && cfg.bold.noun) || 'truck' });
+  } catch (_e) { return html; }
+  const head =
+    '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' +
+    '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap">' +
+    '<link rel="stylesheet" href="/assets/lp-skin-bold.css?v=1">';
+  let out = html.replace(/<html([^>]*)>/i, function (m, attrs) {
+    if (/\bclass="/i.test(attrs)) return '<html' + attrs.replace(/\bclass="/i, 'class="lpb-on ') + '>';
+    return '<html class="lpb-on"' + attrs + '>';
+  });
+  out = out.indexOf('</head>') !== -1 ? out.replace('</head>', head + '</head>') : head + out;
+  out = out.replace(/<body([^>]*)>/i, function (m) { return m + body; });
+  out = out.indexOf('</body>') !== -1
+    ? out.replace(/<\/body>(?![\s\S]*<\/body>)/i, '<script src="/assets/lp-skin-bold.js?v=1" defer></script></body>')
+    : out + '<script src="/assets/lp-skin-bold.js?v=1" defer></script>';
+  return out;
 }
 
 // A real <section data-sec="bookingStorefront"> tag. (A plain includes() also matched the
@@ -1457,6 +1505,7 @@ module.exports = async (req, res) => {
       html = injectOnlineQuote(html, site.slug, cfg);
       html = injectOrderStorefront(html, site.slug, cfg);
       html = injectBookingStorefront(html, site.slug, cfg);
+      html = injectBoldDesign(html, cfg);
       html = injectSearchCanvas(html, cfg);
       // Colour overrides run again after dynamic injects so Order Storefront /
       // Online Quote / Bookings section hex values are remapped too.
@@ -1474,3 +1523,4 @@ module.exports = async (req, res) => {
 };
 // Test hooks (no behaviour change).
 module.exports._injectBookingStorefront = injectBookingStorefront;
+module.exports._injectBoldDesign = injectBoldDesign;
