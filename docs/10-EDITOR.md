@@ -1255,3 +1255,13 @@ A developer rebuilding this editor needs: **Supabase auth**, a **JSONB config do
 ---
 
 *Document maintained as part of the LeadPages engineering canon. Update when `manage.html` behavior changes.*
+
+## Live preview: app tags, editing outline, Auto-select
+
+- **App tags** — every visible `[data-sec]` section in the preview (`?preview=`) gets a `.lp-seclabel` tag with its app name (`__LB` in `marketplace/demos/demo-shared.js`, synced into the templates with `scripts/sync-trade-demo-shared.js`). Apps that redraw their own section (e.g. the hire bar) no longer lose the tag: a preview-only MutationObserver re-runs `window.__lpSecLabels()`.
+- **Editing outline** — `lpPreviewMarkActive()` (manage.html) adds `.lp-edit-active` (blue outline) to the app open in the Page editor and scrolls the preview to it when you switch apps.
+- **Auto-select** — toggle in the Page editor toolbar beside Locked / Hide Inactive Apps / Show All Apps (remembered per browser in `localStorage.lp_autoselect`). When on, clicking anything in the preview opens that app's editor and focuses the matching field:
+  1. an element (or ancestor) with `data-lpe="fieldKey"` → `#sec-{app}-{key}` / `#lpl-{app}-{key}`; `data-lpe="list:{listKey}:{index}:{field}"` → that list row's field;
+  2. otherwise the editor field whose value matches the clicked text;
+  3. otherwise an image field matching the clicked image.
+  Links, buttons and forms in the preview don't fire while Auto-select is on.

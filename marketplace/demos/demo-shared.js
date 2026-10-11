@@ -2457,22 +2457,31 @@ function applyCfg(C){
     /* preview-only section name labels (backend preview iframe carries ?preview=; never the live site) */
     try{
       var __PV=false; try{ __PV=/[?&]preview=/.test(location.search); }catch(_p){}
-      var __LB={emerg:'Top Bar',hero:'Hero',heroSlider:'Hero Slider',heroBeforeAfter:'Hero Before/After Slider',trustBar:'Trust Bar',scrollingSponsorBanner:'Scrolling Sponsor Banner',services:'Services',serviceProcess:'How It Works Steps',featureStrip:'Feature Strip',why:'Why Us',area:'Service Area',reviews:'Reviews',promotions:'Promotions',certifications:'Certifications',finance:'Finance Options',estimateBuilder:'Estimate Builder',onlineQuote:'Online Quote',orderStorefront:'Order Storefront',bookingStorefront:'Bookings',customHtml:'Custom HTML',searchCanvas:'SearchCanvas',serviceAreaMap:'Service Area Map',emergencyAvailability:'Emergency Availability',crew:'Team Members',quote:'Quote Form',faq:'FAQ',footer:'Footer',beforeAfter:'Before & After',responseCards:'Response Cards',projectStats:'Project Stats',serviceAreas:'Service Areas',reviewHighlights:'Review Highlights',featuredProjects:'Project Portfolio',premiumGallery:'Premium Gallery',specialOffer:'Special Offer',splitHero:'Split Hero',activityCounter:'Activity Counter',proofStream:'Proof Stream',projectFeed:'Project Feed',jobsFeed:'Jobs Feed',beforeAfterFeed:'Before/After Feed',videoReels:'Video Reels',activityTimeline:'Activity Timeline',customerReactions:'Customer Reactions',textBox:'Text Box',aboutUs:'About Us'};
+      var __LB={emerg:'Top Bar',hero:'Hero',heroSlider:'Hero Slider',heroBeforeAfter:'Hero Before/After Slider',trustBar:'Trust Bar',scrollingSponsorBanner:'Scrolling Sponsor Banner',services:'Services',serviceProcess:'How It Works Steps',featureStrip:'Feature Strip',why:'Why Us',area:'Service Area',reviews:'Reviews',promotions:'Promotions',certifications:'Certifications',finance:'Finance Options',estimateBuilder:'Estimate Builder',onlineQuote:'Online Quote',orderStorefront:'Order Storefront',bookingStorefront:'Bookings',customHtml:'Custom HTML',searchCanvas:'SearchCanvas',serviceAreaMap:'Service Area Map',emergencyAvailability:'Emergency Availability',crew:'Team Members',quote:'Quote Form',faq:'FAQ',footer:'Footer',beforeAfter:'Before & After',responseCards:'Response Cards',projectStats:'Project Stats',serviceAreas:'Service Areas',reviewHighlights:'Review Highlights',featuredProjects:'Project Portfolio',premiumGallery:'Premium Gallery',specialOffer:'Special Offer',splitHero:'Split Hero',activityCounter:'Activity Counter',proofStream:'Proof Stream',projectFeed:'Project Feed',jobsFeed:'Jobs Feed',beforeAfterFeed:'Before/After Feed',videoReels:'Video Reels',activityTimeline:'Activity Timeline',customerReactions:'Customer Reactions',textBox:'Text Box',aboutUs:'About Us',navMenu:'Menu',seoText:'SEO Text',instaGallery:'Instagram Gallery',igProjectFeed:'Instagram Feed',bookingCta:'Booking CTA',brandStory:'Brand Story',clientLogos:'Client Logos',packageCompare:'Package Compare',productCollection:'Product Collection',mapHours:'Map & Hours',ctaBanner:'CTA Banner'};
       if(!__PV){ document.querySelectorAll('.lp-seclabel').forEach(function(__x){ __x.remove(); }); document.documentElement.classList.remove('lp-preview-mode'); }
       else{
         document.documentElement.classList.add('lp-preview-mode');
         if(!document.getElementById('lp-preview-fit-css')){ var __pf=document.createElement('style'); __pf.id='lp-preview-fit-css'; __pf.textContent='html.lp-preview-mode,html.lp-preview-mode body{min-height:0!important;height:auto!important}html.lp-preview-mode body{padding-top:0!important;padding-bottom:0!important}html.lp-preview-mode .mobile-call,html.lp-preview-mode #pf-lightbox,html.lp-preview-mode .pf-lb,html.lp-preview-mode .promo-fixed,html.lp-preview-mode .promo-pop,html.lp-preview-mode #promo-popup{display:none!important}'; document.head.appendChild(__pf); }
         try{ var __pwin=window.parent; if(__pwin&&__pwin!==window&&typeof __pwin.lpPreviewFitFrameHeight==='function'){ setTimeout(__pwin.lpPreviewFitFrameHeight,0); setTimeout(__pwin.lpPreviewFitFrameHeight,400); } }catch(_pf){}
         if(!document.getElementById('lp-seclabel-css')){ var __st=document.createElement('style'); __st.id='lp-seclabel-css'; __st.textContent='.lp-seclabel{position:absolute;top:0;left:0;z-index:99999;background:#111;color:#fff;font:700 11px/1.2 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;letter-spacing:.04em;text-transform:uppercase;padding:4px 9px;border-radius:0 0 9px 0;pointer-events:none;opacity:.94;box-shadow:0 2px 8px rgba(0,0,0,.35);max-width:92%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'; document.head.appendChild(__st); }
-        document.querySelectorAll('[data-sec]').forEach(function(__sec){
-          var __id=__sec.getAttribute('data-sec'); if(!__id) return;
-          var __vis=true; try{ var __cs=getComputedStyle(__sec); if(__cs.display==='none'||__cs.visibility==='hidden') __vis=false; }catch(_v){}
-          var __old=__sec.querySelector(':scope > .lp-seclabel');
-          if(!__vis){ if(__old) __old.remove(); return; }
-          if(getComputedStyle(__sec).position==='static') __sec.style.position='relative';
-          if(!__old){ __old=document.createElement('div'); __old.className='lp-seclabel'; __sec.appendChild(__old); }
-          __old.textContent=(__LB[__id]||__id);
-        });
+        var __lbl=function(){
+          document.querySelectorAll('[data-sec]').forEach(function(__sec){
+            var __id=__sec.getAttribute('data-sec'); if(!__id) return;
+            var __vis=true; try{ var __cs=getComputedStyle(__sec); if(__cs.display==='none'||__cs.visibility==='hidden') __vis=false; }catch(_v){}
+            var __old=__sec.querySelector(':scope > .lp-seclabel');
+            if(!__vis){ if(__old) __old.remove(); return; }
+            if(getComputedStyle(__sec).position==='static') __sec.style.position='relative';
+            if(!__old){ __old=document.createElement('div'); __old.className='lp-seclabel'; __sec.appendChild(__old); }
+            var __t=(__LB[__id]||__id); if(__old.textContent!==__t) __old.textContent=__t;
+          });
+        };
+        window.__lpSecLabels=__lbl; __lbl();
+        /* apps that redraw their own section (hire bar, layouts) drop the tag; put it back */
+        if(!window.__lpSecLabelObs&&window.MutationObserver){
+          var __lt=null;
+          window.__lpSecLabelObs=new MutationObserver(function(){ if(__lt) return; __lt=setTimeout(function(){ __lt=null; try{ __lbl(); }catch(_l){} },120); });
+          try{ window.__lpSecLabelObs.observe(document.body,{childList:true,subtree:true}); }catch(_o){}
+        }
       }
     }catch(e){}
 
