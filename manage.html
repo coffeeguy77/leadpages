@@ -715,6 +715,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 <script src="/assets/lp-hub-embed.js"></script>
 <link rel="stylesheet" href="/assets/lp-logo.css">
 <script src="/assets/lp-logo.js"></script>
+<script src="/assets/lp-fonts.js?v=1"></script>
 <script src="/assets/lp-admin-shell.js"></script>
 <script src="/assets/lp-messages-embed.js?v=support-new-1"></script>
 <script src="/assets/lp-mobile-menu-builder.js?v=seo-nav-1"></script>
@@ -5766,7 +5767,8 @@ function heroCtaCard(c){
       {t:'sel',k:'layout',label:'Layout',opts:[['','Image slider (default)'],['booking','Booking card \u2014 headline, photo, calendar']]},
       {t:'sel',k:'textCase',label:'Headline case',opts:[['','Theme default'],['normal','As typed (no forced capitals)']]},
       {t:'text',k:'bookTitle',label:'Card heading',ph:'Pick your day',when:'layout=booking'},
-      {t:'text',k:'bookCta',label:'Card button',ph:'Continue',when:'layout=booking'},
+      {t:'text',k:'bookCta',label:'Card button (online booking live)',ph:'Continue',when:'layout=booking'},
+      {t:'text',k:'bookCtaCall',label:'Card button (until online booking is set up)',ph:'Call to book',when:'layout=booking'},
       {t:'text',k:'bookNote',label:'Small print under the button',ph:'Prefer to talk? Call …',when:'layout=booking'},
       {t:'text',k:'imageCaption',label:'Photo caption',ph:'e.g. Our 4.5T Isuzu NNR',when:'layout=booking'}],
       lists:[['heroSliderBadges','Hero badges','Icon + title + small text, shown in a row on every slide. Leave empty for none.']]},
@@ -5783,6 +5785,7 @@ function heroCtaCard(c){
       lists:[['textBoxFeatures','Feature list','Two-column icon list under the text. Leave empty for none.']]},
     reviews:{rows:[
       {t:'sel',k:'layout',label:'Layout',opts:[['','Cards (default)'],['quotes','Quotes \u2014 large text under a brand line']]},
+      {t:'chk',k:'quoteStars',label:'Show stars on quotes',def:false,when:'layout=quotes'},
       {t:'sel',k:'theme',label:'Band',opts:[['','Light (default)'],['dark','Dark band, white cards']]},
       {t:'sel',k:'badge',label:'Card badge',opts:[['','None'],['google','Google “G” on each card']]},
       {t:'image',k:'bgImage',label:'Dark band photo (optional)'},
@@ -5824,6 +5827,7 @@ function heroCtaCard(c){
       {t:'addr',k:'address',label:'Address (as shown on the page)'},
       {t:'text',k:'ctaLabel',label:'Directions button',ph:'Get directions (empty = hidden)'},
       {t:'chk',k:'showPhone',label:'Show the phone number',def:true},
+      {t:'sel',k:'layout',label:'Layout',opts:[['','Card map (default)'],['bleed','Edge map \u2014 map runs to the page edge, simple list']]},
       {t:'sel',k:'mapSide',label:'Map side',opts:[['','Map on the right'],['left','Map on the left']]},
       {t:'sel',k:'tone',label:'Background',opts:[['','Light'],['grey','Grey'],['dark','Dark']]},
       {t:'sel',k:'mapStyle',label:'Map colours',opts:[['','Colour'],['grey','Greyscale']]},
@@ -5922,6 +5926,25 @@ function heroCtaCard(c){
       }).catch(function(){ res.style.display=''; res.innerHTML='<div class="hint" style="margin:0;padding:10px 12px;">Address search is unavailable right now \u2014 the map will search for the address text.</div>'; })
       .then(function(){ btn.disabled=false; btn.textContent='Find on map'; });
     });
+  }
+  /** Branding → Fonts: pick a font set for the whole site (config.fontSet, assets/lp-fonts.js). */
+  function lpMountFontCard(body,c){
+    var F=window.LP_FONTS; if(!F||!body) return;
+    var urls=[]; F.ORDER.forEach(function(k){ var u=F.googleUrl(F.SETS[k]); if(u) urls.push(u); });
+    if(!document.getElementById('lp-fontset-samples')){ var l=document.createElement('link'); l.id='lp-fontset-samples'; l.rel='stylesheet';
+      l.href='https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@800&family=Barlow:wght@400;600&'+urls.map(function(u){ return u.split('?')[1].replace(/&display=swap$/,''); }).join('&')+'&display=swap'; document.head.appendChild(l); }
+    function tile(k){ var s=F.SETS[k], on=((c.fontSet||'classic')===k), h=s.head, b=s.body;
+      return '<button type="button" class="lp-fs-tile" data-fs="'+k+'" aria-pressed="'+(on?'true':'false')+'" style="text-align:left;cursor:pointer;padding:14px 14px 12px;border-radius:12px;background:var(--panel,#fff);color:var(--ink);border:'+(on?'2px solid var(--accent,#1f7a63)':'1px solid var(--line)')+';box-shadow:'+(on?'0 0 0 3px var(--accent-soft,rgba(31,122,99,.15))':'none')+';display:flex;flex-direction:column;gap:6px;min-width:0;">'
+        +'<span style="font-family:\''+h.family+'\','+h.fallback+';font-weight:'+h.weight+';font-stretch:'+(h.stretch||'100%')+';text-transform:'+(h.transform||'none')+';letter-spacing:'+(h.spacing||'normal')+';font-size:26px;line-height:1;">Move More.</span>'
+        +'<span style="font-family:\''+b.family+'\','+b.fallback+';font-size:13px;line-height:1.35;color:var(--ink-soft);">Fast, friendly local service.</span>'
+        +'<span style="font-size:12px;font-weight:700;margin-top:4px;">'+(on?'\u2713 ':'')+esc(s.label)+'</span><span class="hint" style="margin:0;font-size:11px;">'+esc(s.note)+'</span></button>'; }
+    var h='<div class="card lp-fonts-card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Fonts</h2><p class="lede" style="margin:0 0 12px;">Pick a font set for the whole site \u2014 headings, buttons and body text. Changes preview live on the right.</p>'
+      +'<div id="lp-fs-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;">'+F.ORDER.map(tile).join('')+'</div></div>';
+    var first=body.querySelector('.card'); if(first) first.insertAdjacentHTML('afterend',h); else body.insertAdjacentHTML('afterbegin',h);
+    var grid=$('lp-fs-grid');
+    grid.addEventListener('click',function(e){ var t=e.target.closest&&e.target.closest('[data-fs]'); if(!t) return; var k=t.getAttribute('data-fs');
+      if(k==='classic') delete c.fontSet; else c.fontSet=k; persist(); previewApply();
+      grid.innerHTML=F.ORDER.map(tile).join(''); });
   }
   function listCard(sk,title,lede){ return '<div class="card" style="margin-bottom:22px;"><h2>'+title+'</h2><p class="lede">'+lede+'</p><div id="le-'+sk+'"></div></div>'; }
   function iconBtnInner(v){ if(v&&String(v).trim()){ var n=String(v).trim(); if(/^[a-z0-9-]+$/.test(n)&&window.LP_ICONS&&window.LP_ICONS[n]) return '<svg class="lp-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+window.LP_ICONS[n]+'</svg>'; if(window.LP_ICONS&&window.LP_ICONS['circle-help']) return '<svg class="lp-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+window.LP_ICONS['circle-help']+'</svg>'; return esc(n); } return '<span style="opacity:.35;">\uFF0B</span>'; }
@@ -11115,6 +11138,7 @@ function heroCtaCard(c){
         +'</div>'
         +'<p class="hint" id="co-bake-msg" style="margin:8px 0 0;"></p></div>';
       wireTradeColours(c); renderTradePresets(c); renderColourLibrary(c); wireColorOverrides(c); wireButtonLook(c);
+      try{ lpMountFontCard(body,c); }catch(_fc){ try{ console.warn('[fonts]',_fc); }catch(_x){} }
     } else if(sub==='logo'){
       var L0=c.logo||{};
       var _hd=Math.max(24,Math.min(320,(L0.heightPx?L0.heightPx:Math.round(40*(L0.scale||1)))||44));

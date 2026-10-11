@@ -64,7 +64,7 @@ test('every new layout is drawn by lp-layouts.js, styled, and opt-in', () => {
     assert.ok(js.indexOf(key) >= 0, key);
     assert.ok(css.indexOf(cls) >= 0, cls + ' styled');
   }
-  assert.match(js, /bookingWeek, heroBooking, bookingHire\]/);
+  assert.match(js, /bookingWeek, heroBooking, bookingHire, fontSet\]/);
 });
 
 test('every new layout has its option in the page editor', () => {
@@ -92,3 +92,15 @@ test('the whole-page Bold design is removed everywhere', () => {
   assert.doesNotMatch(js, /boldDesign|lp-skin-bold/);
   assert.doesNotMatch(manage, /d-design|d-bold-/);
 });
+
+test('layout details match the design: quotes without stars by default, title-case steps, chevron FAQ, edge map, offline card button', () => {
+  assert.match(css, /\.rv-quotes \.review \.stars\{display:none\}/);
+  assert.match(css, /\.rv-quotes\.rv-qstars \.review \.stars\{display:block/);
+  assert.match(css, /sp-numbered \.sp-title\{[^}]*text-transform:none!important/);
+  assert.match(css, /faq-split \.faq summary::after\{content:""/);
+  assert.match(css, /mh-bleed \.mh\{/);
+  assert.match(js, /'bookCtaCall'/);
+  assert.match(manage, /\['bleed','Edge map/);
+  assert.match(manage, /k:'quoteStars'/);
+});
+

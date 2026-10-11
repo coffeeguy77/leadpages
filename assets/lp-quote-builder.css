@@ -282,7 +282,7 @@
 }
 .oqb-oq-ey {
   margin: 0;
-  font-family: "Barlow", system-ui, -apple-system, sans-serif;
+  font-family: var(--lp-font-body,"Barlow"), system-ui, -apple-system, sans-serif;
   font-size: 13px;
   font-weight: 700;
   letter-spacing: .16em;
@@ -290,7 +290,7 @@
 }
 .oqb-oq-heading {
   margin: 10px 0 0;
-  font-family: "Barlow Condensed", "Barlow", system-ui, sans-serif;
+  font-family: var(--lp-font-head,"Barlow Condensed"), var(--lp-font-body,"Barlow"), system-ui, sans-serif;
   font-size: clamp(32px, 4.4vw, 52px);
   font-weight: 800;
   letter-spacing: -.01em;

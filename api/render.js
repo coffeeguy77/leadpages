@@ -564,6 +564,7 @@ function buildTradeHtml(site, host) {
     } catch (_guardErr) { /* never break live render */ }
   }
   html = injectSeoJsonLd(html, cfg);
+  html = injectFontSet(html, cfg);
   return html;
 }
 
@@ -964,6 +965,24 @@ function injectOrderStorefront(html, slug, cfg) {
     : (html + block);
 }
 
+// ---- Font set (config.fontSet, assets/lp-fonts.js) ----
+// Sets --lp-font-head / --lp-font-body (the template's font variables) and loads the
+// Google font. No fontSet / "classic" leaves the page unchanged.
+let _lpFonts = null;
+function injectFontSet(html, cfg) {
+  const key = cfg && typeof cfg.fontSet === 'string' ? cfg.fontSet : '';
+  if (!key || key === 'classic' || html.indexOf('id="lp-fontset"') !== -1) return html;
+  if (_lpFonts === null) {
+    try { _lpFonts = require('../assets/lp-fonts.js'); } catch (_e) { _lpFonts = false; }
+  }
+  if (!_lpFonts || !_lpFonts.get(key)) return html;
+  const url = _lpFonts.googleUrl(_lpFonts.get(key));
+  const block = (url ? '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link id="lp-fontset-link" rel="stylesheet" href="' + url.replace(/"/g, '&quot;') + '">' : '') +
+    '<style id="lp-fontset">' + _lpFonts.css(key).replace(/<\//g, '<\\/') + '</style>';
+  // Last thing in <head> so it wins over the template's base heading rule.
+  return html.indexOf('</head>') !== -1 ? html.replace('</head>', block + '</head>') : block + html;
+}
+
 // A real <section data-sec="bookingStorefront"> tag. (A plain includes() also matched the
 // FOUC-guard CSS selector added by prepareTradeLiveHtml, so the block was never placed.)
 const BOOKING_SECTION_RE = /<section[^>]*data-sec="bookingStorefront"[^>]*>[\s\S]*?<\/section>/i;
@@ -1010,7 +1029,7 @@ function injectBookingStorefront(html, slug, cfg) {
  */
 function injectBookingHireBar(html) {
   const block =
-    '<link rel="stylesheet" href="/assets/lp-booking-hire.css?v=2">' +
+    '<link rel="stylesheet" href="/assets/lp-booking-hire.css?v=3">' +
     '<section data-sec="bookingStorefront" class="sec booking-storefront bk-hire" id="bookingStorefront"></section>' +
     '<script src="/assets/lp-booking-hire.js?v=2" defer></script>';
   if (BOOKING_SECTION_RE.test(html)) {
@@ -1457,6 +1476,7 @@ module.exports = async (req, res) => {
       html = injectOnlineQuote(html, site.slug, cfg);
       html = injectOrderStorefront(html, site.slug, cfg);
       html = injectBookingStorefront(html, site.slug, cfg);
+      html = injectFontSet(html, cfg);
       html = injectSearchCanvas(html, cfg);
       // Colour overrides run again after dynamic injects so Order Storefront /
       // Online Quote / Bookings section hex values are remapped too.
@@ -1474,3 +1494,4 @@ module.exports = async (req, res) => {
 };
 // Test hooks (no behaviour change).
 module.exports._injectBookingStorefront = injectBookingStorefront;
+module.exports._injectFontSet = injectFontSet;

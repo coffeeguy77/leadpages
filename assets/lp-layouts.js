@@ -248,6 +248,7 @@
     var node = sec('reviews'); if (!node) return;
     var RV = (C.sections && C.sections.reviews) || {};
     node.classList.toggle('rv-quotes', RV.layout === 'quotes');
+    node.classList.toggle('rv-qstars', RV.layout === 'quotes' && RV.quoteStars === true);
     node.classList.toggle('rv-dark', RV.theme === 'dark');
     var bg = bgUrl(RV.bgImage);
     if (RV.theme === 'dark' && bg) node.style.setProperty('--rv-dark-img', 'url("' + bg + '")');
@@ -437,6 +438,7 @@
     node.classList.toggle('mh-dark', M.tone === 'dark');
     node.classList.toggle('mh-grey', M.tone === 'grey');
     node.classList.toggle('mh-mapgrey', M.mapStyle === 'grey');
+    node.classList.toggle('mh-bleed', M.layout === 'bleed');
     if (M.on !== true) { clear(node, 'mh'); return; }
     var addr = txt(M.address);
     var pin = txt(M.mapQuery);
@@ -496,7 +498,7 @@
     if (window.LPBookingFlow) return Promise.resolve(window.LPBookingFlow);
     if (FLOW_P) return FLOW_P;
     if (!document.querySelector('link[href^="/assets/lp-booking-hire.css"]')) {
-      var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = '/assets/lp-booking-hire.css?v=2';
+      var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = '/assets/lp-booking-hire.css?v=3';
       document.head.appendChild(l);
     }
     FLOW_P = new Promise(function (resolve) {
@@ -710,6 +712,12 @@
     var dd = HB.days[HB.sel];
     left.textContent = HB.live && dd && dd.free && dd.free <= 2 ? (dd.free === 1 ? 'Only 1' : 'Only ' + dd.free) + (HB.total ? ' of ' + HB.total : '') + ' left that day.' : '';
   }
+  function HS0() { var C = cfgOf() || {}; return (C.sections && C.sections.heroSlider) || {}; }
+  /** The card button reads "Continue" when online booking is live, "Call to book" until then. */
+  function hbLabel(go, key, label) {
+    if (go.textContent !== label) go.textContent = label;
+    go.setAttribute('data-lpe', key);
+  }
   function hbState(C) {
     var go = hq('go'), sub = hq('sub'), fine = hq('fine'), ph = phoneOf(C);
     if (!go) return;
@@ -717,9 +725,11 @@
       if (sub) sub.textContent = 'Each day shows its price. The dot shows what’s free.';
       hbPick();
       go.removeAttribute('data-call');
+      hbLabel(go, 'bookCta', txt(HS0().bookCta) || 'Continue');
     } else {
       if (sub) sub.textContent = HB.week ? 'Each day shows its price.' : '';
       go.setAttribute('data-call', '1');
+      hbLabel(go, 'bookCtaCall', txt(HS0().bookCtaCall) || (ph ? 'Call to book' : 'Get in touch'));
       if (fine && ph && !fine.getAttribute('data-set')) fine.innerHTML = 'Prefer to talk? Call <a href="' + esc(ph.href) + '">' + esc(ph.text) + '</a>.';
     }
   }
@@ -812,6 +822,25 @@
     hbQuote();
   }
 
+  /* ---------- Font set (config.fontSet): render.js sets it for saved sites; this switches it
+   *  live in the editor preview. Definitions: /assets/lp-fonts.js ---------- */
+  var FONTS_P = null;
+  function fontSet(C) {
+    var key = txt(C.fontSet);
+    var has = !!document.getElementById('lp-fontset');
+    if (!key && !has) return;
+    var go = function () { if (window.LP_FONTS) window.LP_FONTS.apply(document, key); };
+    if (window.LP_FONTS) { go(); return; }
+    if (!FONTS_P) {
+      FONTS_P = new Promise(function (resolve) {
+        var sc = document.createElement('script'); sc.src = '/assets/lp-fonts.js?v=1'; sc.async = true;
+        sc.onload = resolve; sc.onerror = function () { FONTS_P = null; resolve(); };
+        document.head.appendChild(sc);
+      });
+    }
+    FONTS_P.then(function () { var C2 = cfgOf() || C; key = txt(C2.fontSet); go(); });
+  }
+
   /** Bookings hire bar: render.js loads it for saved sites; this loads it in the editor
    *  preview when the layout is switched to 'hire' before the page has been re-rendered. */
   function bookingHire(C) {
@@ -819,7 +848,7 @@
     if (!S || S.layout !== 'hire' || S.on !== true) return;
     if (document.querySelector('script[src^="/assets/lp-booking-hire.js"]')) return;
     if (!document.querySelector('link[href^="/assets/lp-booking-hire.css"]')) {
-      var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = '/assets/lp-booking-hire.css?v=2';
+      var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = '/assets/lp-booking-hire.css?v=3';
       document.head.appendChild(l);
     }
     window.__lpBkhCfg = C;
@@ -827,7 +856,7 @@
     document.body.appendChild(s);
   }
 
-  var STEPS = [heroSlider, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, mapHours, ctaBanner, bookingWeek, heroBooking, bookingHire];
+  var STEPS = [heroSlider, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, mapHours, ctaBanner, bookingWeek, heroBooking, bookingHire, fontSet];
 
   function run(cfg) {
     if (cfg) LAST = cfg;

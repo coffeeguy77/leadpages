@@ -39,7 +39,14 @@ All drawn markup carries `data-lpe` hooks, so app tags, the editing outline and 
 | Reviews | `layout: 'quotes'` | Large quote text under a brand line instead of cards. |
 | FAQ | `layout: 'split'` | Heading (and "view all") on the left, questions on the right. Empty answers show the "call us on …" line. |
 | Map & Hours | `tone: 'grey'`, `mapStyle: 'grey'` | Grey band / greyscale map. |
+| Map & Hours | `layout: 'bleed'` | Edge map: the map runs to the page edge; address, stacked hours and an outline directions button on a grey panel. |
+| Reviews | `quoteStars: true` | Stars on the Quotes layout (hidden by default). |
+| Hero Slider | `bookCtaCall` | Card button text until online booking is live (default "Call to book"). |
 | CTA Banner | `width: 'full'` | Full-width band instead of a card. |
+
+## Font sets (`config.fontSet`)
+
+Branding → **Fonts** picks a set for the whole site: Classic Trade (Barlow Condensed + Barlow, the default), Archivo Bold (extra-condensed Archivo headings — the ACT Truck Hire look), Oswald Strong, Bebas Poster, Montserrat Modern, Poppins Friendly, Space Grotesk Tech, Playfair Elegant. Definitions: `assets/lp-fonts.js`. The template and app stylesheets use `var(--lp-font-head,"Barlow Condensed")` / `var(--lp-font-body,"Barlow")` (`scripts/patch-font-vars.js`), so a set only sets those variables plus heading width/weight/case; `api/render.js` `injectFontSet` adds the Google font and the variables to `<head>`, and `lp-layouts.js` switches them live in the editor preview. Per-app capitals settings still win over the set's heading case.
 
 The whole-page "Bold" design (`config.design = 'bold'`, `assets/lp-skin-bold.*`) is removed: it drew a fixed page that
 could not be edited with the apps. A site that still has `design: 'bold'` saved now renders its normal apps.
