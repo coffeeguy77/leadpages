@@ -113,7 +113,7 @@
   function siteSelect() { return doc.querySelector('#site-label select') || doc.querySelector('select.lp-sitepick-sel'); }
 
   /* ───────── Render ───────── */
-  var side, topnav, topbar, scrim, state = { menu: false, more: false };
+  var side, topnav, topbar, scrim, state = { menu: false, more: false, over: false };
 
   function itemHtml(it, i, group) {
     return '<button type="button" class="lpui-item' + (it.on ? ' on' : '') + '" data-g="' + group + '" data-i="' + i + '" title="' + esc(it.label) + '"' +
@@ -170,6 +170,7 @@
       '<button type="button" class="lpui-iconbtn lpui-burger" data-act="drawer" title="Menu">' + svg('menu') + '</button>' + logo +
       siteHtml() +
       '<nav class="lpui-tabs">' + navList + '</nav>' +
+      '<div class="lpui-over" hidden><div class="lpui-menu' + (state.over ? ' open' : '') + '"></div><button type="button" class="lpui-item" data-act="over" title="More">' + svg('more') + '<span class="lpui-item-l">More</span></button></div>' +
       (toolList ? '<div class="lpui-more"><div class="lpui-menu' + (state.more ? ' open' : '') + '">' + toolList + '</div><button type="button" class="lpui-iconbtn" data-act="more" title="Site tools">' + svg('settings') + '</button></div>' : '') +
       (acctList ? '<div class="lpui-me"><div class="lpui-menu' + (state.menu ? ' open' : '') + '">' + acctList + '</div><button type="button" class="lpui-iconbtn" data-act="me" title="Account">' + svg('user-circle') + '</button></div>' : '');
 
@@ -180,7 +181,34 @@
       }).join('') + '</div>';
 
     fillSelects();
-    try { if (global.LPLogo && global.LPLogo.upgradeAll) global.LPLogo.upgradeAll({ pulse: false }); } catch (e) {}
+    fitTabs();
+    try {
+      if (global.LPLogo && global.LPLogo.upgradeAll) {
+        var pr = global.LPLogo.upgradeAll({ pulse: false });
+        if (pr && pr.then) pr.then(fitTabs); // the logo changes width once it mounts
+      }
+    } catch (e) {}
+  }
+
+  /** Top menu: items that don't fit move into a "More" menu instead of being clipped. */
+  function fitTabs() {
+    if (!topnav || doc.documentElement.getAttribute('data-lp-nav') !== 'top') return;
+    var tabs = topnav.querySelector('.lpui-tabs'), over = topnav.querySelector('.lpui-over');
+    if (!tabs || !over || !tabs.clientWidth) return;
+    var items = Array.prototype.slice.call(tabs.querySelectorAll('.lpui-item'));
+    var moved = [];
+    items.forEach(function (b) { b.style.display = ''; });
+    over.hidden = true;
+    for (var i = items.length - 1; i >= 0 && tabs.scrollWidth > tabs.clientWidth + 1; i--) {
+      if (items[i].classList.contains('on')) continue;
+      items[i].style.display = 'none';
+      moved.unshift(items[i]);
+      over.hidden = false;
+    }
+    var menu = over.querySelector('.lpui-menu');
+    menu.innerHTML = '';
+    moved.forEach(function (b) { var c = b.cloneNode(true); c.style.display = ''; menu.appendChild(c); });
+    if (moved.some(function (b) { return b.classList.contains('on'); })) over.querySelector('[data-act="over"]').classList.add('on');
   }
 
   function fillSelects() {
@@ -196,7 +224,7 @@
   /* ───────── Events ───────── */
   function onClick(e) {
     var t = e.target.closest('[data-act],[data-g]'); if (!t) {
-      if (state.menu || state.more) { state.menu = state.more = false; render(); }
+      if (state.menu || state.more || state.over) { state.menu = state.more = state.over = false; render(); }
       return;
     }
     var act = t.getAttribute('data-act');
@@ -207,12 +235,13 @@
       relayout(); render(); return;
     }
     if (act === 'me') { state.menu = !state.menu; state.more = false; render(); return; }
-    if (act === 'more') { state.more = !state.more; state.menu = false; render(); return; }
+    if (act === 'more') { state.more = !state.more; state.menu = state.over = false; render(); return; }
+    if (act === 'over') { state.over = !state.over; state.menu = state.more = false; render(); return; }
     if (act === 'drawer') { doc.body.classList.toggle('lpui-drawer-open'); return; }
     var g = t.getAttribute('data-g'), i = Number(t.getAttribute('data-i'));
     var it = M[g] && M[g][i];
     if (!it || !it.el) return;
-    state.menu = state.more = false;
+    state.menu = state.more = state.over = false;
     doc.body.classList.remove('lpui-drawer-open');
     it.el.click();
     schedule();
@@ -253,8 +282,11 @@
     var wrap = doc.querySelector('body > .wrap');
     if (wrap) wrap.insertBefore(topbar, wrap.firstChild); else doc.body.appendChild(topbar);
     [side, topnav, topbar, scrim].forEach(function (n) { n.addEventListener('click', onClick); n.addEventListener('change', onChange); });
+    try { if (doc.fonts && doc.fonts.ready) doc.fonts.ready.then(fitTabs); } catch (e) {}
+    var rz = null;
+    global.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(render, 120); });
     doc.addEventListener('click', function (e) {
-      if ((state.menu || state.more) && !e.target.closest('.lpui-me,.lpui-more')) { state.menu = state.more = false; render(); }
+      if ((state.menu || state.more || state.over) && !e.target.closest('.lpui-me,.lpui-more,.lpui-over')) { state.menu = state.more = state.over = false; render(); }
     });
     var mo = new MutationObserver(function (list) {
       for (var i = 0; i < list.length; i++) {

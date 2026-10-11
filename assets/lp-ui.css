@@ -416,7 +416,7 @@ html[data-lp-ui="v2"] {
 [data-lp-ui="v2"][data-lp-side-collapsed="true"] .lpui-side .lpui-side-head { justify-content: center; padding: 16px 8px 10px; }
 [data-lp-ui="v2"][data-lp-side-collapsed="true"] .lpui-side .lpui-group { margin: 6px 0; border-top: 1px solid var(--ui-border); padding-top: 6px; }
 [data-lp-ui="v2"][data-lp-side-collapsed="true"] .lpui-side .lpui-group:first-child { border-top: 0; }
-[data-lp-ui="v2"][data-lp-side-collapsed="true"] .lpui-menu { left: 8px; right: auto; width: 240px; }
+[data-lp-ui="v2"][data-lp-side-collapsed="true"] .lpui-side .lpui-menu { left: 8px; right: auto; width: 240px; }
 
 /* Page top bar (title + publish actions) — both menu styles */
 [data-lp-ui="v2"] body.lpui-shell .lpui-topbar {
@@ -447,6 +447,11 @@ html[data-lp-ui="v2"] {
 .lpui-topnav .lpui-me { flex: 0 0 auto; }
 .lpui-topnav .lpui-menu { left: auto; right: 0; bottom: auto; top: calc(100% + 8px); width: 260px; }
 .lpui-more { position: relative; flex: 0 0 auto; }
+.lpui-over { position: relative; flex: 0 0 auto; }
+.lpui-over[hidden] { display: none !important; }
+.lpui-over > .lpui-item { width: auto; min-height: 34px; padding: 0 11px; gap: 7px; }
+.lpui-over > .lpui-item .lpui-ic { width: 16px; height: 16px; }
+.lpui-over .lpui-menu { left: auto; right: 0; bottom: auto; top: calc(100% + 8px); width: 240px; max-height: 70vh; overflow-y: auto; }
 .lpui-more .lpui-menu { left: auto; right: 0; bottom: auto; top: calc(100% + 8px); width: 240px; max-height: 70vh; overflow-y: auto; }
 
 /* Phones / small tablets: the sidebar becomes a drawer */
@@ -465,7 +470,7 @@ html[data-lp-ui="v2"] {
     display: flex !important; align-items: center; gap: 10px; position: fixed; z-index: 70; inset: 0 0 auto 0; height: var(--ui-top-h); padding: 0 12px;
     background: var(--ui-panel); border-bottom: 1px solid var(--ui-border);
   }
-  [data-lp-ui="v2"] body.lpui-shell .lpui-topnav :is(.lpui-tabs, .lpui-site, .lpui-more) { display: none; }
+  [data-lp-ui="v2"] body.lpui-shell .lpui-topnav :is(.lpui-tabs, .lpui-site, .lpui-more, .lpui-over) { display: none !important; }
   [data-lp-ui="v2"] body.lpui-shell .lpui-burger { display: inline-grid; }
   [data-lp-ui="v2"] body.lpui-shell .lpui-side [data-act="collapse"] { display: none; }
   .lpui-scrim { position: fixed; inset: 0; z-index: 75; background: color-mix(in srgb, #000 35%, transparent); display: none; }
