@@ -149,8 +149,15 @@
       node.style.setProperty('--svr-size', rsz + 'px');
       grid.innerHTML = items.map(function (s) {
         var im = bgUrl(s.image);
-        var media = im ? '<span class="svr-ic svr-media"><img class="svr-img" src="' + esc(im) + '" alt="' + esc(s.title || '') + '" loading="lazy"></span>'
-          : '<span class="svr-ic">' + (icon(s.icon) || CHECK) + '</span>';
+        // Per-card size (the card's "Image + icon size" presets and % slider): Compact /
+        // Large / Hero set the base, Standard uses the section size, the % scales it.
+        var PRE = { compact: 56, large: 120, hero: 180 };
+        var base = PRE[s.mediaSize] || rsz;
+        var pct = parseInt(s.mediaScale, 10); if (isNaN(pct)) pct = 100;
+        var px = Math.round(base * Math.max(50, Math.min(250, pct)) / 100);
+        var st = px !== rsz ? ' style="--svr-size:' + px + 'px"' : '';
+        var media = im ? '<span class="svr-ic svr-media"' + st + '><img class="svr-img" src="' + esc(im) + '" alt="' + esc(s.title || '') + '" loading="lazy"></span>'
+          : '<span class="svr-ic"' + st + '>' + (icon(s.icon) || CHECK) + '</span>';
         return '<div class="svc svr">' + media +
           (txt(s.title) ? '<h3>' + esc(s.title) + '</h3>' : '') + (txt(s.body) ? '<p>' + esc(s.body) + '</p>' : '') + '</div>';
       }).join('');

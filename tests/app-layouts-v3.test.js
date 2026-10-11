@@ -112,3 +112,9 @@ test('icon row shows an uploaded image or the icon, at the chosen size; box widt
   assert.match(manage, /'svc-row-sz'/);
   assert.match(js, /M52 126 L152 66/);
 });
+
+test('icon row honours each card\'s own size presets and % slider', () => {
+  assert.match(js, /var PRE = \{ compact: 56, large: 120, hero: 180 \}/);
+  assert.match(js, /s\.mediaScale/);
+});
+
