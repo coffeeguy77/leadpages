@@ -78,6 +78,8 @@ All opt-in; nothing changes until chosen.
 
 | Logo → Logo image, Footer → Brand & logo | **Logo colour override** — paints an image logo one colour, keeping its transparency (SVG `feFlood` + `feComposite in SourceAlpha` filter), separately for the header and the footer | `logo.tint`, `sections.footer.logoTint` (`#rrggbb`) |
 
+| How It Works Steps → each step + Layout options | **Image** per step (replaces its icon, any layout), **Step image size** (48–130px), **Step image colour** (paints transparent images one colour) | `serviceProcess.steps[].image`, `stepImageSize`, `stepImageTint` |
+
 The Newsreader + Jost pairing is the closest Google Fonts match found by rendering candidates against a reference design; it is not an identification of the fonts in that design.
 
 Tests: `tests/app-layouts-v4.test.js`.

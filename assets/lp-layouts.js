@@ -16,6 +16,8 @@
  *   sections.header.btnShape = 'rect' / btnArrow = true  header button: square outline + arrow
  *   sections.navMenu.textStyle = 'caps'                  menu links in small spaced capitals
  *   logo.tint / sections.footer.logoTint = '#rrggbb'     paint an image logo one colour (keeps its transparency)
+ *   sections.serviceProcess.steps[].image                step image instead of its icon
+ *     (+ stepImageSize px, stepImageTint '#rrggbb' paints transparent images one colour)
  *   sections.services.mode = 'story'                     eyebrow, heading, text and link beside a photo
  *     (+ storyImage, storyLinkLabel, storyLinkHref, storyTone soft|tint|dark, storySide 'left')
  *   sections.serviceProcess.layout = 'journey'           heading + link left, icon steps with arrows right
@@ -181,16 +183,38 @@
   }
 
 
+
+  /* ---------- How it works: an uploaded image per step (in place of its icon) ---------- */
+  function stepImages(node, SP) {
+    clear(node, 'spi');
+    var vis = (Array.isArray(SP.steps) ? SP.steps : []).filter(function (st) {
+      return st && st.on !== false && (txt(st.title) || txt(st.text) || txt(st.icon));
+    });
+    var els = node.querySelectorAll('.sp-steps > .sp-step');
+    var px = parseInt(SP.stepImageSize, 10);
+    if (px >= 24 && px <= 240) node.style.setProperty('--sp-img-size', px + 'px'); else node.style.removeProperty('--sp-img-size');
+    var tint = hexOk(SP.stepImageTint);
+    for (var i = 0; i < els.length; i++) {
+      var u = bgUrl(vis[i] && vis[i].image);
+      els[i].classList.toggle('sp-has-img', !!u);
+      if (!u) continue;
+      var media = els[i].querySelector('.sp-media');
+      if (!media) { els[i].insertAdjacentHTML('afterbegin', '<div class="sp-media" data-lpl="spi"></div>'); media = els[i].querySelector('.sp-media'); }
+      media.insertAdjacentHTML('beforeend', '<div class="sp-img" data-lpl="spi"><img src="' + esc(u) + '" alt="' + esc((vis[i] && vis[i].title) || '') + '" loading="lazy"' + (tint ? ' class="lpl-tint-s"' : '') + '></div>');
+    }
+  }
+
   /* ---------- Logo colour override: one transparent logo, any background ---------- */
   function hexOk(v) { v = txt(v); return /^#[0-9a-fA-F]{6}$/.test(v) ? v : ''; }
   function logoTint(C) {
     var head = hexOk(C.logo && C.logo.tint), foot = hexOk(C.sections && C.sections.footer && C.sections.footer.logoTint);
+    var step = hexOk(C.sections && C.sections.serviceProcess && C.sections.serviceProcess.stepImageTint);
     var defs = document.getElementById('lpl-tint-defs');
-    if (!head && !foot && !defs) return;
+    if (!head && !foot && !step && !defs) return;
     var f = function (id, col) {
       return col ? '<filter id="' + id + '" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB"><feFlood flood-color="' + col + '"/><feComposite in2="SourceAlpha" operator="in"/></filter>' : '';
     };
-    var html = f('lpl-tint-h', head) + f('lpl-tint-f', foot);
+    var html = f('lpl-tint-h', head) + f('lpl-tint-f', foot) + f('lpl-tint-s', step);
     if (!defs) {
       defs = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
       defs.id = 'lpl-tint-defs'; defs.setAttribute('width', '0'); defs.setAttribute('height', '0'); defs.setAttribute('aria-hidden', 'true');
@@ -477,6 +501,7 @@
     ['soft', 'tint', 'dark'].forEach(function (t) { node.classList.toggle('lpl-tone-' + t, journey && SP.journeyTone === t); });
     node.classList.toggle('sp-has-side', !!img && !numbered && !journey);
     clear(node, 'sp');
+    stepImages(node, SP);
     if (journey) {
       var jh = node.querySelector('.section-head');
       if (jh && txt(co.linkLabel)) jh.insertAdjacentHTML('beforeend', '<a class="lpl-link" data-lpl="sp" data-lpe="calloutLinkLabel" ' + linkAttrs(hrefOf(co.linkHref, contactHref())) + '>' + esc(co.linkLabel) + ARROW + '</a>');
