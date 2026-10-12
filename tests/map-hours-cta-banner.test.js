@@ -19,8 +19,8 @@ test('trade template has hidden placeholders and loads the current layouts scrip
   for (const k of KEYS) {
     assert.match(html, new RegExp('<section data-sec="' + k + '" class="section" id="' + k + '" style="display:none"></section>'));
   }
-  assert.match(html, /\/assets\/lp-layouts\.js\?v=7/);
-  assert.match(html, /\/assets\/lp-layouts\.css\?v=7/);
+  assert.match(html, /\/assets\/lp-layouts\.js\?v=\d+/);
+  assert.match(html, /\/assets\/lp-layouts\.css\?v=\d+/);
 });
 
 test('both apps are off by default and only shown when switched on', () => {

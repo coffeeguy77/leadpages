@@ -9,7 +9,18 @@
  *
  * Config keys (all optional):
  *   sections.heroSlider.badges[{icon,title,text,on}]   icon row under the sub-headline
- *   sections.heroSlider.textCase = 'normal'            headline as typed (not uppercase)
+ *   sections.heroSlider.textCase = 'normal'|'lower'|'upper'  headline as typed / lowercase / capitals
+ *   sections.{heroSlider,hero,splitHero}.eyebrowCase = 'normal'|'lower'   eyebrow as typed / lowercase
+ *   sections.{heroSlider,hero,splitHero}.eyebrowPos = 'below'          eyebrow under the headline
+ *   sections.{hero,splitHero}.textCase                   same headline case options as the slider
+ *   sections.header.btnShape = 'rect' / btnArrow = true  header button: square outline + arrow
+ *   sections.navMenu.textStyle = 'caps'                  menu links in small spaced capitals
+ *   sections.services.mode = 'story'                     eyebrow, heading, text and link beside a photo
+ *     (+ storyImage, storyLinkLabel, storyLinkHref, storyTone soft|tint|dark, storySide 'left')
+ *   sections.serviceProcess.layout = 'journey'           heading + link left, icon steps with arrows right
+ *     (+ journeyTone soft|tint|dark; link = calloutLinkLabel / calloutLinkHref)
+ *   sections.featuredProjects.layout = 'cards'           photo cards: title + arrow, short text
+ *     (+ projects[].link makes the whole card a link)
  *   sections.services.mode = 'tick'                    image + title + tick cards
  *   sections.services.tickTheme = 'dark'|'light'       band colour for tick cards (default dark)
  *   sections.activityCounter.style = 'strip'           compact icon + figure strip
@@ -111,6 +122,7 @@
     var node = sec('heroSlider'); if (!node) return;
     var HS = (C.sections && C.sections.heroSlider) || {};
     node.classList.toggle('hsl-case-normal', HS.textCase === 'normal');
+    heroText(node, HS, '.hsl-h', '.hsl-eyebrow');
     clear(node, 'hb');
     var items = live(HS.badges).filter(function (b) { return txt(b.title) || txt(b.text) || txt(b.icon); });
     node.classList.toggle('hsl-has-badges', items.length > 0);
@@ -127,10 +139,83 @@
     }
   }
 
+
+  /* ---------- Hero text: headline / eyebrow case and eyebrow above or below ---------- */
+  var CASES = { normal: 1, lower: 1, upper: 1 };
+  function heroText(node, S, hSel, eSel) {
+    var hc = CASES[S.textCase] ? S.textCase : '', ec = (S.eyebrowCase === 'normal' || S.eyebrowCase === 'lower') ? S.eyebrowCase : '';
+    ['normal', 'lower', 'upper'].forEach(function (k) {
+      node.classList.toggle('lpl-hcase-' + k, hc === k);
+      node.classList.toggle('lpl-ecase-' + k, ec === k);
+    });
+    var below = S.eyebrowPos === 'below';
+    node.classList.toggle('lpl-eb-below', below);
+    var hs = node.querySelectorAll(hSel);
+    for (var i = 0; i < hs.length; i++) {
+      var h = hs[i], par = h.parentNode, e = null;
+      for (var j = 0; j < par.children.length; j++) { if (par.children[j].matches(eSel)) { e = par.children[j]; break; } }
+      if (!e) continue;
+      var after = !!(h.compareDocumentPosition(e) & 4);
+      if (below && !after) par.insertBefore(e, h.nextSibling);
+      else if (!below && after) par.insertBefore(e, h);
+    }
+  }
+  function heroBanners(C) {
+    var S = C.sections || {};
+    var h = sec('hero'); if (h) heroText(h, S.hero || {}, 'h1', '.eyebrow');
+    var sp = sec('splitHero'); if (sp) heroText(sp, S.splitHero || {}, '.sph-h', '.sph-eyebrow');
+  }
+
+  /* ---------- Header button: square outline + arrow; menu in spaced capitals ---------- */
+  function headerCta(C) {
+    var H = (C.sections && C.sections.header) || {};
+    var hc = document.getElementById('headCall');
+    if (hc) {
+      hc.classList.toggle('lpl-cta-rect', H.btnShape === 'rect');
+      clear(hc, 'hca');
+      if (H.btnArrow === true) hc.insertAdjacentHTML('beforeend', '<span class="lpl-cta-arrow" data-lpl="hca">' + ARROW + '</span>');
+    }
+    var NM = (C.sections && C.sections.navMenu) || {};
+    document.documentElement.classList.toggle('lpl-nav-caps', NM.textStyle === 'caps');
+  }
+
+  /* ---------- Project portfolio: feature cards ---------- */
+  function featuredProjects(C) {
+    var node = sec('featuredProjects'); if (!node) return;
+    var FP = (C.sections && C.sections.featuredProjects) || {};
+    var on = FP.layout === 'cards';
+    node.classList.toggle('fp-feature', on);
+    clear(node, 'fpf');
+    if (!on) return;
+    var list = (Array.isArray(FP.projects) ? FP.projects : []).filter(function (p) { return p && p.on !== false; });
+    var cards = node.querySelectorAll('.fp-grid > .fp-card');
+    for (var i = 0; i < cards.length; i++) {
+      var t = cards[i].querySelector('.fp-title');
+      if (t) t.insertAdjacentHTML('beforeend', '<span class="fpf-arrow" data-lpl="fpf">' + ARROW + '</span>');
+      var link = txt(list[i] && list[i].link);
+      if (link) cards[i].insertAdjacentHTML('beforeend', '<a class="fpf-link" data-lpl="fpf" ' + linkAttrs(hrefOf(link)) + ' aria-label="' + esc((list[i] && list[i].title) || 'Open') + '"></a>');
+    }
+  }
+
   /* ---------- Services: tick cards ---------- */
   function services(C) {
     var node = sec('services'); if (!node) return;
     var SV = (C.sections && C.sections.services) || {};
+    var story = SV.mode === 'story';
+    node.classList.toggle('svcs-story', story);
+    ['soft', 'tint', 'dark'].forEach(function (t) { node.classList.toggle('lpl-tone-' + t, story && SV.storyTone === t); });
+    node.classList.toggle('svst-left', story && SV.storySide === 'left');
+    clear(node, 'svst');
+    if (story) {
+      ['svcs-tick', 'svcs-tick-dark', 'svcs-iconrow', 'svcs-band-brand', 'svcs-band-dark', 'svcs-band-light'].forEach(function (k) { node.classList.remove(k); });
+      var head = node.querySelector('.section-head'), wrapS = node.querySelector('.wrap');
+      var lab = txt(SV.storyLinkLabel);
+      if (head && lab) head.insertAdjacentHTML('beforeend', '<a class="lpl-link" data-lpl="svst" data-lpe="storyLinkLabel" ' + linkAttrs(hrefOf(SV.storyLinkHref, contactHref())) + '>' + esc(lab) + ARROW + '</a>');
+      var first = live(C.services).filter(function (x) { return txt(x.image); })[0];
+      var pic = bgUrl(SV.storyImage) || bgUrl(first && first.image);
+      if (wrapS) wrapS.insertAdjacentHTML('beforeend', '<div class="svst-media" data-lpl="svst">' + (pic ? '<img src="' + esc(pic) + '" alt="" loading="lazy">' : '') + '</div>');
+      return;
+    }
     var on = SV.mode === 'tick';
     var row = SV.mode === 'iconrow';
     var band = ({ brand: 1, light: 1 })[SV.tickTheme] ? SV.tickTheme : 'dark';
@@ -361,9 +446,17 @@
     var co = { title: SP.calloutTitle, text: SP.calloutText, linkLabel: SP.calloutLinkLabel, linkHref: SP.calloutLinkHref, icon: SP.calloutIcon };
     var hasCo = !!(txt(co.title) || txt(co.text));
     var numbered = SP.layout === 'numbered';
+    var journey = SP.layout === 'journey';
     node.classList.toggle('sp-numbered', numbered);
-    node.classList.toggle('sp-has-side', !!img && !numbered);
+    node.classList.toggle('sp-journey', journey);
+    ['soft', 'tint', 'dark'].forEach(function (t) { node.classList.toggle('lpl-tone-' + t, journey && SP.journeyTone === t); });
+    node.classList.toggle('sp-has-side', !!img && !numbered && !journey);
     clear(node, 'sp');
+    if (journey) {
+      var jh = node.querySelector('.section-head');
+      if (jh && txt(co.linkLabel)) jh.insertAdjacentHTML('beforeend', '<a class="lpl-link" data-lpl="sp" data-lpe="calloutLinkLabel" ' + linkAttrs(hrefOf(co.linkHref, contactHref())) + '>' + esc(co.linkLabel) + ARROW + '</a>');
+      return;
+    }
     if (numbered) {
       // Callout panel under the steps; the button calls the business unless a link is set.
       if (!hasCo) return;
@@ -910,7 +1003,7 @@
     if (window.LP_FONTS) { go(); return; }
     if (!FONTS_P) {
       FONTS_P = new Promise(function (resolve) {
-        var sc = document.createElement('script'); sc.src = '/assets/lp-fonts.js?v=1'; sc.async = true;
+        var sc = document.createElement('script'); sc.src = '/assets/lp-fonts.js?v=2'; sc.async = true;
         sc.onload = resolve; sc.onerror = function () { FONTS_P = null; resolve(); };
         document.head.appendChild(sc);
       });
@@ -933,7 +1026,7 @@
     document.body.appendChild(s);
   }
 
-  var STEPS = [heroSlider, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, mapHours, ctaBanner, bookingWeek, heroBooking, bookingHire, fontSet];
+  var STEPS = [heroSlider, heroBanners, headerCta, featuredProjects, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, mapHours, ctaBanner, bookingWeek, heroBooking, bookingHire, fontSet];
 
   function run(cfg) {
     if (cfg) LAST = cfg;
