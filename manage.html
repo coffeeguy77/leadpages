@@ -9735,7 +9735,7 @@ function heroCtaCard(c){
         +orderStorefrontStyleCard(c)
         +'<div class="card" style="margin-bottom:22px;"><h2>How it works</h2>'
         +'<p class="lede">Shows the Order Engine catalogue on the live site (cart, pickup date, deposit checkout). Place it with <strong>Position</strong>. On Landing pages, add it under <strong>Apps</strong> as Shared (homepage) or Unique — same as other marketplace apps.</p>'
-        +'<p class="hint" style="margin:0 0 12px;">Direct shop URL: <code>/order-shop?slug='+esc(currentSiteSlug||'your-slug')+'</code> · Customer SMS portal: <code>/order-portal?slug='+esc(currentSiteSlug||'your-slug')+'</code></p>'
+        +'<p class="hint" style="margin:0 0 12px;">Order page on your site: <code>/order</code> (header, shop and footer \u2014 works even with the app off on the homepage; link it from <b>Menu</b> \u2192 <b>Order shop (full page)</b>) · Direct shop URL: <code>/order-shop?slug='+esc(currentSiteSlug||'your-slug')+'</code> · Customer SMS portal: <code>/order-portal?slug='+esc(currentSiteSlug||'your-slug')+'</code></p>'
         +'<div class="row" style="margin:0 0 12px;"><div class="f"><label>Customer sign-in (SMS)</label><label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:8px 0 0;"><input type="checkbox" id="os-portal-on"'+(((c.sections.orderStorefront||{}).showPortalLink!==false)?' checked':'')+'> Show “Sign in to your orders” on the storefront</label></div>'
         +'<div class="f"><label>Sign-in button label</label><input type="text" id="os-portal-label" class="tin" placeholder="Sign in to your orders" value="'+esc(((c.sections.orderStorefront||{}).portalCtaLabel)||'')+'"></div></div>'
         +'<p style="margin:0;display:flex;flex-wrap:wrap;gap:8px;">'

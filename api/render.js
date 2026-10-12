@@ -804,6 +804,28 @@ function injectOnlineQuote(html, slug, cfg) {
     : (html + block);
 }
 
+
+// ---- Built-in order page (/order, or /:site/order on the LeadPages address) ----
+const ORDER_PAGE_SLUG = 'order';
+/** A virtual landing page that shows only the Order Storefront app, or null. Turns the
+ *  app on in cfg so injectOrderStorefront mounts it. */
+function orderShopPage(cfg, page) {
+  if (String(page || '').toLowerCase() !== ORDER_PAGE_SLUG) return null;
+  const sec = cfg && cfg.sections && cfg.sections.orderStorefront;
+  if (!sec || typeof sec !== 'object') return null;
+  cfg.sections = Object.assign({}, cfg.sections, { orderStorefront: Object.assign({}, sec, { on: true }) });
+  const biz = cfg.business || cfg.businessName || '';
+  return {
+    id: '__order',
+    slug: ORDER_PAGE_SLUG,
+    status: 'published',
+    title: landingPageTitle(sec.pageTitle || 'Order online', biz),
+    meta: sec.intro || '',
+    pageApps: [{ key: 'orderStorefront', mode: 'shared' }],
+    builtIn: true
+  };
+}
+
 function injectOrderStorefront(html, slug, cfg) {
   const sec = cfg && cfg.sections && cfg.sections.orderStorefront;
   if (!sec || sec.on !== true) return html;
@@ -1376,6 +1398,13 @@ module.exports = async (req, res) => {
     if (page) {
       const _pages = Array.isArray(cfg.pages) ? cfg.pages : [];
       _pageRow = _pages.find(p => p && p.slug === page) || null;
+      // Built-in order page: the menu's "Order shop (full page)" links to /order. When the
+      // site has the Order app and no landing page of its own called "order", serve the
+      // site's header + Order Storefront + footer there (even if it's off on the homepage).
+      if (!_pageRow) {
+        const _vp = orderShopPage(cfg, page);
+        if (_vp) { _pageRow = _vp; cfg.pages = _pages.concat([_vp]); }
+      }
       if (!_pageRow) return notFound(res);
       if (_pageRow.status !== 'published' && !isPreview) return notFound(res);
     }
@@ -1495,3 +1524,4 @@ module.exports = async (req, res) => {
 // Test hooks (no behaviour change).
 module.exports._injectBookingStorefront = injectBookingStorefront;
 module.exports._injectFontSet = injectFontSet;
+module.exports._orderShopPage = orderShopPage;
