@@ -89,10 +89,22 @@ test('logo colour override: header and footer each get their own colour, off by 
   assert.match(js, /hexOk\(C\.logo && C\.logo\.tint\)/);
   assert.match(js, /C\.sections\.footer\.logoTint/);
   assert.match(js, /<feComposite in2="SourceAlpha" operator="in"\/>/);
-  assert.match(js, /if \(!head && !foot && !defs\) return;/);
+  assert.match(js, /if \(!head && !foot && !step && !defs\) return;/);
   assert.match(css, /img\.lpl-tint-h\{filter:url\(#lpl-tint-h\)/);
   assert.match(css, /img\.lpl-tint-f\{filter:url\(#lpl-tint-f\)/);
   assert.match(manage, /id="lg-tint-on"/);
   assert.match(manage, /id="ft-tint-on"/);
   assert.match(manage, /lpWireLogoTint\('ft', ens, 'logoTint'\)/);
+});
+
+test('How It Works: each step can use an uploaded image instead of its icon, with size and colour', () => {
+  assert.match(js, /function stepImages\(node, SP\)/);
+  assert.match(js, /stepImages\(node, SP\);/);
+  assert.match(js, /--sp-img-size/);
+  assert.match(js, /f\('lpl-tint-s', step\)/);
+  assert.match(css, /\.sp-step\.sp-has-img \.sp-ic\{display:none!important\}/);
+  assert.match(css, /img\.lpl-tint-s\{filter:url\(#lpl-tint-s\)/);
+  assert.match(manage, /key:'steps',addLabel:'Add step',item:\[\{k:'icon',label:'Icon',type:'icon'\},\{k:'image',type:'image'/);
+  assert.match(manage, /k:'stepImageSize'/);
+  assert.match(manage, /t:'color',k:'stepImageTint'/);
 });
