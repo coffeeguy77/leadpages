@@ -76,6 +76,8 @@ All opt-in; nothing changes until chosen.
 | Project Portfolio → Style | **Feature cards** — large photo, title + arrow, short text; optional **Card link** per project makes the card clickable | `sections.featuredProjects.layout = 'cards'`, `projects[].link` |
 | Hero Slider, Hero, Split Hero → Layout / Text options | **Headline case** (theme / as typed / all lowercase / all capitals), **Eyebrow case** (capitals / as typed / lowercase), **Eyebrow position** (above / below the headline) | `textCase`, `eyebrowCase`, `eyebrowPos: 'below'` |
 
+| Logo → Logo image, Footer → Brand & logo | **Logo colour override** — paints an image logo one colour, keeping its transparency (SVG `feFlood` + `feComposite in SourceAlpha` filter), separately for the header and the footer | `logo.tint`, `sections.footer.logoTint` (`#rrggbb`) |
+
 The Newsreader + Jost pairing is the closest Google Fonts match found by rendering candidates against a reference design; it is not an identification of the fonts in that design.
 
 Tests: `tests/app-layouts-v4.test.js`.

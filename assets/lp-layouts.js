@@ -15,6 +15,7 @@
  *   sections.{hero,splitHero}.textCase                   same headline case options as the slider
  *   sections.header.btnShape = 'rect' / btnArrow = true  header button: square outline + arrow
  *   sections.navMenu.textStyle = 'caps'                  menu links in small spaced capitals
+ *   logo.tint / sections.footer.logoTint = '#rrggbb'     paint an image logo one colour (keeps its transparency)
  *   sections.services.mode = 'story'                     eyebrow, heading, text and link beside a photo
  *     (+ storyImage, storyLinkLabel, storyLinkHref, storyTone soft|tint|dark, storySide 'left')
  *   sections.serviceProcess.layout = 'journey'           heading + link left, icon steps with arrows right
@@ -177,6 +178,30 @@
     }
     var NM = (C.sections && C.sections.navMenu) || {};
     document.documentElement.classList.toggle('lpl-nav-caps', NM.textStyle === 'caps');
+  }
+
+
+  /* ---------- Logo colour override: one transparent logo, any background ---------- */
+  function hexOk(v) { v = txt(v); return /^#[0-9a-fA-F]{6}$/.test(v) ? v : ''; }
+  function logoTint(C) {
+    var head = hexOk(C.logo && C.logo.tint), foot = hexOk(C.sections && C.sections.footer && C.sections.footer.logoTint);
+    var defs = document.getElementById('lpl-tint-defs');
+    if (!head && !foot && !defs) return;
+    var f = function (id, col) {
+      return col ? '<filter id="' + id + '" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB"><feFlood flood-color="' + col + '"/><feComposite in2="SourceAlpha" operator="in"/></filter>' : '';
+    };
+    var html = f('lpl-tint-h', head) + f('lpl-tint-f', foot);
+    if (!defs) {
+      defs = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      defs.id = 'lpl-tint-defs'; defs.setAttribute('width', '0'); defs.setAttribute('height', '0'); defs.setAttribute('aria-hidden', 'true');
+      defs.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden';
+      document.body.appendChild(defs);
+    }
+    if (defs.getAttribute('data-k') !== html) { defs.innerHTML = '<defs>' + html + '</defs>'; defs.setAttribute('data-k', html); }
+    var hi = document.querySelectorAll('header.site img.lp-logo');
+    for (var i = 0; i < hi.length; i++) hi[i].classList.toggle('lpl-tint-h', !!head);
+    var fi = document.querySelectorAll('footer img.foot-logo-img');
+    for (var j = 0; j < fi.length; j++) fi[j].classList.toggle('lpl-tint-f', !!foot);
   }
 
   /* ---------- Project portfolio: feature cards ---------- */
@@ -1026,7 +1051,7 @@
     document.body.appendChild(s);
   }
 
-  var STEPS = [heroSlider, heroBanners, headerCta, featuredProjects, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, mapHours, ctaBanner, bookingWeek, heroBooking, bookingHire, fontSet];
+  var STEPS = [heroSlider, heroBanners, headerCta, logoTint, featuredProjects, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, mapHours, ctaBanner, bookingWeek, heroBooking, bookingHire, fontSet];
 
   function run(cfg) {
     if (cfg) LAST = cfg;

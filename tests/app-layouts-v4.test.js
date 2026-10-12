@@ -45,7 +45,7 @@ test('every new option is drawn, styled and opt-in', () => {
     assert.ok(css.indexOf(cls) >= 0, cls + ' styled');
   }
   assert.match(css, /lpl-hcase-lower[^{]*\{text-transform:lowercase/);
-  assert.match(js, /STEPS = \[heroSlider, heroBanners, headerCta, featuredProjects, services,/);
+  assert.match(js, /STEPS = \[heroSlider, heroBanners, headerCta, logoTint, featuredProjects, services,/);
 });
 
 test('the editor offers each option', () => {
@@ -82,4 +82,17 @@ test('eyebrow moves below the headline and back', () => {
   assert.deepEqual(wrap.children.map((c) => c.cls), ['hsl-h', 'hsl-eyebrow']);
   win.__t(node, {}, '.hsl-h', '.hsl-eyebrow');
   assert.deepEqual(wrap.children.map((c) => c.cls), ['hsl-eyebrow', 'hsl-h']);
+});
+
+test('logo colour override: header and footer each get their own colour, off by default', () => {
+  assert.match(js, /function logoTint\(C\)/);
+  assert.match(js, /hexOk\(C\.logo && C\.logo\.tint\)/);
+  assert.match(js, /C\.sections\.footer\.logoTint/);
+  assert.match(js, /<feComposite in2="SourceAlpha" operator="in"\/>/);
+  assert.match(js, /if \(!head && !foot && !defs\) return;/);
+  assert.match(css, /img\.lpl-tint-h\{filter:url\(#lpl-tint-h\)/);
+  assert.match(css, /img\.lpl-tint-f\{filter:url\(#lpl-tint-f\)/);
+  assert.match(manage, /id="lg-tint-on"/);
+  assert.match(manage, /id="ft-tint-on"/);
+  assert.match(manage, /lpWireLogoTint\('ft', ens, 'logoTint'\)/);
 });

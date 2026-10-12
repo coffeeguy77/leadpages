@@ -619,3 +619,7 @@ section[data-sec="featuredProjects"].fp-feature .fp-desc{font-size:15px;line-hei
 section[data-sec="featuredProjects"].fp-feature :is(.fp-tag,.fp-loc,.fp-services,.fp-thumbs){display:none!important}
 .fpf-link{position:absolute;inset:0;z-index:2}
 html.lpl-nav-caps .head-nav .hn-link{padding-left:13px;padding-right:13px}
+
+/* ---------- Logo colour override (SVG filter from lp-layouts.js) ---------- */
+img.lpl-tint-h{filter:url(#lpl-tint-h)!important}
+img.lpl-tint-f{filter:url(#lpl-tint-f)!important}
