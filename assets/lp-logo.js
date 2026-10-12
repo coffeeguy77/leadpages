@@ -14,6 +14,8 @@
     'command-dark': { accent: '#2ecc8f', ink: '#eef2f7' },
     'neon-pink': { accent: '#ff4da6', ink: '#fce8f3' },
     'electric-blue': { accent: '#3b9eff', ink: '#e8f2ff' },
+    'studio-light': { accent: '#127a5a', ink: '#0f1115' },
+    'studio-dark': { accent: '#3ddc97', ink: '#f1f2f4' },
     blush: { accent: '#c45c7a', ink: '#2a1f2e' },
     blueprint: { accent: '#2563eb', ink: '#1a2a3a' }
   };
@@ -181,7 +183,7 @@
         if (lum > 175) return false;
       }
       var theme = node.getAttribute && (node.getAttribute('data-lp-site-theme') || node.getAttribute('data-theme'));
-      if (theme === 'command-dark' || theme === 'neon-pink' || theme === 'electric-blue') return true;
+      if (theme === 'command-dark' || theme === 'neon-pink' || theme === 'electric-blue' || theme === 'studio-dark') return true;
       if (node.classList) {
         if (node.classList.contains('nav') || node.classList.contains('sitenav') || node.classList.contains('sec-gum') || node.tagName === 'FOOTER') return true;
         if (node.classList.contains('pt-footer') || node.classList.contains('ch-contact') || node.classList.contains('pt-contact')) {
@@ -211,8 +213,15 @@
     return accent || null;
   }
 
+  /* New look: page brand bars become theme-coloured panels, so their logo follows the theme ink. */
+  function newLookBar(el) {
+    var de = global.document && global.document.documentElement;
+    return !!(de && de.getAttribute('data-lp-ui') === 'v2' && el && el.closest && el.closest('.topbar, .top'));
+  }
+
   function resolveInkMode(el) {
     var explicit = el.getAttribute('data-lp-logo-ink');
+    if (newLookBar(el)) return 'workspace';
     if (explicit === 'light' || explicit === 'dark' || explicit === 'custom') return explicit;
     if (isAdminWorkspace()) return 'workspace';
     if (isDarkBackground(el)) return 'light';
@@ -239,7 +248,7 @@
       var inkFromStyle = (el.style && el.style.getPropertyValue('--lp-logo-ink')) ? el.style.getPropertyValue('--lp-logo-ink').trim() : '';
       var tokens = logoTokens({
         accent: opts.accent || el.getAttribute('data-lp-logo-accent'),
-        ink: opts.ink || inkFromStyle || (inkMode === 'light' ? '#ffffff' : inkMode === 'dark' ? '#13161b' : null),
+        ink: opts.ink || (newLookBar(el) ? '' : inkFromStyle) || (inkMode === 'light' ? '#ffffff' : inkMode === 'dark' ? '#13161b' : null),
         inkMode: inkMode,
         theme: opts.theme,
         pulse: opts.pulse
@@ -267,7 +276,7 @@
         applyTokens(wrap, { accent: pAccent, ink: pInk });
       } else if (isMarketingHost()) {
         var mInkAttr = el.getAttribute('data-lp-logo-ink');
-        if (!mInkAttr || mInkAttr === 'auto' || mInkAttr === 'light') {
+        if (!newLookBar(el) && (!mInkAttr || mInkAttr === 'auto' || mInkAttr === 'light')) {
           applyTokens(wrap, { accent: tokens.accent, ink: '#ffffff' });
         }
       } else if (isAdminWorkspace()) {
@@ -308,7 +317,7 @@
       if (wrap.getAttribute('data-lp-logo-accent') || wrap.classList.contains('lp-foot-logo')) return;
       /* Never stomp explicit light/dark ink (marketplace sitenav, footers, etc.) */
       var inkAttr = wrap.getAttribute('data-lp-logo-ink');
-      if (inkAttr === 'light' || inkAttr === 'dark') {
+      if ((inkAttr === 'light' || inkAttr === 'dark') && !newLookBar(wrap)) {
         applyTokens(wrap, logoTokens({
           theme: theme,
           inkMode: inkAttr,

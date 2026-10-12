@@ -199,7 +199,8 @@
 
 [data-theme="command-dark"],
 [data-theme="neon-pink"],
-[data-theme="electric-blue"] {
+[data-theme="electric-blue"],
+[data-theme="studio-dark"] {
   color-scheme: dark;
 }
 
@@ -295,6 +296,101 @@
   --amber: var(--warning);
   --lp-logo-accent: var(--accent);
   --lp-logo-ink: #1a2a3a;
+}
+
+/* Studio themes — neutral, premium (new look) */
+[data-theme="studio-light"] {
+  --bg: #f7f7f8;
+  --bg-soft: #fbfbfc;
+  --panel: #ffffff;
+  --panel-soft: #f5f6f7;
+  --panel-raised: #ffffff;
+  --text: #0f1115;
+  --text-soft: #5a606b;
+  --muted: #8b919b;
+  --border: #e8e9ec;
+  --border-strong: #d8dade;
+  --accent: #127a5a;
+  --accent-hover: #0c5e45;
+  --accent-soft: #e7f3ee;
+  --accent-text: #ffffff;
+  --success: #127a5a;
+  --success-soft: #e7f3ee;
+  --warning: #b7791f;
+  --warning-soft: #fbf3e4;
+  --danger: #c0362c;
+  --danger-soft: #fdf0ee;
+  --focus: #127a5a;
+  --shadow: 0 1px 2px rgba(15, 17, 21, 0.04), 0 8px 24px rgba(15, 17, 21, 0.06);
+  --input-bg: #ffffff;
+  --button-bg: #127a5a;
+  --button-border: #127a5a;
+  --chart-primary: #127a5a;
+  --chart-secondary: #127a5a;
+  --chart-warning: #b7791f;
+  --chart-grid: #e8e9ec;
+  --surf2: var(--panel-soft);
+
+  --surface: var(--panel);
+  --surface-2: var(--panel-soft);
+  --ink: var(--text);
+  --ink-soft: var(--text-soft);
+  --ink-faint: var(--muted);
+  --line: var(--border);
+  --line-strong: var(--border-strong);
+  --brand: var(--accent);
+  --brand-deep: var(--accent-hover);
+  --brand-tint: var(--accent-soft);
+  --amber: var(--warning);
+  --lp-logo-accent: var(--accent);
+  --lp-logo-ink: #0f1115;
+}
+
+[data-theme="studio-dark"] {
+  --bg: #0b0c0f;
+  --bg-soft: #101216;
+  --panel: #14161b;
+  --panel-soft: #1a1d23;
+  --panel-raised: #1e2128;
+  --text: #f1f2f4;
+  --text-soft: #a5aab4;
+  --muted: #717784;
+  --border: #23262d;
+  --border-strong: #30343c;
+  --accent: #3ddc97;
+  --accent-hover: #6fe8b3;
+  --accent-soft: rgba(61, 220, 151, 0.13);
+  --accent-text: #05140d;
+  --success: #3ddc97;
+  --success-soft: rgba(61, 220, 151, 0.12);
+  --warning: #f0b84a;
+  --warning-soft: rgba(240, 184, 74, 0.13);
+  --danger: #f2706a;
+  --danger-soft: rgba(242, 112, 106, 0.12);
+  --focus: #6fe8b3;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 30px rgba(0, 0, 0, 0.35);
+  --input-bg: #111318;
+  --button-bg: #3ddc97;
+  --button-border: #3ddc97;
+  --chart-primary: #3ddc97;
+  --chart-secondary: #3ddc97;
+  --chart-warning: #f0b84a;
+  --chart-grid: #23262d;
+  --surf2: var(--panel-soft);
+
+  --surface: var(--panel);
+  --surface-2: var(--panel-soft);
+  --ink: var(--text);
+  --ink-soft: var(--text-soft);
+  --ink-faint: var(--muted);
+  --line: var(--border);
+  --line-strong: var(--border-strong);
+  --brand: var(--accent);
+  --brand-deep: var(--accent-hover);
+  --brand-tint: var(--accent-soft);
+  --amber: var(--warning);
+  --lp-logo-accent: var(--accent);
+  --lp-logo-ink: #f1f2f4;
 }
 
 /* UI density */
@@ -622,7 +718,9 @@ html[data-lp-reduced-motion="true"] {
 [data-theme="neon-pink"],
 [data-theme="electric-blue"],
 [data-theme="blush"],
-[data-theme="blueprint"] {
+[data-theme="blueprint"],
+[data-theme="studio-light"],
+[data-theme="studio-dark"] {
   --surf: var(--panel);
   --surf2: var(--panel-soft);
   --soft: var(--text-soft);

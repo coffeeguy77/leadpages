@@ -1,0 +1,478 @@
+/**
+ * LeadPages back office — "New look" UI kit (opt-in).
+ *
+ * Every rule is scoped to html[data-lp-ui="v2"] (set by lp-workspace-appearance.js from the
+ * user's Appearance choice), so pages look exactly as before until the new look is switched on.
+ *
+ * One rule set for all admin pages. Colours come only from the workspace theme tokens in
+ * lp-themes.css (--bg, --panel, --text, --accent, …), so changing the theme (light or dark)
+ * repaints everything. Pages that don't load lp-themes.css fall back to the light values.
+ */
+
+/* ───────────────────────── Tokens ───────────────────────── */
+/* html[…] outranks a page's own :root block, so the theme wins over hard-coded palettes. */
+html[data-lp-ui="v2"] {
+  --ui-font: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --ui-bg: var(--bg, #f6f7f8);
+  --ui-bg-2: var(--bg-soft, #fafafa);
+  --ui-panel: var(--panel, #ffffff);
+  --ui-panel-2: var(--panel-soft, #f8f8f9);
+  --ui-raised: var(--panel-raised, #ffffff);
+  --ui-text: var(--text, #14171c);
+  --ui-text-2: var(--text-soft, #5b6370);
+  --ui-muted: var(--muted, #8b93a0);
+  --ui-border: var(--border, #e6e7ea);
+  --ui-border-2: var(--border-strong, #d5d8de);
+  --ui-input: var(--input-bg, #ffffff);
+  --ui-accent: var(--accent, #1f7a63);
+  --ui-accent-2: var(--accent-hover, #155c4a);
+  --ui-accent-soft: var(--accent-soft, #eaf3ef);
+  --ui-on-accent: var(--accent-text, #ffffff);
+  --ui-danger: var(--danger, #b42318);
+  --ui-danger-soft: var(--danger-soft, #fdf3f1);
+  --ui-warning: var(--warning, #b9852b);
+  --ui-warning-soft: var(--warning-soft, #f6efe0);
+  --ui-success: var(--success, #1f7a63);
+  --ui-success-soft: var(--success-soft, #eaf3ef);
+  --ui-hover: color-mix(in srgb, var(--ui-text) 5%, transparent);
+  --ui-active: color-mix(in srgb, var(--ui-accent) 12%, transparent);
+  --ui-ring: 0 0 0 3px color-mix(in srgb, var(--ui-accent) 26%, transparent);
+
+  --ui-r-sm: 7px;
+  --ui-r: 9px;
+  --ui-r-lg: 14px;
+  --ui-shadow-sm: 0 1px 2px color-mix(in srgb, #000 6%, transparent);
+  --ui-shadow: 0 1px 2px color-mix(in srgb, #000 5%, transparent), 0 6px 20px -8px color-mix(in srgb, #000 12%, transparent);
+  --ui-shadow-lg: 0 12px 40px -12px color-mix(in srgb, #000 28%, transparent);
+
+  --ui-h: 36px;
+  --ui-h-sm: 30px;
+  --ui-fs: 14px;
+  --ui-fs-sm: 13px;
+  --ui-fs-xs: 12px;
+
+  --ui-side-w: 248px;
+  --ui-side-w-collapsed: 68px;
+  --ui-top-h: 56px;
+
+  /* Older pages read these names — keep them on the same tokens. */
+  --font-ui: var(--ui-font);
+  --font-display: var(--ui-font);
+  --radius: var(--ui-r-lg);
+  --radius-sm: var(--ui-r);
+
+  /* Page palettes: older admin pages hard-code their own colour names in :root.
+     Point them all at the theme so one choice in Appearance repaints every page. */
+  --disp: var(--ui-font);
+  --body: var(--ui-font);
+  --paper: var(--ui-bg);
+  --shell: var(--ui-panel-2);
+  --surf: var(--ui-panel);
+  --surf2: var(--ui-panel-2);
+  --surface: var(--ui-panel);
+  --surface-2: var(--ui-panel-2);
+  --ink: var(--ui-text);
+  --ink-soft: var(--ui-text-2);
+  --ink-faint: var(--ui-muted);
+  --mut: var(--ui-text-2);
+  --soft: var(--ui-text-2);
+  --faint: var(--ui-muted);
+  --line: var(--ui-border);
+  --line-strong: var(--ui-border-2);
+  --brand: var(--ui-accent);
+  --brand-d: var(--ui-accent-2);
+  --brand-deep: var(--ui-accent-2);
+  --brand-t: var(--ui-accent-soft);
+  --brand-tint: var(--ui-accent-soft);
+  --rose: var(--ui-accent);
+  --rose-d: var(--ui-accent-2);
+  --gum: var(--ui-accent);
+  --ok: var(--ui-success);
+  --ok-bg: var(--ui-success-soft);
+  --bad: var(--ui-danger);
+  --shadow: var(--ui-shadow);
+}
+
+/* ───────────────────────── Base ───────────────────────── */
+[data-lp-ui="v2"],
+[data-lp-ui="v2"] body {
+  background: var(--ui-bg) !important;
+  color: var(--ui-text);
+}
+[data-lp-ui="v2"] body {
+  font-family: var(--ui-font) !important;
+  font-size: var(--ui-fs);
+  line-height: 1.5;
+  letter-spacing: -0.006em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "cv11", "ss01", "ss03";
+}
+[data-lp-ui="v2"] ::selection { background: var(--ui-active); }
+[data-lp-ui="v2"] :focus-visible { outline: none; box-shadow: var(--ui-ring) !important; }
+[data-lp-ui="v2"] a { color: var(--ui-accent); }
+[data-lp-ui="v2"] hr { border: 0; border-top: 1px solid var(--ui-border); }
+
+/* Headings: one sans family, tight and confident */
+[data-lp-ui="v2"] h1,
+[data-lp-ui="v2"] h2,
+[data-lp-ui="v2"] h3,
+[data-lp-ui="v2"] h4 {
+  font-family: var(--ui-font) !important;
+  color: var(--ui-text);
+  letter-spacing: -0.018em;
+}
+[data-lp-ui="v2"] h1 { font-size: 24px !important; font-weight: 650 !important; line-height: 1.2; }
+[data-lp-ui="v2"] h2 { font-size: 17px; font-weight: 620; line-height: 1.3; }
+[data-lp-ui="v2"] h3 { font-size: 15px; font-weight: 600; }
+[data-lp-ui="v2"] .eyebrow {
+  font-size: 11px !important; font-weight: 600 !important; letter-spacing: 0.08em !important;
+  color: var(--ui-muted) !important; text-transform: uppercase;
+}
+[data-lp-ui="v2"] .sub,
+[data-lp-ui="v2"] .lede,
+[data-lp-ui="v2"] .hint,
+[data-lp-ui="v2"] .muted { color: var(--ui-text-2) !important; }
+[data-lp-ui="v2"] .lede { font-size: var(--ui-fs-sm); }
+[data-lp-ui="v2"] .hint { font-size: var(--ui-fs-xs); }
+
+/* ───────────────────────── Buttons ───────────────────────── */
+[data-lp-ui="v2"] :is(.btn, .lpl-btn-outline, .lpb-btn) {
+  -webkit-appearance: none; appearance: none;
+  display: inline-flex !important; align-items: center; justify-content: center; gap: 6px;
+  min-height: var(--ui-h); height: auto;
+  padding: 0 14px !important;
+  border-radius: var(--ui-r) !important;
+  border: 1px solid var(--ui-accent);
+  background: var(--ui-accent);
+  color: var(--ui-on-accent);
+  font: 550 var(--ui-fs-sm)/1.2 var(--ui-font) !important;
+  letter-spacing: -0.005em !important;
+  text-transform: none !important;
+  text-decoration: none !important;
+  white-space: nowrap;
+  box-shadow: var(--ui-shadow-sm);
+  cursor: pointer;
+  transition: background-color .15s, border-color .15s, color .15s, box-shadow .15s, transform .05s;
+}
+[data-lp-ui="v2"] :is(.btn, .lpb-btn):hover { background: var(--ui-accent-2); border-color: var(--ui-accent-2); }
+[data-lp-ui="v2"] :is(.btn, .lpl-btn-outline):active { transform: translateY(1px); }
+[data-lp-ui="v2"] :is(.btn, .lpl-btn-outline):disabled,
+[data-lp-ui="v2"] .btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; transform: none; }
+
+/* Secondary: quiet surface button (ghost / outline / secondary) */
+[data-lp-ui="v2"] :is(.btn.ghost, .btn.outline, .btn.secondary, .btn.lpl-btn-outline, .lpl-btn-outline, .btn.btn-ghost) {
+  background: var(--ui-panel);
+  border-color: var(--ui-border-2);
+  color: var(--ui-text);
+}
+[data-lp-ui="v2"] :is(.btn.ghost, .btn.outline, .btn.secondary, .lpl-btn-outline, .btn.btn-ghost):hover {
+  background: var(--ui-panel-2);
+  border-color: var(--ui-border-2);
+  color: var(--ui-text);
+}
+/* Primary aliases */
+[data-lp-ui="v2"] :is(.btn.solid, .btn.primary) { background: var(--ui-accent); border-color: var(--ui-accent); color: var(--ui-on-accent); }
+[data-lp-ui="v2"] :is(.btn.solid, .btn.primary):hover { background: var(--ui-accent-2); border-color: var(--ui-accent-2); }
+/* Danger */
+[data-lp-ui="v2"] .btn.danger { background: var(--ui-panel); border-color: color-mix(in srgb, var(--ui-danger) 35%, var(--ui-border-2)); color: var(--ui-danger); }
+[data-lp-ui="v2"] .btn.danger:hover { background: var(--ui-danger-soft); border-color: var(--ui-danger); color: var(--ui-danger); }
+/* Small */
+[data-lp-ui="v2"] :is(.btn.sm, .btn.small, .btn-sm) {
+  min-height: var(--ui-h-sm); padding: 0 11px !important; font-size: var(--ui-fs-xs) !important; border-radius: var(--ui-r-sm) !important;
+}
+/* Plain text buttons / links that pretend to be buttons */
+[data-lp-ui="v2"] .btn.link,
+[data-lp-ui="v2"] .btn.text { background: transparent; border-color: transparent; box-shadow: none; color: var(--ui-accent); }
+
+/* ───────────────────────── Form controls ───────────────────────── */
+[data-lp-ui="v2"] :is(
+  input[type="text"], input[type="email"], input[type="number"], input[type="search"], input[type="tel"],
+  input[type="url"], input[type="password"], input[type="date"], input[type="time"], input[type="datetime-local"],
+  input[type="month"], input:not([type]), select, textarea
+):not(.lpui-bare) {
+  font-family: var(--ui-font) !important;
+  font-size: var(--ui-fs) !important;
+  color: var(--ui-text);
+  background-color: var(--ui-input);
+  border: 1px solid var(--ui-border-2);
+  border-radius: var(--ui-r) !important;
+  box-shadow: var(--ui-shadow-sm);
+  transition: border-color .15s, box-shadow .15s;
+}
+[data-lp-ui="v2"] :is(
+  input[type="text"], input[type="email"], input[type="number"], input[type="search"], input[type="tel"],
+  input[type="url"], input[type="password"], input[type="date"], input[type="time"], input[type="datetime-local"],
+  input[type="month"], input:not([type]), select
+):not(.lpui-bare) {
+  min-height: var(--ui-h);
+  padding-left: 11px; padding-right: 11px;
+}
+[data-lp-ui="v2"] textarea:not(.lpui-bare) { padding: 9px 11px; line-height: 1.5; }
+[data-lp-ui="v2"] :is(input, select, textarea):not(.lpui-bare)::placeholder { color: var(--ui-muted); opacity: 1; }
+[data-lp-ui="v2"] :is(input, select, textarea):not(.lpui-bare):hover { border-color: color-mix(in srgb, var(--ui-text) 22%, var(--ui-border-2)); }
+[data-lp-ui="v2"] :is(input, select, textarea):not(.lpui-bare):focus {
+  outline: none; border-color: var(--ui-accent); box-shadow: var(--ui-ring) !important;
+}
+[data-lp-ui="v2"] :is(input, select, textarea):disabled { opacity: .6; cursor: not-allowed; }
+/* Selects: one chevron, drawn from the theme colour */
+[data-lp-ui="v2"] select:not([multiple]):not([size]):not(.lpui-bare) {
+  -webkit-appearance: none; appearance: none;
+  padding-right: 32px !important;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--ui-muted) 50%),
+    linear-gradient(135deg, var(--ui-muted) 50%, transparent 50%);
+  background-position: calc(100% - 16px) 52%, calc(100% - 11px) 52%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+[data-lp-ui="v2"] input[type="checkbox"],
+[data-lp-ui="v2"] input[type="radio"],
+[data-lp-ui="v2"] input[type="range"],
+[data-lp-ui="v2"] progress { accent-color: var(--ui-accent); }
+[data-lp-ui="v2"] input[type="checkbox"],
+[data-lp-ui="v2"] input[type="radio"] { width: 16px; height: 16px; }
+[data-lp-ui="v2"] input[type="color"] {
+  border: 1px solid var(--ui-border-2) !important; border-radius: var(--ui-r-sm) !important;
+  background: var(--ui-input) !important; padding: 2px !important;
+}
+/* Field labels */
+[data-lp-ui="v2"] :is(.f, .field, .fld, .form-row) > label,
+[data-lp-ui="v2"] :is(.f, .field, .fld) label:not(.ck):not(.chk):not([style*="flex"]) {
+  font-size: var(--ui-fs-xs) !important;
+  font-weight: 550 !important;
+  color: var(--ui-text-2) !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+/* ───────────────────────── Surfaces ───────────────────────── */
+[data-lp-ui="v2"] :is(.card, .lpl-card, .panel, .box, .bk-card, .tile, .bar):not(.lpui-bare) {
+  background-color: var(--ui-panel);
+  border: 1px solid var(--ui-border) !important;
+  border-radius: var(--ui-r-lg) !important;
+  box-shadow: var(--ui-shadow-sm) !important;
+  color: var(--ui-text);
+}
+[data-lp-ui="v2"] .card > h2:first-child,
+[data-lp-ui="v2"] .card .card-head h2 { font-size: 16px !important; font-weight: 620 !important; }
+[data-lp-ui="v2"] .modal { background: color-mix(in srgb, #000 38%, transparent) !important; backdrop-filter: blur(3px); }
+[data-lp-ui="v2"] .modal .box {
+  background: var(--ui-raised) !important; color: var(--ui-text) !important;
+  border: 1px solid var(--ui-border) !important; border-radius: 16px !important; box-shadow: var(--ui-shadow-lg) !important;
+}
+[data-lp-ui="v2"] .toast {
+  background: var(--ui-text) !important; color: var(--ui-panel) !important;
+  border-radius: 10px !important; box-shadow: var(--ui-shadow-lg) !important; font: 500 13px/1.4 var(--ui-font) !important;
+}
+
+/* ───────────────────────── Tables ───────────────────────── */
+[data-lp-ui="v2"] table:not(.lpui-bare) { border-collapse: separate; border-spacing: 0; }
+[data-lp-ui="v2"] :is(table, .table) th {
+  font-size: var(--ui-fs-xs) !important; font-weight: 550 !important; color: var(--ui-text-2) !important;
+  text-transform: none !important; letter-spacing: 0 !important;
+  background: var(--ui-panel-2); border-bottom: 1px solid var(--ui-border) !important;
+}
+[data-lp-ui="v2"] :is(table, .table) td { border-bottom: 1px solid var(--ui-border); }
+[data-lp-ui="v2"] :is(table, .table) tbody tr:hover td { background: var(--ui-hover); }
+
+/* ───────────────────────── Chips, pills, segmented controls ───────────────────────── */
+[data-lp-ui="v2"] :is(.chip, .pill, .badge, .tag, .lpl-countpill, .lpd-chip, .ll-chip, .ana-pill, .ai-chip) {
+  font-family: var(--ui-font) !important; font-size: 11.5px !important; font-weight: 550 !important;
+  letter-spacing: 0 !important; text-transform: none !important;
+  border-radius: 999px !important;
+}
+[data-lp-ui="v2"] :is(.sec-modeseg, .lpl-seg, .seg, .seg2, .lpl-segbar) {
+  display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 3px !important;
+  background: var(--ui-panel-2) !important; border: 1px solid var(--ui-border) !important; border-radius: 10px !important;
+}
+[data-lp-ui="v2"] :is(.sec-modeseg, .lpl-seg, .seg, .seg2) > :is(button, a, .segb) {
+  border: 0 !important; background: transparent !important; color: var(--ui-text-2) !important;
+  min-height: 28px; padding: 0 11px !important; border-radius: 7px !important; box-shadow: none !important;
+  font: 550 12.5px/1 var(--ui-font) !important; letter-spacing: 0 !important; text-transform: none !important; cursor: pointer;
+}
+[data-lp-ui="v2"] :is(.sec-modeseg, .lpl-seg, .seg, .seg2) > :is(button, a, .segb):hover { color: var(--ui-text) !important; }
+[data-lp-ui="v2"] :is(.sec-modeseg, .lpl-seg, .seg, .seg2) > :is(button, a, .segb):is(.on, .active, [aria-pressed="true"], [aria-selected="true"]) {
+  background: var(--ui-panel) !important; color: var(--ui-accent) !important; box-shadow: var(--ui-shadow-sm), 0 0 0 1px color-mix(in srgb, var(--ui-accent) 35%, var(--ui-border)) !important;
+}
+
+/* Page editor app chips */
+[data-lp-ui="v2"] :is(.lp-sec-editonly, .lp-sec-toggle, .lp-sec-edit, .lp-lay-toggle, .lp-lay-edit) {
+  font: 550 12.5px/1 var(--ui-font) !important; letter-spacing: 0 !important; text-transform: none !important;
+}
+
+/* ───────────────────────── Standalone page headers & tabs ───────────────────────── */
+/* Older admin pages have a coloured brand bar; in the new look it is a calm panel header. */
+[data-lp-ui="v2"] :is(.topbar.lp-hub-chrome, .topbar:has(> .inner)) {
+  background: var(--ui-panel) !important;
+  color: var(--ui-text) !important;
+  border-bottom: 1px solid var(--ui-border);
+}
+[data-lp-ui="v2"] :is(.topbar.lp-hub-chrome, .topbar:has(> .inner)) :is(a, button):not(.btn) { color: var(--ui-text-2) !important; }
+[data-lp-ui="v2"] :is(.topbar.lp-hub-chrome, .topbar:has(> .inner)) :is(span, small):not(.leadpages-logo, .leadpages-logo *, .btn *) { color: var(--ui-text-2) !important; }
+[data-lp-ui="v2"] :is(.topbar.lp-hub-chrome, .topbar:has(> .inner)) :is(a, button):not(.btn):hover { color: var(--ui-text) !important; }
+/* Big coloured welcome banners become a quiet panel with an accent eyebrow. */
+[data-lp-ui="v2"] header.hero {
+  background: var(--ui-panel) !important; color: var(--ui-text) !important;
+  border-bottom: 1px solid var(--ui-border);
+}
+[data-lp-ui="v2"] header.hero .eyebrow { color: var(--ui-accent) !important; }
+[data-lp-ui="v2"] header.hero :is(.sub, p) { color: var(--ui-text-2) !important; }
+[data-lp-ui="v2"] :is(.tabs, .tabbtns) > button {
+  border-radius: var(--ui-r-sm) !important; font: 550 13px/1 var(--ui-font) !important;
+}
+[data-lp-ui="v2"] :is(.tabs, .tabbtns) > button:is(.on, .active, [aria-selected="true"]) {
+  background: var(--ui-active) !important; border-color: transparent !important; color: var(--ui-accent) !important;
+}
+
+/* ───────────────────────── Scrollbars ───────────────────────── */
+[data-lp-ui="v2"] * { scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--ui-text) 22%, transparent) transparent; }
+[data-lp-ui="v2"] ::-webkit-scrollbar { width: 10px; height: 10px; }
+[data-lp-ui="v2"] ::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--ui-text) 18%, transparent); border-radius: 10px; border: 3px solid transparent; background-clip: content-box; }
+
+/* ═════════════════════ App shell (manage.html): sidebar / top menu ═════════════════════ */
+.lpui-side, .lpui-topnav, .lpui-topbar { display: none; }
+
+[data-lp-ui="v2"] body.lpui-shell { --ui-inset: var(--ui-side-w); }
+[data-lp-ui="v2"][data-lp-side-collapsed="true"] body.lpui-shell { --ui-inset: var(--ui-side-w-collapsed); }
+[data-lp-ui="v2"][data-lp-nav="top"] body.lpui-shell { --ui-inset: 0px; }
+
+/* The old chrome the shell replaces (kept in the page — the shell clicks through to it) */
+[data-lp-ui="v2"] body.lpui-shell .adminnav,
+[data-lp-ui="v2"] body.lpui-shell #lp-cmd,
+[data-lp-ui="v2"] body.lpui-shell .wrap > .lp-chrome-hide,
+[data-lp-ui="v2"] body.lpui-shell #lp-admin-shell,
+[data-lp-ui="v2"] body.lpui-shell #lp-nav-slot,
+[data-lp-ui="v2"] body.lpui-shell #lp-cmd-slot { display: none !important; }
+
+[data-lp-ui="v2"] body.lpui-shell { padding-left: var(--ui-inset) !important; }
+[data-lp-ui="v2"][data-lp-nav="top"] body.lpui-shell { padding-top: var(--ui-top-h) !important; }
+[data-lp-ui="v2"] body.lpui-shell .wrap { padding-top: 26px !important; }
+[data-lp-ui="v2"] body.lpui-shell:not(.lp-prev-open) .wrap { max-width: 1180px; }
+
+/* Sidebar */
+[data-lp-ui="v2"][data-lp-nav="side"] body.lpui-shell .lpui-side {
+  display: flex; flex-direction: column;
+  position: fixed; z-index: 60; inset: 0 auto 0 0; width: var(--ui-inset);
+  background: var(--ui-panel); border-right: 1px solid var(--ui-border);
+  transition: width .18s ease;
+}
+.lpui-side-head { display: flex; align-items: center; gap: 8px; padding: 16px 14px 10px 16px; min-height: 58px; }
+.lpui-logo { flex: 1 1 auto; min-width: 0; display: block; color: var(--ui-text); text-decoration: none; }
+.lpui-logo .leadpages-logo { display: block; max-width: 150px; }
+.lpui-iconbtn {
+  flex: 0 0 auto; display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 8px;
+  border: 0; background: transparent; color: var(--ui-muted); cursor: pointer;
+}
+.lpui-iconbtn:hover { background: var(--ui-hover); color: var(--ui-text); }
+.lpui-ic { width: 18px; height: 18px; flex: 0 0 auto; }
+.lpui-site { padding: 4px 12px 10px; }
+.lpui-site-btn {
+  width: 100%; display: flex; align-items: center; gap: 10px; text-align: left;
+  padding: 8px 10px; border-radius: 10px; border: 1px solid var(--ui-border); background: var(--ui-panel-2);
+  color: var(--ui-text); font: 550 13px/1.25 var(--ui-font); cursor: pointer;
+}
+.lpui-site-btn:hover { border-color: var(--ui-border-2); }
+.lpui-site-av {
+  flex: 0 0 auto; width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center;
+  background: var(--ui-accent); color: var(--ui-on-accent); font: 650 12px/1 var(--ui-font);
+}
+.lpui-site-txt { flex: 1 1 auto; min-width: 0; }
+.lpui-site-txt b { display: block; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lpui-site-txt small { display: block; color: var(--ui-muted); font-size: 11.5px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lpui-site-sel { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.lpui-site-wrap { position: relative; }
+.lpui-scroll { flex: 1 1 auto; overflow-y: auto; padding: 4px 10px 12px; }
+.lpui-group { margin: 10px 0 2px; }
+.lpui-group-h { padding: 6px 10px; font: 600 10.5px/1 var(--ui-font); letter-spacing: .08em; text-transform: uppercase; color: var(--ui-muted); }
+.lpui-item {
+  width: 100%; display: flex; align-items: center; gap: 11px; padding: 0 10px; min-height: 36px;
+  border: 0; border-radius: 9px; background: transparent; color: var(--ui-text-2);
+  font: 520 13.5px/1.2 var(--ui-font); letter-spacing: -0.005em; text-align: left; text-decoration: none; cursor: pointer;
+  position: relative;
+}
+.lpui-item:hover { background: var(--ui-hover); color: var(--ui-text); }
+.lpui-item.on { background: var(--ui-active); color: var(--ui-accent); font-weight: 600; }
+.lpui-item.on .lpui-ic { color: var(--ui-accent); }
+.lpui-item .lpui-ic { color: var(--ui-muted); }
+.lpui-item:hover .lpui-ic { color: var(--ui-text); }
+.lpui-item-l { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lpui-badge { flex: 0 0 auto; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--ui-accent); color: var(--ui-on-accent); font: 600 10.5px/18px var(--ui-font); text-align: center; }
+.lpui-foot { border-top: 1px solid var(--ui-border); padding: 10px; }
+.lpui-me { position: relative; }
+.lpui-menu {
+  position: absolute; left: 8px; right: 8px; bottom: calc(100% + 6px); z-index: 5;
+  background: var(--ui-raised); border: 1px solid var(--ui-border); border-radius: 12px; box-shadow: var(--ui-shadow-lg);
+  padding: 6px; display: none;
+}
+.lpui-menu.open { display: block; }
+.lpui-menu .lpui-item { min-height: 34px; }
+.lpui-menu hr { margin: 6px 4px; }
+
+/* Collapsed sidebar: icons only, labels as tooltips */
+[data-lp-ui="v2"][data-lp-side-collapsed="true"] .lpui-side :is(.lpui-item-l, .lpui-group-h, .lpui-site-txt, .lpui-badge, .lpui-logo) { display: none; }
+[data-lp-ui="v2"][data-lp-side-collapsed="true"] .lpui-side .lpui-item { justify-content: center; padding: 0; }
+[data-lp-ui="v2"][data-lp-side-collapsed="true"] .lpui-side .lpui-site-btn { justify-content: center; padding: 6px; }
+[data-lp-ui="v2"][data-lp-side-collapsed="true"] .lpui-side .lpui-side-head { justify-content: center; padding: 16px 8px 10px; }
+[data-lp-ui="v2"][data-lp-side-collapsed="true"] .lpui-side .lpui-group { margin: 6px 0; border-top: 1px solid var(--ui-border); padding-top: 6px; }
+[data-lp-ui="v2"][data-lp-side-collapsed="true"] .lpui-side .lpui-group:first-child { border-top: 0; }
+[data-lp-ui="v2"][data-lp-side-collapsed="true"] .lpui-side .lpui-menu { left: 8px; right: auto; width: 240px; }
+
+/* Page top bar (title + publish actions) — both menu styles */
+[data-lp-ui="v2"] body.lpui-shell .lpui-topbar {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  margin: 0 0 20px; padding: 0;
+}
+.lpui-title { flex: 1 1 auto; min-width: 0; }
+.lpui-title small { display: block; font: 500 12px/1.3 var(--ui-font); color: var(--ui-muted); }
+.lpui-title b { display: block; font: 650 22px/1.2 var(--ui-font); letter-spacing: -0.02em; color: var(--ui-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lpui-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.lpui-actions .btn { min-height: 34px; }
+
+/* Top menu */
+[data-lp-ui="v2"][data-lp-nav="top"] body.lpui-shell .lpui-topnav {
+  display: flex; align-items: center; gap: 14px;
+  position: fixed; z-index: 60; inset: 0 0 auto 0; height: var(--ui-top-h); padding: 0 16px;
+  background: color-mix(in srgb, var(--ui-panel) 88%, transparent); backdrop-filter: saturate(1.4) blur(10px);
+  border-bottom: 1px solid var(--ui-border);
+}
+.lpui-topnav .lpui-logo { flex: 0 0 auto; max-width: 132px; }
+.lpui-topnav .lpui-site { padding: 0; flex: 0 0 220px; }
+.lpui-topnav .lpui-site-btn { padding: 5px 8px; }
+.lpui-topnav .lpui-site-av { width: 24px; height: 24px; }
+.lpui-tabs { flex: 1 1 auto; min-width: 0; display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; }
+.lpui-tabs::-webkit-scrollbar { display: none; }
+.lpui-tabs .lpui-item { width: auto; flex: 0 0 auto; min-height: 34px; padding: 0 11px; gap: 7px; }
+.lpui-tabs .lpui-item .lpui-ic { width: 16px; height: 16px; }
+.lpui-topnav .lpui-me { flex: 0 0 auto; }
+.lpui-topnav .lpui-menu { left: auto; right: 0; bottom: auto; top: calc(100% + 8px); width: 260px; }
+.lpui-more { position: relative; flex: 0 0 auto; }
+.lpui-over { position: relative; flex: 0 0 auto; }
+.lpui-over[hidden] { display: none !important; }
+.lpui-over > .lpui-item { width: auto; min-height: 34px; padding: 0 11px; gap: 7px; }
+.lpui-over > .lpui-item .lpui-ic { width: 16px; height: 16px; }
+.lpui-over .lpui-menu { left: auto; right: 0; bottom: auto; top: calc(100% + 8px); width: 240px; max-height: 70vh; overflow-y: auto; }
+.lpui-more .lpui-menu { left: auto; right: 0; bottom: auto; top: calc(100% + 8px); width: 240px; max-height: 70vh; overflow-y: auto; }
+
+/* Phones / small tablets: the sidebar becomes a drawer */
+.lpui-burger { display: none; }
+@media (max-width: 1023px) {
+  [data-lp-ui="v2"] body.lpui-shell { --ui-inset: 0px !important; padding-top: var(--ui-top-h) !important; }
+  [data-lp-ui="v2"] body.lpui-shell .lpui-side {
+    display: flex !important; flex-direction: column; position: fixed; z-index: 90 !important; inset: 0 auto 0 0; width: 280px !important;
+    background: var(--ui-panel); border-right: 1px solid var(--ui-border); box-shadow: var(--ui-shadow-lg);
+    transform: translateX(-102%); transition: transform .2s ease;
+  }
+  [data-lp-ui="v2"] body.lpui-shell.lpui-drawer-open .lpui-side { transform: none; }
+  [data-lp-ui="v2"] body.lpui-shell .lpui-side :is(.lpui-item-l, .lpui-group-h, .lpui-site-txt, .lpui-badge, .lpui-logo) { display: revert; }
+  [data-lp-ui="v2"] body.lpui-shell .lpui-side .lpui-item { justify-content: flex-start; padding: 0 10px; }
+  [data-lp-ui="v2"] body.lpui-shell .lpui-topnav {
+    display: flex !important; align-items: center; gap: 10px; position: fixed; z-index: 70; inset: 0 0 auto 0; height: var(--ui-top-h); padding: 0 12px;
+    background: var(--ui-panel); border-bottom: 1px solid var(--ui-border);
+  }
+  [data-lp-ui="v2"] body.lpui-shell .lpui-topnav :is(.lpui-tabs, .lpui-site, .lpui-more, .lpui-over) { display: none !important; }
+  [data-lp-ui="v2"] body.lpui-shell .lpui-burger { display: inline-grid; }
+  [data-lp-ui="v2"] body.lpui-shell .lpui-side [data-act="collapse"] { display: none; }
+  .lpui-scrim { position: fixed; inset: 0; z-index: 75; background: color-mix(in srgb, #000 35%, transparent); display: none; }
+  [data-lp-ui="v2"] body.lpui-shell.lpui-drawer-open .lpui-scrim { display: block; }
+}

@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="/assets/lp-ui-boot.js?v=1"></script>
 <title>Ops Command — LeadPages</title>
 <link rel="icon" type="image/x-icon" href="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico">
 <link rel="shortcut icon" href="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico">
@@ -117,6 +118,7 @@ body{display:flex;flex-direction:column;min-height:100%;-webkit-font-smoothing:a
 }
 .hide{display:none!important;}
 </style>
+<link rel="stylesheet" href="/assets/lp-ui.css?v=1">
 </head>
 <body>
 <div class="gate" id="gate">
@@ -197,7 +199,7 @@ body{display:flex;flex-direction:column;min-height:100%;-webkit-font-smoothing:a
     { id:'apps', title:'Apps', hint:'App registry, prices, site subscriptions & presets', path:'/apps-admin', label:'Apps' },
     { id:'partner', title:'Partner console', hint:'View partner desks as admin', path:'/partner', label:'Partner desk' }
   ];
-  var THEMES = ['classic-light','command-dark','neon-pink','electric-blue','blush','blueprint'];
+  var THEMES = ['classic-light','command-dark','neon-pink','electric-blue','blush','blueprint','studio-light','studio-dark'];
   var cur = null;
   var loaded = {};
   var $ = function(id){ return document.getElementById(id); };
@@ -217,7 +219,7 @@ body{display:flex;flex-direction:column;min-height:100%;-webkit-font-smoothing:a
     try{
       var meta = document.querySelector('meta[name="theme-color"]');
       var t = document.documentElement.dataset.theme || '';
-      var dark = (t === 'command-dark' || t === 'neon-pink' || t === 'electric-blue');
+      var dark = (t === 'command-dark' || t === 'neon-pink' || t === 'electric-blue' || t === 'studio-dark');
       if(meta) meta.setAttribute('content', dark ? '#12151a' : '#1f7a63');
     }catch(e){}
   }
