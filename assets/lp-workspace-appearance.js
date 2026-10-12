@@ -147,7 +147,7 @@
   }
 
   /** The new look stylesheet — pages may link it themselves; this loads it on any page that doesn't. */
-  var UI_CSS = '/assets/lp-ui.css?v=1';
+  var UI_CSS = '/assets/lp-ui.css?v=2';
   function ensureUiCss() {
     var d = global.document;
     if (!d || !d.head) return;
