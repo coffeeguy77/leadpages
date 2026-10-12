@@ -476,3 +476,31 @@ html[data-lp-ui="v2"] {
   .lpui-scrim { position: fixed; inset: 0; z-index: 75; background: color-mix(in srgb, #000 35%, transparent); display: none; }
   [data-lp-ui="v2"] body.lpui-shell.lpui-drawer-open .lpui-scrim { display: block; }
 }
+
+/* ───────── Live preview sits under the menus, never over them ───────── */
+/* Top menu: the menu stays on top; every preview dock starts below it. */
+[data-lp-ui="v2"][data-lp-nav="top"] body.lpui-shell .lpui-topnav { z-index: 300; }
+[data-lp-ui="v2"][data-lp-nav="top"] body.lpui-shell.lp-dock-side .lp-prev {
+  top: var(--ui-top-h) !important; height: calc(100vh - var(--ui-top-h)) !important;
+}
+[data-lp-ui="v2"][data-lp-nav="top"] body.lpui-shell.lp-dock-bottom .lp-prev {
+  max-height: calc(100vh - var(--ui-top-h)) !important;
+}
+[data-lp-ui="v2"] body.lpui-shell.lp-dock-split.lp-prev-open { box-sizing: border-box; }
+[data-lp-ui="v2"][data-lp-nav="top"] body.lpui-shell.lp-dock-full.lp-prev-open .lp-prev {
+  top: var(--ui-top-h) !important; height: calc(100% - var(--ui-top-h)) !important;
+}
+/* Side menu: full-screen preview fills the page area beside the menu. */
+[data-lp-ui="v2"][data-lp-nav="side"] body.lpui-shell.lp-dock-full.lp-prev-open .lp-prev {
+  left: var(--ui-inset) !important; width: calc(100% - var(--ui-inset)) !important;
+}
+@media (max-width: 1023px) {
+  [data-lp-ui="v2"] body.lpui-shell .lpui-topnav { z-index: 300 !important; }
+  [data-lp-ui="v2"] body.lpui-shell.lp-dock-side .lp-prev,
+  [data-lp-ui="v2"] body.lpui-shell.lp-dock-full.lp-prev-open .lp-prev {
+    top: var(--ui-top-h) !important; height: calc(100% - var(--ui-top-h)) !important;
+  }
+  [data-lp-ui="v2"][data-lp-nav="side"] body.lpui-shell.lp-dock-full.lp-prev-open .lp-prev { left: 0 !important; width: 100% !important; }
+  [data-lp-ui="v2"] body.lpui-shell .lpui-side { z-index: 320 !important; }
+  [data-lp-ui="v2"] body.lpui-shell .lpui-scrim { z-index: 310 !important; }
+}
