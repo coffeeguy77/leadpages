@@ -62,6 +62,24 @@ Icons are LeadPages icon names from `icons.js` (a short emoji typed in the edito
 - Backend pricing supports a weekday rate, a weekend rate and a public-holiday rate per vehicle; a separate Friday rate is not supported yet (the rate cards are display copy).
 - The rate cards are display copy from the editor; live prices come from Bookings.
 
+## Heritage set and editorial layouts (Oct 2026)
+
+All opt-in; nothing changes until chosen.
+
+| Where in the editor | Option | Config |
+| --- | --- | --- |
+| Branding → Fonts | **Newsreader Heritage** — Newsreader serif headings and body, Jost tracked capitals for eyebrows, menu links and buttons | `fontSet: 'heritage'` (`lp-fonts.js` set gains an optional `eyebrow` font → `--lp-font-label`) |
+| Logo → Header call-to-action | **Button shape: Rectangle** (square corners, small spaced capitals) and **Arrow after the text** | `sections.header.btnShape = 'rect'`, `btnArrow = true` |
+| Menu | **Text style: Small spaced capitals** | `sections.navMenu.textStyle = 'caps'` |
+| Services → Style | **Story** — eyebrow, heading, intro and a text link beside one photo; cards hidden. Story layout card: photo, link text/link, background (page / soft / brand tint / dark), photo side | `sections.services.mode = 'story'` + `storyImage`, `storyLinkLabel`, `storyLinkHref`, `storyTone`, `storySide` |
+| How It Works Steps → Layout | **Journey** — heading, intro and link left with a divider; icon, title and text per step in a row with arrows | `sections.serviceProcess.layout = 'journey'` + `journeyTone`; link = `calloutLinkLabel` / `calloutLinkHref` |
+| Project Portfolio → Style | **Feature cards** — large photo, title + arrow, short text; optional **Card link** per project makes the card clickable | `sections.featuredProjects.layout = 'cards'`, `projects[].link` |
+| Hero Slider, Hero, Split Hero → Layout / Text options | **Headline case** (theme / as typed / all lowercase / all capitals), **Eyebrow case** (capitals / as typed / lowercase), **Eyebrow position** (above / below the headline) | `textCase`, `eyebrowCase`, `eyebrowPos: 'below'` |
+
+The Newsreader + Jost pairing is the closest Google Fonts match found by rendering candidates against a reference design; it is not an identification of the fonts in that design.
+
+Tests: `tests/app-layouts-v4.test.js`.
+
 ## Fixes made alongside
 
 - `injectBookingStorefront` checked `html.includes('data-sec="bookingStorefront"')`, which was always true on trade pages (the FOUC-guard CSS mentions it), so the Bookings CTA was never placed. It now looks for a real `<section>` tag. No live site had Bookings switched on.
