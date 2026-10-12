@@ -10210,6 +10210,7 @@ function heroCtaCard(c){
         +'<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 8px;">Brand &amp; logo</h2><p class="lede" style="margin:0 0 12px;">Use the site logo, upload a footer-only logo (e.g. inverted for dark backgrounds), or text only. Size and placement are independent of the header logo.</p>'
         +'<div class="row"><div class="f"><label>Logo source</label><select id="ft-logomode" class="tin"><option value="site"'+(_F.logoMode!=='custom'&&_F.logoMode!=='text'?' selected':'')+'>Site logo</option><option value="custom"'+(_F.logoMode==='custom'?' selected':'')+'>Custom footer logo</option><option value="text"'+(_F.logoMode==='text'?' selected':'')+'>Text / mark only</option></select></div><div class="f"></div></div>'
         +'<div id="ft-custom-logo" style="'+(_F.logoMode==='custom'?'':'display:none;')+'margin-top:10px;"><label style="font-weight:600;font-size:13px;">Custom logo image</label>'+cwImgHTML('id="ft-logoimg" class="tin"','https://\u2026 or upload','Inverted / light logo for dark footer')+'<input type="hidden" id="ft-logoimg-pid"></div>'
+        +'<div class="f" style="margin-top:14px;"><label style="display:flex;gap:8px;align-items:center;font-weight:600;cursor:pointer;"><input type="checkbox" id="ft-tint-on"'+((/^#[0-9a-fA-F]{6}$/.test(_F.logoTint||'')?_F.logoTint:'')?' checked':'')+'> Logo colour override</label><p class="hint" style="margin:4px 0 0;">Paints the footer logo one colour (site or custom logo), separate from the header \u2014 so one transparent PNG works on a light header and a dark footer.</p><div id="ft-tint-row" style="display:'+((/^#[0-9a-fA-F]{6}$/.test(_F.logoTint||'')?_F.logoTint:'')?'flex':'none')+';gap:8px;align-items:center;margin-top:8px;max-width:360px;"><input type="color" id="ft-tint" value="'+((/^#[0-9a-fA-F]{6}$/.test(_F.logoTint||'')?_F.logoTint:'')||'#ffffff')+'" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;flex:0 0 auto;"><input type="text" id="ft-tint-tx" class="tin" value="'+((/^#[0-9a-fA-F]{6}$/.test(_F.logoTint||'')?_F.logoTint:'')||'#ffffff')+'" style="flex:1;min-width:0;"></div></div>'
         +'<div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;">'
         +'<div class="f" style="margin:0;flex:1 1 200px;"><label>Desktop height <span id="ft-logoh-v" style="font-weight:700;color:var(--accent);">'+_logoH+'px</span></label><input type="range" id="ft-logoh" min="28" max="140" step="2" value="'+_logoH+'" style="width:100%;"></div>'
         +'<div class="f" style="margin:0;flex:1 1 160px;"><label>Desktop offset X <span id="ft-logox-v">'+_lx+'px</span></label><input type="range" id="ft-logox" min="-40" max="40" step="1" value="'+_lx+'" style="width:100%;"></div>'
@@ -10264,6 +10265,7 @@ function heroCtaCard(c){
           var el=$(p[0]); if(el) el.addEventListener('change',function(){ ens()[p[1]]=el.checked; persist(); previewApply(); });
         });
         var lm=$('ft-logomode'); if(lm){ lm.addEventListener('change',function(){ ens().logoMode=lm.value; var box=$('ft-custom-logo'); if(box) box.style.display=lm.value==='custom'?'':'none'; persist(); previewApply(); }); }
+        lpWireLogoTint('ft', ens, 'logoTint');
         var limg=$('ft-logoimg'); if(limg){ limg.value=_F.logoImage||''; limg.addEventListener('input',function(){ ens().logoImage=limg.value.trim(); if(!ens().logoImage) delete ens().logoImage; persist(); previewApply(); }); }
         var lpid=$('ft-logoimg-pid'); if(lpid) lpid.value=_F.logoImage_pid||'';
         var up=document.querySelector('#ft-custom-logo .cw-up');
@@ -11232,7 +11234,8 @@ function heroCtaCard(c){
         +'</div>'
         +'<p class="hint" style="margin:8px 0 0;">Applied on the next upload. SVG files are left unchanged.</p>'
         +'</div></div>'
-        +'<div id="lg-imgprev" style="margin-top:8px;"></div></div>'
+        +'<div id="lg-imgprev" style="margin-top:8px;"></div>'
+        +'<div class="f" style="margin-top:14px;"><label style="display:flex;gap:8px;align-items:center;font-weight:600;cursor:pointer;"><input type="checkbox" id="lg-tint-on"'+((/^#[0-9a-fA-F]{6}$/.test(L0.tint||'')?L0.tint:'')?' checked':'')+'> Logo colour override</label><p class="hint" style="margin:4px 0 0;">Paints every solid part of the logo one colour \u2014 e.g. white on a dark header, black on a light one. Use a PNG with a transparent background (or an SVG); a logo on a solid backdrop turns into a solid block.</p><div id="lg-tint-row" style="display:'+((/^#[0-9a-fA-F]{6}$/.test(L0.tint||'')?L0.tint:'')?'flex':'none')+';gap:8px;align-items:center;margin-top:8px;max-width:360px;"><input type="color" id="lg-tint" value="'+((/^#[0-9a-fA-F]{6}$/.test(L0.tint||'')?L0.tint:'')||'#ffffff')+'" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;flex:0 0 auto;"><input type="text" id="lg-tint-tx" class="tin" value="'+((/^#[0-9a-fA-F]{6}$/.test(L0.tint||'')?L0.tint:'')||'#ffffff')+'" style="flex:1;min-width:0;"></div></div>'+'</div>'
         +'<div class="f" style="margin-top:14px;"><label>Logo background chip</label><select id="lg-bgmode" class="tin"><option value="transparent">Transparent</option><option value="color">Solid colour chip</option></select><div class="hint" style="margin-top:4px;">Transparent shows the logo straight on the header. A colour chip frames it \u2014 handy when the artwork has its own backdrop.</div></div>'
         +'<div id="lg-bgwrap" style="display:'+(_bgIsC?'block':'none')+';margin-top:10px;">'
           +'<div class="row"><div class="f"><label>Chip colour</label><input type="color" id="lg-bg" value="'+_bgC+'" style="width:56px;height:40px;padding:2px;border:1px solid var(--line);border-radius:8px;"></div>'
@@ -11405,8 +11408,18 @@ function heroCtaCard(c){
     if(gdf) gdf.addEventListener('click',function(){ H().glowColor=''; if(gtx)gtx.value=''; persist(); previewApply(); });
     try{ lpSyncBtnLinkVis('hd'); }catch(_e){}
   }
+  /** Logo colour override: checkbox + colour → obj[key] = '#rrggbb' (deleted when off). */
+  function lpWireLogoTint(pfx, obj, key){
+    var on=$(pfx+'-tint-on'), row=$(pfx+'-tint-row'), clr=$(pfx+'-tint'), tx=$(pfx+'-tint-tx');
+    if(!on||!clr||!tx) return;
+    function setV(v){ v=String(v||'').trim(); if(v&&v[0]!=='#') v='#'+v; if(!/^#[0-9a-fA-F]{6}$/.test(v)) return; obj()[key]=v.toLowerCase(); clr.value=v; tx.value=v; persist(); previewApply(); }
+    on.addEventListener('change',function(){ if(row) row.style.display=on.checked?'flex':'none'; if(on.checked) setV(clr.value); else { delete obj()[key]; persist(); previewApply(); } });
+    clr.addEventListener('input',function(){ setV(clr.value); });
+    tx.addEventListener('input',function(){ setV(tx.value); });
+  }
   function wireLogoSize(c){
     var L=c.logo||(c.logo={});
+    lpWireLogoTint('lg', function(){ return c.logo||(c.logo={}); }, 'tint');
     var hd=$('lg-hd'); if(hd) hd.addEventListener('input',function(){ var v=parseInt(hd.value,10)||44; L.heightPx=v; delete L.scale; var e=$('lg-hd-val'); if(e)e.textContent=v+'px'; persist(); previewApply(); });
     var hm=$('lg-hm'); if(hm) hm.addEventListener('input',function(){ var v=parseInt(hm.value,10); if(isNaN(v))v=32; v=Math.max(20,Math.min(200,v)); L.heightPxM=v; var e=$('lg-hm-val'); if(e)e.textContent=v+'px'; persist(); previewApply(); });
     var crop=$('lg-crop'), cropv=$('lg-crop-val'); if(crop){ crop.addEventListener('input',function(){ var v=parseInt(crop.value,10); if(isNaN(v))v=0; v=Math.max(0,Math.min(50,v)); L.cropY=v; if(cropv) cropv.textContent=v+'%'; persist(); previewApply(); }); }
