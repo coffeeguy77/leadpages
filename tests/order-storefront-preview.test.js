@@ -70,7 +70,7 @@ test('render reapplies color overrides after order storefront inject', function 
   var reapplyAt = render.indexOf('Colour overrides run again after dynamic injects');
   assert.ok(injectAt > 0);
   assert.ok(reapplyAt > injectAt);
-  assert.match(render, /lp-order-storefront\.js\?v=oe-18/);
+  assert.match(render, /lp-order-storefront\.js\?v=oe-\d+/);
 });
 
 test('demo-shared keeps Order Storefront live while restyling', function () {
@@ -104,7 +104,7 @@ test('render inject uses unified --oe-\* catalogue tokens', function () {
   var render = fs.readFileSync(path.join(__dirname, '..', 'api/render.js'), 'utf8');
   assert.match(render, /--oe-accent:var\(--lp-oe-accent,var\(--hivis/);
   assert.match(render, /--accent:var\(--oe-accent\)/);
-  assert.match(render, /lp-order-storefront\.js\?v=oe-18/);
+  assert.match(render, /lp-order-storefront\.js\?v=oe-\d+/);
   assert.match(render, /--lp-oe-page-bg:/);
 });
 

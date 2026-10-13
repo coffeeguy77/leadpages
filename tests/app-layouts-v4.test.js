@@ -45,7 +45,7 @@ test('every new option is drawn, styled and opt-in', () => {
     assert.ok(css.indexOf(cls) >= 0, cls + ' styled');
   }
   assert.match(css, /lpl-hcase-lower[^{]*\{text-transform:lowercase/);
-  assert.match(js, /STEPS = \[heroSlider, heroBanners, headerCta, logoTint, featuredProjects, services,/);
+  assert.match(js, /STEPS = \[heroSlider, heroBanners, headerCta, minimalFooter, logoTint, buttonShapes, orderLayout, featuredProjects, services,/);
 });
 
 test('the editor offers each option', () => {

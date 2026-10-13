@@ -5773,9 +5773,11 @@ function heroCtaCard(c){
   /* ===== Extra app layouts (assets/lp-layouts.js, assets/lp-booking-hire.js) =====
      One "Layout options" card per app. Every option is off until chosen, so existing sites are unchanged. */
   var LP_CTA_BANNER_ACTIONS=[['quote','Go to the quote form'],['booking','Open the booking calendar'],['call','Call the phone number'],['section','Scroll to an app on this page'],['link','Go to a link or page']];
+  var LPL_BTN_SHAPES=[['','Site default (Branding)'],['square','Square'],['rounded','Rounded'],['pill','Pill']];
+  var LPL_BTN_ROW={t:'sel',k:'btnShape',label:'Button corners',opts:LPL_BTN_SHAPES};
   var LPL_LAYOUT_SPECS={
-    heroSlider:{lede:'Optional icon badges under the sub-headline, and whether the headline keeps the theme’s capitals. <b>Booking card</b> shows the first slide as a headline and photo beside a calendar: each day shows its price (from the Bookings rate cards) and, with Bookings hire set up, what\u2019s free \u2014 the button opens the booking.',rows:[
-      {t:'sel',k:'layout',label:'Layout',opts:[['','Image slider (default)'],['booking','Booking card \u2014 headline, photo, calendar']]},
+    heroSlider:{lede:'Optional icon badges under the sub-headline, and whether the headline keeps the theme’s capitals. <b>Booking card</b> shows the first slide as a headline and photo beside a calendar: each day shows its price (from the Bookings rate cards) and, with Bookings hire set up, what\u2019s free \u2014 the button opens the booking.',rows:[LPL_BTN_ROW,
+      {t:'sel',k:'layout',label:'Layout',opts:[['','Image slider (default)'],['booking','Booking card \u2014 headline, photo, calendar'],['half','Half-height banner \u2014 eyebrow + title only']]},
       {t:'sel',k:'textCase',label:'Headline case',opts:[['','Theme default'],['normal','As typed (no forced capitals)'],['lower','all lowercase'],['upper','ALL CAPITALS']]},
       {t:'sel',k:'eyebrowCase',label:'Eyebrow case',opts:[['','Capitals (default)'],['normal','As typed'],['lower','all lowercase']]},
       {t:'sel',k:'eyebrowPos',label:'Eyebrow position',opts:[['','Above the headline'],['below','Below the headline']]},
@@ -5787,10 +5789,10 @@ function heroCtaCard(c){
       {t:'text',k:'imageCaption',label:'Photo caption',ph:'e.g. Our 4.5T Isuzu NNR',when:'layout=booking'}],
       lists:[['heroSliderBadges','Hero badges','Icon + title + small text, shown in a row on every slide. Leave empty for none.']]},
     activityCounter:{rows:[{t:'sel',k:'style',label:'Style',opts:[['','Big counters'],['strip','Compact spec strip (icon, figure, label)']]}]},
-    hero:{title:'Text options',lede:'Headline and eyebrow case, and whether the eyebrow (small label) sits above or below the headline.',rows:[{t:'sel',k:'textCase',label:'Headline case',opts:[['','Theme default'],['normal','As typed (no forced capitals)'],['lower','all lowercase'],['upper','ALL CAPITALS']]},
+    hero:{title:'Text options',lede:'Headline and eyebrow case, and whether the eyebrow (small label) sits above or below the headline.',rows:[LPL_BTN_ROW,{t:'sel',k:'textCase',label:'Headline case',opts:[['','Theme default'],['normal','As typed (no forced capitals)'],['lower','all lowercase'],['upper','ALL CAPITALS']]},
       {t:'sel',k:'eyebrowCase',label:'Eyebrow case',opts:[['','Capitals (default)'],['normal','As typed'],['lower','all lowercase']]},
       {t:'sel',k:'eyebrowPos',label:'Eyebrow position',opts:[['','Above the headline'],['below','Below the headline']]}]},
-    splitHero:{title:'Text options',lede:'Headline and eyebrow case, and whether the eyebrow (small label) sits above or below the headline.',rows:[{t:'sel',k:'textCase',label:'Headline case',opts:[['','Theme default'],['normal','As typed (no forced capitals)'],['lower','all lowercase'],['upper','ALL CAPITALS']]},
+    splitHero:{title:'Text options',lede:'Headline and eyebrow case, and whether the eyebrow (small label) sits above or below the headline.',rows:[LPL_BTN_ROW,{t:'sel',k:'textCase',label:'Headline case',opts:[['','Theme default'],['normal','As typed (no forced capitals)'],['lower','all lowercase'],['upper','ALL CAPITALS']]},
       {t:'sel',k:'eyebrowCase',label:'Eyebrow case',opts:[['','Capitals (default)'],['normal','As typed'],['lower','all lowercase']]},
       {t:'sel',k:'eyebrowPos',label:'Eyebrow position',opts:[['','Above the headline'],['below','Below the headline']]}]},
     services:{title:'Story layout',when:'mode=story',lede:'Uses the eyebrow, heading and intro above, with a text link under them and one photo beside them. The service cards are hidden in this style. Leave the photo empty to use the first service\u2019s image.',rows:[
@@ -5799,7 +5801,7 @@ function heroCtaCard(c){
       {t:'text',k:'storyLinkHref',label:'Link',ph:'#featuredProjects, /page or https://\u2026'},
       {t:'sel',k:'storyTone',label:'Background',opts:[['','Page background'],['soft','Soft (theme light colour)'],['tint','Brand tint'],['dark','Dark']]},
       {t:'sel',k:'storySide',label:'Photo side',opts:[['','Photo on the right'],['left','Photo on the left']]}]},
-    textBox:{lede:'Icon feature list and an outline button under the text. <b>Brand band</b>: a coloured band; a feature written as \u201cLabel: value\u201d (e.g. \u201cPayload: 850kg\u201d) shows as a spec row, others as ticks; add dimensions to draw a box instead of the photo.',rows:[
+    textBox:{lede:'Icon feature list and an outline button under the text. <b>Brand band</b>: a coloured band; a feature written as \u201cLabel: value\u201d (e.g. \u201cPayload: 850kg\u201d) shows as a spec row, others as ticks; add dimensions to draw a box instead of the photo.',rows:[LPL_BTN_ROW,
       {t:'sel',k:'layout',label:'Layout',opts:[['','Standard'],['band','Brand band \u2014 specs, ticks, photo or box drawing']]},
       {t:'sel',k:'bandTone',label:'Band colour',opts:[['','Brand colour'],['dark','Dark']],when:'layout=band'},
       {t:'text',k:'dimLength',label:'Box length',ph:'e.g. 4.2m',when:'layout=band'},
@@ -5809,7 +5811,7 @@ function heroCtaCard(c){
       {t:'sel',k:'eyebrowStyle',label:'Eyebrow style',opts:[['','Plain text'],['tag','Solid tag']]},
       {t:'text',k:'ctaLabel',label:'Button label',ph:'e.g. View details'},{t:'text',k:'ctaHref',label:'Button link',ph:'#services, /page or https://…'}],
       lists:[['textBoxFeatures','Feature list','Two-column icon list under the text. Leave empty for none.']]},
-    reviews:{rows:[
+    reviews:{rows:[LPL_BTN_ROW,
       {t:'sel',k:'layout',label:'Layout',opts:[['','Cards (default)'],['quotes','Quotes \u2014 large text under a brand line']]},
       {t:'chk',k:'quoteStars',label:'Show stars on quotes',def:false,when:'layout=quotes'},
       {t:'sel',k:'theme',label:'Band',opts:[['','Light (default)'],['dark','Dark band, white cards']]},
@@ -5817,16 +5819,16 @@ function heroCtaCard(c){
       {t:'image',k:'bgImage',label:'Dark band photo (optional)'},
       {t:'text',k:'summaryRating',label:'Rating',ph:'4.9'},{t:'text',k:'summaryText',label:'Rating text',ph:'from 100+ reviews'},
       {t:'text',k:'summaryCtaLabel',label:'“View all” button',ph:'View All Reviews'},{t:'text',k:'summaryCtaHref',label:'“View all” link',ph:'https://g.page/…'}]},
-    aboutUs:{rows:[
+    aboutUs:{rows:[LPL_BTN_ROW,
       {t:'sel',k:'layout',label:'Layout',opts:[['story','Story (default)'],['location','Location — address, hours, map, photo']]},
       {t:'ta',k:'address',label:'Address',when:'layout=location'},{t:'ta',k:'hours',label:'Opening hours',when:'layout=location'},
       {t:'text',k:'mapQuery',label:'Map search (optional)',ph:'Defaults to the address',when:'layout=location'}],
       lists:[['aboutUsFeatures','Photo points','Location layout: icon points over the photo.']]},
-    specialOffer:{rows:[
+    specialOffer:{rows:[LPL_BTN_ROW,
       {t:'sel',k:'layout',label:'Layout',opts:[['','Offer card (default)'],['banner','Photo banner']]},
       {t:'image',k:'bgImage',label:'Banner photo',when:'layout=banner'},
       {t:'text',k:'ctaHref',label:'Button link',ph:'Defaults to Bookings or the quote form'}]},
-    serviceProcess:{lede:'Optional photo beside the steps with a small card over it. <b>Numbered</b>: big step numbers in a row, with the card shown as a panel underneath (its button calls you unless a link is set). <b>Journey</b>: heading, intro and a text link (the card link label + link below) on the left; each step\u2019s icon, title and text in a row with arrows on the right. Any step can use an uploaded <b>Image</b> instead of its icon (set on the step below).',rows:[
+    serviceProcess:{lede:'Optional photo beside the steps with a small card over it. <b>Numbered</b>: big step numbers in a row, with the card shown as a panel underneath (its button calls you unless a link is set). <b>Journey</b>: heading, intro and a text link (the card link label + link below) on the left; each step\u2019s icon, title and text in a row with arrows on the right. Any step can use an uploaded <b>Image</b> instead of its icon (set on the step below).',rows:[LPL_BTN_ROW,
       {t:'sel',k:'layout',label:'Layout',opts:[['','Standard'],['numbered','Numbered \u2014 big numbers + callout panel'],['journey','Journey \u2014 heading left, icon steps with arrows right']]},
       {t:'sel',k:'journeyTone',label:'Background',opts:[['','Page background'],['soft','Soft (theme light colour)'],['tint','Brand tint'],['dark','Dark']],when:'layout=journey'},
       {t:'sel',k:'stepImageSize',label:'Step image size',opts:[['','Standard (64px)'],['48','Small (48px)'],['80','Large (80px)'],['100','Extra large (100px)'],['130','Huge (130px)']]},
@@ -5834,11 +5836,11 @@ function heroCtaCard(c){
       {t:'image',k:'sideImage',label:'Side photo'},
       {t:'text',k:'calloutTitle',label:'Card title'},{t:'ta',k:'calloutText',label:'Card text'},
       {t:'text',k:'calloutLinkLabel',label:'Card link label'},{t:'text',k:'calloutLinkHref',label:'Card link',ph:'#quote'}]},
-    faq:{rows:[
+    faq:{rows:[LPL_BTN_ROW,
       {t:'sel',k:'layout',label:'Layout',opts:[['','Standard'],['split','Split \u2014 heading left, questions right']]},
       {t:'sel',k:'columns',label:'Columns',opts:[['','One column'],['2','Two columns']]},
       {t:'text',k:'ctaLabel',label:'“View all” button',ph:'View All FAQs'},{t:'text',k:'ctaHref',label:'“View all” link',ph:'/faq'}]},
-    bookingStorefront:{lede:'Hire bar: pick-up date, time and duration with rate cards. Put it straight under the hero in Section order and it overlaps the hero edge. With Bookings hire set up (resource-hire service + vehicles) it quotes and takes bookings live; otherwise it hands the request to your quote form.',rows:[
+    bookingStorefront:{lede:'Hire bar: pick-up date, time and duration with rate cards. Put it straight under the hero in Section order and it overlaps the hero edge. With Bookings hire set up (resource-hire service + vehicles) it quotes and takes bookings live; otherwise it hands the request to your quote form.',rows:[LPL_BTN_ROW,
       {t:'sel',k:'layout',label:'Layout',opts:[['','Call-to-action (default)'],['hire','Hire bar — date, time, duration, rates'],['priceweek','Price week \u2014 each day\u2019s price from the rate cards']]},
       {t:'text',k:'weekHeading',label:'Heading',ph:'e.g. One price a day',when:'layout=priceweek'},
       {t:'text',k:'weekIntro',label:'Intro',ph:'e.g. Every hire includes 200km a day.',when:'layout=priceweek'},
@@ -5852,7 +5854,7 @@ function heroCtaCard(c){
       {t:'text',k:'closeTime',label:'Last pick-up time',ph:'17:00',when:'layout=hire'},
       {t:'sel',k:'overlapHero',label:'Under the hero',opts:[['','Overlap the hero edge'],['false','Sit below the hero']],when:'layout=hire'}],
       lists:[['bookingRates','Rate cards','Hire bar: price cards on the right. Price week: label each card by its days (\u201cMon \u2013 Thu\u201d, \u201cFriday\u201d, \u201cWeekends\u201d) to show one price per day. Leave empty to hide.'],['bookingPoints','Points','Hire bar: icon points under the form. Price week: notes under the prices.'],['bookingDurations','Durations','Hire bar: options in the duration list. Empty uses 1, 2, 3 days and 1 week.']]},
-    mapHours:{title:'Address, map & hours',lede:'Type the address, then press <b>Find on map</b> and pick the right result to pin the map. The directions button opens Google Maps.',rows:[
+    mapHours:{title:'Address, map & hours',lede:'Type the address, then press <b>Find on map</b> and pick the right result to pin the map. The directions button opens Google Maps.',rows:[LPL_BTN_ROW,
       {t:'addr',k:'address',label:'Address (as shown on the page)'},
       {t:'text',k:'ctaLabel',label:'Directions button',ph:'Get directions (empty = hidden)'},
       {t:'chk',k:'showPhone',label:'Show the phone number',def:true},
@@ -5865,7 +5867,23 @@ function heroCtaCard(c){
       {t:'text',k:'hoursTitle',label:'Hours label',ph:'Opening hours'},
       {t:'text',k:'phoneTitle',label:'Phone label',ph:'Phone'}],
       lists:[['mapHoursRows','Opening hours','One row per day or group of days. Leave empty to hide the hours.']]},
-    ctaBanner:{title:'Banner style & buttons',lede:'Leave a button\u2019s text empty to hide it. \u201cOpen the booking calendar\u201d opens the live hire calendar when Bookings is set up, otherwise it goes to the booking bar or quote form.',rows:[
+    footer:{title:'Footer layout',lede:'<b>Minimal</b>: one slim bar \u2014 your footer logo, a divider and a short line of text. On the right: the LeadPages logo (default), a button, or nothing. With a button or nothing, the LeadPages strip shows under the footer as usual.',rows:[
+      {t:'sel',k:'layout',label:'Layout',opts:[['','Standard footer'],['minimal','Minimal \u2014 logo | text']]},
+      {t:'text',k:'minimalText',label:'Text beside the logo',ph:'e.g. From farm to plate, with care.',when:'layout=minimal'},
+      {t:'sel',k:'minimalRight',label:'Right side',opts:[['','LeadPages logo'],['button','A button'],['none','Nothing']],when:'layout=minimal'},
+      {t:'text',k:'minimalBtnLabel',label:'Button text',ph:'e.g. Visit us',when:'minimalRight=button'},
+      {t:'text',k:'minimalBtnHref',label:'Button link',ph:'#mapHours, /page or https://\u2026',when:'minimalRight=button'}]},
+    orderStorefront:{title:'Shop layout & order page',lede:'<b>Editorial</b>: a clean list under each category heading, a search box, and an order summary card \u2014 no inner scrolling panels. The shop always has its own page at <code>/order</code> (link it from <b>Menu \u2192 Order shop (full page)</b>); untick <b>Show on page</b> above to keep it off the homepage. <b>Order page banner</b> puts a half-height photo banner with an eyebrow and title above the shop on that page.',rows:[
+      {t:'sel',k:'layout',label:'Shop layout',opts:[['','Classic cards'],['editorial','Editorial \u2014 clean list + order summary']]},
+      LPL_BTN_ROW,
+      {t:'text',k:'catIntro',label:'Line under each category heading',ph:'Choose your quantity and add any preparation notes.',when:'layout=editorial'},
+      {t:'text',k:'searchPlaceholder',label:'Search box hint',ph:'Search our range',when:'layout=editorial'},
+      {t:'text',k:'cartTitle',label:'Order summary title',ph:'Your order',when:'layout=editorial'},
+      {t:'chk',k:'pageBannerOn',label:'Order page banner (on /order)',def:false},
+      {t:'text',k:'pageBannerEyebrow',label:'Banner eyebrow',ph:'e.g. From farm to plate'},
+      {t:'text',k:'pageBannerTitle',label:'Banner title',ph:'e.g. Place your order'},
+      {t:'image',k:'pageBannerImage',label:'Banner photo'}]},
+    ctaBanner:{title:'Banner style & buttons',lede:'Leave a button\u2019s text empty to hide it. \u201cOpen the booking calendar\u201d opens the live hire calendar when Bookings is set up, otherwise it goes to the booking bar or quote form.',rows:[LPL_BTN_ROW,
       {t:'sel',k:'tone',label:'Style',opts:[['','Brand colour (default)'],['dark','Dark'],['light','Light card'],['photo','Photo background']]},
       {t:'sel',k:'align',label:'Layout',opts:[['','Text left, buttons right'],['center','Centred']]},
       {t:'sel',k:'width',label:'Width',opts:[['','Card'],['full','Full-width band']]},
@@ -5963,6 +5981,23 @@ function heroCtaCard(c){
       }).catch(function(){ res.style.display=''; res.innerHTML='<div class="hint" style="margin:0;padding:10px 12px;">Address search is unavailable right now \u2014 the map will search for the address text.</div>'; })
       .then(function(){ btn.disabled=false; btn.textContent='Find on map'; });
     });
+  }
+  /** Branding → Buttons: corner style for every button on the site (config.buttonShape). Each app
+   *  can override it in its Layout options (sections.<app>.btnShape). Applied by assets/lp-layouts.js. */
+  function lpMountButtonShapeCard(body,c){
+    if(!body) return;
+    var cur=c.buttonShape||'';
+    var opts=[['','Theme default (as designed)'],['square','Square'],['rounded','Rounded'],['pill','Pill']];
+    function tile(o){ var on=cur===o[0]; var r=o[0]==='square'?'0':(o[0]==='pill'?'999px':(o[0]==='rounded'?'10px':'6px'));
+      return '<button type="button" class="lp-bs-tile" data-bs="'+o[0]+'" aria-pressed="'+(on?'true':'false')+'" style="cursor:pointer;padding:14px;border-radius:12px;background:var(--panel,#fff);color:var(--ink);border:'+(on?'2px solid var(--accent,#1f7a63)':'1px solid var(--line)')+';display:flex;flex-direction:column;gap:10px;align-items:flex-start;">'
+        +'<span style="display:inline-block;padding:9px 16px;background:var(--ink,#1a1a1a);color:var(--panel,#fff);font-size:12.5px;font-weight:600;border-radius:'+r+';">Book now</span>'
+        +'<span style="font-size:12px;font-weight:700;">'+(on?'\u2713 ':'')+o[1]+'</span></button>'; }
+    var h='<div class="card lp-bs-card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Buttons</h2><p class="lede" style="margin:0 0 12px;">Corner style for every button on the site. Any app can choose its own in its <b>Layout options \u2192 Button corners</b>; the header button has its own setting in <b>Logo</b>.</p>'
+      +'<div id="lp-bs-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;">'+opts.map(tile).join('')+'</div></div>';
+    var fc=body.querySelector('.lp-fonts-card'); if(fc) fc.insertAdjacentHTML('afterend',h); else { var first=body.querySelector('.card'); if(first) first.insertAdjacentHTML('afterend',h); else body.insertAdjacentHTML('afterbegin',h); }
+    var grid=$('lp-bs-grid');
+    grid.addEventListener('click',function(e){ var t=e.target.closest&&e.target.closest('[data-bs]'); if(!t) return; cur=t.getAttribute('data-bs');
+      if(cur) c.buttonShape=cur; else delete c.buttonShape; persist(); previewApply(); grid.innerHTML=opts.map(tile).join(''); });
   }
   /** Branding → Fonts: pick a font set for the whole site (config.fontSet, assets/lp-fonts.js). */
   function lpMountFontCard(body,c){
@@ -11198,6 +11233,7 @@ function heroCtaCard(c){
         +'<p class="hint" id="co-bake-msg" style="margin:8px 0 0;"></p></div>';
       wireTradeColours(c); renderTradePresets(c); renderColourLibrary(c); wireColorOverrides(c); wireButtonLook(c);
       try{ lpMountFontCard(body,c); }catch(_fc){ try{ console.warn('[fonts]',_fc); }catch(_x){} }
+      try{ lpMountButtonShapeCard(body,c); }catch(_bs){ try{ console.warn('[buttons]',_bs); }catch(_x){} }
     } else if(sub==='logo'){
       var L0=c.logo||{};
       var _hd=Math.max(24,Math.min(320,(L0.heightPx?L0.heightPx:Math.round(40*(L0.scale||1)))||44));
@@ -11372,7 +11408,7 @@ function heroCtaCard(c){
     h+='<div class="f" id="hd-cta-row"'+(showPhone?'':' style="display:none"')+'><label>Small label above the phone</label><input type="text" id="hd-cta" class="tin" value="'+esc(String(cta))+'" placeholder="e.g. Speak to a modification specialist"></div>';
     h+='<div style="margin:14px 0 4px;padding-top:12px;border-top:1px solid var(--line);">';
     h+=lpBtnLookFieldsHtml('hd-btn', look, {title:'Button look'});
-    h+='<div style="display:flex;flex-wrap:wrap;gap:12px 16px;align-items:flex-end;margin-top:10px;"><div class="f" style="margin:0;flex:1 1 calc(50% - 8px);min-width:200px;"><label>Button shape</label><select id="hd-shape" class="tin"><option value=""'+(H.btnShape!=='rect'?' selected':'')+'>Theme default</option><option value="rect"'+(H.btnShape==='rect'?' selected':'')+'>Rectangle \u2014 square corners, small spaced capitals</option></select></div>'
+    h+='<div style="display:flex;flex-wrap:wrap;gap:12px 16px;align-items:flex-end;margin-top:10px;"><div class="f" style="margin:0;flex:1 1 calc(50% - 8px);min-width:200px;"><label>Button shape</label><select id="hd-shape" class="tin"><option value=""'+(!H.btnShape?' selected':'')+'>Site default (Branding)</option><option value="square"'+(H.btnShape==='square'?' selected':'')+'>Square</option><option value="rounded"'+(H.btnShape==='rounded'?' selected':'')+'>Rounded</option><option value="pill"'+(H.btnShape==='pill'?' selected':'')+'>Pill</option><option value="rect"'+(H.btnShape==='rect'?' selected':'')+'>Rectangle \u2014 square corners, small spaced capitals</option></select></div>'
       +'<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 10px;flex:1 1 calc(50% - 8px);min-width:200px;"><input type="checkbox" id="hd-arrow"'+(H.btnArrow===true?' checked':'')+'> Arrow after the text \u2192</label></div>';
     h+='</div>';
     function hdCol(id,key,label,defv,help){
