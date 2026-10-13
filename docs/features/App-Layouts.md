@@ -80,6 +80,14 @@ All opt-in; nothing changes until chosen.
 
 | How It Works Steps → each step + Layout options | **Image** per step (replaces its icon, any layout), **Step image size** (48–130px), **Step image colour** (paints transparent images one colour) | `serviceProcess.steps[].image`, `stepImageSize`, `stepImageTint` |
 
+| Branding → Buttons | **Button corners** for every button on the site: theme default / square / rounded / pill | `buttonShape` |
+| Each app → Layout options → Button corners; Logo → Header call-to-action → Button shape | Override for that app's buttons (header also keeps **Rectangle** with spaced capitals) | `sections.<app>.btnShape`, `sections.header.btnShape` |
+| Hero Slider → Layout | **Half-height banner** — eyebrow + title only, half the slider height | `sections.heroSlider.layout = 'half'` |
+| Footer → Footer layout | **Minimal** — logo, divider, text; right: LeadPages logo (strip below hidden) / button / nothing (strip below shown) | `sections.footer.layout = 'minimal'`, `minimalText`, `minimalRight`, `minimalBtnLabel`, `minimalBtnHref` |
+| Order Storefront → Shop layout & order page | **Editorial** shop (category heading, search, clean rows, order summary card, no inner scroll panel) and **Order page banner** on `/order` (half-height Hero Slider with its own eyebrow/title/photo) | `sections.orderStorefront.layout = 'editorial'`, `catIntro`, `searchPlaceholder`, `cartTitle`, `pageBannerOn`, `pageBannerEyebrow`, `pageBannerTitle`, `pageBannerImage` |
+
+Order page colours: the shop takes its colours from the Order Storefront colour fields (section variables). Live pages are CDN-cached (15 min + 1 h stale-while-revalidate) and **Publish** purges that cache — changes saved without publishing can show the old look on `/order` for up to about an hour. Branding → CSS overrides rewrite hex values in the page HTML only, so they can't reach colours inside the shop's own stylesheet; set the shop's colours in its colour fields.
+
 The Newsreader + Jost pairing is the closest Google Fonts match found by rendering candidates against a reference design; it is not an identification of the fonts in that design.
 
 Tests: `tests/app-layouts-v4.test.js`.

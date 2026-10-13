@@ -175,6 +175,7 @@
       view: 'shop',
       listMode: (localStorage.getItem('lp.order.listMode.' + this.slug) === '1'),
       activeCategoryId: '',
+      search: '',
       selected: null,
       busy: false,
       msg: '',
@@ -207,6 +208,27 @@
       }
     };
   }
+
+  /** Editorial layout: the section's Layout option (sections.orderStorefront.layout). */
+  OrderStorefront.prototype.isEditorial = function () {
+    if (this.root.getAttribute('data-layout') === 'editorial') return true;
+    var sec = this.root.closest && this.root.closest('[data-sec="orderStorefront"]');
+    return !!(sec && sec.classList.contains('os-editorial'));
+  };
+  /** Editorial rows sit under a category heading, so "SAUSAGES - Spicy Beef" reads "Spicy Beef". */
+  OrderStorefront.prototype.displayName = function (p) {
+    var name = String((p && p.name) || '');
+    if (!this.isEditorial()) return name;
+    var m = /^\s*([^-–—:|]{2,40}?)\s*[-–—:|]\s+(.+)$/.exec(name);
+    if (!m) return name;
+    var head = m[1].trim().toLowerCase().replace(/s$/, '');
+    var cats = (this.state.catalogue && this.state.catalogue.categories) || [];
+    var hit = cats.some(function (c) {
+      var n = String(c.name || '').trim().toLowerCase().replace(/s$/, '');
+      return n && n === head;
+    });
+    return hit ? m[2].trim() : name;
+  };
 
   OrderStorefront.prototype.isFastMode = function () {
     return this.storefrontCfg().shop_mode !== 'traditional';
@@ -1024,7 +1046,7 @@
     var c = this.state.catalogue;
     var biz = (c && c.site && c.site.business_name) || 'Order';
     var html = '';
-    html += '<div class="lp-oe' + (this.mode === 'embedded' ? ' lp-oe-embedded' : '') + '">';
+    html += '<div class="lp-oe' + (this.mode === 'embedded' ? ' lp-oe-embedded' : '') + (this.isEditorial() ? ' lp-oe-ed' : '') + '">';
     if (this.mode === 'embedded') {
       html += '<div class="lp-oe-head lp-oe-head-compact">';
       html += '<div class="lp-oe-head-actions">';
@@ -1130,6 +1152,13 @@
     var cats = this.visibleCategories();
     var showAll = !!cfg.show_all_categories;
     var html = '<div class="lp-oe-toolbar">';
+    if (this.isEditorial() && this.isFastMode()) {
+      html +=
+        '<label class="lp-oe-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>' +
+        '<input type="search" data-oe-search placeholder="' +
+        esc(this.root.getAttribute('data-search-ph') || 'Search our range') +
+        '" value="' + esc(this.state.search || '') + '" aria-label="Search products"></label>';
+    }
     html += '<div class="lp-oe-filters" role="tablist" aria-label="Categories">';
     if (showAll) {
       html +=
@@ -1140,7 +1169,7 @@
     cats.forEach(function (cat) {
       html +=
         '<button type="button" class="' +
-        (self.state.activeCategoryId === cat.id ? 'on' : '') +
+        (self.state.activeCategoryId === cat.id && !self.state.search ? 'on' : '') +
         '" data-act="cat" data-cat="' +
         esc(cat.id) +
         '">' +
@@ -1180,12 +1209,26 @@
     var self = this;
     var products = (this.state.catalogue && this.state.catalogue.products) || [];
     var active = this.state.activeCategoryId;
-    if (active) {
+    var q = this.isEditorial() ? String(this.state.search || '').trim().toLowerCase() : '';
+    var html = '';
+    if (q) {
       products = products.filter(function (p) {
-        return self.productInCategory(p, active);
+        return (String(p.name || '') + ' ' + String(p.short_description || '')).toLowerCase().indexOf(q) >= 0;
       });
+      html += '<div class="lp-oe-cat-head"><h3>Results for \u201c' + esc(this.state.search.trim()) + '\u201d</h3><p>' + products.length + ' product' + (products.length === 1 ? '' : 's') + '</p></div>';
+    } else {
+      if (active) {
+        products = products.filter(function (p) {
+          return self.productInCategory(p, active);
+        });
+      }
+      if (this.isEditorial()) {
+        var cat = (this.visibleCategories() || []).find(function (c) { return c.id === active; });
+        var intro = (cat && cat.description) || this.root.getAttribute('data-cat-intro') || 'Choose your quantity and add any preparation notes.';
+        html += '<div class="lp-oe-cat-head"><h3>' + esc(cat ? cat.name : 'All products') + '</h3>' + (intro ? '<p>' + esc(intro) + '</p>' : '') + '</div>';
+      }
     }
-    var html = '<div class="lp-oe-fast" role="list">';
+    html += '<div class="lp-oe-fast" role="list">';
     if (!products.length) {
       html += '<p class="lp-oe-empty">No products in this category yet.</p>';
     } else {
@@ -1348,7 +1391,7 @@
         '\')"></div>';
     }
     html += '<div class="lp-oe-fast-info">';
-    html += '<h3>' + esc(p.name) + '</h3>';
+    html += '<h3>' + esc(this.displayName(p)) + '</h3>';
     if (pack) html += '<p class="lp-oe-pack">' + esc(pack) + ' pack</p>';
     if (qtyPrompt) html += '<p class="lp-oe-qty-prompt">' + esc(qtyPrompt) + '</p>';
     if (p.short_description) html += '<p class="lp-oe-fast-desc">' + esc(p.short_description) + '</p>';
@@ -1774,20 +1817,28 @@
     var self = this;
     var d = this.state.checkoutDraft || {};
     var html = '';
+    var ed = this.isEditorial();
     html += this.renderMasterLockCountdown();
-    html += this.renderAccountBox();
-    html += '<h3>Your cart</h3>';
+    if (ed) {
+      var nItems = qtyTotal(this.state.items);
+      html += '<div class="lp-oe-order-card">';
+      html += '<div class="lp-oe-order-head"><h3>' + esc(this.root.getAttribute('data-cart-title') || 'Your order') + '</h3><span>' + nItems + ' item' + (nItems === 1 ? '' : 's') + '</span></div>';
+    } else {
+      html += this.renderAccountBox();
+      html += '<h3>Your cart</h3>';
+    }
 
     if (!this.state.items.length) {
-      html += '<p class="lp-oe-empty" style="padding:12px 0">Cart is empty — add items from the menu.</p>';
+      html += '<p class="lp-oe-empty" style="padding:12px 0">' + (ed ? 'Nothing added yet \u2014 choose products from the menu.' : 'Cart is empty — add items from the menu.') + '</p>';
       html += this.renderCartDisclaimer();
+      if (ed) html += '</div>' + this.renderAccountBox();
       return html;
     }
     this.state.items.forEach(function (it) {
       var snap = it.product_snapshot || {};
       var q = Number(it.quantity) || 1;
       html += '<div class="lp-oe-line" data-line="' + esc(it.id) + '">';
-      html += '<div class="lp-oe-line-main"><strong>' + esc(snap.name || 'Item') + '</strong>';
+      html += '<div class="lp-oe-line-main"><strong>' + esc(ed ? self.displayName({ name: snap.name || 'Item' }) : (snap.name || 'Item')) + '</strong>';
       if (snap.pack_label) {
         html += '<p class="lp-oe-line-meta">' + esc(snap.pack_label) + ' pack</p>';
       } else if (it.requested_weight_kg != null) {
@@ -1969,6 +2020,7 @@
       esc((this.state.display && this.state.display.cta) || 'Place order') +
       '</button>';
     html += this.renderCartDisclaimer();
+    if (ed) html += '</div>' + this.renderAccountBox();
     return html;
   };
 
@@ -1989,6 +2041,19 @@
         });
       });
     }
+    scope.querySelectorAll('[data-oe-search]').forEach(function (inp) {
+      var t = null;
+      inp.addEventListener('input', function () {
+        clearTimeout(t);
+        t = setTimeout(function () {
+          self.captureFastDrafts();
+          self.state.search = inp.value;
+          self.mountShopMain();
+          var again = self.root.querySelector('[data-oe-search]');
+          if (again) { again.focus(); try { var n = again.value.length; again.setSelectionRange(n, n); } catch (_e) {} }
+        }, 160);
+      });
+    });
     scope.querySelectorAll('[data-act]').forEach(function (el) {
       el.addEventListener('click', function (ev) {
         ev.preventDefault();
@@ -2505,6 +2570,7 @@
         self.captureCheckoutDraft();
         self.captureFastDrafts();
         self.state.activeCategoryId = el.getAttribute('data-cat') || '';
+        self.state.search = '';
         self.state.view = 'shop';
         self.state.selected = null;
         self.render();
@@ -3044,7 +3110,66 @@
       '.lp-oe-primary.needs-options{background:transparent;color:var(--oe-accent);border-color:color-mix(in srgb,var(--oe-accent) 45%,var(--oe-line))}',
       '.lp-oe-fast-add:disabled{opacity:.55;cursor:not-allowed}',
       '.lp-oe-fast-extra{margin-top:12px;padding-top:12px;border-top:1px dashed var(--oe-line);display:grid;gap:10px;animation:lpOeNotesIn .18s ease}',
-      '@keyframes lpOeNotesIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}'
+      '@keyframes lpOeNotesIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}',
+      /* ---------- Editorial layout (sections.orderStorefront.layout = 'editorial') ---------- */
+      '.lp-oe-ed{--oe-r:var(--lp-btn-radius,8px);font-family:var(--lp-font-body,inherit);padding-left:0;padding-right:0}',
+      '.lp-oe-ed .lp-oe-layout{grid-template-columns:minmax(0,1.7fr) minmax(300px,1fr);gap:clamp(24px,4vw,48px)}',
+      '.lp-oe-ed .lp-oe-aside{position:static;max-height:none;overflow:visible;background:none;border:0;box-shadow:none;padding:0;border-radius:0}',
+      '.lp-oe-ed .lp-oe-client-nav{background:none;border:0;border-bottom:1px solid var(--oe-line);border-radius:0;padding:0;gap:26px;margin:0 0 20px}',
+      '.lp-oe-ed .lp-oe-client-tab{border:0;border-bottom:2px solid transparent;border-radius:0;padding:12px 0;font:500 16px/1 var(--lp-font-body,inherit);color:var(--oe-muted);background:none;margin-bottom:-1px}',
+      '.lp-oe-ed .lp-oe-client-tab.on{color:var(--oe-ink);border-bottom-color:var(--oe-ink);background:none}',
+      '.lp-oe-ed .lp-oe-toolbar{display:grid;gap:14px;margin:0 0 6px}',
+      '.lp-oe-ed .lp-oe-search{display:flex;align-items:center;gap:10px;border:1px solid var(--oe-line);border-radius:var(--oe-r);padding:0 14px;background:var(--lp-oe-input-bg,var(--oe-card));max-width:420px}',
+      '.lp-oe-ed .lp-oe-search svg{width:18px;height:18px;fill:none;stroke:var(--oe-muted);stroke-width:2;flex:0 0 auto}',
+      '.lp-oe-ed .lp-oe-search input{border:0;outline:0;background:none;font:400 15px/1 var(--lp-font-body,inherit);color:var(--oe-ink);padding:13px 0;width:100%;min-width:0}',
+      '.lp-oe-ed .lp-oe-filters{gap:8px;margin:0}',
+      '.lp-oe-ed .lp-oe-filters button{border-radius:var(--oe-r);padding:10px 18px;font:500 14px/1 var(--lp-font-body,inherit);color:var(--oe-ink);border-color:var(--oe-line);background:var(--oe-card)}',
+      '.lp-oe-ed .lp-oe-filters button.on{background:var(--oe-btn)!important;border-color:var(--oe-btn)!important;color:var(--oe-btn-text)!important}',
+      '.lp-oe-ed .lp-oe-cat-head{margin:26px 0 10px}',
+      '.lp-oe-ed .lp-oe-cat-head h3{margin:0;font-family:var(--lp-font-head,inherit);font-weight:500;font-size:clamp(28px,3vw,38px);line-height:1.1;letter-spacing:-.01em;text-transform:none;color:var(--oe-ink)}',
+      '.lp-oe-ed .lp-oe-cat-head p{margin:8px 0 0;color:var(--oe-muted);font-size:16px}',
+      '.lp-oe-ed .lp-oe-fast{gap:0;padding:0}',
+      '.lp-oe-ed .lp-oe-fast-row{background:none;border:0;border-top:1px solid var(--oe-line);border-radius:0;box-shadow:none;padding:16px 0}',
+      '.lp-oe-ed .lp-oe-fast-row:last-child{border-bottom:1px solid var(--oe-line)}',
+      '.lp-oe-ed .lp-oe-fast-row.is-notes-open{box-shadow:none}',
+      '.lp-oe-ed .lp-oe-fast-main{gap:10px 18px}',
+      '.lp-oe-ed .lp-oe-fast-img{border-radius:var(--oe-r)}',
+      '.lp-oe-ed .lp-oe-fast-info h3{font-family:var(--lp-font-head,inherit);font-weight:500;font-size:21px;line-height:1.2;letter-spacing:-.005em;text-transform:none;margin:0 0 3px;color:var(--oe-ink)}',
+      '.lp-oe-ed .lp-oe-fast-info{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:8px}',
+      '.lp-oe-ed .lp-oe-fast-info h3,.lp-oe-ed .lp-oe-fast-info .lp-oe-fast-desc,.lp-oe-ed .lp-oe-fast-info .lp-oe-qty-prompt{flex:1 1 100%}',
+      '.lp-oe-ed .lp-oe-pack,.lp-oe-ed .lp-oe-fast-info .lp-oe-price{margin:0;font-size:14.5px;font-weight:400;color:var(--oe-muted)}',
+      '.lp-oe-ed .lp-oe-pack + .lp-oe-price::before{content:"\\00b7";margin-right:8px}',
+      '.lp-oe-ed .lp-oe-fast-packchip{display:none}',
+      '.lp-oe-ed .lp-oe-fast-controls{align-items:center;gap:12px}',
+      '.lp-oe-ed .lp-oe-fast-field{font-size:0;gap:0}',
+      '.lp-oe-ed .lp-oe-stepper{border-radius:var(--oe-r);border-color:var(--oe-line);overflow:hidden}',
+      '.lp-oe-ed .lp-oe-stepper-btn{background:var(--oe-card);font-weight:400;width:40px;min-width:40px}',
+      '.lp-oe-ed .lp-oe-fast-notes-btn{border:0;background:none;min-height:0;padding:4px 2px;color:var(--oe-muted);text-decoration:underline;text-underline-offset:3px;font:400 14px/1 var(--lp-font-body,inherit)}',
+      '.lp-oe-ed .lp-oe-fast-notes-btn.on{color:var(--oe-ink);background:none}',
+      '.lp-oe-ed .lp-oe-fast-add{border-radius:var(--oe-r);min-width:100px;font:500 15px/1 var(--lp-font-body,inherit)}',
+      '.lp-oe-ed .lp-oe-fast-add:not(.needs-options)::after{content:" +";}',
+      '.lp-oe-ed .lp-oe-note{font-size:13.5px}',
+      '.lp-oe-ed .lp-oe-lock-countdown{border:0;border-radius:var(--oe-r);background:color-mix(in srgb,var(--oe-ink) 7%,var(--oe-card));padding:20px 22px;margin:0 0 16px}',
+      '.lp-oe-ed .lp-oe-lock-ey{color:var(--oe-ink);font-family:var(--lp-font-label,inherit);letter-spacing:.18em;font-weight:500}',
+      '.lp-oe-ed .lp-oe-lock-title{font-family:var(--lp-font-head,inherit);font-weight:500;font-size:24px}',
+      '.lp-oe-ed .lp-oe-order-card{background:var(--oe-card);border:1px solid var(--oe-line);border-radius:var(--oe-r);padding:22px 22px 20px}',
+      '.lp-oe-ed .lp-oe-order-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding-bottom:14px;border-bottom:1px solid var(--oe-line);margin-bottom:4px}',
+      '.lp-oe-ed .lp-oe-order-head h3{margin:0;font-family:var(--lp-font-head,inherit);font-weight:500;font-size:30px;line-height:1.1;letter-spacing:-.01em}',
+      '.lp-oe-ed .lp-oe-order-head span{color:var(--oe-muted);font-size:14px}',
+      '.lp-oe-ed .lp-oe-line strong{font-family:var(--lp-font-head,inherit);font-weight:500;font-size:17px}',
+      '.lp-oe-ed .lp-oe-line .lp-oe-price{color:var(--oe-ink);font-weight:600;margin-top:4px}',
+      '.lp-oe-ed .lp-oe-qty{border-radius:var(--oe-r);border-color:var(--oe-line)}',
+      '.lp-oe-ed .lp-oe-remove{border:0;background:none;color:var(--oe-muted);text-decoration:underline;text-underline-offset:3px;padding:2px;border-radius:0}',
+      '.lp-oe-ed .lp-oe-remove:hover{background:none;color:var(--oe-ink)}',
+      '.lp-oe-ed .lp-oe-summary{background:none;border:0;border-top:1px solid var(--oe-line);border-radius:0;padding:14px 0 0}',
+      '.lp-oe-ed .lp-oe-primary{width:100%;min-height:50px;border-radius:var(--oe-r);font:500 16px/1 var(--lp-font-body,inherit)}',
+      '.lp-oe-ed .lp-oe-fields input,.lp-oe-ed .lp-oe-fields select,.lp-oe-ed .lp-oe-fields textarea{border-radius:var(--oe-r)}',
+      '.lp-oe-ed .lp-oe-account{margin:16px 0 0;background:var(--oe-card);border-radius:var(--oe-r);padding:20px 22px}',
+      '.lp-oe-ed .lp-oe-account-name{font-family:var(--lp-font-head,inherit);font-weight:500;font-size:20px}',
+      '.lp-oe-ed .lp-oe-account-btn{background:none;border:0;padding:0;color:var(--oe-ink);text-decoration:underline;text-underline-offset:4px;font:500 14px/1 var(--lp-font-body,inherit)}',
+      '.lp-oe-ed .lp-oe-account-btn::after{content:" \\2192"}',
+      '@media(max-width:960px){.lp-oe-ed .lp-oe-layout{grid-template-columns:1fr}}',
+      '@media(max-width:720px){.lp-oe-ed .lp-oe-fast-controls{justify-content:flex-start}.lp-oe-ed .lp-oe-fast-add{margin-left:auto}.lp-oe-ed .lp-oe-search{max-width:none}}'
     ].join('');
     document.head.appendChild(st);
   }

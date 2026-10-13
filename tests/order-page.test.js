@@ -32,3 +32,17 @@ test('the homepage config object is not changed in place', () => {
   _orderShopPage(cfg, 'ORDER');
   assert.equal(sec.on, false);
 });
+
+test('order page banner: half-height Hero Slider with this page\'s eyebrow, title and photo', () => {
+  const cfg = { sections: { orderStorefront: { pageBannerOn: true, pageBannerEyebrow: 'From farm to plate', pageBannerTitle: 'Place your order', pageBannerImage: 'https://x/y.jpg' } } };
+  const p = _orderShopPage(cfg, 'order');
+  assert.deepEqual(p.pageApps.map((a) => a.key), ['heroSlider', 'orderStorefront']);
+  const hs = p.pageSections.heroSlider;
+  assert.equal(hs.layout, 'half');
+  assert.equal(hs.eyebrowPos, 'above');
+  assert.equal(hs.slides[0].eyebrow, 'From farm to plate');
+  assert.equal(hs.slides[0].heading, 'Place your order');
+  assert.equal(hs.slides[0].imageUrl, 'https://x/y.jpg');
+  // Off by default
+  assert.equal(_orderShopPage({ sections: { orderStorefront: {} } }, 'order').pageSections, undefined);
+});

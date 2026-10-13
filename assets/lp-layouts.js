@@ -17,6 +17,12 @@
  *   sections.navMenu.textStyle = 'caps'                  menu links in small spaced capitals
  *   logo.tint / sections.footer.logoTint = '#rrggbb'     paint an image logo one colour (keeps its transparency)
  *   sections.serviceProcess.steps[].image                step image instead of its icon
+ *   sections.heroSlider.layout = 'half'                  half-height banner: eyebrow + title only
+ *   buttonShape = 'square'|'rounded'|'pill'              every button on the site (Branding default)
+ *   sections.<app>.btnShape / sections.header.btnShape   one app's buttons (overrides the default)
+ *   sections.footer.layout = 'minimal'                   logo | text, right: LeadPages logo / button / nothing
+ *     (+ minimalText, minimalRight 'button'|'none', minimalBtnLabel, minimalBtnHref)
+ *   sections.orderStorefront.layout = 'editorial'        Order shop editorial look (lp-order-storefront.js)
  *     (+ stepImageSize px, stepImageTint '#rrggbb' paints transparent images one colour)
  *   sections.services.mode = 'story'                     eyebrow, heading, text and link beside a photo
  *     (+ storyImage, storyLinkLabel, storyLinkHref, storyTone soft|tint|dark, storySide 'left')
@@ -125,6 +131,7 @@
     var node = sec('heroSlider'); if (!node) return;
     var HS = (C.sections && C.sections.heroSlider) || {};
     node.classList.toggle('hsl-case-normal', HS.textCase === 'normal');
+    node.classList.toggle('hsl-half', HS.layout === 'half');
     heroText(node, HS, '.hsl-h', '.hsl-eyebrow');
     clear(node, 'hb');
     var items = live(HS.badges).filter(function (b) { return txt(b.title) || txt(b.text) || txt(b.icon); });
@@ -201,6 +208,79 @@
       var media = els[i].querySelector('.sp-media');
       if (!media) { els[i].insertAdjacentHTML('afterbegin', '<div class="sp-media" data-lpl="spi"></div>'); media = els[i].querySelector('.sp-media'); }
       media.insertAdjacentHTML('beforeend', '<div class="sp-img" data-lpl="spi"><img src="' + esc(u) + '" alt="' + esc((vis[i] && vis[i].title) || '') + '" loading="lazy"' + (tint ? ' class="lpl-tint-s"' : '') + '></div>');
+    }
+  }
+
+
+  /* ---------- Button corners: a site default (Branding) and per-app overrides ---------- */
+  var BTN_RADIUS = { square: '0px', rounded: '10px', pill: '999px' };
+  function setShape(el, key) {
+    if (!el) return;
+    var r = BTN_RADIUS[key];
+    el.classList.toggle('lpl-btn-own', !!r);
+    if (r) el.style.setProperty('--lp-btn-radius', r); else el.style.removeProperty('--lp-btn-radius');
+  }
+  function buttonShapes(C) {
+    var root = document.documentElement, g = BTN_RADIUS[C.buttonShape];
+    root.classList.toggle('lpl-btn-shape', !!g);
+    if (g) root.style.setProperty('--lp-btn-radius', g); else root.style.removeProperty('--lp-btn-radius');
+    var S = C.sections || {};
+    var secs = document.querySelectorAll('[data-sec]');
+    for (var i = 0; i < secs.length; i++) {
+      var id = secs[i].getAttribute('data-sec');
+      setShape(secs[i], S[id] && S[id].btnShape);
+    }
+    setShape(document.querySelector('header.site'), S.header && S.header.btnShape);
+  }
+
+  /* ---------- Footer: minimal bar (logo | text, LeadPages logo / button / nothing) ---------- */
+  function minimalFooter(C) {
+    var ft = document.querySelector('footer.site[data-sec="footer"], footer[data-sec="footer"]');
+    var F = (C.sections && C.sections.footer) || {};
+    var on = !!ft && F.layout === 'minimal';
+    document.documentElement.classList.remove('lpl-ftm-lp');
+    if (!ft) return;
+    ft.classList.toggle('ftm-on', on);
+    clear(ft, 'ftm');
+    if (!on) return;
+    var right = F.minimalRight === 'button' || F.minimalRight === 'none' ? F.minimalRight : 'leadpages';
+    var wrap = ft.querySelector('.wrap-wide') || ft;
+    var brand = ft.querySelector('.footer-top .foot-logo-link, .footer-top .brand');
+    var logo = brand ? brand.cloneNode(true) : null;
+    var text = txt(F.minimalText);
+    var html = '<div class="ftm" data-lpl="ftm"><div class="ftm-l">' + '<span class="ftm-logo"></span>' +
+      (text ? '<span class="ftm-div" aria-hidden="true"></span><p class="ftm-text" data-lpe="minimalText">' + esc(text) + '</p>' : '') + '</div>';
+    if (right === 'button' && txt(F.minimalBtnLabel)) {
+      html += '<a class="lpl-btn lpl-btn-outline ftm-btn" data-lpe="minimalBtnLabel" ' + linkAttrs(hrefOf(F.minimalBtnHref, contactHref())) + '>' + esc(F.minimalBtnLabel) + ARROW + '</a>';
+    } else if (right === 'leadpages') {
+      html += '<a class="ftm-lp" href="https://www.leadpages.com.au" target="_blank" rel="noopener noreferrer" aria-label="LeadPages"><img class="lp-foot-logo" alt="LeadPages" src="/assets/leadpages-logo.svg" data-lp-logo="auto" data-lp-logo-ink="light"></a>';
+    }
+    html += '</div>';
+    wrap.insertAdjacentHTML('beforeend', html);
+    var slot = wrap.querySelector('[data-lpl="ftm"] .ftm-logo');
+    if (slot && logo) { logo.removeAttribute('id'); slot.appendChild(logo); }
+    // The LeadPages logo sits in the bar, so the usual strip underneath is not repeated.
+    if (right === 'leadpages') document.documentElement.classList.add('lpl-ftm-lp');
+    try { if (window.LPLogo && window.LPLogo.upgradeAll) window.LPLogo.upgradeAll({ pulse: false }); } catch (e) {}
+  }
+
+  /* ---------- Order Storefront: editorial layout switch (live in the editor preview) ---------- */
+  function orderLayout(C) {
+    var node = sec('orderStorefront'); if (!node) return;
+    var OS = (C.sections && C.sections.orderStorefront) || {};
+    var ed = OS.layout === 'editorial';
+    var was = node.classList.contains('os-editorial');
+    node.classList.toggle('os-editorial', ed);
+    var mount = node.querySelector('#lp-order-storefront');
+    if (mount) {
+      if (ed) mount.setAttribute('data-layout', 'editorial'); else mount.removeAttribute('data-layout');
+      [['catIntro', 'data-cat-intro'], ['searchPlaceholder', 'data-search-ph'], ['cartTitle', 'data-cart-title']].forEach(function (a) {
+        if (txt(OS[a[0]])) mount.setAttribute(a[1], OS[a[0]]); else mount.removeAttribute(a[1]);
+      });
+      var app = mount.__lpOeApp;
+      if (app && app.state && app.state.catalogue && was !== ed && typeof app.render === 'function') {
+        try { app.render(); } catch (e) {}
+      }
     }
   }
 
@@ -1076,7 +1156,7 @@
     document.body.appendChild(s);
   }
 
-  var STEPS = [heroSlider, heroBanners, headerCta, logoTint, featuredProjects, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, mapHours, ctaBanner, bookingWeek, heroBooking, bookingHire, fontSet];
+  var STEPS = [heroSlider, heroBanners, headerCta, minimalFooter, logoTint, buttonShapes, orderLayout, featuredProjects, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, mapHours, ctaBanner, bookingWeek, heroBooking, bookingHire, fontSet];
 
   function run(cfg) {
     if (cfg) LAST = cfg;

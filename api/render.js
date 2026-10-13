@@ -815,7 +815,7 @@ function orderShopPage(cfg, page) {
   if (!sec || typeof sec !== 'object') return null;
   cfg.sections = Object.assign({}, cfg.sections, { orderStorefront: Object.assign({}, sec, { on: true }) });
   const biz = cfg.business || cfg.businessName || '';
-  return {
+  const vp = {
     id: '__order',
     slug: ORDER_PAGE_SLUG,
     status: 'published',
@@ -824,13 +824,38 @@ function orderShopPage(cfg, page) {
     pageApps: [{ key: 'orderStorefront', mode: 'shared' }],
     builtIn: true
   };
+  // Optional banner above the shop: the Hero Slider in its half-height layout, with this
+  // page's own eyebrow, title and photo (the homepage slider is left as it is).
+  if (sec.pageBannerOn === true) {
+    vp.pageApps.unshift({ key: 'heroSlider', mode: 'unique' });
+    vp.pageSections = {
+      heroSlider: {
+        on: true,
+        layout: 'half',
+        textCase: 'normal',
+        eyebrowPos: 'above',
+        badges: [],
+        slides: [{
+          on: true,
+          eyebrow: String(sec.pageBannerEyebrow || ''),
+          heading: String(sec.pageBannerTitle || sec.heading || 'Place your order'),
+          imageUrl: String(sec.pageBannerImage || ''),
+          subText: '',
+          highlightText: '',
+          primaryCtaText: '',
+          secondaryCtaText: ''
+        }]
+      }
+    };
+  }
+  return vp;
 }
 
 function injectOrderStorefront(html, slug, cfg) {
   const sec = cfg && cfg.sections && cfg.sections.orderStorefront;
   if (!sec || sec.on !== true) return html;
   const safeSlug = esc(slug || (cfg && cfg.slug) || '');
-  const SCRIPT = '/assets/lp-order-storefront.js?v=oe-18';
+  const SCRIPT = '/assets/lp-order-storefront.js?v=oe-19';
   const showPortal = sec.showPortalLink !== false;
   const portalLabel = esc(sec.portalCtaLabel || 'Sign in to your orders');
 
@@ -841,7 +866,7 @@ function injectOrderStorefront(html, slug, cfg) {
     if (doc.indexOf('/assets/lp-order-storefront.js') >= 0) {
       return doc.replace(
         /\/assets\/lp-order-storefront\.js(?:\?[^"']*)?/g,
-        '/assets/lp-order-storefront.js?v=oe-18'
+        '/assets/lp-order-storefront.js?v=oe-19'
       );
     }
     return doc.indexOf('</body>') !== -1
@@ -914,7 +939,11 @@ function injectOrderStorefront(html, slug, cfg) {
       heading +
       '" data-intro="' +
       intro +
-      '"'
+      '"' +
+      (sec.layout === 'editorial' ? ' data-layout="editorial"' : '') +
+      (sec.catIntro ? ' data-cat-intro="' + esc(sec.catIntro) + '"' : '') +
+      (sec.searchPlaceholder ? ' data-search-ph="' + esc(sec.searchPlaceholder) + '"' : '') +
+      (sec.cartTitle ? ' data-cart-title="' + esc(sec.cartTitle) + '"' : '')
     );
   }
 
@@ -930,9 +959,12 @@ function injectOrderStorefront(html, slug, cfg) {
     html = html.replace(
       /<section([^>]*data-sec="orderStorefront"[^>]*)>/i,
       function (_m, attrs) {
-        const a = attrs
+        let a = attrs
           .replace(/\sstyle="[^"]*"/i, '')
           .replace(/\shidden(="[^"]*")?/i, '');
+        if (sec.layout === 'editorial') {
+          a = /\sclass="/i.test(a) ? a.replace(/\sclass="/i, ' class="os-editorial ') : a + ' class="os-editorial"';
+        }
         return '<section' + a + (sectionStyleAttr() || ' style="display:block"') + '>';
       }
     );
@@ -967,7 +999,7 @@ function injectOrderStorefront(html, slug, cfg) {
   }
 
   const block =
-    '<section data-sec="orderStorefront" class="sec order-storefront" id="orderStorefront"' + sectionStyleAttr() + '>' +
+    '<section data-sec="orderStorefront" class="sec order-storefront' + (sec.layout === 'editorial' ? ' os-editorial' : '') + '" id="orderStorefront"' + sectionStyleAttr() + '>' +
     styleBlock() +
     '<div class="in">' +
     '<div class="section-head">' +

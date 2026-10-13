@@ -631,3 +631,35 @@ section[data-sec="serviceProcess"] .sp-img img{width:var(--sp-img-size,64px);hei
 section[data-sec="serviceProcess"].sp-journey .sp-img{justify-content:center}
 section[data-sec="serviceProcess"].sp-journey .sp-step.sp-has-img .sp-media{margin-bottom:12px!important}
 img.lpl-tint-s{filter:url(#lpl-tint-s)!important}
+
+/* ---------- Button corners: Branding default + per-app override ---------- */
+html.lpl-btn-shape :is(.btn,.lpl-btn,.lp-oe-fast-add,.lp-oe-primary,.lp-oe-cart-btn,.lp-oe-account-btn),
+.lpl-btn-own :is(.btn,.lpl-btn,.lp-oe-fast-add,.lp-oe-primary,.lp-oe-cart-btn,.lp-oe-account-btn){border-radius:var(--lp-btn-radius)!important}
+
+/* ---------- Hero Slider: half-height banner (eyebrow + title only) ---------- */
+section[data-sec="heroSlider"].hsl-half .hsl{height:calc(var(--hsl-mh-d,680px) / 2)!important;min-height:220px}
+section[data-sec="heroSlider"].hsl-half :is(.hsl-sub,.hsl-cta,.hsl-badges,.hsl-dots,.hsl-prev,.hsl-next){display:none!important}
+section[data-sec="heroSlider"].hsl-half .hsl-inner{justify-content:flex-end;padding-bottom:clamp(26px,4vw,44px)}
+section[data-sec="heroSlider"].hsl-half .hsl-h{font-size:clamp(40px,6vw,82px)!important;line-height:1!important;margin:0!important}
+section[data-sec="heroSlider"].hsl-half .hsl-eyebrow{letter-spacing:.24em}
+@media(max-width:760px){section[data-sec="heroSlider"].hsl-half .hsl{height:calc(var(--hsl-mh-m,560px) / 2)!important;min-height:200px}}
+
+/* ---------- Footer: minimal bar ---------- */
+footer.site.ftm-on .footer-top,footer.site.ftm-on .footer-bottom{display:none!important}
+footer.site.ftm-on{padding:0!important}
+.ftm{display:flex;align-items:center;justify-content:space-between;gap:20px 32px;flex-wrap:wrap;padding:clamp(22px,3vw,30px) 0}
+.ftm-l{display:flex;align-items:center;gap:clamp(18px,3vw,34px);min-width:0;flex-wrap:wrap}
+.ftm-logo{display:inline-flex;line-height:0}
+.ftm-logo .foot-logo-wrap{transform:none!important}
+.ftm-div{width:1px;align-self:stretch;min-height:44px;background:currentColor;opacity:.35}
+.ftm-text{margin:0;font-size:17px;line-height:1.4;max-width:46ch;opacity:.92}
+.ftm-btn{color:inherit!important;border-color:currentColor!important;background:transparent!important}
+.ftm-lp{display:inline-flex;line-height:0;opacity:.9}
+.ftm-lp img{height:34px;width:auto}
+html.lpl-ftm-lp #lpFooter{display:none!important}
+@media(max-width:640px){.ftm{flex-direction:column;align-items:flex-start}.ftm-div{display:none}}
+
+/* ---------- Order Storefront: editorial section head ---------- */
+section[data-sec="orderStorefront"].os-editorial .section-head{max-width:none;margin-bottom:8px}
+section[data-sec="orderStorefront"].os-editorial .section-head h2{max-width:none;font-weight:500;letter-spacing:-.015em}
+section[data-sec="orderStorefront"].os-editorial .section-head .intro{max-width:60ch}
