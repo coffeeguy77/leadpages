@@ -637,8 +637,11 @@ img.lpl-tint-s{filter:url(#lpl-tint-s)!important}
 html.lpl-btn-shape :is(.btn,.lpl-btn,.lp-oe-fast-add,.lp-oe-primary,.lp-oe-cart-btn,.lp-oe-account-btn),
 .lpl-btn-own :is(.btn,.lpl-btn,.lp-oe-fast-add,.lp-oe-primary,.lp-oe-cart-btn,.lp-oe-account-btn){border-radius:var(--lp-btn-radius)!important}
 
-/* ---------- Hero Slider: half-height banner (eyebrow + title only) ---------- */
-section[data-sec="heroSlider"].hsl-half .hsl{height:calc(var(--hsl-mh-d,680px) / 2)!important;min-height:220px}
+/* ---------- Hero Slider: half-height banner (eyebrow / title / intro) ---------- */
+section[data-sec="heroSlider"].hsl-half .hsl{--hsl-half-h:max(220px,calc(var(--hsl-mh-d,680px) / 2));height:auto!important;min-height:var(--hsl-half-h)!important;max-height:none!important;aspect-ratio:auto!important}
+/* Half height, but grows (never crops) when the title + intro need more room. */
+section[data-sec="heroSlider"].hsl-half :is(.hsl-track,.hsl-slide.is-active){position:relative;min-height:var(--hsl-half-h)}
+section[data-sec="heroSlider"].hsl-half .hsl-slide.is-active .hsl-inner{position:relative;inset:auto;min-height:var(--hsl-half-h);box-sizing:border-box;padding-top:clamp(26px,4vw,44px)}
 section[data-sec="heroSlider"].hsl-half :is(.hsl-sub,.hsl-cta,.hsl-badges,.hsl-dots,.hsl-prev,.hsl-next){display:none!important}
 section[data-sec="heroSlider"].hsl-half .hsl-inner{justify-content:flex-end;padding-bottom:clamp(26px,4vw,44px)}
 section[data-sec="heroSlider"].hsl-half .hsl-h{font-size:clamp(40px,6vw,82px)!important;line-height:1!important;margin:0!important}
@@ -647,7 +650,7 @@ section[data-sec="heroSlider"].hsl-half.hsl-half-intro .hsl-sub{display:block!im
 section[data-sec="heroSlider"].hsl-half.hsl-half-intro .hsl-sub:empty{display:none!important}
 section[data-sec="heroSlider"].hsl-half.hsl-half-noeb .hsl-eyebrow{display:none!important}
 section[data-sec="heroSlider"].hsl-half.hsl-half-noh .hsl-h{display:none!important}
-@media(max-width:760px){section[data-sec="heroSlider"].hsl-half .hsl{height:calc(var(--hsl-mh-m,560px) / 2)!important;min-height:200px}}
+@media(max-width:760px){section[data-sec="heroSlider"].hsl-half .hsl{--hsl-half-h:max(200px,calc(var(--hsl-mh-m,560px) / 2))}}
 
 /* ---------- Footer: minimal bar ---------- */
 footer.site.ftm-on .footer-top,footer.site.ftm-on .footer-bottom{display:none!important}
