@@ -73,7 +73,7 @@ test('order shop reads ?cat= to open a category', () => {
   const sf = read('assets/lp-order-storefront.js');
   assert.match(sf, /categoryFromUrl = function/);
   assert.match(sf, /var linkedCat = this\.categoryFromUrl\(\);/);
-  assert.match(read('api/render.js'), /lp-order-storefront\.js\?v=oe-20/);
+  assert.match(read('api/render.js'), /lp-order-storefront\.js\?v=oe-21/);
 });
 
 test('trust bar stacked: items per row (default one line), phone rows, spacing', () => {
@@ -82,4 +82,16 @@ test('trust bar stacked: items per row (default one line), phone rows, spacing',
   assert.match(css, /tbs-sp-compact\{--tbs-py:12px/);
   assert.match(manage, /k:'stackPerRow',label:'Items per row'/);
   assert.match(manage, /k:'stackSpacing',label:'Spacing'/);
+});
+
+test('trust bar items can open an Order shop category, switched in place when the shop is on the page', () => {
+  assert.match(manage, /\['orderCat','Order shop category'\]/);
+  assert.match(manage, /\{k:'orderCategory',label:'Order shop category',type:'orderCat'\}/);
+  assert.match(manage, /show\('orderCategory',act==='orderCat'\);/);
+  assert.match(js, /act === 'orderCat' && txt\(b\.orderCategory\)/);
+  assert.match(js, /app\.openCategory\(cat\)/);
+  const sf = read('assets/lp-order-storefront.js');
+  assert.match(sf, /OrderStorefront\.prototype\.openCategory = function/);
+  const tpl = JSON.parse(read('trade.template.json')).html;
+  assert.match(tpl, /if\(act==='orderCat'\)\{ var oc=String\(b\.orderCategory/);
 });
