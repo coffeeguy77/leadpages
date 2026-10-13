@@ -1904,8 +1904,8 @@ html[data-lp-visitor-motion="reduced"] .lp-dash-chart-svg animateMotion {
 }
 .lp-sec-pill[data-on="1"] .lp-sec-toggle,
 .lp-lay-pill[data-on="1"] .lp-lay-toggle {
-  background: var(--accent);
-  color: var(--accent-text);
+  background: transparent;
+  color: var(--accent-hover, var(--accent));
 }
 .lp-sec-pill[data-on="0"] .lp-sec-toggle,
 .lp-lay-pill[data-on="0"] .lp-lay-toggle {
@@ -1943,12 +1943,18 @@ html[data-lp-visitor-motion="reduced"] .lp-dash-chart-svg animateMotion {
   background: var(--panel-soft);
   color: var(--text);
 }
+/* Page editor app buttons: apps on the page are outlined; the one being edited is solid. */
 .lp-sec-editonly[data-on="1"] {
   border-color: var(--accent);
-  background: var(--accent);
-  color: var(--accent-text);
+  background: transparent;
+  color: var(--accent-hover, var(--accent));
 }
-.lp-sec-editonly[data-active="1"] {
+.lp-sec-editonly[data-on="1"]:hover {
+  background: var(--accent-soft);
+  color: var(--accent-hover, var(--accent));
+}
+.lp-sec-editonly[data-active="1"],
+.lp-sec-editonly[data-active="1"]:hover {
   background: var(--accent);
   color: var(--accent-text);
   border-color: var(--accent);
