@@ -75,3 +75,11 @@ test('order shop reads ?cat= to open a category', () => {
   assert.match(sf, /var linkedCat = this\.categoryFromUrl\(\);/);
   assert.match(read('api/render.js'), /lp-order-storefront\.js\?v=oe-20/);
 });
+
+test('trust bar stacked: items per row (default one line), phone rows, spacing', () => {
+  assert.match(js, /if \(!\(per >= 1 && per <= 12\)\) per = items\.length;/);
+  assert.match(js, /tbs-rsm/);
+  assert.match(css, /tbs-sp-compact\{--tbs-py:12px/);
+  assert.match(manage, /k:'stackPerRow',label:'Items per row'/);
+  assert.match(manage, /k:'stackSpacing',label:'Spacing'/);
+});

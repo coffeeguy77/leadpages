@@ -5844,6 +5844,9 @@ function heroCtaCard(c){
     trustBar:{title:'Icons above, text below',when:'mode=stacked',lede:'Each item shows its icon (or its <b>Tile image</b>, e.g. a line drawing) above its title, with thin dividers between. Edit the items in the list below.',rows:[
       {t:'sel',k:'stackTone',label:'Background',opts:[['','Page background (or Section container style)'],['soft','Soft (theme light colour)'],['tint','Brand tint'],['dark','Dark']]},
       {t:'sel',k:'stackIconSize',label:'Icon size',opts:[['','Standard (44px)'],['32','Small (32px)'],['56','Large (56px)'],['72','Extra large (72px)']]},
+      {t:'sel',k:'stackPerRow',label:'Items per row',opts:[['','All on one line'],['3','3'],['4','4'],['5','5'],['6','6'],['7','7'],['8','8']]},
+      {t:'sel',k:'stackPerRowMobile',label:'Items per row on phones',opts:[['','Auto (2, or balanced rows of up to 4)'],['2','2'],['3','3'],['4','4'],['1','1']]},
+      {t:'sel',k:'stackSpacing',label:'Spacing',opts:[['','Standard'],['compact','Compact'],['roomy','Roomy']]},
       {t:'chk',k:'stackDividers',label:'Dividers between items',def:true},
       {t:'chk',k:'stackCaps',label:'Titles in capitals',def:true}]},
     textBox:{lede:'Icon feature list and an outline button under the text. <b>Split</b>: text on one side, the photo filling the other half to the page edge (photo side follows the text box\u2019s image side setting). <b>Brand band</b>: a coloured band; a feature written as \u201cLabel: value\u201d (e.g. \u201cPayload: 850kg\u201d) shows as a spec row, others as ticks; add dimensions to draw a box instead of the photo.',rows:[LPL_BTN_ROW,

@@ -1374,8 +1374,14 @@
     var px = parseInt(TB.stackIconSize, 10); if (!(px >= 20 && px <= 120)) px = 44;
     node.style.setProperty('--tbs-ic', px + 'px');
     var items = liveIdx(TB.badges).filter(function (x) { return txt(x.it.label) || txt(x.it.icon) || txt(x.it.image); });
+    ['compact', 'roomy'].forEach(function (k) { node.classList.toggle('tbs-sp-' + k, TB.stackSpacing === k); });
     if (!items.length) return;
-    node.insertAdjacentHTML('afterbegin', '<div class="wrap tbs" data-lpl="tbs" style="--tbs-n:' + Math.min(items.length, 6) + '">' + items.map(function (x) {
+    // Items per row: all on one line by default (or a set number); phones 2 unless set.
+    var per = parseInt(TB.stackPerRow, 10); if (!(per >= 1 && per <= 12)) per = items.length;
+    // Phones by default: 2 per row for up to 4 items, otherwise balanced rows of up to 4.
+    var perM = parseInt(TB.stackPerRowMobile, 10); if (!(perM >= 1 && perM <= 6)) perM = items.length <= 4 ? 2 : Math.ceil(items.length / Math.ceil(items.length / 4));
+    per = Math.min(per, items.length); perM = Math.min(perM, items.length);
+    node.insertAdjacentHTML('afterbegin', '<div class="wrap tbs" data-lpl="tbs" style="--tbs-n:' + per + ';--tbs-nm:' + perM + '">' + items.map(function (x, k) {
       var b = x.it, im = bgUrl(b.image);
       var media = im ? '<img src="' + esc(im) + '" alt="" loading="lazy">' : icon(b.icon);
       var inner = (media ? '<span class="tbs-ic">' + media + '</span>' : '') + (txt(b.label) ? '<span class="tbs-t">' + esc(b.label).replace(/\n/g, '<br>') + '</span>' : '');
@@ -1383,8 +1389,10 @@
       if (act === 'page' && txt(b.linkPage)) href = withBase('/' + txt(b.linkPage).replace(/^\/+/, ''));
       else if (act === 'url' && txt(b.linkUrl)) href = hrefOf(b.linkUrl);
       else if (act === 'scroll' && txt(b.linkTarget)) href = '#' + txt(b.linkTarget).replace(/^#/, '');
-      return href ? '<a class="tbs-item" data-lpe="list:trustBar:' + x.i + ':label" ' + linkAttrs(href) + '>' + inner + '</a>'
-        : '<div class="tbs-item" data-lpe="list:trustBar:' + x.i + ':label">' + inner + '</div>';
+      // Row starts (no divider before them) for the desktop and phone column counts.
+      var cls = 'tbs-item' + (k % per === 0 ? ' tbs-rs' : '') + (k % perM === 0 ? ' tbs-rsm' : '');
+      return href ? '<a class="' + cls + '" data-lpe="list:trustBar:' + x.i + ':label" ' + linkAttrs(href) + '>' + inner + '</a>'
+        : '<div class="' + cls + '" data-lpe="list:trustBar:' + x.i + ':label">' + inner + '</div>';
     }).join('') + '</div>');
   }
 
