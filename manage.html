@@ -404,6 +404,7 @@ textarea.tin{resize:vertical;}
 #lp-ord-list .ord-mv:disabled{opacity:.3;cursor:default;}
 #lp-ord-list .ord-row--article{border-color:color-mix(in srgb,var(--accent) 45%,var(--line));background:var(--panel,var(--surface));box-shadow:inset 3px 0 0 var(--accent);}
 #lp-app-edit{border-top:1px solid var(--line);padding-top:16px;margin-top:18px;}
+#lp-editor.lp-kind-apps .lp-art{display:none!important;}
 /* contact / brokers */
 .bro{border:1px solid var(--line);border-radius:var(--radius-sm);padding:16px;margin-bottom:12px;background:#fff;}
 .bro-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;}
@@ -977,7 +978,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   <!-- ===================== LANDING PAGES ===================== -->
   <div id="av-landing" hidden>
     <div class="card">
-      <div class="card-head"><h2>Landing pages</h2><button class="btn" id="lp-new">+ New page</button></div>
+      <div class="card-head"><h2>Landing pages</h2><div style="display:flex;gap:8px;flex-wrap:wrap;"><button class="btn ghost" id="lp-new-apps" title="A page built only from apps \u2014 no article text">+ New app layout</button><button class="btn" id="lp-new">+ New page</button></div></div>
       <p class="lede">Build SEO-optimised pages that match your theme. Tick <strong>Show in site menu</strong> on a page to add it to the Navigation Menu — top level or under a parent submenu. Reorder with the arrows here, or fine-tune everything in <strong>Page editor → Menu</strong>. Published pages are included in <code>sitemap.xml</code> — after publishing, regenerate the sitemap under <strong>Settings → Search &amp; indexing</strong>.</p>
       <div id="lp-list" class="lp-list"></div>
     </div>
@@ -1001,8 +1002,10 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
         <div class="f"><label>Page title <span class="seo-tip">The clickable headline in Google results &amp; the browser tab. ~50–60 characters, lead with the keyword.</span></label><input type="text" id="lp-title" class="tin" placeholder="Home Loans in Canberra | Linray Finance"></div>
         <div class="f"><label>URL slug <span class="seo-tip">The page's web address. Short, hyphenated, keyword-rich, no spaces — e.g. /home-loans-canberra.</span></label><div class="slug-in"><span>/</span><input type="text" id="lp-slug" class="tin" placeholder="home-loans-canberra"></div></div>
       </div>
+      <div class="f"><label>Page type</label><select id="lp-kind" class="apsel"><option value="">Article + apps (H1, page text, image)</option><option value="apps">App layout (apps only \u2014 no article text)</option></select></div>
       <div class="f"><label>Meta description <span class="seo-tip">The grey summary under your title in Google. ~150 characters, include the keyword and a reason to click.</span></label><textarea id="lp-meta" class="tin" rows="2" placeholder="Compare home loan repayments and borrowing power with a local Canberra broker..."></textarea><div class="charcount" id="lp-meta-count"></div></div>
-      <div class="f"><label>H1 heading <span class="seo-tip">The single biggest on-page heading. One per page, should contain your main keyword.</span></label><input type="text" id="lp-h1" class="tin" placeholder="Home loans, made simple in Canberra"></div>
+      <div class="f lp-art"><label>H1 heading <span class="seo-tip">The single biggest on-page heading. One per page, should contain your main keyword.</span></label><input type="text" id="lp-h1" class="tin" placeholder="Home loans, made simple in Canberra"></div>
+      <div class="lp-art">
       <div class="apgroup-h">Font colours</div>
       <p class="hint" style="margin:-4px 0 10px;">Optional colours for this landing page only. Leave blank to use the site theme.</p>
       <div class="lp-row" style="gap:12px;">
@@ -1011,6 +1014,8 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
         <div class="f" style="margin:0;flex:1;min-width:160px;"><label>Paragraph colour</label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="lp-p-color" value="#5b6878" style="width:42px;height:36px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="lp-p-color-t" class="tin" placeholder="Default" style="flex:1;min-width:0;"><button type="button" class="btn ghost sm" id="lp-p-color-clr">Default</button></div></div>
       </div>
 
+      </div>
+      <div class="lp-art">
       <div class="apgroup-h">Write with AI</div>
       <div class="ai-box">
         <div class="ai-presets" id="lp-ai-presets"></div>
@@ -1052,6 +1057,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
         <div class="f"><label>Padding around image (px)</label><input type="number" id="lp-img-pad" class="tin" min="0" max="96" step="2" placeholder="16"></div>
       </div>
 
+      </div>
       <div class="apgroup-h">Site menu</div>
       <div class="lp-menu-box" style="border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:0 0 14px;background:var(--input-bg,#f7f5f1);">
         <label class="ck" style="font-weight:600;"><input type="checkbox" id="lp-show-menu"> Show in site menu</label>
@@ -1075,7 +1081,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
         </div>
       </div>
       <div class="f"><label>Status</label><select id="lp-status" class="apsel"><option value="draft">Draft (hidden)</option><option value="published">Published (live)</option></select></div>
-      <div class="lp-ed-foot"><button class="btn" id="lp-save">Save page</button><button class="btn ghost" id="lp-close">Close</button><button class="btn ghost danger" id="lp-del">Delete page</button></div>
+      <div class="lp-ed-foot"><button class="btn" id="lp-save">Save page</button><button class="btn ghost" id="lp-close">Close</button><button class="btn ghost" id="lp-dup" title="Make a copy of this page (apps, layout and content) as a new draft">Duplicate page</button><button class="btn ghost danger" id="lp-del">Delete page</button></div>
       </div>
 
       <div id="lp-panel-apps" hidden>
@@ -2288,7 +2294,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       if($('lp-ai-extra') && payload.extra!=null) $('lp-ai-extra').value=payload.extra;
     }
   }
-  let lpCur=null, lpHist=[], lpHi=-1, lpWired=false, lpEdTab='content', lpPageEditKey=null;
+  let lpCur=null, lpHist=[], lpHi=-1, lpWired=false, lpEdTab='content', lpPageEditKey=null, lpSlugAtOpen='', _lpSlugPrevT=null;
   var LP_PAGE_APP_SKIP=['details','seoTokens','branding','logo','sectionOrder','mobileBar','lpFooter','lpAccessibility','footer'];
   var LP_PAGE_APP_FIELDS={
     hero:[['eyebrow','Eyebrow'],['title','Headline'],['titleHl','Highlight'],['sub','Sub-text','ta']],
@@ -2421,6 +2427,8 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   function lpPageAppSeed(secKey){
     if(!lpCur) return;
     lpEnsurePageApps(lpCur);
+    // "Start blank" sections stay empty — don't refill them with starter items.
+    if(lpCur.pageSections&&lpCur.pageSections[secKey]&&lpCur.pageSections[secKey]._own===true) return;
     var tmp={sections:lpCur.pageSections};
     lpSeedComponent(tmp, secKey);
   }
@@ -2431,6 +2439,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     return data.sections[secKey]||{};
   }
   function lpPageSectionLooksUninitialized(secKey, sec){
+    if(sec&&sec._own===true) return false; // started blank on purpose
     if(!sec||!Object.keys(sec).length) return true;
     var home=lpPageHomeSection(secKey);
     if(!home||!Object.keys(home).length) return false;
@@ -2469,6 +2478,8 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     lpEnsurePageApps(lpCur);
     var src=lpPageHomeSection(secKey);
     lpCur.pageSections[secKey]=JSON.parse(JSON.stringify(src));
+    lpCur.pageSections[secKey].on=true;
+    delete lpCur.pageSections[secKey]._own;
     if(Array.isArray(lpCur.pageSections[secKey].slides)&&lpCur.pageSections[secKey].slides.length){
       // keep homepage slide styling; editor expects slides array
     } else if(secKey==='heroSlider'&&(!lpCur.pageSections[secKey].slides||!lpCur.pageSections[secKey].slides.length)){
@@ -2492,6 +2503,41 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     lpCopyPageAppFromHome(secKey, opts);
     if(app) app.homeCopied=true;
     if(lpPageEditKey===secKey) lpRenderPageAppEditor(secKey);
+  }
+  /** Text + image keys cleared by "Start blank" (layout, colours and form labels are kept). */
+  var LP_BLANK_TEXT_KEYS=['eyebrow','heading','title','intro','text','sub','subText','body','content','caption','description','formTitle','ctaLabel','storyLinkLabel','calloutTitle','calloutText','calloutLinkLabel','msFigure','featureCaption','summaryText','highlightText','primaryCtaText','secondaryCtaText'];
+  var LP_BLANK_IMAGE_KEYS=['image','imageUrl','bgImage','sideImage','storyImage','featureImage','msWatermark','img'];
+  function lpBlankSectionFrom(home, secKey){
+    var b=JSON.parse(JSON.stringify(home||{}));
+    Object.keys(b).forEach(function(k){
+      var v=b[k];
+      if(Array.isArray(v)){ b[k]=[]; return; }
+      if(LP_BLANK_TEXT_KEYS.indexOf(k)>=0&&typeof v==='string') b[k]='';
+      if(LP_BLANK_IMAGE_KEYS.indexOf(k)>=0){ b[k]=''; delete b[k+'_pid']; }
+    });
+    if(secKey==='heroSlider'){
+      // One empty slide that keeps the first slide's button styling.
+      var s0=(home&&Array.isArray(home.slides)&&home.slides[0])?JSON.parse(JSON.stringify(home.slides[0])):{};
+      LP_BLANK_TEXT_KEYS.concat(['primaryCtaPage','primaryCtaUrl','secondaryCtaPage','secondaryCtaUrl']).forEach(function(k){ if(k in s0) s0[k]=''; });
+      LP_BLANK_IMAGE_KEYS.forEach(function(k){ if(k in s0){ s0[k]=''; delete s0[k+'_pid']; } });
+      s0.on=true;
+      b.slides=[s0];
+    }
+    b.on=true; b._own=true;
+    return b;
+  }
+  /** Landing pages \u2192 Apps \u2192 "Start blank": this page's own empty copy (no homepage text or items). */
+  function lpPageAppStartBlank(secKey){
+    if(!lpCur||!secKey) return;
+    var ps=lpCur.pageSections&&lpCur.pageSections[secKey];
+    if(ps&&Object.keys(ps).length&&!confirm('Clear this app\u2019s text, images and items on this page so you can add your own? Layout and colours are kept. The homepage is not changed.')) return;
+    if(!lpCur.pageSections) lpCur.pageSections={};
+    lpCur.pageSections[secKey]=lpBlankSectionFrom(lpPageHomeSection(secKey), secKey);
+    var app=(lpCur.pageApps||[]).find(function(a){ return (a.key||a.section_key)===secKey; });
+    if(app){ app.mode='unique'; app.homeCopied=false; }
+    persist(); lpAutosave(); lpRenderAppsTab(); lpPagePreviewReload();
+    lpRenderPageAppEditor(secKey);
+    toast('Started blank \u2014 add this page\u2019s own content below.');
   }
   function lpPageAppEnsureUniqueData(secKey){
     if(!lpCur||!secKey) return false;
@@ -2787,7 +2833,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
         +'<select class="tin lp-app-mode-sel" data-key="'+k+'" style="min-width:130px;">'
         +'<option value="shared"'+(mode==='shared'?' selected':'')+'>Shared (homepage)</option>'
         +'<option value="unique"'+(mode==='unique'?' selected':'')+'>Unique to page</option></select>'
-        +(isUnique?'<button type="button" class="btn ghost sm lp-app-copy-home" data-key="'+k+'">Use homepage content</button><button type="button" class="btn ghost sm lp-app-edit-btn" data-key="'+k+'">Edit content</button>'
+        +(isUnique?'<button type="button" class="btn ghost sm lp-app-copy-home" data-key="'+k+'">Use homepage content</button><button type="button" class="btn ghost sm lp-app-blank" data-key="'+k+'" title="Clear the homepage text, images and items so this page has its own">Start blank</button><button type="button" class="btn ghost sm lp-app-edit-btn" data-key="'+k+'">Edit content</button>'
           :'<button type="button" class="btn ghost sm lp-app-home-btn" data-key="'+k+'">Edit on homepage</button>')
         +'<button type="button" class="btn ghost sm danger lp-app-rm" data-key="'+k+'">Remove</button></div>';
     }).join('');
@@ -2799,6 +2845,9 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     });
     list.querySelectorAll('.lp-app-copy-home').forEach(function(b){
       b.addEventListener('click',function(){ lpPageAppCopyFromHome(b.getAttribute('data-key'), {force:false}); });
+    });
+    list.querySelectorAll('.lp-app-blank').forEach(function(b){
+      b.addEventListener('click',function(){ lpPageAppStartBlank(b.getAttribute('data-key')); });
     });
     list.querySelectorAll('.lp-app-home-btn').forEach(function(b){
       b.addEventListener('click',function(){ var k=b.getAttribute('data-key'); showView('details'); landingSub=k; renderDetails(); toast('Editing homepage '+_secLabel(k)); });
@@ -2825,6 +2874,19 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     if($('lp-ai-mode')){ $('lp-ai-mode').addEventListener('change',function(){ lpAiSetMode(this.value); }); lpAiSetMode($('lp-ai-mode').value||'seo'); }
     try{ lpConsumeSiHandoff({ autoGenerate: false }); }catch(_siH){}
     if(lpWired) return; lpWired=true;
+    $('lp-new-apps').addEventListener('click',function(){ const p={id:uid(),kind:'apps',title:'',slug:'',meta:'',h1:'',body:'',menu:'top',status:'draft',imgMode:'wrap-right',pageApps:[],pageSections:{},pageLayoutOrder:[]}; data.pages.push(p); persist(); lpSaveDB(); renderSeoPages(); lpOpen(p.id); lpSetEdTab('apps'); toast('New app layout \u2014 give it a title and address, then add apps.'); });
+    $('lp-kind').addEventListener('change',function(){ if(!lpCur) return; if(this.value==='apps') lpCur.kind='apps'; else delete lpCur.kind; $('lp-editor').classList.toggle('lp-kind-apps', lpCur.kind==='apps'); persist(); lpAutosave(); });
+    $('lp-dup').addEventListener('click',function(){
+      if(!lpCur) return;
+      var src=JSON.parse(JSON.stringify(lpCur));
+      var base=String(src.slug||'page').replace(/-copy(-\d+)?$/,'')+'-copy', slug=base, n=2;
+      while(data.pages.some(function(x){ return x.slug===slug; })) slug=base+'-'+(n++);
+      var copy=Object.assign(src,{ id:uid(), slug:slug, title:(src.title?src.title+' (copy)':'Copy'), status:'draft', updatedAt:new Date().toISOString() });
+      delete copy.previousUrls; delete copy._siPrevStatus; delete copy.menuLabel; delete copy.menuIcon;
+      data.pages.push(copy);
+      persist(); lpSaveDB(); renderSeoPages(); lpOpen(copy.id);
+      toast('Duplicated as a draft \u2014 change the title, address and content, then publish.');
+    });
     $('lp-new').addEventListener('click',function(){ const p={id:uid(),title:'',slug:'',meta:'',h1:'',body:'',menu:'top',status:'draft',imgMode:'wrap-right',pageApps:[],pageSections:{},pageLayoutOrder:[]}; data.pages.push(p); try{ lpEnsureDefaultLandingApps(p); }catch(e){} persist(); lpSaveDB(); renderSeoPages(); lpOpen(p.id); });
     list.addEventListener('click',function(e){ const ed=e.target.closest('[data-edit]'); if(ed) lpOpen(ed.getAttribute('data-edit')); });
     $('lp-tips').addEventListener('change',function(){ $('lp-editor').classList.toggle('show-tips', this.checked); });
@@ -3188,10 +3250,12 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       if(f==='slug'){
         prevSlug=String(lpCur.slug||'').trim();
         var next=String(v||'').trim();
-        if(prevSlug&&next&&prevSlug!==next){
+        // Keep only the live address the page had when it was opened (not every keystroke).
+        var was=lpSlugAtOpen;
+        if(was&&next&&was!==next){
           var hist=Array.isArray(lpCur.previousUrls)?lpCur.previousUrls.slice():[];
-          if(hist.indexOf('/'+prevSlug)<0) hist.push('/'+prevSlug);
-          if(hist.indexOf(prevSlug)<0) hist.push(prevSlug);
+          if(hist.indexOf('/'+was)<0) hist.push('/'+was);
+          if(hist.indexOf(was)<0) hist.push(was);
           lpCur.previousUrls=hist.slice(-20);
         }
       }
@@ -3213,7 +3277,8 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       }
       if(f==='h1'||f==='body') lpEnsurePageLayoutOrder(lpCur);
       persist(); lpAutosave();
-      if(f==='slug'&&document.body.classList.contains('lp-prev-open')) previewLoad();
+      // Typing the address: reload the preview once typing pauses, not on every key.
+      if(f==='slug'&&document.body.classList.contains('lp-prev-open')){ if(_lpSlugPrevT) clearTimeout(_lpSlugPrevT); _lpSlugPrevT=setTimeout(function(){ _lpSlugPrevT=null; previewLoad(); },900); }
       else if(f==='h1'||f==='body'||f==='h1Color'||f==='h2Color'||f==='paragraphColor') lpPagePreviewReload();
     }
   }
@@ -3240,6 +3305,11 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     lpSetEdTab('content');
     var ed=$('lp-app-edit'); if(ed) ed.hidden=true;
     lpPageEditKey=null;
+    // Page type: "App layout" pages hide the article fields (H1, text, image, AI writer).
+    var kSel=$('lp-kind'); if(kSel) kSel.value=(lpCur.kind==='apps'?'apps':'');
+    $('lp-editor').classList.toggle('lp-kind-apps', lpCur.kind==='apps');
+    // The address this page had when opened: the only one kept as a previous URL if it changes.
+    lpSlugAtOpen=(lpCur.status==='published')?String(lpCur.slug||'').trim():'';
     if(lpCur.slug&&document.body.classList.contains('lp-prev-open')) previewLoad();
     lpNavStateSave({view:'landing', lpPageId:id});
     try{$('lp-editor').scrollIntoView({behavior:'smooth',block:'start'});}catch(e){}

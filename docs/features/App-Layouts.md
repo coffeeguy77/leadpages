@@ -174,3 +174,20 @@ Editor: every image field has a **Library** button (pick an existing image or up
 and Branding → **Image library** opens the manager (filter All / In use / Not used, delete unused).
 Replacing or clearing an image no longer deletes the old file when anything else on the site
 still uses it.
+
+## Landing pages: app layouts, Start blank, Duplicate (Oct 2026)
+
+- **+ New app layout** (and *Page type* on any page): a landing page built only from apps.
+  `pages[].kind = 'apps'` hides the article fields (H1, page text, image, AI writer) in the
+  editor; title, address, meta description, menu and status stay.
+- **Start blank** (Apps tab, on a Unique app): clears the homepage text, images and list items
+  for that app on this page (layout, colours and form labels kept) and marks it
+  `pageSections.<app>._own = true`. For owned sections the page's values win in the template
+  merge — empty ones included — so nothing falls back to the homepage. Other Unique sections
+  keep the old behaviour (empty values fall back to the homepage). "Use homepage content"
+  removes `_own`. Starter items are not re-seeded into owned sections.
+- **Duplicate page**: copies a page (apps, layout order, unique content) as a draft with
+  `<slug>-copy` (numbered if taken); no previous URLs or menu entry.
+- Typing the address no longer records every partial slug in `previousUrls` (only the live
+  address the page had when opened) and reloads the preview once typing pauses.
+- Unique copies of a homepage app are switched on (`on: true`) so "Show on page" is ticked.
