@@ -127,3 +127,19 @@ next autosave). Now:
   Quote, FAQ). Adding the app again clears it from the list.
 - Landing-page **Save** waits for the cloud save (warns if it fails) and refreshes the live
   page cache, like Publish does.
+
+## Footer, links and phones (Oct 2026)
+
+- **Page links keep the site address.** Header CTA, Hero Slider buttons and footer link columns
+  that point at a landing page now use the same site base as the menu (`/:site/<page>` on the
+  LeadPages address, `/<page>` on a custom domain). Before, they linked to `/<page>` and 404'd
+  on sites without a custom domain.
+- **Minimal footer LeadPages logo** uses the LeadPages footer settings — feature colour, logo
+  text colour, size — and keeps the animated pulse (`sections.lpFooter.accent / ink / size`).
+  Ink defaults to white or dark from the footer's background.
+- **How it works step images** follow *Number & icon size*: by default an image is 2.2× the
+  number badge (1.8× on phones); a chosen *Step image size* is scaled by the same slider.
+- **Phones:** when the fixed Call / Directions / Text bar is showing, a spacer the bar's height
+  is added inside the last visible footer, so nothing is hidden behind the bar
+  (`mobileBarSpace` in `lp-layouts.js`).
+- Footer → Link columns editor cards use theme colours (no white cards in dark themes).
