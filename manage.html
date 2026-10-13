@@ -4423,9 +4423,11 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     premiumGalleryImages:{secId:'premiumGallery',key:'images',addLabel:'Add image',item:[{k:'src',type:'image',label:'Image',ph:'https://…'},{k:'alt',label:'Alt text'},{k:'title',label:'Title'},{k:'caption',label:'Caption',type:'ta'},{k:'categoryId',label:'Category id'},{k:'albumId',label:'Album id'},{k:'tags',label:'Tags (comma separated)'},{k:'badge',label:'Badge'},{k:'size',label:'Display size',type:'select',opts:[['standard','Standard'],['wide','Wide'],['tall','Tall'],['large','Large'],['full','Full width']]},{k:'featured',label:'Featured',type:'select',opts:[['','No'],['true','Yes']]}],defaultItem:{on:true,src:'',alt:'',title:'',caption:'',categoryId:'',albumId:'',tags:'',badge:'',size:'standard',featured:''}},
     premiumGalleryCategories:{secId:'premiumGallery',key:'categories',addLabel:'Add category',item:[{k:'name',label:'Name'},{k:'eyebrow',label:'Eyebrow'},{k:'intro',label:'Intro',type:'ta'},{k:'cover',type:'image',label:'Cover image'},{k:'slug',label:'URL slug'},{k:'badge',label:'Badge'}],defaultItem:{on:true,name:'New category',eyebrow:'',intro:'',cover:'',slug:'',badge:''}},
     premiumGalleryAlbums:{secId:'premiumGallery',key:'albums',addLabel:'Add album',item:[{k:'title',label:'Title'},{k:'categoryId',label:'Category id'},{k:'eyebrow',label:'Eyebrow'},{k:'intro',label:'Intro',type:'ta'},{k:'location',label:'Location'},{k:'cover',type:'image',label:'Cover image'},{k:'slug',label:'URL slug'}],defaultItem:{on:true,title:'New album',categoryId:'',eyebrow:'',intro:'',location:'',cover:'',slug:''}},
-featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project',item:[{k:'title',label:'Project title'},{k:'tag',label:'Type'},{k:'location',label:'Location'},{k:'services',label:'Services used (comma separated)',w:'1 1 100%'},{k:'description',label:'Description',type:'ta'},{k:'image',type:'image',label:'Cover image',ph:'https://\u2026 (optional)',hint:'\u2248 1200\u00d7800 px (3:2 landscape)'},{k:'imageFit',label:'Image fit',type:'select',opts:[['cover','Cover (fill & crop)'],['contain','Contain (fit, no crop)'],['fill','Stretch to fill']]},{k:'imagePos',label:'Image position',type:'select',opts:[['center','Centre'],['left','Left'],['right','Right'],['top','Top'],['bottom','Bottom']]},{k:'images',label:'Gallery image URLs (one per line)',type:'ta'},{k:'link',label:'Card link (Feature cards)',ph:'#quote, /page or https://\u2026'}],defaultItem:{title:'New project',tag:'',location:'',services:'',description:'',image:'',imageFit:'cover',imagePos:'center',images:''}},
+featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project',item:[{k:'title',label:'Project title'},{k:'tag',label:'Type'},{k:'location',label:'Location'},{k:'services',label:'Services used (comma separated)',w:'1 1 100%'},{k:'description',label:'Description',type:'ta'},{k:'image',type:'image',label:'Cover image',ph:'https://\u2026 (optional)',hint:'\u2248 1200\u00d7800 px (3:2 landscape)'},{k:'imageFit',label:'Image fit',type:'select',opts:[['cover','Cover (fill & crop)'],['contain','Contain (fit, no crop)'],['fill','Stretch to fill']]},{k:'imagePos',label:'Image position',type:'select',opts:[['center','Centre'],['left','Left'],['right','Right'],['top','Top'],['bottom','Bottom']]},{k:'images',label:'Gallery image URLs (one per line)',type:'ta'},{k:'link',label:'Card link (Feature / Product cards)',ph:'#quote, /page or https://\u2026'},{k:'btnLabel',label:'Button text (Product cards)',ph:'e.g. Explore beef'},{k:'orderCategory',label:'Or open an Order shop category (Product cards)',type:'orderCat'}],defaultItem:{title:'New project',tag:'',location:'',services:'',description:'',image:'',imageFit:'cover',imagePos:'center',images:''}},
     specialOfferPoints:{secId:'specialOffer',key:'points',addLabel:'Add point',item:[{k:'icon',label:'Icon (photo banner layout)',type:'icon'},{k:'text',label:'Point'}],defaultItem:{text:''}},
     heroSliderBadges:{secId:'heroSlider',key:'badges',addLabel:'Add badge',item:[{k:'icon',label:'Icon',type:'icon'},{k:'title',label:'Title'},{k:'text',label:'Small text'}],defaultItem:{on:true,icon:'circle-check',title:'New badge',text:''}},
+    servicesFeatureItems:{secId:'services',key:'featureItems',addLabel:'Add point',item:[{k:'icon',label:'Icon',type:'icon'},{k:'image',type:'image',label:'Image (replaces the icon)',ph:'https://\u2026 (optional)',hint:'Transparent PNG or SVG line drawing works best'},{k:'title',label:'Title'},{k:'text',label:'Text',type:'ta'}],defaultItem:{on:true,icon:'leaf',title:'New point',text:''}},
+    ctaBannerBoxes:{secId:'ctaBanner',key:'boxes',addLabel:'Add box',item:[{k:'icon',label:'Icon',type:'icon'},{k:'image',type:'image',label:'Image (replaces the icon)',ph:'https://\u2026 (optional)',hint:'Transparent PNG or SVG works best'},{k:'title',label:'Title',type:'ta'},{k:'text',label:'Text',type:'ta'},{k:'link',label:'Link (optional)',ph:'#quote, /page or https://\u2026'}],defaultItem:{on:true,icon:'shield',title:'New box',text:''}},
     textBoxFeatures:{secId:'textBox',key:'features',addLabel:'Add feature',item:[{k:'icon',label:'Icon',type:'icon'},{k:'text',label:'Feature'}],defaultItem:{on:true,icon:'circle-check',text:''}},
     aboutUsFeatures:{secId:'aboutUs',key:'features',addLabel:'Add point',item:[{k:'icon',label:'Icon',type:'icon'},{k:'text',label:'Point'}],defaultItem:{on:true,icon:'circle-check',text:''}},
     bookingPoints:{secId:'bookingStorefront',key:'points',addLabel:'Add point',item:[{k:'icon',label:'Icon',type:'icon'},{k:'text',label:'Point'}],defaultItem:{on:true,icon:'circle-check',text:''}},
@@ -4675,7 +4677,7 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
       el.textContent=msg; el.style.color=color; el.hidden=!msg;
     }catch(e){ el.hidden=true; }
   }
-  function lpSel(label,id,opts,cur){ return '<div class="f"><label>'+label+'</label><select id="'+id+'" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#fff;">'+opts.map(function(o){return '<option value="'+o[0]+'"'+(String(cur)===String(o[0])?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select></div>'; }
+  function lpSel(label,id,opts,cur){ return '<div class="f"><label>'+label+'</label><select id="'+id+'" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;background:var(--input-bg,#fff);color:inherit;">'+opts.map(function(o){return '<option value="'+o[0]+'"'+(String(cur)===String(o[0])?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select></div>'; }
   function lpNum(label,id,cur){ return '<div class="f"><label>'+label+'</label><input type="number" id="'+id+'" value="'+(cur!=null?cur:'')+'"></div>'; }
   function lpRange(label,id,cur,min,max,suf){ return '<div class="f"><label>'+label+' <span id="'+id+'-v" style="font-weight:700;color:var(--accent);">'+(cur!=null?cur:'')+(suf||'')+'</span></label><input type="range" id="'+id+'" min="'+min+'" max="'+max+'" value="'+(cur!=null?cur:0)+'" style="width:100%;"></div>'; }
   function slideFromHero(c){ var H=(c.sections&&c.sections.hero)||{}; return { on:true, imageUrl:'', eyebrow:(H.eyebrow!=null?String(H.eyebrow):''), heading:(H.title!=null?String(H.title):''), highlightText:(H.titleHl!=null?String(H.titleHl):''), subText:(H.sub!=null?String(H.sub):''), primaryCtaText:'Call Now', primaryCtaAction:'call', secondaryCtaText:'Get A Fast Quote', secondaryCtaAction:'quote' }; }
@@ -5490,7 +5492,7 @@ function wireQuoteStyle(c){
 
   function servicesModeCard(c){
     var SV=(c.sections&&c.sections.services)||{};
-    var mode=(SV.mode==='split'||SV.mode==='columns')?'split':((SV.mode==='cards'||SV.mode==='homepage'||SV.mode==='cap')?'cards':(SV.mode==='tick'?'tick':(SV.mode==='iconrow'?'iconrow':(SV.mode==='story'?'story':'grid'))));
+    var mode=(SV.mode==='split'||SV.mode==='columns')?'split':((SV.mode==='cards'||SV.mode==='homepage'||SV.mode==='cap')?'cards':(SV.mode==='tick'?'tick':(SV.mode==='iconrow'?'iconrow':(SV.mode==='story'?'story':(SV.mode==='feature'?'feature':'grid')))));
     var accentOn=SV.accentOn!==false;
     var ac=(SV.accentColor&&/^#[0-9a-fA-F]{6}$/.test(SV.accentColor))?SV.accentColor:'';
     var defAc='#ff6a1f';
@@ -5507,7 +5509,7 @@ function wireQuoteStyle(c){
       return '<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:200px;"><label>'+label+'</label><div style="display:flex;align-items:center;gap:8px;"><input type="color" id="'+id+'-clr" value="'+(val||defv)+'" style="width:46px;height:34px;padding:0;border:1px solid var(--line);border-radius:8px;cursor:pointer;flex:0 0 auto;"><input type="text" id="'+id+'-tx" class="tin" value="'+val+'" placeholder="'+defv+' (default)" style="flex:1;min-width:0;"><button type="button" class="btn ghost" id="'+id+'-def" style="padding:6px 10px;">Default</button></div></div>';
     }
     var h='<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Layout</h2><p class="lede" style="margin:0 0 12px;">Classic grid keeps the heading above the cards. Split columns puts copy on the left. Image cards match the LeadPages homepage — photo on top, optional icon in a circle, title and text below.</p>';
-    h+='<div class="row"><div class="f"><label>Style</label><select id="svc-mode" class="tin"><option value="grid"'+(mode==='grid'?' selected':'')+'>Classic grid</option><option value="split"'+(mode==='split'?' selected':'')+'>Split columns (text left)</option><option value="cards"'+(mode==='cards'?' selected':'')+'>Image cards (homepage)</option><option value="tick"'+(mode==='tick'?' selected':'')+'>Included items (photo + tick cards)</option><option value="iconrow"'+(mode==='iconrow'?' selected':'')+'>Icon row (icon, title, short line)</option><option value="story"'+(mode==='story'?' selected':'')+'>Story (text + link beside one photo)</option></select></div>'+lpSel('Band colour','svc-tick-theme',[['dark','Dark band'],['light','Light band'],['brand','Brand colour']],(SV.tickTheme==='light'||SV.tickTheme==='brand')?SV.tickTheme:'dark')+'</div>'
+    h+='<div class="row"><div class="f"><label>Style</label><select id="svc-mode" class="tin"><option value="grid"'+(mode==='grid'?' selected':'')+'>Classic grid</option><option value="split"'+(mode==='split'?' selected':'')+'>Split columns (text left)</option><option value="cards"'+(mode==='cards'?' selected':'')+'>Image cards (homepage)</option><option value="tick"'+(mode==='tick'?' selected':'')+'>Included items (photo + tick cards)</option><option value="iconrow"'+(mode==='iconrow'?' selected':'')+'>Icon row (icon, title, short line)</option><option value="story"'+(mode==='story'?' selected':'')+'>Story (text + link beside one photo)</option><option value="feature"'+(mode==='feature'?' selected':'')+'>Feature (big photo beside heading + icon points)</option></select></div>'+lpSel('Band colour','svc-tick-theme',[['dark','Dark band'],['light','Light band'],['brand','Brand colour']],(SV.tickTheme==='light'||SV.tickTheme==='brand')?SV.tickTheme:'dark')+'</div>'
       +'<div id="svc-row-opts" style="'+(mode==='iconrow'?'':'display:none;')+'margin-top:12px;">'+lpRange('Icon / image size','svc-row-sz',(SV.iconRowSize!=null?+SV.iconRowSize:40),20,160,'px')+'<p class="hint" style="margin:4px 0 0;">Each item shows its <b>Image</b> when one is set (upload it on the item below), otherwise its <b>Icon</b>.</p></div>';
     h+='<div id="svc-split-opts" style="'+(mode==='split'?'':'display:none;')+'margin-top:14px;padding-top:14px;border-top:1px solid var(--line);">';
     h+='<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 12px;"><input type="checkbox" id="svc-accent-on"'+(accentOn?' checked':'')+'> Accent line under title</label>';
@@ -5532,7 +5534,7 @@ function wireQuoteStyle(c){
   }
   function wireServicesMode(c){
     function SV(){ if(!c.sections)c.sections={}; if(!c.sections.services)c.sections.services={}; return c.sections.services; }
-    function modeOf(){ var m=SV().mode; return (m==='split'||m==='columns')?'split':((m==='cards'||m==='homepage'||m==='cap')?'cards':(m==='tick'?'tick':(m==='iconrow'?'iconrow':(m==='story'?'story':'grid')))); }
+    function modeOf(){ var m=SV().mode; return (m==='split'||m==='columns')?'split':((m==='cards'||m==='homepage'||m==='cap')?'cards':(m==='tick'?'tick':(m==='iconrow'?'iconrow':(m==='story'?'story':(m==='feature'?'feature':'grid'))))); }
     function syncSplitUi(){
       var mode=modeOf();
       var opts=$('svc-split-opts'); if(opts) opts.style.display=(mode==='split')?'':'none';
@@ -5551,7 +5553,7 @@ function wireQuoteStyle(c){
       if(h2) h2.textContent=(mode==='split'?'Service columns':(mode==='cards'?'Service cards (image)':'Service cards'));
     }
     var md=$('svc-mode');
-    if(md){ md.value=modeOf(); md.addEventListener('change',function(){ SV().mode=md.value; syncSplitUi(); persist(); previewApply(); }); }
+    if(md){ md.value=modeOf(); md.addEventListener('change',function(){ SV().mode=md.value; syncSplitUi(); persist(); previewApply(); try{ if(window.lplSyncWhen) window.lplSyncWhen(); }catch(_w){} }); }
     var tthm=$('svc-tick-theme'); if(tthm) tthm.addEventListener('change',function(){ SV().tickTheme=tthm.value; persist(); previewApply(); });
     var rsz=$('svc-row-sz'), rszv=$('svc-row-sz-v'); if(rsz) rsz.addEventListener('input',function(){ SV().iconRowSize=+rsz.value; if(rszv) rszv.textContent=rsz.value+'px'; persist(); previewApply(); });
     var ao=$('svc-accent-on'); if(ao) ao.addEventListener('change',function(){ SV().accentOn=ao.checked; persist(); previewApply(); });
@@ -5827,14 +5829,26 @@ function heroCtaCard(c){
     splitHero:{title:'Text options',lede:'Headline and eyebrow case, and whether the eyebrow (small label) sits above or below the headline.',rows:[LPL_BTN_ROW,{t:'sel',k:'textCase',label:'Headline case',opts:[['','Theme default'],['normal','As typed (no forced capitals)'],['lower','all lowercase'],['upper','ALL CAPITALS']]},
       {t:'sel',k:'eyebrowCase',label:'Eyebrow case',opts:[['','Capitals (default)'],['normal','As typed'],['lower','all lowercase']]},
       {t:'sel',k:'eyebrowPos',label:'Eyebrow position',opts:[['','Above the headline'],['below','Below the headline']]}]},
-    services:{title:'Story layout',when:'mode=story',lede:'Uses the eyebrow, heading and intro above, with a text link under them and one photo beside them. The service cards are hidden in this style. Leave the photo empty to use the first service\u2019s image.',rows:[
+    services:[{title:'Feature layout',when:'mode=feature',lede:'A big photo on one side; the eyebrow, heading and intro above, then icon points (icon or small image, title and text) on the other side. Add the points under <b>Feature points</b> (each landing page can have its own). With no points, your service list is used.',rows:[
+      {t:'image',k:'featureImage',label:'Photo'},
+      {t:'text',k:'featureCaption',label:'Caption under the photo (optional)',ph:'e.g. Illustrative farm imagery'},
+      {t:'sel',k:'featureSide',label:'Photo side',opts:[['','Photo on the left'],['right','Photo on the right']]},
+      {t:'sel',k:'featureTone',label:'Background',opts:[['','Page background'],['soft','Soft (theme light colour)'],['tint','Brand tint'],['dark','Dark']]}],
+      lists:[['servicesFeatureItems','Feature points','Icon (or a small image), title and text for each point.']]},
+    {title:'Story layout',when:'mode=story',lede:'Uses the eyebrow, heading and intro above, with a text link under them and one photo beside them. The service cards are hidden in this style. Leave the photo empty to use the first service\u2019s image.',rows:[
       {t:'image',k:'storyImage',label:'Photo'},
       {t:'text',k:'storyLinkLabel',label:'Link text',ph:'e.g. Our story (empty = hidden)'},
       {t:'text',k:'storyLinkHref',label:'Link',ph:'#featuredProjects, /page or https://\u2026'},
       {t:'sel',k:'storyTone',label:'Background',opts:[['','Page background'],['soft','Soft (theme light colour)'],['tint','Brand tint'],['dark','Dark']]},
-      {t:'sel',k:'storySide',label:'Photo side',opts:[['','Photo on the right'],['left','Photo on the left']]}]},
-    textBox:{lede:'Icon feature list and an outline button under the text. <b>Brand band</b>: a coloured band; a feature written as \u201cLabel: value\u201d (e.g. \u201cPayload: 850kg\u201d) shows as a spec row, others as ticks; add dimensions to draw a box instead of the photo.',rows:[LPL_BTN_ROW,
-      {t:'sel',k:'layout',label:'Layout',opts:[['','Standard'],['band','Brand band \u2014 specs, ticks, photo or box drawing']]},
+      {t:'sel',k:'storySide',label:'Photo side',opts:[['','Photo on the right'],['left','Photo on the left']]}]}],
+    trustBar:{title:'Icons above, text below',when:'mode=stacked',lede:'Each item shows its icon (or its <b>Tile image</b>, e.g. a line drawing) above its title, with thin dividers between. Edit the items in the list below.',rows:[
+      {t:'sel',k:'stackTone',label:'Background',opts:[['','Page background (or Section container style)'],['soft','Soft (theme light colour)'],['tint','Brand tint'],['dark','Dark']]},
+      {t:'sel',k:'stackIconSize',label:'Icon size',opts:[['','Standard (44px)'],['32','Small (32px)'],['56','Large (56px)'],['72','Extra large (72px)']]},
+      {t:'chk',k:'stackDividers',label:'Dividers between items',def:true},
+      {t:'chk',k:'stackCaps',label:'Titles in capitals',def:true}]},
+    textBox:{lede:'Icon feature list and an outline button under the text. <b>Split</b>: text on one side, the photo filling the other half to the page edge (photo side follows the text box\u2019s image side setting). <b>Brand band</b>: a coloured band; a feature written as \u201cLabel: value\u201d (e.g. \u201cPayload: 850kg\u201d) shows as a spec row, others as ticks; add dimensions to draw a box instead of the photo.',rows:[LPL_BTN_ROW,
+      {t:'sel',k:'layout',label:'Layout',opts:[['','Standard'],['band','Brand band \u2014 specs, ticks, photo or box drawing'],['bleed','Split \u2014 text beside a photo that runs to the page edge']]},
+      {t:'sel',k:'bleedTone',label:'Background',opts:[['','Page background'],['soft','Soft (theme light colour)'],['tint','Brand tint'],['dark','Dark']],when:'layout=bleed'},
       {t:'sel',k:'bandTone',label:'Band colour',opts:[['','Brand colour'],['dark','Dark']],when:'layout=band'},
       {t:'text',k:'dimLength',label:'Box length',ph:'e.g. 4.2m',when:'layout=band'},
       {t:'text',k:'dimWidth',label:'Box width',ph:'e.g. 2.1m',when:'layout=band'},
@@ -5860,9 +5874,12 @@ function heroCtaCard(c){
       {t:'sel',k:'layout',label:'Layout',opts:[['','Offer card (default)'],['banner','Photo banner']]},
       {t:'image',k:'bgImage',label:'Banner photo',when:'layout=banner'},
       {t:'text',k:'ctaHref',label:'Button link',ph:'Defaults to Bookings or the quote form'}]},
-    serviceProcess:{lede:'Optional photo beside the steps with a small card over it. <b>Numbered</b>: big step numbers in a row, with the card shown as a panel underneath (its button calls you unless a link is set). <b>Journey</b>: heading, intro and a text link (the card link label + link below) on the left; each step\u2019s icon, title and text in a row with arrows on the right. Any step can use an uploaded <b>Image</b> instead of its icon (set on the step below).',rows:[LPL_BTN_ROW,
-      {t:'sel',k:'layout',label:'Layout',opts:[['','Standard'],['numbered','Numbered \u2014 big numbers + callout panel'],['journey','Journey \u2014 heading left, icon steps with arrows right']]},
-      {t:'sel',k:'journeyTone',label:'Background',opts:[['','Page background'],['soft','Soft (theme light colour)'],['tint','Brand tint'],['dark','Dark']],when:'layout=journey'},
+    serviceProcess:{lede:'Optional photo beside the steps with a small card over it. <b>Numbered</b>: big step numbers in a row, with the card shown as a panel underneath (its button calls you unless a link is set). <b>Journey</b>: heading, intro and a text link (the card link label + link below) on the left; each step\u2019s icon, title and text in a row with arrows on the right. <b>Milestone</b>: a big figure (e.g. a year) beside the heading, intro and text link (card link label + link), with an optional faint watermark drawing \u2014 the steps are hidden. Any step can use an uploaded <b>Image</b> instead of its icon (set on the step below).',rows:[LPL_BTN_ROW,
+      {t:'sel',k:'layout',label:'Layout',opts:[['','Standard'],['numbered','Numbered \u2014 big numbers + callout panel'],['journey','Journey \u2014 heading left, icon steps with arrows right'],['milestone','Milestone \u2014 big figure (e.g. 1990) | heading, intro, link + watermark']]},
+      {t:'sel',k:'journeyTone',label:'Background',opts:[['','Page background'],['soft','Soft (theme light colour)'],['tint','Brand tint'],['dark','Dark']],when:'layout=journey|milestone'},
+      {t:'text',k:'msFigure',label:'Big figure',ph:'e.g. 1990',when:'layout=milestone'},
+      {t:'image',k:'msWatermark',label:'Watermark image (faint drawing on the right \u2014 transparent PNG works best)',when:'layout=milestone'},
+      {t:'sel',k:'msWatermarkOpacity',label:'Watermark strength',opts:[['','Soft (35%)'],['15','Faint (15%)'],['60','Medium (60%)'],['100','Full']],when:'layout=milestone'},
       {t:'sel',k:'stepImageSize',label:'Step image size (the Number &amp; icon size slider scales it too)',opts:[['','Auto \u2014 follows Number & icon size'],['48','Small (48px)'],['64','Medium (64px)'],['80','Large (80px)'],['100','Extra large (100px)'],['130','Huge (130px)']]},
       {t:'color',k:'stepImageTint',label:'Step image colour (optional \u2014 paints transparent images one colour)'},
       {t:'image',k:'sideImage',label:'Side photo'},
@@ -5919,7 +5936,9 @@ function heroCtaCard(c){
       {t:'chk',k:'pageBannerShowTitle',label:'Banner: show title',def:true},
       {t:'chk',k:'pageBannerShowIntro',label:'Banner: show intro text',def:true},
       {t:'image',k:'pageBannerImage',label:'Banner photo'}]},
-    ctaBanner:{title:'Banner style & buttons',lede:'Leave a button\u2019s text empty to hide it. \u201cOpen the booking calendar\u201d opens the live hire calendar when Bookings is set up, otherwise it goes to the booking bar or quote form.',rows:[LPL_BTN_ROW,
+    ctaBanner:{title:'Banner style & buttons',lede:'Leave a button\u2019s text empty to hide it. \u201cOpen the booking calendar\u201d opens the live hire calendar when Bookings is set up, otherwise it goes to the booking bar or quote form. <b>Title + boxes</b>: the heading on the left and outlined boxes (icon, title, text) on the right \u2014 add as many as you like under <b>Boxes</b>.',lists:[['ctaBannerBoxes','Boxes','Title + boxes layout: each box has an icon (or a small image), a title and a short line. Optional link makes the whole box clickable.']],rows:[LPL_BTN_ROW,
+      {t:'sel',k:'layout',label:'Layout',opts:[['','Text + buttons (default)'],['boxes','Title + boxes (icon, title, text)']]},
+      {t:'chk',k:'boxesButtons',label:'Show the buttons under the title',def:false,when:'layout=boxes'},
       {t:'sel',k:'tone',label:'Style',opts:[['','Brand colour (default)'],['dark','Dark'],['light','Light card'],['photo','Photo background']]},
       {t:'sel',k:'align',label:'Layout',opts:[['','Text left, buttons right'],['center','Centred']]},
       {t:'sel',k:'width',label:'Width',opts:[['','Card'],['full','Full-width band']]},
@@ -5935,6 +5954,12 @@ function heroCtaCard(c){
   };
   function lplMountLayoutCard(body,c,sub){
     var spec=LPL_LAYOUT_SPECS[sub]; if(!spec||!body) return;
+    // An app can have several option cards (one per layout); mount them in order.
+    if(Array.isArray(spec)){ spec.slice().reverse().forEach(function(sp){ lplMountOneLayoutCard(body,c,sub,sp); }); return; }
+    lplMountOneLayoutCard(body,c,sub,spec);
+  }
+  function lplMountOneLayoutCard(body,c,sub,spec){
+    if(!spec||!body) return;
     function ens(){ if(!c.sections) c.sections={}; if(!c.sections[sub]) c.sections[sub]={}; return c.sections[sub]; }
     var S=(c.sections&&c.sections[sub])||{};
     function cur(k,def){ var v=S[k]; if(sub==='aboutUs'&&k==='layout'&&!v) return 'story'; if(k==='overlapHero') return v===false?'false':''; if((v==null||v==='')&&def!=null) return String(def); return v==null?'':String(v); }
@@ -5943,7 +5968,7 @@ function heroCtaCard(c){
       var id='lpl-'+sub+'-'+r.k, full=(r.t==='ta'||r.t==='image');
       var st=' style="margin:0;'+(full?'flex:1 1 100%;':'flex:1 1 calc(50% - 6px);min-width:190px;')+'"'+(r.when?' data-lpl-when="'+r.when+'"':'');
       if(r.t==='sel'||r.t==='secsel'){ var _opts=(r.t==='secsel')?HERO_CTA_SCROLL_TARGETS.filter(function(o){ return o[0]!==sub; }):r.opts;
-        h+='<div class="f"'+st+'><label>'+r.label+'</label><select id="'+id+'" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#fff;">'+_opts.map(function(o){ return '<option value="'+o[0]+'"'+(cur(r.k,r.def)===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('')+'</select></div>'; }
+        h+='<div class="f"'+st+'><label>'+r.label+'</label><select id="'+id+'" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;background:var(--input-bg,#fff);color:inherit;">'+_opts.map(function(o){ return '<option value="'+o[0]+'"'+(cur(r.k,r.def)===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('')+'</select></div>'; }
       else if(r.t==='chk'){ var _ck=(S[r.k]==null)?(r.def!==false):(S[r.k]!==false); h+='<div class="f"'+st+'><label style="display:flex;gap:8px;align-items:center;font-weight:600;margin-top:26px;cursor:pointer;"><input type="checkbox" id="'+id+'"'+(_ck?' checked':'')+'> '+r.label+'</label></div>'; }
       else if(r.t==='addr') h+='<div class="f"'+st+'><label>'+r.label+'</label><textarea class="tin" id="'+id+'" rows="2" style="min-height:64px;resize:vertical;width:100%;box-sizing:border-box;" placeholder="Unit 3, 47 Example St\nSuburb STATE 2600"></textarea>'
         +'<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px;"><button type="button" class="btn ghost" id="'+id+'-find" style="padding:7px 12px;">Find on map</button><span class="hint" id="'+id+'-pin" style="margin:0;"></span></div>'
@@ -6190,10 +6215,166 @@ function heroCtaCard(c){
     var uj=await ur.json().catch(function(){return {};}); if(!ur.ok||!uj.secure_url) throw new Error((uj.error&&uj.error.message)||('Cloudinary rejected the upload ('+ur.status+')'));
     return { url:uj.secure_url, publicId:uj.public_id };
   }
-  async function cwDelete(publicId){ if(!publicId) return; try{ var t=await cwToken(); await fetch('/api/cloudinary/delete',{method:'POST',headers:{'content-type':'application/json',Authorization:'Bearer '+t},body:JSON.stringify({publicId:publicId})}); }catch(e){} }
+  /** True while the site config (homepage + landing pages) still points at this image. */
+  function cwImageInUse(publicId){
+    if(!publicId) return false;
+    // Looks at every text value except "*_pid" bookkeeping keys (a stale upload id left behind
+    // after an image was swapped doesn't count as a use).
+    var found=false;
+    function walk(v,k){ if(found||v==null) return; if(typeof v==='string'){ if(!/_pid$/.test(k||'')&&v.indexOf(publicId)>=0) found=true; return; }
+      if(Array.isArray(v)){ for(var i=0;i<v.length&&!found;i++) walk(v[i],''); return; }
+      if(typeof v==='object'){ for(var kk in v){ if(found) break; if(Object.prototype.hasOwnProperty.call(v,kk)) walk(v[kk],kk); } } }
+    try{ walk(data||{},''); }catch(e){ return true; }
+    return found;
+  }
+  async function cwDelete(publicId){ if(!publicId) return;
+    // Images can be reused from the library, so only delete one nothing else uses any more.
+    // Callers clear their own field in the same tick, so check after it.
+    await new Promise(function(r){ setTimeout(r,0); });
+    if(cwImageInUse(publicId)) return;
+    try{ var t=await cwToken(); await fetch('/api/cloudinary/delete',{method:'POST',headers:{'content-type':'application/json',Authorization:'Bearer '+t},body:JSON.stringify({publicId:publicId})}); }catch(e){} }
   async function cwDeletePrefix(prefix){ if(!prefix) return; try{ var t=await cwToken(); await fetch('/api/cloudinary/delete',{method:'POST',headers:{'content-type':'application/json',Authorization:'Bearer '+t},body:JSON.stringify({prefix:prefix})}); }catch(e){} }
-  function cwImgHTML(idOrData, ph, hint){ var _h=(hint?(esc(hint)+' \u00b7 '):'')+'JPG, PNG, WebP or SVG \u00b7 up to 8 MB \u00b7 images over ~800 KB are compressed on upload'; return '<div class="cw-row" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;"><input type="text" '+idOrData+' placeholder="'+(ph||'https://\u2026 or upload')+'" style="flex:1;min-width:150px;"><button type="button" class="btn ghost cw-up" tabindex="-1">Upload</button><button type="button" class="btn ghost cw-clr" tabindex="-1" title="Clear image">\u2715</button></div><div class="hint" style="margin:4px 0 0;font-size:11.5px;">'+_h+'</div>'; }
+  function cwImgHTML(idOrData, ph, hint){ var _h=(hint?(esc(hint)+' \u00b7 '):'')+'JPG, PNG, WebP or SVG \u00b7 up to 8 MB \u00b7 images over ~800 KB are compressed on upload'; return '<div class="cw-row" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;"><input type="text" '+idOrData+' placeholder="'+(ph||'https://\u2026 or upload')+'" style="flex:1;min-width:150px;"><button type="button" class="btn ghost cw-up" tabindex="-1">Upload</button><button type="button" class="btn ghost cw-lib" tabindex="-1" title="Choose from this site\u2019s image library">Library</button><button type="button" class="btn ghost cw-clr" tabindex="-1" title="Clear image">\u2715</button></div><div class="hint" style="margin:4px 0 0;font-size:11.5px;">'+_h+'</div>'; }
   function cwBusy(btn,on){ if(!btn)return; if(on){ btn.dataset.t=btn.textContent; btn.textContent='\u2026'; btn.disabled=true; } else { btn.textContent=btn.dataset.t||'Upload'; btn.disabled=false; } }
+  /** Fill every Order-shop-category select (list field type 'orderCat') from this site's storefront. */
+  var _lpOeCats=null, _lpOeCatsP=null;
+  function lpOrderCatFill(){
+    var sels=document.querySelectorAll('select[data-oecat]'); if(!sels.length) return;
+    function paint(){ sels.forEach(function(sel){ if(sel.__oecatDone) return; sel.__oecatDone=1; var cur=sel.getAttribute('data-oecat')||sel.value||'';
+      var opts='<option value="">None \u2014 use the card link</option>'; var found=false;
+      (_lpOeCats||[]).forEach(function(cat){ var v=String(cat.slug||cat.name||''); if(!v) return; if(v===cur) found=true; opts+='<option value="'+esc(v)+'"'+(v===cur?' selected':'')+'>'+esc(cat.name||v)+'</option>'; });
+      if(cur&&!found) opts+='<option value="'+esc(cur)+'" selected>'+esc(cur)+' (not found)</option>';
+      sel.innerHTML=opts; }); }
+    if(_lpOeCats){ paint(); return; }
+    if(!_lpOeCatsP){ _lpOeCatsP=fetch('/api/order/storefront?slug='+encodeURIComponent(currentSiteSlug||'')).then(function(r){ return r.ok?r.json():{}; }).then(function(j){ _lpOeCats=(j&&j.categories)||[]; }).catch(function(){ _lpOeCats=[]; }); }
+    _lpOeCatsP.then(paint);
+  }
+  /* ---------- Image library: every image uploaded for this site (pick, upload, delete unused) ---------- */
+  var CWLIB={ items:null, pick:null, filter:'all', busy:false };
+  function cwLibThumb(u){ return String(u||'').replace('/upload/','/upload/c_fill,w_320,h_240,f_auto,q_auto/'); }
+  function cwLibSize(b){ b=+b||0; return b>=1048576?(b/1048576).toFixed(1)+' MB':Math.max(1,Math.round(b/1024))+' KB'; }
+  async function cwLibFetch(){
+    var t=await cwToken(); if(!t) throw new Error('Please sign in again');
+    var r=await fetch('/api/cloudinary/library?siteId='+encodeURIComponent(currentSiteId||''),{headers:{Authorization:'Bearer '+t}});
+    var j=await r.json().catch(function(){ return {}; });
+    if(!r.ok||!j.ok) throw new Error(j.message||j.error||('Library unavailable ('+r.status+')'));
+    return j.images||[];
+  }
+  function cwLibEnsureDom(){
+    var m=document.getElementById('cwlib'); if(m) return m;
+    if(!document.getElementById('cwlib-css')){
+      var st=document.createElement('style'); st.id='cwlib-css';
+      st.textContent='#cwlib{position:fixed;inset:0;z-index:10050;background:rgba(10,14,20,.55);display:flex;align-items:center;justify-content:center;padding:16px}'
+        +'#cwlib[hidden]{display:none}'
+        +'#cwlib .cwl-box{background:var(--panel,#fff);color:var(--text,#1b2430);border:1px solid var(--line,#e5e7eb);border-radius:14px;width:min(1080px,100%);max-height:min(860px,94vh);display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(0,0,0,.3)}'
+        +'#cwlib .cwl-head{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:16px 18px;border-bottom:1px solid var(--line,#e5e7eb)}'
+        +'#cwlib .cwl-head h2{margin:0;font-size:18px;flex:1 1 auto}'
+        +'#cwlib .cwl-sub{font-size:12.5px;color:var(--muted,#6b7280);padding:10px 18px 0}'
+        +'#cwlib .cwl-tabs{display:flex;gap:6px;padding:10px 18px 0;flex-wrap:wrap}'
+        +'#cwlib .cwl-tabs button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}'
+        +'#cwlib .cwl-grid{padding:14px 18px 18px;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}'
+        +'#cwlib .cwl-tile{border:1px solid var(--line,#e5e7eb);border-radius:10px;overflow:hidden;background:var(--panel-soft,#fafafa);display:flex;flex-direction:column}'
+        +'#cwlib .cwl-img{aspect-ratio:4/3;background:repeating-conic-gradient(rgba(128,128,128,.14) 0 25%,transparent 0 50%) 0 0/16px 16px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:0;padding:0;width:100%}'
+        +'#cwlib .cwl-img img{width:100%;height:100%;object-fit:cover;display:block}'
+        +'#cwlib .cwl-meta{display:flex;justify-content:space-between;gap:6px;align-items:center;padding:7px 8px 0;font-size:11.5px;color:var(--muted,#6b7280)}'
+        +'#cwlib .cwl-badge{font-weight:700;font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--accent)}'
+        +'#cwlib .cwl-act{display:flex;gap:6px;padding:7px 8px 8px}'
+        +'#cwlib .cwl-act .btn{flex:1;padding:6px 8px;font-size:12px}'
+        +'#cwlib .cwl-act .btn[disabled]{opacity:.4;cursor:not-allowed}'
+        +'#cwlib .cwl-empty{grid-column:1/-1;text-align:center;color:var(--muted,#6b7280);padding:40px 10px}';
+      document.head.appendChild(st);
+    }
+    m=document.createElement('div'); m.id='cwlib'; m.hidden=true; m.setAttribute('role','dialog'); m.setAttribute('aria-modal','true'); m.setAttribute('aria-label','Image library');
+    m.innerHTML='<div class="cwl-box"><div class="cwl-head"><h2>Image library</h2><span class="hint" id="cwl-count" style="margin:0;"></span>'
+      +'<button type="button" class="btn" id="cwl-upload">Upload new</button><button type="button" class="btn ghost" id="cwl-close">Close</button></div>'
+      +'<div class="cwl-sub" id="cwl-sub"></div>'
+      +'<div class="cwl-tabs"><button type="button" class="btn ghost sm" data-cwl-f="all">All</button><button type="button" class="btn ghost sm" data-cwl-f="used">In use</button><button type="button" class="btn ghost sm" data-cwl-f="unused">Not used</button></div>'
+      +'<div class="cwl-grid" id="cwl-grid"></div></div>';
+    document.body.appendChild(m);
+    m.addEventListener('click',function(e){ if(e.target===m) cwLibClose(); });
+    document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&!m.hidden) cwLibClose(); });
+    m.querySelector('#cwl-close').addEventListener('click',cwLibClose);
+    m.querySelectorAll('[data-cwl-f]').forEach(function(b){ b.addEventListener('click',function(){ CWLIB.filter=b.getAttribute('data-cwl-f'); cwLibRender(); }); });
+    m.querySelector('#cwl-upload').addEventListener('click',function(){
+      var btn=this;
+      cwPick(function(file){ cwBusy(btn,true); cwUpload(file,['library']).then(function(r){
+          toast('Image uploaded');
+          if(CWLIB.pick){ var cb=CWLIB.pick; cwLibClose(); cb(r.url); return; }
+          return cwLibLoad();
+        }).catch(function(err){ toast('Upload failed: '+((err&&err.message)||err),'warn'); }).then(function(){ cwBusy(btn,false); }); });
+    });
+    m.querySelector('#cwl-grid').addEventListener('click',function(e){
+      var t=e.target.closest('[data-cwl-act]'); if(!t) return;
+      var it=(CWLIB.items||[])[+t.getAttribute('data-i')]; if(!it) return;
+      var act=t.getAttribute('data-cwl-act');
+      if(act==='use'&&CWLIB.pick){ var cb=CWLIB.pick; cwLibClose(); cb(it.url); return; }
+      if(act==='del') cwLibDelete(it, t);
+    });
+    return m;
+  }
+  function cwLibUsed(it){ return !!(it.inUse||cwImageInUse(it.publicId)); }
+  function cwLibRender(){
+    var m=cwLibEnsureDom(), grid=m.querySelector('#cwl-grid');
+    m.querySelectorAll('[data-cwl-f]').forEach(function(b){ b.setAttribute('aria-pressed', b.getAttribute('data-cwl-f')===CWLIB.filter?'true':'false'); });
+    m.querySelector('#cwl-sub').textContent=CWLIB.pick?'Click an image to use it, or upload a new one. Images already on your site are reused, not copied.':'Every image uploaded for this site. Delete the ones you no longer need — images in use can’t be deleted.';
+    if(CWLIB.items==null){ grid.innerHTML='<div class="cwl-empty">Loading images…</div>'; m.querySelector('#cwl-count').textContent=''; return; }
+    var all=CWLIB.items, used=all.filter(cwLibUsed).length;
+    m.querySelector('#cwl-count').textContent=all.length+' image'+(all.length===1?'':'s')+' · '+used+' in use';
+    var html=all.map(function(it,i){
+      var u=cwLibUsed(it);
+      if(CWLIB.filter==='used'&&!u) return ''; if(CWLIB.filter==='unused'&&u) return '';
+      var dims=(it.width&&it.height)?(it.width+'×'+it.height):'';
+      return '<div class="cwl-tile"><button type="button" class="cwl-img" data-cwl-act="use" data-i="'+i+'" title="'+(CWLIB.pick?'Use this image':'Preview')+'"><img src="'+esc(cwLibThumb(it.url))+'" alt="" loading="lazy"></button>'
+        +'<div class="cwl-meta"><span>'+esc(dims)+(it.bytes?' · '+cwLibSize(it.bytes):'')+'</span>'+(u?'<span class="cwl-badge">In use</span>':'')+'</div>'
+        +'<div class="cwl-act">'+(CWLIB.pick?'<button type="button" class="btn ghost" data-cwl-act="use" data-i="'+i+'">Use</button>':'<a class="btn ghost" href="'+esc(it.url)+'" target="_blank" rel="noopener">Open</a>')
+        +'<button type="button" class="btn ghost" data-cwl-act="del" data-i="'+i+'"'+(u?' disabled title="In use on the site — remove it from the page first"':' title="Delete this image"')+'>Delete</button></div></div>';
+    }).join('');
+    grid.innerHTML=html||'<div class="cwl-empty">'+(all.length?'No images in this view.':'No images yet — upload one to start your library.')+'</div>';
+  }
+  async function cwLibLoad(){
+    CWLIB.items=null; cwLibRender();
+    try{ CWLIB.items=await cwLibFetch(); }catch(e){ CWLIB.items=[]; toast(String((e&&e.message)||e),'warn'); }
+    cwLibRender();
+  }
+  async function cwLibDelete(it, btn){
+    if(cwLibUsed(it)){ toast('That image is used on the site — remove it from the page first','warn'); return; }
+    if(!confirm('Delete this image permanently? It can’t be undone.')) return;
+    btn.disabled=true;
+    try{
+      var t=await cwToken();
+      var r=await fetch('/api/cloudinary/library',{method:'POST',headers:{'content-type':'application/json',Authorization:'Bearer '+t},body:JSON.stringify({siteId:currentSiteId,action:'delete',publicId:it.publicId})});
+      var j=await r.json().catch(function(){ return {}; });
+      if(!r.ok||!j.ok){ toast(j.message||('Could not delete ('+(j.error||r.status)+')'),'warn'); btn.disabled=false; return; }
+      CWLIB.items=(CWLIB.items||[]).filter(function(x){ return x.publicId!==it.publicId; });
+      cwLibRender(); toast('Image deleted');
+    }catch(e){ btn.disabled=false; toast('Could not delete image','warn'); }
+  }
+  /** Open the library. With onPick(url) it works as a picker; without, it's a manager. */
+  function cwLibOpen(onPick){
+    if(!currentSiteId){ toast('Open a site first'); return; }
+    var m=cwLibEnsureDom(); CWLIB.pick=(typeof onPick==='function')?onPick:null; CWLIB.filter='all';
+    m.hidden=false; cwLibLoad();
+  }
+  function cwLibClose(){ var m=document.getElementById('cwlib'); if(m) m.hidden=true; CWLIB.pick=null; }
+  // Every image field built with cwImgHTML gets a Library button: picking fills the field and
+  // fires its normal input/change handlers (same as typing a URL), so each editor saves as usual.
+  document.addEventListener('click',function(e){
+    var b=e.target.closest&&e.target.closest('.cw-lib'); if(!b) return;
+    e.preventDefault();
+    var row=b.closest('.cw-row'); var inp=row&&row.querySelector('input[type=text]'); if(!inp) return;
+    cwLibOpen(function(url){
+      inp.value=url;
+      // The picked image belongs to the library, not to this field: forget the field's own upload id.
+      var holder=row.parentNode; var pid=null;
+      if(inp.id) pid=document.getElementById(inp.id+'-pid');
+      if(!pid&&inp.getAttribute('data-k')){ var le=row.closest('.le-row')||holder; pid=le&&le.querySelector('[data-k="'+inp.getAttribute('data-k')+'_pid"]'); }
+      if(pid) pid.value='';
+      inp.dispatchEvent(new Event('input',{bubbles:true}));
+      inp.dispatchEvent(new Event('change',{bubbles:true}));
+      toast('Image added from library');
+    });
+  });
+  window.cwLibOpen=cwLibOpen;
   function cwPick(cb){ var inp=document.createElement('input'); inp.type='file'; inp.accept='image/*'; inp.style.display='none'; document.body.appendChild(inp); inp.addEventListener('change',function(){ var f=inp.files&&inp.files[0]; if(inp.parentNode) inp.parentNode.removeChild(inp); if(f) cb(f); }); inp.click(); }
   try{
     window.cwUpload=cwUpload; window.cwDelete=cwDelete; window.cwImgHTML=cwImgHTML; window.cwBusy=cwBusy; window.cwPick=cwPick;
@@ -6267,6 +6448,7 @@ function heroCtaCard(c){
           if(f.type==='landingPage') return '<div class="f" style="margin:0;flex:'+(f.w||'1 1 100%')+';min-width:160px;"><label>'+f.label+'</label><select data-k="'+f.k+'" style="width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#fff;box-sizing:border-box;">'+lpLandingPageOptsHtml(it[f.k]||'')+'</select></div>';
           if(f.type==='ta') return '<div class="f le-f-full" style="margin:0;"><label>'+f.label+'</label><textarea data-k="'+f.k+'" rows="2" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;resize:vertical;box-sizing:border-box;"></textarea></div>';
           if(f.type==='image') return '<div class="f le-f-full" style="margin:0;"><label>'+f.label+'</label>'+cwImgHTML('data-k="'+f.k+'"',f.ph,f.hint)+'<input type="hidden" data-k="'+f.k+'_pid"></div>';
+          if(f.type==='orderCat'){ setTimeout(lpOrderCatFill,0); return '<div class="f" style="margin:0;flex:1 1 100%;"><label>'+f.label+'</label><select data-k="'+f.k+'" data-oecat="'+esc(it[f.k]||'')+'" style="width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;background:var(--input-bg,#fff);color:inherit;box-sizing:border-box;"><option value="">None \u2014 use the card link</option>'+(it[f.k]?'<option value="'+esc(it[f.k])+'" selected>'+esc(it[f.k])+'</option>':'')+'</select><span class="hint" style="display:block;margin-top:4px;">The button opens your Order shop page on this category.</span></div>'; }
           if(f.type==='color'){ var _cdef=listColorDefault(f.k,c); return '<div class="f" style="margin:0;"><label>'+f.label+'</label><div class="le-color-row"><input type="color" class="le-color" data-colorfor="'+f.k+'" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer;flex:0 0 auto;"><input type="text" data-k="'+f.k+'" placeholder="'+_cdef+' (site)"><button type="button" class="le-eyedrop" data-colorfor="'+f.k+'" tabindex="-1" title="Pick a colour from anywhere on screen" style="border:1px solid var(--line);background:#fff;border-radius:8px;padding:7px 9px;cursor:pointer;line-height:1;flex:0 0 auto;">\uD83D\uDD0D</button></div></div>'; }
           if(f.type==='check') return '<div class="f le-f-full" style="margin:0;"><label style="display:inline-flex;gap:8px;align-items:center;font-weight:500;font-size:13px;cursor:pointer;"><input type="checkbox" class="le-chk" data-k="'+f.k+'"> '+f.label+'</label></div>';
           if(f.type==='range') return '<div class="f le-f-full" style="margin:0;"><label>'+f.label+': <span class="le-rangeval" data-rk="'+f.k+'"></span></label><input type="range" class="le-range" data-k="'+f.k+'" min="'+(f.min!=null?f.min:0)+'" max="'+(f.max!=null?f.max:100)+'" step="'+(f.step||1)+'" data-def="'+(f.def!=null?f.def:100)+'" data-suf="'+(f.suf||'')+'" style="width:100%;"></div>';
@@ -9158,11 +9340,11 @@ function heroCtaCard(c){
       }
     } else if(sub==='trustBar'){
       var _tb=(c.sections&&c.sections.trustBar)||{};
-      var _tbMode=(_tb.mode==='images')?'images':((_tb.mode==='sideCards'||_tb.mode==='sideImages')?'sideCards':'badges');
+      var _tbMode=(_tb.mode==='images')?'images':((_tb.mode==='sideCards'||_tb.mode==='sideImages')?'sideCards':(_tb.mode==='stacked'?'stacked':'badges'));
       var _tbH=(_tb.imageHeight!=null?_tb.imageHeight:280); var _tbCH=(_tb.cardHeight!=null?_tb.cardHeight:(_tbMode==='sideCards'?140:_tbH)); var _tbGap=(_tb.cardGap!=null?_tb.cardGap:16);
       body.innerHTML=secCard(c,'trustBar','Trust Bar',true,[])
         +'<div class="card" style="margin-bottom:22px;"><h2>Layout</h2><p class="lede">Classic icon badges, a full-width image strip, or side image cards (photo left, icon, title, info and optional arrow).</p>'
-        +'<div class="row"><div class="f"><label>Style</label><select id="tb-mode" class="tin"><option value="badges">Classic badges</option><option value="images">Image tiles</option><option value="sideCards">Side image cards</option></select></div><div class="f"></div></div>'
+        +'<div class="row"><div class="f"><label>Style</label><select id="tb-mode" class="tin"><option value="badges">Classic badges</option><option value="images">Image tiles</option><option value="sideCards">Side image cards</option><option value="stacked">Icons above, text below</option></select></div><div class="f"></div></div>'
         +'</div>'
         +'<div class="card" id="tb-classic-opts" style="margin-bottom:22px;'+(_tbMode==='badges'?'':'display:none;')+'"><h2>Bar appearance</h2><p class="lede">Separator, colours and per-badge icons. Each badge icon is chosen in the list below.</p>'
         +'<div class="row" style="margin-bottom:12px;"><div class="f"><label>Separator between items</label><select id="tb-sep" class="tin"><option value="none">Spacing only</option><option value="pipe">Vertical line ( | )</option></select></div><div class="f"></div></div>'
@@ -9184,13 +9366,13 @@ function heroCtaCard(c){
         var TB=(c.sections&&c.sections.trustBar)||{};
         function _tbHex(v){ v=(v||'').trim(); return /^#?[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/.test(v)?(v.charAt(0)==='#'?v:'#'+v):''; }
         function _syncModeUi(){
-          var mode=(ens().mode==='images')?'images':((ens().mode==='sideCards'||ens().mode==='sideImages')?'sideCards':'badges');
+          var mode=(ens().mode==='images')?'images':((ens().mode==='sideCards'||ens().mode==='sideImages')?'sideCards':(ens().mode==='stacked'?'stacked':'badges'));
           var co=$('tb-classic-opts'), io=$('tb-image-opts'), so=$('tb-side-opts');
           if(co) co.style.display=(mode==='badges')?'':'none';
           if(io) io.style.display=(mode==='images')?'':'none';
           if(so) so.style.display=(mode==='sideCards')?'':'none';
         }
-        var md=$('tb-mode'); if(md){ md.value=(_tbMode); md.addEventListener('change',function(){ ens().mode=md.value; _syncModeUi(); persist(); previewApply(); var lc=$('le-trustBar'); var card=lc&&lc.closest?lc.closest('.card'):null; if(card){ var h=card.querySelector('h2'); var p=card.querySelector('p.lede'); var mode=md.value; if(h) h.textContent=(mode==='images'?'Image tiles':(mode==='sideCards'?'Side image cards':'Trust badges')); if(p) p.textContent=(mode==='images'?'Each tile is an image with caption text overlaid at the bottom. Toggle, reorder, or add tiles \u2014 they share the full width evenly.':(mode==='sideCards'?'Each card has a left image, optional icon, title, info text and optional arrow. Link a card to a section (app position), landing page, or external URL.':'The row of badges shown directly under your hero \u2014 on every layout. Toggle off any that don\u2019t apply, edit the wording, reorder, or add your own.')); } }); }
+        var md=$('tb-mode'); if(md){ md.value=(_tbMode); md.addEventListener('change',function(){ ens().mode=md.value; _syncModeUi(); persist(); previewApply(); try{ if(window.lplSyncWhen) window.lplSyncWhen(); }catch(_w){} var lc=$('le-trustBar'); var card=lc&&lc.closest?lc.closest('.card'):null; if(card){ var h=card.querySelector('h2'); var p=card.querySelector('p.lede'); var mode=md.value; if(h) h.textContent=(mode==='images'?'Image tiles':(mode==='sideCards'?'Side image cards':'Trust badges')); if(p) p.textContent=(mode==='images'?'Each tile is an image with caption text overlaid at the bottom. Toggle, reorder, or add tiles \u2014 they share the full width evenly.':(mode==='sideCards'?'Each card has a left image, optional icon, title, info text and optional arrow. Link a card to a section (app position), landing page, or external URL.':'The row of badges shown directly under your hero \u2014 on every layout. Toggle off any that don\u2019t apply, edit the wording, reorder, or add your own.')); } }); }
         var sp=$('tb-sep'); if(sp){ sp.value=TB.sep||'none'; sp.addEventListener('change',function(){ ens().sep=sp.value; persist(); previewApply(); }); }
         var bg=$('tb-bg'),bgt=$('tb-bgt'); if(bg&&bgt){ if(TB.bg){ bg.value=TB.bg; bgt.value=TB.bg; } else { bg.value='#fbfaf7'; } var sB=function(v){ v=_tbHex(v); ens().bg=v; bgt.value=v; if(v) bg.value=v; persist(); previewApply(); }; bg.addEventListener('input',function(){ sB(bg.value); }); bgt.addEventListener('input',function(){ sB(bgt.value); }); var bc=$('tb-bg-clr'); if(bc) bc.addEventListener('click',function(){ ens().bg=''; bgt.value=''; bg.value='#fbfaf7'; persist(); previewApply(); }); }
         var fg=$('tb-fg'),fgt=$('tb-fgt'); if(fg&&fgt){ if(TB.fg){ fg.value=TB.fg; fgt.value=TB.fg; } else { fg.value='#1a2230'; } var sF=function(v){ v=_tbHex(v); ens().fg=v; fgt.value=v; if(v) fg.value=v; persist(); previewApply(); }; fg.addEventListener('input',function(){ sF(fg.value); }); fgt.addEventListener('input',function(){ sF(fgt.value); }); var fc=$('tb-fg-clr'); if(fc) fc.addEventListener('click',function(){ ens().fg=''; fgt.value=''; fg.value='#1a2230'; persist(); previewApply(); }); }
@@ -9550,7 +9732,7 @@ function heroCtaCard(c){
       var _fpCols=[2,3,4,5].indexOf(+_fp.columns)>=0?+_fp.columns:4;
       var _fpH=(_fp.imageHeight!=null?_fp.imageHeight:280);
       var _fpLayout='<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Layout</h2><p class="lede" style="margin:0 0 12px;">Card grid keeps the current portfolio look. Full-width strip shares the row evenly — add more projects and each image gets smaller (same idea as Trust Bar image tiles). Feature cards: a large photo, the title with an arrow and the description \u2014 add a <b>Card link</b> to a project to make the whole card clickable.</p>'
-        +'<div class="row3">'+lpSel('Style','fp-layout',[['grid','Card grid'],['fullWidth','Full-width strip'],['cards','Feature cards (photo, title + arrow, short text)']],_fpLay)+lpSel('Grid columns','fp-cols',[['2','2 columns'],['3','3 columns'],['4','4 columns'],['5','5 columns']],String(_fpCols))+'<div class="f"></div></div></div>';
+        +'<div class="row3">'+lpSel('Style','fp-layout',[['grid','Card grid'],['fullWidth','Full-width strip'],['cards','Feature cards (photo, title + arrow, short text)'],['shop','Product cards (photo, title, button \u2014 e.g. Explore beef)']],_fpLay)+lpSel('Grid columns','fp-cols',[['2','2 columns'],['3','3 columns'],['4','4 columns'],['5','5 columns']],String(_fpCols))+'<div class="f"></div></div></div>';
       var _fpStrip='<div class="card" id="fp-strip-opts" style="margin-bottom:22px;'+(_fpLay==='fullWidth'?'':'display:none;')+'"><h2 style="margin:0 0 4px;">Full-width strip</h2><p class="lede" style="margin:0 0 12px;">Equal tiles across the page. Title and location sit over the image; description and gallery thumbs stay in Card grid mode.</p>'
         +'<div class="row" style="margin-bottom:12px;"><div class="f"><label>Image height <span id="fp-h-v" style="font-weight:700;color:var(--accent);">'+_fpH+'px</span></label><input type="range" id="fp-h" min="160" max="560" step="10" value="'+_fpH+'" style="width:100%;"><span class="hint" style="display:block;margin-top:4px;">Desktop height — tiles stay equal width as you add more.</span></div><div class="f"></div></div>'
         +'<div class="row" style="margin-bottom:12px;"><div class="f"><label>Stroke between tiles</label><label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:8px 0 0;"><input type="checkbox" id="fp-strokeon"'+(_fp.strokeOn!==false?' checked':'')+'> Show stroke separators</label></div><div class="f"><label>Stroke colour</label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="fp-stroke" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="fp-stroket" class="tin" placeholder="#ffffff" style="flex:1;min-width:0;"><button type="button" id="fp-stroke-clr" class="btn ghost sm">White</button></div></div></div>'
@@ -9577,7 +9759,7 @@ function heroCtaCard(c){
           if(so) so.style.display=on?'':'none';
           if(cols){ var f=cols.closest?cols.closest('.f'):null; if(f) f.style.opacity=on?'0.45':''; cols.disabled=!!on; }
         }
-        var lay=$('fp-layout'); if(lay){ lay.value=_fpLay; lay.addEventListener('change',function(){ ens().layout=lay.value; syncLay(); persist(); previewApply(); }); }
+        var lay=$('fp-layout'); if(lay){ lay.value=_fpLay; lay.addEventListener('change',function(){ ens().layout=lay.value; syncLay(); persist(); previewApply(); try{ if(window.lplSyncWhen) window.lplSyncWhen(); }catch(_w){} }); }
         var cols=$('fp-cols'); if(cols){ cols.value=String(_fpCols); cols.addEventListener('change',function(){ ens().columns=parseInt(cols.value,10)||4; persist(); previewApply(); }); }
         var hh=$('fp-h'), hv=$('fp-h-v'); if(hh){ hh.addEventListener('input',function(){ ens().imageHeight=+hh.value; if(hv) hv.textContent=hh.value+'px'; persist(); previewApply(); }); }
         var so=$('fp-strokeon'); if(so){ so.addEventListener('change',function(){ ens().strokeOn=so.checked; persist(); previewApply(); }); }
@@ -11270,6 +11452,7 @@ function heroCtaCard(c){
       wireTradeColours(c); renderTradePresets(c); renderColourLibrary(c); wireColorOverrides(c); wireButtonLook(c);
       try{ lpMountFontCard(body,c); }catch(_fc){ try{ console.warn('[fonts]',_fc); }catch(_x){} }
       try{ lpMountButtonShapeCard(body,c); }catch(_bs){ try{ console.warn('[buttons]',_bs); }catch(_x){} }
+      try{ if(!document.getElementById('lp-imglib-card')){ body.insertAdjacentHTML('beforeend','<div class="card" id="lp-imglib-card" style="margin-bottom:22px;"><h2 style="margin:0 0 6px;">Image library</h2><p class="lede" style="margin:0 0 12px;">Every image uploaded for this site in one place. Any image field\u2019s <b>Library</b> button reuses one instead of uploading it again. Delete images you no longer need \u2014 images in use are protected.</p><button type="button" class="btn" id="lp-imglib-open">Open image library</button></div>'); var _ilb=document.getElementById('lp-imglib-open'); if(_ilb) _ilb.addEventListener('click',function(){ cwLibOpen(); }); } }catch(_il){}
     } else if(sub==='logo'){
       var L0=c.logo||{};
       var _hd=Math.max(24,Math.min(320,(L0.heightPx?L0.heightPx:Math.round(40*(L0.scale||1)))||44));

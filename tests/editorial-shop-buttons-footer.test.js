@@ -54,7 +54,7 @@ test('button corners: Branding default + per-app override + header', () => {
 
 test('half-height hero and minimal footer are drawn and styled', () => {
   assert.match(js, /node\.classList\.toggle\('hsl-half', HS\.layout === 'half'\)/);
-  assert.match(css, /hsl-half \.hsl\{height:calc\(var\(--hsl-mh-d,680px\) \/ 2\)/);
+  assert.match(css, /hsl-half \.hsl\{--hsl-half-h:max\(220px,calc\(var\(--hsl-mh-d,680px\) \/ 2\)\)/);
   assert.match(manage, /\['half','Half-height banner/);
   assert.match(js, /function minimalFooter\(C\)/);
   assert.match(js, /document\.documentElement\.classList\.add\('lpl-ftm-lp'\)/);
