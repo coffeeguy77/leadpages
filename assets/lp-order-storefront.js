@@ -713,6 +713,18 @@
     return (this.state.catalogue && this.state.catalogue.categories) || [];
   };
 
+  /** Category id from ?cat= (matches the category slug, name or id, case-insensitive), or ''. */
+  OrderStorefront.prototype.categoryFromUrl = function () {
+    var want = '';
+    try { want = String(new URLSearchParams(location.search).get('cat') || '').trim().toLowerCase(); } catch (e) { return ''; }
+    if (!want) return '';
+    var cats = this.visibleCategories();
+    var hit = cats.find(function (c) {
+      return String(c.slug || '').toLowerCase() === want || String(c.name || '').trim().toLowerCase() === want || String(c.id || '').toLowerCase() === want;
+    });
+    return hit ? hit.id : '';
+  };
+
   OrderStorefront.prototype.resolveDefaultCategory = function () {
     var cats = this.visibleCategories();
     if (!cats.length) return '';
@@ -843,6 +855,9 @@
       } else {
         this.state.activeCategoryId = this.resolveDefaultCategory();
       }
+      // ?cat=<slug or name> (e.g. a "Explore beef" button) opens that category.
+      var linkedCat = this.categoryFromUrl();
+      if (linkedCat) this.state.activeCategoryId = linkedCat;
       this.render();
       if (!this.state.cartId) {
         var warmSelf = this;

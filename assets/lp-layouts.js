@@ -101,9 +101,35 @@
   function hrefOf(v, fallback) {
     var s = txt(v);
     if (!s) return fallback || '#quote';
+    if (/^\/(?!\/)/.test(s)) return withBase(s);
     if (/^(https?:\/\/|\/|#|tel:|mailto:)/i.test(s)) return s;
     if (/^[\w-]+$/.test(s)) return '#' + s;
     return fallback || '#quote';
+  }
+  /** The site's own path prefix ("/griffithbutchery" on the LeadPages address, "" on a custom
+   *  domain) — the template's _siteBase(), same as the menu uses. */
+  function siteBase() {
+    // Mirrors the template's _siteBase(): the current path, minus a trailing landing-page slug
+    // (or the built-in /order and /orders pages).
+    try {
+      var path = location.pathname.replace(/\/+$/, '');
+      var seg = (path.split('/').pop() || '').toLowerCase();
+      var C = cfgOf() || {};
+      var pages = Array.isArray(C.pages) ? C.pages : [];
+      var onPage = seg === 'order' || seg === 'orders' || pages.some(function (p) { return p && String(p.slug || '').toLowerCase() === seg; });
+      return (onPage ? path.slice(0, path.length - seg.length) : path).replace(/\/+$/, '');
+    } catch (e) { return ''; }
+  }
+  /** "/page" → "<site base>/page" (left alone when it already starts with the base). */
+  function withBase(path) {
+    var b = siteBase();
+    if (!b || path === b || path.indexOf(b + '/') === 0) return path;
+    return (b + '/' + path.replace(/^\/+/, '')).replace(/\/{2,}/g, '/');
+  }
+  /** Link to the Order shop page, opened on one category (by slug or name). */
+  function orderCatHref(cat) {
+    var c = txt(cat);
+    return withBase('/order') + (c ? '?cat=' + encodeURIComponent(c) : '');
   }
   function shown(id) {
     var n = sec(id);
@@ -365,6 +391,10 @@
   function featuredProjects(C) {
     var node = sec('featuredProjects'); if (!node) return;
     var FP = (C.sections && C.sections.featuredProjects) || {};
+    var shop = FP.layout === 'shop';
+    node.classList.toggle('fp-shop', shop);
+    clear(node, 'fps');
+    if (shop) { projectsShop(node, FP); }
     var on = FP.layout === 'cards';
     node.classList.toggle('fp-feature', on);
     clear(node, 'fpf');
@@ -379,10 +409,42 @@
     }
   }
 
+  /* ---------- Project portfolio: "Product cards" — photo, title, outline button ---------- */
+  function projectsShop(node, FP) {
+    var grid = node.querySelector('.fp-grid'); if (!grid) return;
+    var list = liveIdx(FP.projects).filter(function (x) { return txt(x.it.title) || txt(x.it.image); });
+    if (!list.length) return;
+    var html = '<div class="fps" data-lpl="fps" style="--fps-n:' + Math.min(list.length, 4) + '">' + list.map(function (x) {
+      var p = x.it, img = bgUrl(p.image);
+      var href = txt(p.orderCategory) ? orderCatHref(p.orderCategory) : (txt(p.link) ? hrefOf(p.link) : '');
+      var lab = txt(p.btnLabel) || (href ? 'Explore' : '');
+      var fit = p.imageFit === 'contain' ? 'contain' : 'cover';
+      return '<div class="fps-card" data-lpe="list:featuredProjects:' + x.i + ':title">' +
+        (img ? (href ? '<a class="fps-img" ' + linkAttrs(href) + ' tabindex="-1" aria-hidden="true">' : '<div class="fps-img">') +
+          '<img src="' + esc(img) + '" alt="' + esc(p.title || '') + '" loading="lazy" style="object-fit:' + fit + ';object-position:' + esc(p.imagePos || 'center') + '">' + (href ? '</a>' : '</div>') : '') +
+        (txt(p.title) ? '<h3 class="fps-t">' + esc(p.title) + '</h3>' : '') +
+        (txt(p.description) && FP.shopShowText === true ? '<p class="fps-p">' + esc(p.description) + '</p>' : '') +
+        (href && lab ? '<a class="lpl-btn lpl-btn-outline fps-btn" ' + linkAttrs(href) + '>' + esc(lab) + ARROW + '</a>' : '') +
+        '</div>';
+    }).join('') + '</div>';
+    grid.insertAdjacentHTML('beforebegin', html);
+  }
+
   /* ---------- Services: tick cards ---------- */
   function services(C) {
     var node = sec('services'); if (!node) return;
     var SV = (C.sections && C.sections.services) || {};
+    var feature = SV.mode === 'feature';
+    node.classList.toggle('svcs-feature', feature);
+    node.classList.toggle('svf-right', feature && SV.featureSide === 'right');
+    clear(node, 'svf');
+    if (feature) {
+      ['svcs-story', 'svst-left', 'svcs-tick', 'svcs-tick-dark', 'svcs-iconrow', 'svcs-band-brand', 'svcs-band-dark', 'svcs-band-light', 'lpl-tone-tint', 'lpl-tone-dark'].forEach(function (k) { node.classList.remove(k); });
+      ['soft', 'tint', 'dark'].forEach(function (t) { node.classList.toggle('lpl-tone-' + t, SV.featureTone === t); });
+      clear(node, 'svst');
+      servicesFeature(node, C, SV);
+      return;
+    }
     var story = SV.mode === 'story';
     node.classList.toggle('svcs-story', story);
     ['soft', 'tint', 'dark'].forEach(function (t) { node.classList.toggle('lpl-tone-' + t, story && SV.storyTone === t); });
@@ -442,6 +504,28 @@
     }).join('');
   }
 
+  /* ---------- Services: big photo beside a heading, intro and icon points ---------- */
+  function servicesFeature(node, C, SV) {
+    var wrap = node.querySelector('.wrap'); if (!wrap) return;
+    // This page's own points (sections.services.featureItems); otherwise the service list.
+    var own = live(SV.featureItems).filter(function (x) { return txt(x.title) || txt(x.text); });
+    var items = own.length ? own.map(function (x) { return { icon: x.icon, image: x.image, title: x.title, body: x.text }; })
+      : live(C.services).filter(function (x) { return txt(x.title); }).map(function (x) { return { icon: x.icon, image: '', title: x.title, body: x.body }; });
+    var pic = bgUrl(SV.featureImage);
+    var cap = txt(SV.featureCaption);
+    wrap.insertAdjacentHTML('afterbegin', '<figure class="svf-media" data-lpl="svf" data-lpe="featureImage">' +
+      (pic ? '<img src="' + esc(pic) + '" alt="" loading="lazy">' : '<span class="svf-ph"></span>') +
+      (cap ? '<figcaption>' + esc(cap) + '</figcaption>' : '') + '</figure>');
+    if (!items.length) return;
+    var listKey = own.length ? 'servicesFeatureItems' : '';
+    wrap.insertAdjacentHTML('beforeend', '<ul class="svf-list" data-lpl="svf">' + items.map(function (it, i) {
+      var im = bgUrl(it.image);
+      var media = im ? '<img src="' + esc(im) + '" alt="" loading="lazy">' : (icon(it.icon) || CHECK);
+      return '<li' + (listKey ? ' data-lpe="list:' + listKey + ':' + i + ':title"' : '') + '><span class="svf-ic">' + media + '</span><div>' +
+        (txt(it.title) ? '<h3>' + esc(it.title) + '</h3>' : '') + (txt(it.body) ? '<p>' + esc(it.body) + '</p>' : '') + '</div></li>';
+    }).join('') + '</ul>');
+  }
+
   /* ---------- Activity counter: compact strip ---------- */
   function activityCounter(C) {
     var node = sec('activityCounter'); if (!node) return;
@@ -463,6 +547,11 @@
     node.classList.toggle('tbx-band', bandOn);
     node.classList.toggle('tbx-band-dark', bandOn && TB.bandTone === 'dark');
     if (bandOn) { textBand(node, C, TB); return; }
+    var bleed = TB.layout === 'bleed';
+    node.classList.toggle('tbx-bleed', bleed);
+    node.classList.toggle('tbl-left', bleed && TB.imageSide === 'left');
+    ['soft', 'tint', 'dark'].forEach(function (t) { node.classList.toggle('lpl-tone-' + t, bleed && TB.bleedTone === t); });
+    if (bleed) { textBleed(node, C, TB); return; }
     var host = node.querySelector('.tb-text'); if (!host) return;
     var feats = live(TB.features).filter(function (f) { return txt(f.text); });
     var html = '';
@@ -523,6 +612,24 @@
         : (img ? '<div class="tbb-fig tbb-photo" data-lpe="image"><img src="' + esc(img) + '" alt="' + esc(TB.imageAlt || '') + '" loading="lazy"></div>' : '')) +
       '</div>';
     node.insertAdjacentHTML('afterbegin', html);
+  }
+
+  /* ---------- Text box: split with a photo that runs to the page edge ---------- */
+  function textBleed(node, C, TB) {
+    var img = bgUrl(TB.image);
+    var lines = function (v) { return esc(v).replace(/\n/g, '<br>'); };
+    var feats = live(TB.features).filter(function (f) { return txt(f.text); });
+    node.insertAdjacentHTML('afterbegin', '<div class="tbl" data-lpl="tbb"><div class="tbl-text"><div class="tbl-in">' +
+      (txt(TB.eyebrow) ? '<span class="eyebrow tbl-eyebrow" data-lpe="eyebrow">' + esc(TB.eyebrow) + '</span>' : '') +
+      (txt(TB.heading) ? '<h2 class="tbl-h" data-lpe="heading">' + lines(TB.heading) + '</h2>' : '') +
+      (txt(TB.intro) ? '<p class="tbl-intro" data-lpe="intro">' + lines(TB.intro) + '</p>' : '') +
+      (txt(TB.content) ? '<div class="tbl-content" data-lpe="content">' + lines(TB.content) + '</div>' : '') +
+      (feats.length ? '<ul class="tbx-feats">' + feats.map(function (f) {
+        return '<li>' + (icon(f.icon) ? '<span class="tbx-fic">' + icon(f.icon) + '</span>' : '<span class="tbx-fic tbx-dot">' + CHECK + '</span>') + '<span>' + esc(f.text) + '</span></li>';
+      }).join('') + '</ul>' : '') +
+      (txt(TB.ctaLabel) ? '<a class="lpl-btn lpl-btn-outline tbx-cta" data-lpe="ctaLabel" ' + linkAttrs(hrefOf(TB.ctaHref, contactHref())) + '>' + esc(TB.ctaLabel) + ARROW + '</a>' : '') +
+      '</div></div>' +
+      '<div class="tbl-media" data-lpe="image">' + (img ? '<img src="' + esc(img) + '" alt="' + esc(TB.imageAlt || '') + '" loading="lazy">' : '') + '</div></div>');
   }
 
   /* ---------- Reviews: summary row, dark band, Google badge ---------- */
@@ -629,12 +736,15 @@
     var hasCo = !!(txt(co.title) || txt(co.text));
     var numbered = SP.layout === 'numbered';
     var journey = SP.layout === 'journey';
+    var milestone = SP.layout === 'milestone';
     node.classList.toggle('sp-numbered', numbered);
     node.classList.toggle('sp-journey', journey);
-    ['soft', 'tint', 'dark'].forEach(function (t) { node.classList.toggle('lpl-tone-' + t, journey && SP.journeyTone === t); });
+    node.classList.toggle('sp-milestone', milestone);
+    ['soft', 'tint', 'dark'].forEach(function (t) { node.classList.toggle('lpl-tone-' + t, (journey || milestone) && SP.journeyTone === t); });
     node.classList.toggle('sp-has-side', !!img && !numbered && !journey);
     clear(node, 'sp');
     stepImages(node, SP);
+    if (milestone) { spMilestone(node, SP, co); return; }
     if (journey) {
       var jh = node.querySelector('.section-head');
       if (jh && txt(co.linkLabel)) jh.insertAdjacentHTML('beforeend', '<a class="lpl-link" data-lpl="sp" data-lpe="calloutLinkLabel" ' + linkAttrs(hrefOf(co.linkHref, contactHref())) + '>' + esc(co.linkLabel) + ARROW + '</a>');
@@ -661,6 +771,21 @@
         '<div>' + (txt(co.text) ? '<p>' + esc(co.text) + '</p>' : '') +
         (txt(co.linkLabel) ? '<a ' + linkAttrs(hrefOf(co.linkHref, contactHref())) + '>' + esc(co.linkLabel) + ARROW + '</a>' : '') +
         '</div></div></div>' : '') + '</div>');
+  }
+
+  /* ---------- How it works: "Milestone" — big figure | heading, intro, link + watermark ---------- */
+  function spMilestone(node, SP, co) {
+    var wrap = node.querySelector('.wrap'); if (!wrap) return;
+    var fig = txt(SP.msFigure);
+    if (fig) wrap.insertAdjacentHTML('afterbegin', '<div class="spm-fig" data-lpl="sp" data-lpe="msFigure">' + esc(fig) + '</div>');
+    var head = node.querySelector('.section-head');
+    if (head && txt(co.linkLabel)) head.insertAdjacentHTML('beforeend', '<a class="spm-link" data-lpl="sp" data-lpe="calloutLinkLabel" ' + linkAttrs(hrefOf(co.linkHref, contactHref())) + '>' + esc(co.linkLabel) + ARROW + '</a>');
+    var wm = bgUrl(SP.msWatermark);
+    node.classList.toggle('spm-has-wm', !!wm);
+    if (wm) {
+      var op = parseInt(SP.msWatermarkOpacity, 10); if (isNaN(op)) op = 35; op = Math.max(5, Math.min(100, op));
+      node.insertAdjacentHTML('afterbegin', '<div class="spm-wm" data-lpl="sp" aria-hidden="true" style="background-image:url(&quot;' + esc(wm) + '&quot;);opacity:' + (op / 100) + '"></div>');
+    }
   }
 
   /* ---------- FAQ: two columns + view all ---------- */
@@ -853,6 +978,9 @@
     var bg = bgUrl(M.bgImage);
     if (tone === 'photo' && bg) node.style.setProperty('--cb-bg', 'url("' + bg + '")'); else node.style.removeProperty('--cb-bg');
     if (M.on !== true) return;
+    var boxesOn = M.layout === 'boxes';
+    node.classList.toggle('cb-boxes', boxesOn);
+    if (boxesOn) { ctaBoxes(node, C, M); return; }
     var btns = ctaBtn(C, M, 1) + ctaBtn(C, M, 2);
     node.insertAdjacentHTML('afterbegin', '<div class="wrap cb-wrap" data-lpl="cb"><div class="cb"><div class="cb-text">' +
       (txt(M.eyebrow) ? '<span class="cb-eyebrow" data-lpe="eyebrow">' + esc(M.eyebrow) + '</span>' : '') +
@@ -868,6 +996,29 @@
         openBooking();
       });
     }
+  }
+
+  /* ---------- CTA banner: title + outlined boxes (icon, title, text) ---------- */
+  function ctaBoxes(node, C, M) {
+    var boxes = liveIdx(M.boxes).filter(function (x) { return txt(x.it.title) || txt(x.it.text); });
+    var btns = M.boxesButtons === true ? (ctaBtn(C, M, 1) + ctaBtn(C, M, 2)) : '';
+    var lines = function (v) { return esc(v).replace(/\n/g, '<br>'); };
+    node.insertAdjacentHTML('afterbegin', '<div class="wrap cb-wrap" data-lpl="cb"><div class="cb cbx">' +
+      '<div class="cbx-text">' +
+      (txt(M.eyebrow) ? '<span class="cb-eyebrow" data-lpe="eyebrow">' + esc(M.eyebrow) + '</span>' : '') +
+      (txt(M.heading) ? '<h2 class="cb-h" data-lpe="heading">' + lines(M.heading) + '</h2>' : '') +
+      (txt(M.text) ? '<p class="cb-p" data-lpe="text">' + lines(M.text) + '</p>' : '') +
+      (btns ? '<div class="cb-btns">' + btns + '</div>' : '') + '</div>' +
+      (boxes.length ? '<div class="cbx-grid" style="--cbx-n:' + Math.min(boxes.length, 4) + '">' + boxes.map(function (x) {
+        var im = bgUrl(x.it.image);
+        var media = im ? '<img class="cbx-img" src="' + esc(im) + '" alt="" loading="lazy">' : icon(x.it.icon);
+        var inner = (media ? '<span class="cbx-ic">' + media + '</span>' : '') +
+          (txt(x.it.title) ? '<h3 class="cbx-t">' + lines(x.it.title) + '</h3>' : '') +
+          (txt(x.it.text) ? '<p class="cbx-p">' + lines(x.it.text) + '</p>' : '');
+        var href = txt(x.it.link) ? hrefOf(x.it.link) : '';
+        return href ? '<a class="cbx-box" data-lpe="list:ctaBannerBoxes:' + x.i + ':title" ' + linkAttrs(href) + '>' + inner + '</a>'
+          : '<div class="cbx-box" data-lpe="list:ctaBannerBoxes:' + x.i + ':title">' + inner + '</div>';
+      }).join('') + '</div>' : '') + '</div></div>');
   }
 
   /* ---------- Shared: a week of prices from the Bookings rate cards ---------- */
@@ -1209,6 +1360,34 @@
     document.body.appendChild(s);
   }
 
+  /* ---------- Trust bar: "Icons above, text below" — icon row with dividers ---------- */
+  function trustBar(C) {
+    var node = sec('trustBar'); if (!node) return;
+    var TB = (C.sections && C.sections.trustBar) || {};
+    var on = TB.mode === 'stacked';
+    node.classList.toggle('tb-stacked', on);
+    node.classList.toggle('tbs-nodiv', on && TB.stackDividers === false);
+    node.classList.toggle('tbs-nocaps', on && TB.stackCaps === false);
+    ['soft', 'tint', 'dark'].forEach(function (t) { node.classList.toggle('lpl-tone-' + t, on && TB.stackTone === t); });
+    clear(node, 'tbs');
+    if (!on) { node.style.removeProperty('--tbs-ic'); return; }
+    var px = parseInt(TB.stackIconSize, 10); if (!(px >= 20 && px <= 120)) px = 44;
+    node.style.setProperty('--tbs-ic', px + 'px');
+    var items = liveIdx(TB.badges).filter(function (x) { return txt(x.it.label) || txt(x.it.icon) || txt(x.it.image); });
+    if (!items.length) return;
+    node.insertAdjacentHTML('afterbegin', '<div class="wrap tbs" data-lpl="tbs" style="--tbs-n:' + Math.min(items.length, 6) + '">' + items.map(function (x) {
+      var b = x.it, im = bgUrl(b.image);
+      var media = im ? '<img src="' + esc(im) + '" alt="" loading="lazy">' : icon(b.icon);
+      var inner = (media ? '<span class="tbs-ic">' + media + '</span>' : '') + (txt(b.label) ? '<span class="tbs-t">' + esc(b.label).replace(/\n/g, '<br>') + '</span>' : '');
+      var act = b.linkAction, href = '';
+      if (act === 'page' && txt(b.linkPage)) href = withBase('/' + txt(b.linkPage).replace(/^\/+/, ''));
+      else if (act === 'url' && txt(b.linkUrl)) href = hrefOf(b.linkUrl);
+      else if (act === 'scroll' && txt(b.linkTarget)) href = '#' + txt(b.linkTarget).replace(/^#/, '');
+      return href ? '<a class="tbs-item" data-lpe="list:trustBar:' + x.i + ':label" ' + linkAttrs(href) + '>' + inner + '</a>'
+        : '<div class="tbs-item" data-lpe="list:trustBar:' + x.i + ':label">' + inner + '</div>';
+    }).join('') + '</div>');
+  }
+
   /* ---------- Phones: room under the footer for the fixed call / directions bar ----------
      The bar sits over the bottom of the page, so the last footer gets a spacer the bar's
      height (in the footer's own colour) and nothing ends up hidden behind it. */
@@ -1230,7 +1409,7 @@
     if (host) host.insertAdjacentHTML('beforeend', html); else document.body.insertAdjacentHTML('beforeend', html);
   }
 
-  var STEPS = [heroSlider, heroBanners, headerCta, minimalFooter, logoTint, buttonShapes, orderLayout, featuredProjects, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, mapHours, ctaBanner, bookingWeek, heroBooking, bookingHire, fontSet, mobileBarSpace];
+  var STEPS = [heroSlider, heroBanners, headerCta, minimalFooter, logoTint, buttonShapes, orderLayout, featuredProjects, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, trustBar, mapHours, ctaBanner, bookingWeek, heroBooking, bookingHire, fontSet, mobileBarSpace];
 
   function run(cfg) {
     if (cfg) LAST = cfg;

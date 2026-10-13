@@ -54,7 +54,7 @@ test('the editor offers each option', () => {
     /<option value="story"/, /\['journey','Journey/, /\['cards','Feature cards/,
     /k:'eyebrowPos',label:'Eyebrow position'/, /\['lower','all lowercase'\]/,
     /hero:\{title:'Text options'/, /splitHero:\{title:'Text options'/,
-    /services:\{title:'Story layout',when:'mode=story'/, /k:'link',label:'Card link \(Feature cards\)'/
+    /\{title:'Story layout',when:'mode=story'/, /k:'link',label:'Card link \(Feature \/ Product cards\)'/
   ]) assert.match(manage, re);
 });
 

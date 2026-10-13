@@ -143,3 +143,34 @@ next autosave). Now:
   is added inside the last visible footer, so nothing is hidden behind the bar
   (`mobileBarSpace` in `lp-layouts.js`).
 - Footer → Link columns editor cards use theme colours (no white cards in dark themes).
+
+## Farm / provenance layouts (Oct 2026)
+
+All opt-in; existing sites are unchanged until the layout is chosen.
+
+| App → option | What it does | Config |
+| --- | --- | --- |
+| Trust bar → Style **Icons above, text below** | Icon (or the item's *Tile image*, e.g. a line drawing) above an uppercase title, thin dividers between. Background: page / Section container style, soft, tint, dark. | `sections.trustBar.mode = 'stacked'`, `stackTone`, `stackIconSize`, `stackDividers`, `stackCaps` |
+| Services → Style **Feature** | Big photo (left or right, optional caption) beside the eyebrow/heading/intro and icon points (icon or small image, title, text). Points are per page (`featureItems`); with none, the service list is used. | `sections.services.mode = 'feature'`, `featureImage`, `featureCaption`, `featureSide`, `featureTone`, `featureItems[]` |
+| CTA Banner → Layout **Title + boxes** | Heading (and text) on the left, outlined boxes (icon or image, title, text, optional link) on the right; add any number. Buttons optional. | `sections.ctaBanner.layout = 'boxes'`, `boxes[]`, `boxesButtons` |
+| How it works → Layout **Milestone** | Big figure (e.g. 1990) │ heading, intro and text link (card link label + link), optional faint watermark image on the right. Steps hidden. | `sections.serviceProcess.layout = 'milestone'`, `msFigure`, `msWatermark`, `msWatermarkOpacity`, `journeyTone` |
+| Project portfolio → Style **Product cards** | Centred heading; photo, title and an outline button per card. The button can open an **Order shop category** (`/order?cat=<slug>`) or use the card link. | `sections.featuredProjects.layout = 'shop'`, per project `btnLabel`, `orderCategory`, `link` |
+| Text Box → Layout **Split** | Text on one side, the photo filling the other half to the page edge (image side setting picks the side). | `sections.textBox.layout = 'bleed'`, `bleedTone` |
+
+The Order shop reads `?cat=` (category slug, name or id) and opens that category.
+
+Links typed as `/page` in these apps (and every other `lp-layouts.js` link) now get the site's
+own path prefix on the LeadPages address (`/griffithbutchery/page`), like the menu.
+
+## Image library
+
+Every image uploaded for a site lives in Cloudinary under `leadpages/<siteId>/` (older uploads:
+`leadpages/<slug>/`). `GET /api/cloudinary/library?siteId=` lists them (newest first) with an
+`inUse` flag from the saved site config; `POST {siteId, action:'delete', publicId}` deletes one
+that belongs to the site and isn't used (409 `in_use` otherwise). Access: site owner, its active
+partner or super-admin (same rule as site backups). No database table.
+
+Editor: every image field has a **Library** button (pick an existing image or upload a new one),
+and Branding → **Image library** opens the manager (filter All / In use / Not used, delete unused).
+Replacing or clearing an image no longer deletes the old file when anything else on the site
+still uses it.
