@@ -1776,7 +1776,21 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     if(currentSiteTemplate!=='trade'||!lpCur||!lpCur.slug) return '';
     return '&page='+encodeURIComponent(lpCur.slug);
   }
+  var _lpRouteBusy=false, _lpRouteT=null;
   function previewApply(a){
+    // Editing a landing page's own app (Landing pages \u2192 Apps \u2192 Edit): every change saves to
+    // that page and refreshes its preview, not the homepage preview.
+    var _lpEditing=false;
+    try{ _lpEditing=!_lpRouteBusy&&!!lpCur&&!!lpPageEditKey; }catch(_tdz){ _lpEditing=false; }
+    if(_lpEditing){
+      var _ed=document.getElementById('lp-app-edit');
+      if(_ed&&!_ed.hidden&&_ed.offsetParent){
+        persist(); lpAutosave();
+        if(_lpRouteT) clearTimeout(_lpRouteT);
+        _lpRouteT=setTimeout(function(){ _lpRouteBusy=true; try{ lpPagePreviewReload(); }finally{ _lpRouteBusy=false; } },350);
+        return;
+      }
+    }
     var fr=lpFrame(); if(!fr||!lpPrevReady) return;
     try{ if(typeof _syncSectionOrder==='function'&&data) _syncSectionOrder(data); }catch(_so){}
     try{ var w=fr.contentWindow; if(!w) return;
@@ -5795,7 +5809,7 @@ function heroCtaCard(c){
       {t:'sel',k:'layout',label:'Layout',opts:[['','Image slider (default)'],['booking','Booking card \u2014 headline, photo, calendar'],['half','Half-height banner \u2014 choose eyebrow / title / intro']]},
       {t:'chk',k:'halfEyebrow',label:'Half banner: show eyebrow',def:true,when:'layout=half'},
       {t:'chk',k:'halfTitle',label:'Half banner: show title',def:true,when:'layout=half'},
-      {t:'chk',k:'halfIntro',label:'Half banner: show intro text (slide sub-headline)',def:false,when:'layout=half'},
+      {t:'chk',k:'halfIntro',label:'Half banner: show intro text (slide sub-headline)',def:true,when:'layout=half'},
       {t:'sel',k:'textCase',label:'Headline case',opts:[['','Theme default'],['normal','As typed (no forced capitals)'],['lower','all lowercase'],['upper','ALL CAPITALS']]},
       {t:'sel',k:'eyebrowCase',label:'Eyebrow case',opts:[['','Capitals (default)'],['normal','As typed'],['lower','all lowercase']]},
       {t:'sel',k:'eyebrowPos',label:'Eyebrow position',opts:[['','Above the headline'],['below','Below the headline']]},

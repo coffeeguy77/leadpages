@@ -33,3 +33,10 @@ test('landing-page Save waits for the cloud save and refreshes the live cache', 
   assert.match(s, /await lpSaveDB\(\)/);
   assert.match(s, /lpPurgeLiveCache\(\)/);
 });
+
+test('landing-page app editor: later edits save to the page and refresh its preview', () => {
+  const pa = manage.slice(manage.indexOf('function previewApply(a){'), manage.indexOf('window.previewApply = previewApply;'));
+  assert.match(pa, /lp-app-edit/);
+  assert.match(pa, /lpAutosave\(\)/);
+  assert.match(pa, /lpPagePreviewReload\(\)/);
+});

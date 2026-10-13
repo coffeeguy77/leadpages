@@ -56,3 +56,11 @@ test('order page banner: intro text and eyebrow / title / intro choices', () => 
   assert.equal(hs.halfIntro, true);
   assert.equal(hs.layout, 'half');
 });
+
+test('half banner: intro shows by default and the banner grows instead of cropping', () => {
+  const fs = require('fs'); const path = require('path');
+  const js = fs.readFileSync(path.join(__dirname, '..', 'assets/lp-layouts.js'), 'utf8');
+  const css = fs.readFileSync(path.join(__dirname, '..', 'assets/lp-layouts.css'), 'utf8');
+  assert.match(js, /hsl-half-intro', half && HS\.halfIntro !== false/);
+  assert.match(css, /hsl-half \.hsl\{--hsl-half-h:[^}]*height:auto!important;min-height:var\(--hsl-half-h\)/);
+});
