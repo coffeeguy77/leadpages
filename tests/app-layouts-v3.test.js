@@ -64,7 +64,7 @@ test('every new layout is drawn by lp-layouts.js, styled, and opt-in', () => {
     assert.ok(js.indexOf(key) >= 0, key);
     assert.ok(css.indexOf(cls) >= 0, cls + ' styled');
   }
-  assert.match(js, /bookingWeek, heroBooking, bookingHire, fontSet\]/);
+  assert.match(js, /bookingWeek, heroBooking, bookingHire, fontSet(, mobileBarSpace)?\]/);
 });
 
 test('every new layout has its option in the page editor', () => {

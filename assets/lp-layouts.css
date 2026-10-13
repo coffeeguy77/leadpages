@@ -627,8 +627,9 @@ img.lpl-tint-f{filter:url(#lpl-tint-f)!important}
 /* ---------- How it works: step images ---------- */
 section[data-sec="serviceProcess"] .sp-step.sp-has-img .sp-ic{display:none!important}
 section[data-sec="serviceProcess"] .sp-img{line-height:0;display:flex;justify-content:inherit}
-section[data-sec="serviceProcess"] .sp-img img{width:var(--sp-img-size,64px);height:var(--sp-img-size,64px);object-fit:contain;display:block}
+section[data-sec="serviceProcess"] .sp-img img{width:var(--sp-img-size,calc(var(--sp-num-size,42px) * var(--sp-img-k,2.2)));height:var(--sp-img-size,calc(var(--sp-num-size,42px) * var(--sp-img-k,2.2)));max-width:100%;object-fit:contain;display:block}
 section[data-sec="serviceProcess"].sp-journey .sp-img{justify-content:center}
+@media(max-width:640px){section[data-sec="serviceProcess"]{--sp-img-k:1.8}}
 section[data-sec="serviceProcess"].sp-journey .sp-step.sp-has-img .sp-media{margin-bottom:12px!important}
 img.lpl-tint-s{filter:url(#lpl-tint-s)!important}
 
@@ -658,8 +659,8 @@ footer.site.ftm-on{padding:0!important}
 .ftm-div{width:1px;align-self:stretch;min-height:44px;background:currentColor;opacity:.35}
 .ftm-text{margin:0;font-size:17px;line-height:1.4;max-width:46ch;opacity:.92}
 .ftm-btn{color:inherit!important;border-color:currentColor!important;background:transparent!important}
-.ftm-lp{display:inline-flex;line-height:0;opacity:.9}
-.ftm-lp img{height:34px;width:auto}
+.ftm-lp{display:inline-flex;line-height:0}
+.ftm-lp img{height:30px;width:auto}
 html.lpl-ftm-lp #lpFooter{display:none!important}
 @media(max-width:640px){.ftm{flex-direction:column;align-items:flex-start}.ftm-div{display:none}}
 
@@ -667,3 +668,5 @@ html.lpl-ftm-lp #lpFooter{display:none!important}
 section[data-sec="orderStorefront"].os-editorial .section-head{max-width:none;margin-bottom:8px}
 section[data-sec="orderStorefront"].os-editorial .section-head h2{max-width:none;font-weight:500;letter-spacing:-.015em}
 section[data-sec="orderStorefront"].os-editorial .section-head .intro{max-width:60ch}
+/* Phones: spacer under the last footer so the fixed call bar never hides it (lp-layouts.js mobileBarSpace) */
+.lpl-mbar-space{display:block;width:100%;flex:0 0 auto;pointer-events:none}

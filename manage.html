@@ -5116,7 +5116,7 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
     h+='</div>';
     h+='<div style="display:flex;flex-wrap:wrap;gap:14px;"><div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:220px;"><label>Logo size <span id="lpf-size-v" style="font-weight:700;color:var(--accent);">'+size+'px</span></label><input type="range" id="lpf-size" min="12" max="120" value="'+size+'" style="width:100%;"></div>';
     h+='<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:220px;"><label>Background opacity <span id="lpf-op-v" style="font-weight:700;color:var(--accent);">'+op+'%</span></label><input type="range" id="lpf-op" min="0" max="100" value="'+op+'" style="width:100%;"></div></div>';
-    h+='<div style="display:flex;flex-wrap:wrap;gap:14px;margin-top:12px;"><div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:220px;"><label>Position</label><select id="lpf-align" class="tin" style="width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#fff;"><option value="left"'+(F.align==='left'?' selected':'')+'>Left</option><option value="center"'+(F.align!=='left'&&F.align!=='right'?' selected':'')+'>Centre</option><option value="right"'+(F.align==='right'?' selected':'')+'>Right</option></select></div>';
+    h+='<div style="display:flex;flex-wrap:wrap;gap:14px;margin-top:12px;"><div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:220px;"><label>Position</label><select id="lpf-align" class="tin" style="width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;background:var(--input-bg,#fff);color:var(--text,inherit);"><option value="left"'+(F.align==='left'?' selected':'')+'>Left</option><option value="center"'+(F.align!=='left'&&F.align!=='right'?' selected':'')+'>Centre</option><option value="right"'+(F.align==='right'?' selected':'')+'>Right</option></select></div>';
     h+='<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:220px;"><label>Background colour</label><div style="display:flex;align-items:center;gap:8px;"><input type="color" id="lpf-bg-clr" value="'+bg+'" style="width:46px;height:34px;padding:0;border:1px solid var(--line);border-radius:8px;cursor:pointer;flex:0 0 auto;"><input type="text" id="lpf-bg-tx" value="'+(/^#[0-9a-fA-F]{6}$/.test(F.bg||'')?F.bg:'')+'" placeholder="'+bg+'" style="flex:1;min-width:0;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;"></div></div></div>';
     h+='<div class="f" style="margin:12px 0 0;"><label>Footer text (optional)</label><input type="text" id="lpf-text" value="'+esc(F.text||'')+'" placeholder="e.g. Built with LeadPages" style="width:100%;"><p class="hint" style="margin:6px 0 0;">Optional caption beside the logo. Uses logo text colour.</p></div>';
     return h+'</div>';
@@ -5849,7 +5849,7 @@ function heroCtaCard(c){
     serviceProcess:{lede:'Optional photo beside the steps with a small card over it. <b>Numbered</b>: big step numbers in a row, with the card shown as a panel underneath (its button calls you unless a link is set). <b>Journey</b>: heading, intro and a text link (the card link label + link below) on the left; each step\u2019s icon, title and text in a row with arrows on the right. Any step can use an uploaded <b>Image</b> instead of its icon (set on the step below).',rows:[LPL_BTN_ROW,
       {t:'sel',k:'layout',label:'Layout',opts:[['','Standard'],['numbered','Numbered \u2014 big numbers + callout panel'],['journey','Journey \u2014 heading left, icon steps with arrows right']]},
       {t:'sel',k:'journeyTone',label:'Background',opts:[['','Page background'],['soft','Soft (theme light colour)'],['tint','Brand tint'],['dark','Dark']],when:'layout=journey'},
-      {t:'sel',k:'stepImageSize',label:'Step image size',opts:[['','Standard (64px)'],['48','Small (48px)'],['80','Large (80px)'],['100','Extra large (100px)'],['130','Huge (130px)']]},
+      {t:'sel',k:'stepImageSize',label:'Step image size (the Number &amp; icon size slider scales it too)',opts:[['','Auto \u2014 follows Number & icon size'],['48','Small (48px)'],['64','Medium (64px)'],['80','Large (80px)'],['100','Extra large (100px)'],['130','Huge (130px)']]},
       {t:'color',k:'stepImageTint',label:'Step image colour (optional \u2014 paints transparent images one colour)'},
       {t:'image',k:'sideImage',label:'Side photo'},
       {t:'text',k:'calloutTitle',label:'Card title'},{t:'ta',k:'calloutText',label:'Card text'},
@@ -10419,7 +10419,7 @@ function heroCtaCard(c){
               var btnOutline=col.cardBtnOutline===true;
               var btnSw=col.cardBtnStrokeWidth||'medium';
               var cardLink={action:col.cardLinkAction||'url',href:col.cardLinkUrl||col.cardLinkHref||'',page:col.cardLinkPage||'',target:col.cardLinkTarget||'quote',blank:col.cardLinkBlank!==false};
-              return '<div class="ft-col-ed" style="border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px;background:#fff;">'
+              return '<div class="ft-col-ed" style="border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px;background:var(--panel,#fff);color:var(--text,inherit);">'
                 +head
                 +'<div class="f" style="margin:0 0 10px;"><label>Card text</label><textarea class="tin ft-card-text" data-ci="'+ci+'" rows="3" placeholder="Short message — same idea as the support card.">'+esc(col.cardText!=null?col.cardText:(col.body||''))+'</textarea></div>'
                 +'<div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:10px;">'
@@ -10455,7 +10455,7 @@ function heroCtaCard(c){
                 +_ftLinkActBlock(ci,li,l,'ft-link')
                 +'</div>';
             }).join('');
-            return '<div class="ft-col-ed" style="border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px;background:#fff;">'
+            return '<div class="ft-col-ed" style="border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px;background:var(--panel,#fff);color:var(--text,inherit);">'
               +head+linkRows
               +'<button type="button" class="btn ghost sm ft-link-add" data-ci="'+ci+'">+ Add link</button></div>';
           }).join('');

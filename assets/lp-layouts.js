@@ -23,7 +23,8 @@
  *   sections.footer.layout = 'minimal'                   logo | text, right: LeadPages logo / button / nothing
  *     (+ minimalText, minimalRight 'button'|'none', minimalBtnLabel, minimalBtnHref)
  *   sections.orderStorefront.layout = 'editorial'        Order shop editorial look (lp-order-storefront.js)
- *     (+ stepImageSize px, stepImageTint '#rrggbb' paints transparent images one colour)
+ *     (+ stepImageSize px — scaled by iconScale; default follows the number size —
+ *      stepImageTint '#rrggbb' paints transparent images one colour)
  *   sections.services.mode = 'story'                     eyebrow, heading, text and link beside a photo
  *     (+ storyImage, storyLinkLabel, storyLinkHref, storyTone soft|tint|dark, storySide 'left')
  *   sections.serviceProcess.layout = 'journey'           heading + link left, icon steps with arrows right
@@ -203,8 +204,11 @@
       return st && st.on !== false && (txt(st.title) || txt(st.text) || txt(st.icon));
     });
     var els = node.querySelectorAll('.sp-steps > .sp-step');
+    // Step images follow "Number & icon size": by default they're a multiple of the number
+    // badge size (CSS), and a chosen image size is scaled by the same slider.
     var px = parseInt(SP.stepImageSize, 10);
-    if (px >= 24 && px <= 240) node.style.setProperty('--sp-img-size', px + 'px'); else node.style.removeProperty('--sp-img-size');
+    var sc = parseInt(SP.iconScale, 10); if (isNaN(sc)) sc = 100; sc = Math.max(50, Math.min(250, sc));
+    if (px >= 24 && px <= 240) node.style.setProperty('--sp-img-size', Math.round(px * sc / 100) + 'px'); else node.style.removeProperty('--sp-img-size');
     var tint = hexOk(SP.stepImageTint);
     for (var i = 0; i < els.length; i++) {
       var u = bgUrl(vis[i] && vis[i].image);
@@ -258,15 +262,59 @@
     if (right === 'button' && txt(F.minimalBtnLabel)) {
       html += '<a class="lpl-btn lpl-btn-outline ftm-btn" data-lpe="minimalBtnLabel" ' + linkAttrs(hrefOf(F.minimalBtnHref, contactHref())) + '>' + esc(F.minimalBtnLabel) + ARROW + '</a>';
     } else if (right === 'leadpages') {
-      html += '<a class="ftm-lp" href="https://www.leadpages.com.au" target="_blank" rel="noopener noreferrer" aria-label="LeadPages"><img class="lp-foot-logo" alt="LeadPages" src="/assets/leadpages-logo.svg" data-lp-logo="auto" data-lp-logo-ink="light"></a>';
+      html += '<a class="ftm-lp" href="https://www.leadpages.com.au" target="_blank" rel="noopener noreferrer" aria-label="LeadPages"><img class="lp-foot-logo" alt="LeadPages" src="/assets/leadpages-logo.svg" data-lp-logo="auto" data-lp-logo-pulse></a>';
     }
     html += '</div>';
     wrap.insertAdjacentHTML('beforeend', html);
     var slot = wrap.querySelector('[data-lpl="ftm"] .ftm-logo');
     if (slot && logo) { logo.removeAttribute('id'); slot.appendChild(logo); }
     // The LeadPages logo sits in the bar, so the usual strip underneath is not repeated.
-    if (right === 'leadpages') document.documentElement.classList.add('lpl-ftm-lp');
-    try { if (window.LPLogo && window.LPLogo.upgradeAll) window.LPLogo.upgradeAll({ pulse: false }); } catch (e) {}
+    if (right === 'leadpages') {
+      document.documentElement.classList.add('lpl-ftm-lp');
+      ftmLeadPagesLogo(ft, wrap.querySelector('[data-lpl="ftm"] .ftm-lp'), C);
+    }
+  }
+
+  /* The LeadPages logo in the minimal footer uses the LeadPages footer settings (feature
+     colour, logo text colour, size) and keeps its animated pulse — same as the strip it replaces. */
+  function bgOf(el) {
+    while (el && el.nodeType === 1) {
+      var m = (getComputedStyle(el).backgroundColor || '').match(/rgba?\(([^)]+)\)/);
+      if (m) {
+        var p = m[1].split(',').map(function (x) { return parseFloat(x); });
+        if (p.length < 4 || p[3] > 0.5) return p;
+      }
+      el = el.parentElement;
+    }
+    return [255, 255, 255];
+  }
+  function ftmLeadPagesLogo(ft, host, C) {
+    if (!host) return;
+    var L = (C.sections && C.sections.lpFooter) || {};
+    var T = C.theme || {};
+    var accent = hexOk(L.accent) || hexOk(T.hivis) || hexOk(T.pipe) || '#ff6a1f';
+    var rgb = bgOf(ft);
+    var light = (0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2]) / 255 > 0.62;
+    var ink = hexOk(L.ink) || (light ? '#13161b' : '#ffffff');
+    var size = +L.size; if (!size || isNaN(size)) size = 30; size = Math.max(10, Math.min(120, size));
+    var paint = function (el) {
+      if (!el) return;
+      el.classList.add('lp-foot-logo');
+      el.setAttribute('data-lp-logo-accent', accent);
+      el.setAttribute('data-lp-logo-ink', 'custom');
+      el.style.setProperty('--lp-logo-accent', accent, 'important');
+      el.style.setProperty('--lp-logo-ink', ink, 'important');
+      el.style.height = size + 'px'; el.style.width = 'auto'; el.style.maxHeight = size + 'px';
+    };
+    var logo = host.querySelector('.lp-foot-logo');
+    paint(logo);
+    if (window.LPLogo && window.LPLogo.mountLogo) {
+      try {
+        window.LPLogo.mountLogo(logo, { pulse: true, ink: ink, accent: accent }).then(function (w) {
+          paint(w || host.querySelector('.lp-logo-wrap, .lp-foot-logo'));
+        });
+      } catch (e) {}
+    }
   }
 
   /* ---------- Order Storefront: editorial layout switch (live in the editor preview) ---------- */
@@ -1161,7 +1209,28 @@
     document.body.appendChild(s);
   }
 
-  var STEPS = [heroSlider, heroBanners, headerCta, minimalFooter, logoTint, buttonShapes, orderLayout, featuredProjects, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, mapHours, ctaBanner, bookingWeek, heroBooking, bookingHire, fontSet];
+  /* ---------- Phones: room under the footer for the fixed call / directions bar ----------
+     The bar sits over the bottom of the page, so the last footer gets a spacer the bar's
+     height (in the footer's own colour) and nothing ends up hidden behind it. */
+  var MBAR_BOUND = false;
+  function mobileBarSpace() {
+    var old = document.querySelectorAll('[data-lpl="mbs"]');
+    for (var i = 0; i < old.length; i++) old[i].parentNode.removeChild(old[i]);
+    var bar = document.querySelector('.mobile-call');
+    if (!MBAR_BOUND) { MBAR_BOUND = true; window.addEventListener('resize', function () { try { mobileBarSpace(); } catch (e) {} }); }
+    if (!bar || document.querySelector('.lpbuy-bar')) return;
+    var cs = getComputedStyle(bar);
+    var h = (cs.display !== 'none' && cs.position === 'fixed') ? bar.offsetHeight : 0;
+    if (!h) return;
+    var shown = function (el) { return el && getComputedStyle(el).display !== 'none' && el.offsetHeight > 0; };
+    var lpf = document.getElementById('lpFooter');
+    var site = document.querySelector('footer.site[data-sec="footer"], footer[data-sec="footer"]');
+    var host = shown(lpf) ? lpf : (shown(site) ? site : null);
+    var html = '<div class="lpl-mbar-space" data-lpl="mbs" aria-hidden="true" style="height:' + h + 'px"></div>';
+    if (host) host.insertAdjacentHTML('beforeend', html); else document.body.insertAdjacentHTML('beforeend', html);
+  }
+
+  var STEPS = [heroSlider, heroBanners, headerCta, minimalFooter, logoTint, buttonShapes, orderLayout, featuredProjects, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, mapHours, ctaBanner, bookingWeek, heroBooking, bookingHire, fontSet, mobileBarSpace];
 
   function run(cfg) {
     if (cfg) LAST = cfg;
