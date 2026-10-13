@@ -642,6 +642,10 @@ section[data-sec="heroSlider"].hsl-half :is(.hsl-sub,.hsl-cta,.hsl-badges,.hsl-d
 section[data-sec="heroSlider"].hsl-half .hsl-inner{justify-content:flex-end;padding-bottom:clamp(26px,4vw,44px)}
 section[data-sec="heroSlider"].hsl-half .hsl-h{font-size:clamp(40px,6vw,82px)!important;line-height:1!important;margin:0!important}
 section[data-sec="heroSlider"].hsl-half .hsl-eyebrow{letter-spacing:.24em}
+section[data-sec="heroSlider"].hsl-half.hsl-half-intro .hsl-sub{display:block!important;margin:14px 0 0;max-width:60ch}
+section[data-sec="heroSlider"].hsl-half.hsl-half-intro .hsl-sub:empty{display:none!important}
+section[data-sec="heroSlider"].hsl-half.hsl-half-noeb .hsl-eyebrow{display:none!important}
+section[data-sec="heroSlider"].hsl-half.hsl-half-noh .hsl-h{display:none!important}
 @media(max-width:760px){section[data-sec="heroSlider"].hsl-half .hsl{height:calc(var(--hsl-mh-m,560px) / 2)!important;min-height:200px}}
 
 /* ---------- Footer: minimal bar ---------- */

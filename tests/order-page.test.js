@@ -46,3 +46,13 @@ test('order page banner: half-height Hero Slider with this page\'s eyebrow, titl
   // Off by default
   assert.equal(_orderShopPage({ sections: { orderStorefront: {} } }, 'order').pageSections, undefined);
 });
+
+test('order page banner: intro text and eyebrow / title / intro choices', () => {
+  const sec = { pageBannerOn: true, pageBannerTitle: 'Order online', pageBannerIntro: 'Cut to order.', pageBannerShowEyebrow: false };
+  const hs = _orderShopPage({ sections: { orderStorefront: sec } }, 'order').pageSections.heroSlider;
+  assert.equal(hs.slides[0].subText, 'Cut to order.');
+  assert.equal(hs.halfEyebrow, false);
+  assert.equal(hs.halfTitle, true);
+  assert.equal(hs.halfIntro, true);
+  assert.equal(hs.layout, 'half');
+});

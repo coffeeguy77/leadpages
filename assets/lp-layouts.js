@@ -132,6 +132,11 @@
     var HS = (C.sections && C.sections.heroSlider) || {};
     node.classList.toggle('hsl-case-normal', HS.textCase === 'normal');
     node.classList.toggle('hsl-half', HS.layout === 'half');
+    // Half banner: choose which text shows (eyebrow + title by default; intro opt-in).
+    var half = HS.layout === 'half';
+    node.classList.toggle('hsl-half-noeb', half && HS.halfEyebrow === false);
+    node.classList.toggle('hsl-half-noh', half && HS.halfTitle === false);
+    node.classList.toggle('hsl-half-intro', half && HS.halfIntro === true);
     heroText(node, HS, '.hsl-h', '.hsl-eyebrow');
     clear(node, 'hb');
     var items = live(HS.badges).filter(function (b) { return txt(b.title) || txt(b.text) || txt(b.icon); });

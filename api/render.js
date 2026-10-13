@@ -834,13 +834,18 @@ function orderShopPage(cfg, page) {
         layout: 'half',
         textCase: 'normal',
         eyebrowPos: 'above',
+        // Which text shows on the half banner (always half height). Set explicitly so the
+        // homepage slider's own choices never leak onto /order.
+        halfEyebrow: sec.pageBannerShowEyebrow !== false,
+        halfTitle: sec.pageBannerShowTitle !== false,
+        halfIntro: sec.pageBannerShowIntro !== false,
         badges: [],
         slides: [{
           on: true,
           eyebrow: String(sec.pageBannerEyebrow || ''),
           heading: String(sec.pageBannerTitle || sec.heading || 'Place your order'),
           imageUrl: String(sec.pageBannerImage || ''),
-          subText: '',
+          subText: String(sec.pageBannerIntro || ''),
           highlightText: '',
           primaryCtaText: '',
           secondaryCtaText: ''

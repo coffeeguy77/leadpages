@@ -2305,6 +2305,8 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     featuredProjects:'featuredProjects', specialOffer:'specialOfferPoints', crew:'crew',
     proofStream:'proofStream', jobsFeed:'jobsFeed', certifications:'certifications'
   };
+  function lpWasRemoved(p,key){ return !!(p&&Array.isArray(p.removedApps)&&p.removedApps.indexOf(key)>=0); }
+  function lpForgetRemoved(p,key){ if(p&&Array.isArray(p.removedApps)) p.removedApps=p.removedApps.filter(function(k){ return k!==key; }); }
   function lpEnsurePageApps(p){ if(!p.pageApps) p.pageApps=[]; if(!p.pageSections) p.pageSections={}; return p.pageApps; }
   function lpPageHasArticle(p){ return !!(p&&(String(p.h1||'').trim()||String(p.body||'').trim())); }
   function lpPageLayoutLabel(id){ return id==='__lpArticle'?'Page content':_secLabel(id); }
@@ -2353,12 +2355,16 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
    * Always attach Marketplace Hero Slider + Quote form on trade landing pages.
    * Unique mode seeded from homepage so AI draft can customise per keyword.
    */
-  function lpEnsureDefaultLandingApps(p){
+  function lpEnsureDefaultLandingApps(p, opts){
     if(!p||currentSiteTemplate!=='trade') return false;
+    // addMissing:false (opening an existing page) only seeds apps the page already has —
+    // never re-adds Hero/Quote the user removed.
+    var addMissing=!(opts&&opts.addMissing===false);
     var apps=lpEnsurePageApps(p);
     var changed=false;
     ['heroSlider','quote'].forEach(function(key){
       var app=apps.find(function(a){ return (a.key||a.section_key)===key; });
+      if(!app&&(!addMissing||lpWasRemoved(p,key))) return;
       if(!app){
         apps.push({key:key, mode:'unique', homeCopied:true});
         changed=true;
@@ -2525,6 +2531,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     } else {
       apps.push({key:secKey, mode:'shared'});
     }
+    lpForgetRemoved(lpCur, secKey);
     lpEnsurePageLayoutOrder(lpCur);
     var ord=lpCur.pageLayoutOrder;
     if(ord.indexOf(secKey)<0) ord.push(secKey);
@@ -2533,6 +2540,9 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   }
   function lpPageAppRemove(secKey){
     if(!lpCur) return;
+    // Remember the removal so page defaults / AI drafts never quietly add it back.
+    if(!Array.isArray(lpCur.removedApps)) lpCur.removedApps=[];
+    if(lpCur.removedApps.indexOf(secKey)<0) lpCur.removedApps.push(secKey);
     lpCur.pageApps=(lpCur.pageApps||[]).filter(function(a){ return (a.key||a.section_key)!==secKey; });
     if(lpCur.pageSections) delete lpCur.pageSections[secKey];
     if(lpCur.pageLayoutOrder) lpCur.pageLayoutOrder=lpCur.pageLayoutOrder.filter(function(id){ return id!==secKey; });
@@ -2583,7 +2593,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       if(app){ app.mode='unique'; app.homeCopied=true; }
     });
     var slidesIn=Array.isArray(draft.heroSlides)?draft.heroSlides:[];
-    if(slidesIn.length){
+    if(slidesIn.length&&!lpWasRemoved(lpCur,'heroSlider')){
       var hs=lpCur.pageSections.heroSlider||{};
       var base=Array.isArray(hs.slides)?hs.slides:[];
       var seed=(typeof slideFromHero==='function')?slideFromHero(data):{on:true};
@@ -2617,7 +2627,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       }).filter(function(it){ return it.text; }).slice(0,10);
       out.jobs=qPatch.jobOptions.length;
     }
-    lpCur.pageSections.quote=Object.assign({}, q, qPatch);
+    if(!lpWasRemoved(lpCur,'quote')) lpCur.pageSections.quote=Object.assign({}, q, qPatch);
     lpPinHeroArticleQuote(lpCur);
     persist(); lpAutosave();
     try{ lpRenderAppsTab(); }catch(e){}
@@ -2638,6 +2648,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       };
     }).filter(function(it){ return it.q&&it.a; }).slice(0,8);
     if(!items.length) return 0;
+    if(lpWasRemoved(lpCur,'faq')) return 0;
 
     var apps=lpEnsurePageApps(lpCur);
     var app=apps.find(function(a){ return (a.key||a.section_key)==='faq'; });
@@ -2881,10 +2892,14 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       bind('h2Color','lp-h2-color','lp-h2-color-t','lp-h2-color-clr');
       bind('paragraphColor','lp-p-color','lp-p-color-t','lp-p-color-clr');
     })();
-    $('lp-save').addEventListener('click',function(){
+    $('lp-save').addEventListener('click',async function(){
       if(lpCur) lpCur.updatedAt=new Date().toISOString();
       var prevStatus=lpCur&&lpCur._siPrevStatus;
-      persist(); lpSaveDB();
+      lpCancelAutosave();
+      persist();
+      var savedRes=await lpSaveDB();
+      if(!savedRes||(!savedRes.ok&&!savedRes.superseded)){ toast('Cloud save failed \u2014 your changes are not live yet. Try Save again.','warn'); return; }
+      if(savedRes.ok&&currentSiteStatus==='live') lpPurgeLiveCache();
       var pub=lpCur&&lpCur.status==='published';
       if(lpCur){
         if(pub && prevStatus!=='published'){
@@ -3194,7 +3209,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     lpCur=data.pages.find(x=>x.id===id); if(!lpCur) return;
     lpCur._siPrevStatus=lpCur.status||'draft';
     lpEnsurePageApps(lpCur);
-    try{ lpEnsureDefaultLandingApps(lpCur); }catch(e){ lpEnsurePageLayoutOrder(lpCur); }
+    try{ lpEnsureDefaultLandingApps(lpCur, {addMissing:false}); }catch(e){ lpEnsurePageLayoutOrder(lpCur); }
     $('lp-editor').hidden=false;
     $('lp-ed-title').textContent=lpCur.title?('Edit: '+lpCur.title):'New page';
     $('lp-title').value=lpCur.title||''; $('lp-slug').value=lpCur.slug||''; $('lp-meta').value=lpCur.meta||''; $('lp-h1').value=lpCur.h1||''; $('lp-body').value=lpCur.body||'';
@@ -5777,7 +5792,10 @@ function heroCtaCard(c){
   var LPL_BTN_ROW={t:'sel',k:'btnShape',label:'Button corners',opts:LPL_BTN_SHAPES};
   var LPL_LAYOUT_SPECS={
     heroSlider:{lede:'Optional icon badges under the sub-headline, and whether the headline keeps the theme’s capitals. <b>Booking card</b> shows the first slide as a headline and photo beside a calendar: each day shows its price (from the Bookings rate cards) and, with Bookings hire set up, what\u2019s free \u2014 the button opens the booking.',rows:[LPL_BTN_ROW,
-      {t:'sel',k:'layout',label:'Layout',opts:[['','Image slider (default)'],['booking','Booking card \u2014 headline, photo, calendar'],['half','Half-height banner \u2014 eyebrow + title only']]},
+      {t:'sel',k:'layout',label:'Layout',opts:[['','Image slider (default)'],['booking','Booking card \u2014 headline, photo, calendar'],['half','Half-height banner \u2014 choose eyebrow / title / intro']]},
+      {t:'chk',k:'halfEyebrow',label:'Half banner: show eyebrow',def:true,when:'layout=half'},
+      {t:'chk',k:'halfTitle',label:'Half banner: show title',def:true,when:'layout=half'},
+      {t:'chk',k:'halfIntro',label:'Half banner: show intro text (slide sub-headline)',def:false,when:'layout=half'},
       {t:'sel',k:'textCase',label:'Headline case',opts:[['','Theme default'],['normal','As typed (no forced capitals)'],['lower','all lowercase'],['upper','ALL CAPITALS']]},
       {t:'sel',k:'eyebrowCase',label:'Eyebrow case',opts:[['','Capitals (default)'],['normal','As typed'],['lower','all lowercase']]},
       {t:'sel',k:'eyebrowPos',label:'Eyebrow position',opts:[['','Above the headline'],['below','Below the headline']]},
@@ -5882,6 +5900,10 @@ function heroCtaCard(c){
       {t:'chk',k:'pageBannerOn',label:'Order page banner (on /order)',def:false},
       {t:'text',k:'pageBannerEyebrow',label:'Banner eyebrow',ph:'e.g. From farm to plate'},
       {t:'text',k:'pageBannerTitle',label:'Banner title',ph:'e.g. Place your order'},
+      {t:'ta',k:'pageBannerIntro',label:'Banner intro text',ph:'e.g. Free-range meat, cut to order and delivered across Canberra.'},
+      {t:'chk',k:'pageBannerShowEyebrow',label:'Banner: show eyebrow',def:true},
+      {t:'chk',k:'pageBannerShowTitle',label:'Banner: show title',def:true},
+      {t:'chk',k:'pageBannerShowIntro',label:'Banner: show intro text',def:true},
       {t:'image',k:'pageBannerImage',label:'Banner photo'}]},
     ctaBanner:{title:'Banner style & buttons',lede:'Leave a button\u2019s text empty to hide it. \u201cOpen the booking calendar\u201d opens the live hire calendar when Bookings is set up, otherwise it goes to the booking bar or quote form.',rows:[LPL_BTN_ROW,
       {t:'sel',k:'tone',label:'Style',opts:[['','Brand colour (default)'],['dark','Dark'],['light','Light card'],['photo','Photo background']]},
@@ -12140,6 +12162,20 @@ function heroCtaCard(c){
   }
   function wireSvcHide(){ var t=$('svc-hide-inactive'); if(!t||t.__w) return; t.__w=1; t.addEventListener('change', applySvcFilter); }
   function applySvcFilter(){ var box=$('svc-list'); if(!box) return; var t=$('svc-hide-inactive'); box.classList.toggle('hide-inactive', !!(t&&t.checked)); }
+  /** Invalidate CDN HTML for this site (Publish + landing-page Save). Never blocks. */
+  async function lpPurgeLiveCache(){
+    try{
+      var sess=await sb.auth.getSession();
+      var tok=sess&&sess.data&&sess.data.session&&sess.data.session.access_token;
+      if(tok&&(currentSiteId||currentSiteSlug)){
+        fetch('/api/purge-site-cache',{
+          method:'POST',
+          headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},
+          body:JSON.stringify({siteId:currentSiteId||null,slug:currentSiteSlug||null})
+        }).catch(function(){});
+      }
+    }catch(_purgeErr){}
+  }
   function siteConfigForSave(){
     const c=liveConfig();   // strips demo users
     delete c.states;        // sites inherit master rates unless explicitly overriding
@@ -12178,17 +12214,7 @@ function heroCtaCard(c){
     var sref=allSites.find(function(x){return x.id===currentSiteId;}); if(sref){ if(payload.business_name) sref.business_name=payload.business_name; sref.custom_domain=payload.custom_domain; if(payload.owner_email!==undefined) sref.owner_email=payload.owner_email; sref.config=payload.config; if(wentLive) sref.status='live'; }
     lpRefreshViewLiveLabel();
     // Invalidate CDN HTML for this site so longer cache does not delay live updates.
-    try{
-      var sess=await sb.auth.getSession();
-      var tok=sess&&sess.data&&sess.data.session&&sess.data.session.access_token;
-      if(tok&&(currentSiteId||currentSiteSlug)){
-        fetch('/api/purge-site-cache',{
-          method:'POST',
-          headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},
-          body:JSON.stringify({siteId:currentSiteId||null,slug:currentSiteSlug||null})
-        }).catch(function(){});
-      }
-    }catch(_purgeErr){}
+    lpPurgeLiveCache();
     if(currentSiteTemplate!=='broker-app' && document.body.classList.contains('lp-prev-open')) previewLoad();
     // Provision editing login for Client login email so sign-in codes work without a billing link step.
     if(currentRole==='super' && payload.owner_email && currentSiteId){
