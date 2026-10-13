@@ -82,9 +82,9 @@ All opt-in; nothing changes until chosen.
 
 | Branding → Buttons | **Button corners** for every button on the site: theme default / square / rounded / pill | `buttonShape` |
 | Each app → Layout options → Button corners; Logo → Header call-to-action → Button shape | Override for that app's buttons (header also keeps **Rectangle** with spaced capitals) | `sections.<app>.btnShape`, `sections.header.btnShape` |
-| Hero Slider → Layout | **Half-height banner** — eyebrow + title only, half the slider height | `sections.heroSlider.layout = 'half'` |
+| Hero Slider → Layout | **Half-height banner** — always half the slider height; choose which text shows: eyebrow and title (on by default) and intro text (the slide sub-headline, off by default) | `sections.heroSlider.layout = 'half'`, `halfEyebrow`, `halfTitle`, `halfIntro` |
 | Footer → Footer layout | **Minimal** — logo, divider, text; right: LeadPages logo (strip below hidden) / button / nothing (strip below shown) | `sections.footer.layout = 'minimal'`, `minimalText`, `minimalRight`, `minimalBtnLabel`, `minimalBtnHref` |
-| Order Storefront → Shop layout & order page | **Editorial** shop (category heading, search, clean rows, order summary card, no inner scroll panel) and **Order page banner** on `/order` (half-height Hero Slider with its own eyebrow/title/photo) | `sections.orderStorefront.layout = 'editorial'`, `catIntro`, `searchPlaceholder`, `cartTitle`, `pageBannerOn`, `pageBannerEyebrow`, `pageBannerTitle`, `pageBannerImage` |
+| Order Storefront → Shop layout & order page | **Editorial** shop (category heading, search, clean rows, order summary card, no inner scroll panel) and **Order page banner** on `/order` (half-height Hero Slider with its own eyebrow/title/intro/photo, each text line can be shown or hidden) | `sections.orderStorefront.layout = 'editorial'`, `catIntro`, `searchPlaceholder`, `cartTitle`, `pageBannerOn`, `pageBannerEyebrow`, `pageBannerTitle`, `pageBannerIntro`, `pageBannerImage`, `pageBannerShowEyebrow`, `pageBannerShowTitle`, `pageBannerShowIntro` |
 
 Order page colours: the shop takes its colours from the Order Storefront colour fields (section variables). Live pages are CDN-cached (15 min + 1 h stale-while-revalidate) and **Publish** purges that cache — changes saved without publishing can show the old look on `/order` for up to about an hour. Branding → CSS overrides rewrite hex values in the page HTML only, so they can't reach colours inside the shop's own stylesheet; set the shop's colours in its colour fields.
 
@@ -114,3 +114,16 @@ The static marketplace app demos (`marketplace/demos/demo-*.html`) do not load t
 - Existing sites look identical (no layout keys set).
 - Editor → each app → Layout options: change a select, preview updates without reload; switch Bookings between CTA and Hire bar.
 - Hire bar under hero on desktop and phone; date picker, time list, duration list; enquiry fallback with and without a quote form; live quote/booking on a site with Bookings hire set up.
+
+## Landing pages: removed apps stay removed
+
+Opening a landing page used to re-attach the Hero Slider and Quote form if they were missing,
+so a removed Quote form came back the next time the page was opened (and was saved again by the
+next autosave). Now:
+
+- New pages still start with Hero Slider + Quote form.
+- Opening an existing page only fills in apps it already has.
+- Removing an app records it in `pages[].removedApps`; AI drafts won't add those back (Hero,
+  Quote, FAQ). Adding the app again clears it from the list.
+- Landing-page **Save** waits for the cloud save (warns if it fails) and refreshes the live
+  page cache, like Publish does.
