@@ -1782,12 +1782,16 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     if(currentSiteTemplate!=='trade'||!lpCur||!lpCur.slug) return '';
     return '&page='+encodeURIComponent(lpCur.slug);
   }
-  var _lpRouteBusy=false, _lpRouteT=null;
+  var _lpRouteBusy=false, _lpRouteT=null, _lpInPrevLoad=false, _lpLastUserAct=0;
+  // When the person last typed, clicked or changed something in the editor (not the preview).
+  ['input','change','click','keyup'].forEach(function(ev){ document.addEventListener(ev,function(){ _lpLastUserAct=Date.now(); },true); });
   function previewApply(a){
     // Editing a landing page's own app (Landing pages \u2192 Apps \u2192 Edit): every change saves to
     // that page and refreshes its preview, not the homepage preview.
+    // Only an edit (called with no arguments) may reload the page preview. The preview's own
+    // onload calls previewApply(appearance) — routing that would reload it again, forever.
     var _lpEditing=false;
-    try{ _lpEditing=!_lpRouteBusy&&!!lpCur&&!!lpPageEditKey; }catch(_tdz){ _lpEditing=false; }
+    try{ _lpEditing=(arguments.length===0)&&!_lpInPrevLoad&&!_lpRouteBusy&&(Date.now()-_lpLastUserAct<2000)&&!!lpCur&&!!lpPageEditKey; }catch(_tdz){ _lpEditing=false; }
     if(_lpEditing){
       var _ed=document.getElementById('lp-app-edit');
       if(_ed&&!_ed.hidden&&_ed.offsetParent){
@@ -1931,7 +1935,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   function previewLoad(){
     var fr=lpFrame(); if(!fr) return;
     lpPrevReady=false; lpPrevSlug=previewTarget();
-    fr.onload=function(){ lpPrevReady=true; previewLayout(); previewApply(curAppr()); lpPreviewApplyChromeHide(); setTimeout(lpPreviewFitFrameHeight, 0); setTimeout(lpPreviewFitFrameHeight, 350); };
+    fr.onload=function(){ lpPrevReady=true; previewLayout(); _lpInPrevLoad=true; try{ previewApply(curAppr()); }finally{ _lpInPrevLoad=false; } lpPreviewApplyChromeHide(); setTimeout(lpPreviewFitFrameHeight, 0); setTimeout(lpPreviewFitFrameHeight, 350); };
     fr.src='/'+lpPrevSlug+'?preview='+Date.now()+previewPageQuery();
   }
   function previewDock(){

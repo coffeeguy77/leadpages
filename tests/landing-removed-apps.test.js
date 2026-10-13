@@ -40,3 +40,12 @@ test('landing-page app editor: later edits save to the page and refresh its prev
   assert.match(pa, /lpAutosave\(\)/);
   assert.match(pa, /lpPagePreviewReload\(\)/);
 });
+
+test('landing-page preview never reloads itself in a loop', () => {
+  const pa = manage.slice(manage.indexOf('function previewApply(a){'), manage.indexOf('window.previewApply = previewApply;'));
+  // Only edits (no arguments), not the preview's own onload, and only right after user input.
+  assert.match(pa, /arguments\.length===0/);
+  assert.match(pa, /!_lpInPrevLoad/);
+  assert.match(pa, /Date\.now\(\)-_lpLastUserAct<2000/);
+  assert.match(manage, /fr\.onload=function\(\)\{ lpPrevReady=true; previewLayout\(\); _lpInPrevLoad=true; try\{ previewApply\(curAppr\(\)\); \}finally\{ _lpInPrevLoad=false; \}/);
+});
