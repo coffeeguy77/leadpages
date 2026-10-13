@@ -1389,6 +1389,7 @@
       if (act === 'page' && txt(b.linkPage)) href = withBase('/' + txt(b.linkPage).replace(/^\/+/, ''));
       else if (act === 'url' && txt(b.linkUrl)) href = hrefOf(b.linkUrl);
       else if (act === 'scroll' && txt(b.linkTarget)) href = '#' + txt(b.linkTarget).replace(/^#/, '');
+      else if (act === 'orderCat' && txt(b.orderCategory)) href = orderCatHref(b.orderCategory);
       // Row starts (no divider before them) for the desktop and phone column counts.
       var cls = 'tbs-item' + (k % per === 0 ? ' tbs-rs' : '') + (k % perM === 0 ? ' tbs-rsm' : '');
       return href ? '<a class="' + cls + '" data-lpe="list:trustBar:' + x.i + ':label" ' + linkAttrs(href) + '>' + inner + '</a>'
@@ -1446,6 +1447,23 @@
       BOUND = true;
     }
   }
+
+  /* Links to an Order shop category (/order?cat=…): when the shop is on this page, switch it to
+     that category and scroll to it instead of leaving the page. */
+  document.addEventListener('click', function (e) {
+    if (e.defaultPrevented || e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    var a = e.target && e.target.closest ? e.target.closest('a[href]') : null; if (!a) return;
+    var u; try { u = new URL(a.getAttribute('href'), location.href); } catch (_e) { return; }
+    var cat = u.searchParams.get('cat');
+    if (!cat || u.origin !== location.origin || !/\/order\/?$/.test(u.pathname)) return;
+    var mount = document.getElementById('lp-order-storefront');
+    var app = mount && mount.__lpOeApp;
+    if (!app || typeof app.openCategory !== 'function' || !mount.offsetParent) return;
+    if (!app.openCategory(cat)) return;
+    e.preventDefault();
+    var secN = mount.closest('[data-sec]') || mount;
+    try { secN.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_s) { secN.scrollIntoView(); }
+  });
 
   window.__lpLayoutsRun = run;
   function init() { bind(); run(); }

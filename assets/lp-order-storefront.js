@@ -717,12 +717,31 @@
   OrderStorefront.prototype.categoryFromUrl = function () {
     var want = '';
     try { want = String(new URLSearchParams(location.search).get('cat') || '').trim().toLowerCase(); } catch (e) { return ''; }
+    return this.categoryIdFor(want);
+  };
+
+  /** Category id for a slug, name or id (case-insensitive), or ''. */
+  OrderStorefront.prototype.categoryIdFor = function (want) {
+    want = String(want || '').trim().toLowerCase();
     if (!want) return '';
     var cats = this.visibleCategories();
     var hit = cats.find(function (c) {
       return String(c.slug || '').toLowerCase() === want || String(c.name || '').trim().toLowerCase() === want || String(c.id || '').toLowerCase() === want;
     });
     return hit ? hit.id : '';
+  };
+
+  /** Switch the shop to a category in place (same as pressing its category button). */
+  OrderStorefront.prototype.openCategory = function (want) {
+    var id = this.categoryIdFor(want);
+    if (!id || !this.state.catalogue) return false;
+    try { this.captureCheckoutDraft(); this.captureFastDrafts(); } catch (e) {}
+    this.state.activeCategoryId = id;
+    this.state.search = '';
+    this.state.view = 'shop';
+    this.state.selected = null;
+    this.render();
+    return true;
   };
 
   OrderStorefront.prototype.resolveDefaultCategory = function () {

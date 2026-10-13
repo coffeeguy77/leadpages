@@ -191,3 +191,12 @@ still uses it.
 - Typing the address no longer records every partial slug in `previousUrls` (only the live
   address the page had when opened) and reloads the preview once typing pauses.
 - Unique copies of a homepage app are switched on (`on: true`) so "Show on page" is ticked.
+
+## Trust bar → Order shop category links (Oct 2026)
+
+Each trust bar item's **When clicked** can be **Order shop category**, with a second dropdown of
+the site's shop categories (`linkAction: 'orderCat'`, `orderCategory: <slug>`). The link is
+`<site base>/order?cat=<slug>`. Any link to `/order?cat=…` (trust bar items in every style,
+product-card buttons) switches the shop to that category **in place** and scrolls to it when the
+Order Storefront is on the same page (`OrderStorefront.openCategory`); otherwise it opens the
+order page on that category.
