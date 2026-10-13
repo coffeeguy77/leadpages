@@ -49,3 +49,9 @@ test('landing-page preview never reloads itself in a loop', () => {
   assert.match(pa, /Date\.now\(\)-_lpLastUserAct<2000/);
   assert.match(manage, /fr\.onload=function\(\)\{ lpPrevReady=true; previewLayout\(\); _lpInPrevLoad=true; try\{ previewApply\(curAppr\(\)\); \}finally\{ _lpInPrevLoad=false; \}/);
 });
+
+test('preview header names the page a link inside the preview opened, with a way back', () => {
+  assert.match(manage, /function lpPreviewShowPage\(\)/);
+  assert.match(manage, /lpPreviewApplyChromeHide\(\); lpPreviewShowPage\(\);/);
+  assert.match(manage, /id="lp-prev-home"/);
+});

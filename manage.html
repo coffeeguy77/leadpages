@@ -1932,10 +1932,25 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     }catch(e){}
     return false;
   }
+  /** The preview has no address bar: when a link inside it opens another page (e.g. a landing
+   *  page from the menu), name that page in the preview header with a way back. */
+  function lpPreviewShowPage(){
+    var sub=$('lp-prev-sub'), fr=lpFrame(); if(!sub||!fr) return;
+    var path='';
+    try{ path=String(fr.contentWindow.location.pathname||'').replace(/\/+$/,''); }catch(_x){ path=''; }
+    var home='/'+(lpPrevSlug||'');
+    var pq=previewPageQuery();
+    var other=path&&path!==home&&!pq&&path.indexOf(home+'/')===0;
+    if(!other){ sub.textContent='unsaved look'; sub.removeAttribute('title'); return; }
+    var pg=path.slice(home.length);
+    sub.innerHTML='<b style="word-break:break-all;">'+esc(pg)+'</b> <a href="#" id="lp-prev-home" style="color:inherit;text-decoration:underline;white-space:nowrap;">\u2190 Home</a>';
+    sub.title='You followed a link inside the preview. Edits here apply to the homepage.';
+    var bh=$('lp-prev-home'); if(bh) bh.onclick=function(e){ e.preventDefault(); previewLoad(); };
+  }
   function previewLoad(){
     var fr=lpFrame(); if(!fr) return;
     lpPrevReady=false; lpPrevSlug=previewTarget();
-    fr.onload=function(){ lpPrevReady=true; previewLayout(); _lpInPrevLoad=true; try{ previewApply(curAppr()); }finally{ _lpInPrevLoad=false; } lpPreviewApplyChromeHide(); setTimeout(lpPreviewFitFrameHeight, 0); setTimeout(lpPreviewFitFrameHeight, 350); };
+    fr.onload=function(){ lpPrevReady=true; previewLayout(); _lpInPrevLoad=true; try{ previewApply(curAppr()); }finally{ _lpInPrevLoad=false; } lpPreviewApplyChromeHide(); lpPreviewShowPage(); setTimeout(lpPreviewFitFrameHeight, 0); setTimeout(lpPreviewFitFrameHeight, 350); };
     fr.src='/'+lpPrevSlug+'?preview='+Date.now()+previewPageQuery();
   }
   function previewDock(){
