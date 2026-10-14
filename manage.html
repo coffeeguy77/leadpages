@@ -2717,7 +2717,15 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       server yet), and only reload it when it isn't showing this page. */
   function lpPagePreviewReload(){
     if(!document.body.classList.contains('lp-prev-open')){ previewApply(data); return; }
-    if(lpPreviewOnCurPage()){ _lpInPrevLoad=true; try{ previewApply(curAppr()); }finally{ _lpInPrevLoad=false; } return; }
+    if(lpPreviewOnCurPage()){
+      // Redrawing the page jumps the preview to the top (the template scrolls to 0,0 when it
+      // renders a page): keep the preview where the person was looking while they type.
+      var _fw=null, _y=0; try{ _fw=lpFrame().contentWindow; _y=_fw.scrollY||0; }catch(_s){}
+      _lpInPrevLoad=true; try{ previewApply(curAppr()); }finally{ _lpInPrevLoad=false; }
+      if(_fw&&_y>0){ var _back=function(){ try{ if(Math.abs((_fw.scrollY||0)-_y)>2) _fw.scrollTo(0,_y); }catch(_b){} };
+        _back(); try{ _fw.requestAnimationFrame(_back); }catch(_r){} setTimeout(_back,60); setTimeout(_back,400); }
+      return;
+    }
     previewLoad();
   }
   /** The server pre-paints the LIVE page's position order (#lp-section-order, !important);
