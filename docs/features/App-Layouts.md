@@ -200,3 +200,29 @@ the site's shop categories (`linkAction: 'orderCat'`, `orderCategory: <slug>`). 
 product-card buttons) switches the shop to that category **in place** and scrolls to it when the
 Order Storefront is on the same page (`OrderStorefront.openCategory`); otherwise it opens the
 order page on that category.
+
+## Landing pages: page list, positions, own copies, drafts (Oct 2026)
+
+**Layout** (`manage.html`, `#lpx`)
+- Page list on the left: search, + New page, + New app layout, and a card per page (thumbnail, title, Live/Draft, In menu, number of apps, address, ⋮ menu with Positions / Page settings / Duplicate / Delete).
+- « makes the list a slim strip of thumbnails; ⇅ moves it to a row across the top. The choice is kept per browser (`localStorage.lp_landing_nav_v1`). Under 900px wide the list is a scrolling row.
+- The page header shows title, number of apps, address, Live/Draft and **Save draft**. Tabs: **Positions** (opens first on trade sites) and **Page settings** (title, address, SEO, article, menu, status — unchanged).
+- Positions: each row opens that app's editor (click, ✎ or ›); ↑/↓ and drag still reorder; ✕ removes (asks first). **+ Add section** shows the app picker. The app editor has **← Back to positions**, Undo / Redo (per app), Reset to homepage, Start blank and Remove.
+- The old per-app list (Shared/Unique select, "Edit on homepage") is hidden; its functions are kept.
+
+**Every app is the page's own copy**
+- Adding an app copies the homepage content into `page.pageSections[key]` with `mode:'unique'` (Custom HTML still starts blank).
+- Opening a page converts any `mode:'shared'` app the same way. On its own the conversion is not a draft (the site looks the same); it is saved with the next edit or Publish.
+- Nothing in the landing editor writes to `config.sections`.
+
+**Preview clicks** — with Auto-select on, a click in the preview while on Landing pages opens that page's own app editor. If the part isn't on the page (or the preview is on another page), a message is shown; it never switches to the homepage Page editor.
+
+**Drafts (Save without publishing)**
+- One draft per site, stored as a `site_backups` row (`source:'auto'`, label `Draft (not published)`), replaced on every save. No schema change.
+- Saved by **Save draft** (site bar and landing header), about 4s after an edit, and every 15s if anything changed that no edit hook caught. Leaving the page with unsaved changes asks first.
+- Landing-page saves (`lpSaveDB`) are drafts now. SEO tools, sitemap rebuild and the lead inbox still write live (`lpSaveLiveDB`) — they did before.
+- **Publish Live Site** writes everything live and deletes the draft.
+- Opening a site with a draft newer than the live site shows **Continue draft / Discard draft**. Older drafts are tidied away.
+- Preview: landing pages redraw from the editor's copy (no reload) and use the draft position order. `api/render.js` serves the site shell for a `?preview=` page that is only in a draft (new page / changed address); live requests still 404.
+
+**Tests:** `tests/landing-redesign-drafts.test.js`.

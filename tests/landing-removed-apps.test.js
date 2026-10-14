@@ -28,10 +28,11 @@ test('AI draft FAQs respect a removed FAQ app', () => {
   assert.match(f, /if\(lpWasRemoved\(lpCur,'faq'\)\) return 0;/);
 });
 
-test('landing-page Save waits for the cloud save and refreshes the live cache', () => {
+test('landing-page Save waits for the draft save and does not touch the live site', () => {
   const s = manage.slice(manage.indexOf("$('lp-save').addEventListener"), manage.indexOf("$('lp-close').addEventListener"));
   assert.match(s, /await lpSaveDB\(\)/);
-  assert.match(s, /lpPurgeLiveCache\(\)/);
+  // Saving is a draft now: only Publish makes it live (and purges the live cache).
+  assert.doesNotMatch(s, /lpPurgeLiveCache\(\)/);
 });
 
 test('landing-page app editor: later edits save to the page and refresh its preview', () => {
