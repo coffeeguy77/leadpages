@@ -972,14 +972,17 @@
     var node = sec('ctaBanner'); if (!node) return;
     var M = (C.sections && C.sections.ctaBanner) || {};
     clear(node, 'cb');
-    var tone = ({ brand: 1, dark: 1, light: 1, photo: 1 })[M.tone] ? M.tone : 'brand';
-    ['brand', 'dark', 'light', 'photo'].forEach(function (t) { node.classList.toggle('cb-tone-' + t, t === tone); });
+    var tone = ({ brand: 1, dark: 1, light: 1, photo: 1, clear: 1 })[M.tone] ? M.tone : 'brand';
+    ['brand', 'dark', 'light', 'photo', 'clear'].forEach(function (t) { node.classList.toggle('cb-tone-' + t, t === tone); });
+    // No background: the banner sits on the section's own colour (Section container style), so
+    // text follows that colour — dark text on a light section, light text otherwise.
+    node.classList.toggle('cb-clear-light', tone === 'clear' && cbClearLight(M));
     node.classList.toggle('cb-center', M.align === 'center');
     node.classList.toggle('cb-full', M.width === 'full');
     var bg = bgUrl(M.bgImage);
     if (tone === 'photo' && bg) node.style.setProperty('--cb-bg', 'url("' + bg + '")'); else node.style.removeProperty('--cb-bg');
     // Optional own colours: banner, text and (Title + boxes) box outline / icon size.
-    var cardBg = tone !== 'photo' ? hexOk(M.cardBg) : '', ink = hexOk(M.cardText), line = hexOk(M.boxBorder);
+    var cardBg = (tone !== 'photo' && tone !== 'clear') ? hexOk(M.cardBg) : '', ink = hexOk(M.cardText), line = hexOk(M.boxBorder);
     [['--cb-card', cardBg, 'cb-has-bg'], ['--cb-ink', ink, 'cb-has-ink'], ['--cbx-line', line, 'cb-has-line']].forEach(function (v) {
       if (v[1]) node.style.setProperty(v[0], v[1]); else node.style.removeProperty(v[0]);
       node.classList.toggle(v[2], !!v[1]);
@@ -1017,11 +1020,12 @@
   /** Colour box images/icons are painted (transparent images become that colour), or ''.
    *  Auto: dark banners paint them the text colour (white by default) so dark line drawings
    *  show up; light banners keep the images' own colours. */
+  function cbClearLight(M) { var b = hexOk(M && M.appearance && M.appearance.containerBg); return !!b && hexLum(b) >= 0.4; }
   function cbBoxTint(M) {
     if (!M || M.layout !== 'boxes' || M.boxImgMode === 'original') return '';
     if (M.boxImgMode === 'tint') return hexOk(M.boxImgTint);
-    var bg = M.tone !== 'photo' ? hexOk(M.cardBg) : '';
-    var dark = bg ? hexLum(bg) < 0.4 : M.tone !== 'light';
+    var bg = (M.tone !== 'photo' && M.tone !== 'clear') ? hexOk(M.cardBg) : '';
+    var dark = bg ? hexLum(bg) < 0.4 : (M.tone === 'clear' ? !cbClearLight(M) : M.tone !== 'light');
     if (!dark) return '';
     return hexOk(M.cardText) || '#ffffff';
   }
@@ -1444,7 +1448,33 @@
     if (host) host.insertAdjacentHTML('beforeend', html); else document.body.insertAdjacentHTML('beforeend', html);
   }
 
-  var STEPS = [heroSlider, heroBanners, headerCta, minimalFooter, logoTint, buttonShapes, orderLayout, featuredProjects, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, trustBar, mapHours, ctaBanner, bookingWeek, heroBooking, bookingHire, fontSet, mobileBarSpace];
+  /* ---------- Hero / hero slider / trust bar width: theme default, full width or site width ---------- */
+  var WIDTH_SECS = ['heroSlider', 'hero', 'splitHero', 'trustBar'];
+  function appWidths(C) {
+    WIDTH_SECS.forEach(function (k) {
+      var n = sec(k); if (!n) return;
+      var m = (C.sections && C.sections[k] && C.sections[k].widthMode) || '';
+      n.classList.toggle('lpw-full', m === 'full');
+      n.classList.toggle('lpw-site', m === 'site');
+    });
+  }
+
+  /* ---------- Headings: a line break typed in the editor shows as a line break ---------- */
+  var BR_SEL = 'h1,h2,h3,h4,h5,[data-lpe$="heading"],[data-lpe$="title"],[data-lpe$="Title"],[data-lpe$="Heading"],.eyebrow,.lp-eyebrow';
+  function headingBreaks() {
+    var els = document.querySelectorAll('main ' + BR_SEL.split(',').join(',main ') + ',footer h1,footer h2,footer h3,footer h4,section[data-sec] h2,section[data-sec] h3');
+    for (var i = 0; i < els.length; i++) {
+      var tw = document.createTreeWalker(els[i], 4 /* NodeFilter.SHOW_TEXT */, null), nodes = [], n;
+      while ((n = tw.nextNode())) { if (/\S[ \t]*\n\s*\S/.test(n.nodeValue) && !(n.parentNode && /^(SCRIPT|STYLE|TEXTAREA)$/.test(n.parentNode.nodeName))) nodes.push(n); }
+      nodes.forEach(function (tn) {
+        var parts = tn.nodeValue.replace(/^\s+|\s+$/g, function (m) { return m.replace(/\n/g, ' '); }).split(/[ \t]*\n\s*/);
+        var frag = document.createDocumentFragment();
+        parts.forEach(function (p, k) { if (k) frag.appendChild(document.createElement('br')); frag.appendChild(document.createTextNode(p)); });
+        tn.parentNode.replaceChild(frag, tn);
+      });
+    }
+  }
+  var STEPS = [heroSlider, heroBanners, headerCta, minimalFooter, logoTint, buttonShapes, orderLayout, featuredProjects, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, trustBar, mapHours, ctaBanner, bookingWeek, heroBooking, bookingHire, fontSet, mobileBarSpace, appWidths, headingBreaks];
 
   function run(cfg) {
     // On a landing page the template builds the page's own config (homepage + the page's

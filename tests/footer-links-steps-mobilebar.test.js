@@ -38,7 +38,7 @@ test('step images scale with Number & icon size', () => {
 });
 
 test('phones: spacer under the footer for the fixed call bar', () => {
-  assert.match(js, /fontSet, mobileBarSpace\]/);
+  assert.match(js, /fontSet, mobileBarSpace(, [a-zA-Z]+)*\]/);
   assert.match(css, /\.lpl-mbar-space\{/);
 });
 

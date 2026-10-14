@@ -742,6 +742,23 @@ section[data-sec="ctaBanner"].cb-boxes .cbx-ic img{width:40px;height:40px;object
 section[data-sec="ctaBanner"].cb-boxes .cbx-t{margin:0;color:inherit;font-size:clamp(19px,1.7vw,23px);line-height:1.18;text-transform:none;letter-spacing:0}
 section[data-sec="ctaBanner"].cb-boxes .cbx-p{margin:0;font-size:15px;line-height:1.5;opacity:.88}
 section[data-sec="ctaBanner"].cb-boxes.cb-tone-light .cbx-box{border-color:var(--line,#dde4ec)}
+/* Width option (hero slider, hero banners, trust bar): Site width caps the whole band
+   (background included) at the site's maximum width; Full width lifts the cap. */
+html.site-width-capped section[data-sec].lpw-site{width:100%;max-width:var(--site-maxw,1920px);margin-left:auto!important;margin-right:auto!important;box-sizing:border-box}
+html:not(.site-width-capped):not(.site-width-full) section[data-sec].lpw-site{width:100%;box-sizing:border-box;max-width:1920px;margin-left:auto!important;margin-right:auto!important}
+section[data-sec="heroSlider"].lpw-full .hsl{max-width:none!important}
+@media (min-width:761px){html.site-width-capped section[data-sec="heroSlider"].lpw-full:not(.hsl-half) .hsl{aspect-ratio:auto!important;height:var(--hsl-mh-d,680px)!important;max-height:none!important}}
+section[data-sec="trustBar"].lpw-full .tb-band{max-width:none!important}
+/* CTA banner: No background — sits on the section's own colour (one full-width band) */
+section[data-sec="ctaBanner"].cb-tone-clear .cb{background:transparent!important;box-shadow:none!important;border:0!important;color:#fff}
+section[data-sec="ctaBanner"].cb-tone-clear .cb::after{display:none}
+section[data-sec="ctaBanner"].cb-full.cb-tone-clear{background:transparent}
+section[data-sec="ctaBanner"].cb-tone-clear.cb-clear-light .cb{color:var(--ink,#1a2230)}
+section[data-sec="ctaBanner"].cb-tone-clear.cb-clear-light .cb-eyebrow{color:var(--hivis,#ff6a1f);opacity:1}
+section[data-sec="ctaBanner"].cb-tone-clear.cb-clear-light .cb-p{color:var(--muted,#5b6878);opacity:1}
+section[data-sec="ctaBanner"].cb-tone-clear.cb-clear-light .cb-btn1{background:var(--hivis,#ff6a1f);border-color:var(--hivis,#ff6a1f);color:#fff}
+section[data-sec="ctaBanner"].cb-tone-clear.cb-clear-light .cb-btn2{border-color:var(--line,#dde4ec);color:var(--ink,#1a2230)}
+section[data-sec="ctaBanner"].cb-boxes.cb-tone-clear.cb-clear-light .cbx-box{border-color:color-mix(in srgb,currentColor 35%,transparent)}
 /* CTA banner: own colours + box icon/image size and colour */
 section[data-sec="ctaBanner"].cb-has-bg:not(.cb-full) .cb{background:var(--cb-card)!important}
 section[data-sec="ctaBanner"].cb-has-bg.cb-full{background:var(--cb-card)!important}

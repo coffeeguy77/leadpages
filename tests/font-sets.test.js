@@ -58,5 +58,5 @@ test('the editor has a Fonts picker and the preview switches live', () => {
   assert.match(m, /<script src="\/assets\/lp-fonts\.js\?v=\d+"><\/script>/);
   assert.match(m, /function lpMountFontCard/);
   const js = fs.readFileSync(path.join(root, 'assets/lp-layouts.js'), 'utf8');
-  assert.match(js, /bookingHire, fontSet(, mobileBarSpace)?\]/);
+  assert.match(js, /bookingHire, fontSet(, mobileBarSpace)?(, [a-zA-Z]+)*\]/);
 });

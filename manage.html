@@ -1660,6 +1660,41 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   }
 
   /* ---------- persistence + export ---------- */
+  /* Headings and titles: a growing text box where Enter starts a new line, so a long heading
+     can be broken where it reads best (the site shows each line break). */
+  function lpIsHeadKey(k){
+    k=String(k||'');
+    if(/^(seo|meta|og|tab|menu|alt|aria|btn|cta|link|button|page)/i.test(k)&&!/^pageBanner/i.test(k)) return false;
+    return /^(heading|title|headline|h1|subheading|formtitle)$/i.test(k)||/(Heading|Title|Headline)$/.test(k);
+  }
+  function lpHeadTa(attrs, ph, extraStyle){
+    return '<textarea class="tin lp-headta" rows="1" '+attrs+' placeholder="'+String(ph||'').replace(/"/g,'&quot;')+'" title="Press Enter to start a new line" style="width:100%;box-sizing:border-box;resize:none;overflow:hidden;min-height:40px;line-height:1.35;'+(extraStyle||'')+'"></textarea>';
+  }
+  function lpHeadTaFit(el){ if(!el||!el.style) return; el.style.height='auto'; el.style.height=Math.max(40, el.scrollHeight+2)+'px'; }
+  (function lpHeadTaWatch(){
+    document.addEventListener('input',function(e){ if(e.target&&e.target.classList&&e.target.classList.contains('lp-headta')) lpHeadTaFit(e.target); },true);
+    var pend=false;
+    function fitAll(){ pend=false; document.querySelectorAll('textarea.lp-headta').forEach(function(t){ if(t.offsetParent) lpHeadTaFit(t); }); }
+    try{ new MutationObserver(function(){ if(!pend){ pend=true; requestAnimationFrame(fitAll); } }).observe(document.documentElement,{childList:true,subtree:true}); }catch(_m){}
+    document.addEventListener('focusin',function(e){ if(e.target&&e.target.classList&&e.target.classList.contains('lp-headta')) lpHeadTaFit(e.target); });
+  })();
+
+  /* Draggable rows (list items, menu items, positions) hold text boxes: pressing the mouse in
+     a text box must select text, not start dragging the whole row. While the mouse is down in a
+     field, its draggable rows are switched off; they come back on mouse-up. */
+  (function lpFieldDragGuard(){
+    var off=[];
+    function restore(){ off.forEach(function(el){ el.setAttribute('draggable','true'); }); off=[]; }
+    document.addEventListener('mousedown',function(e){
+      var t=e.target; if(!t||!t.closest) return;
+      if(!t.closest('input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]):not([type=button]),textarea,select,[contenteditable="true"]')) return;
+      restore();
+      var el=t.parentElement;
+      while(el){ if(el.getAttribute&&el.getAttribute('draggable')==='true'){ el.setAttribute('draggable','false'); off.push(el); } el=el.parentElement; }
+    },true);
+    document.addEventListener('mouseup',function(){ setTimeout(restore,0); },true);
+    window.addEventListener('blur',restore);
+  })();
   function persist(){ try{ localStorage.setItem('linray_rates', JSON.stringify(data)); }catch(e){}
     // A change the person just made (not page set-up): keep it safe as a server draft.
     try{ if(currentSiteId&&Date.now()-_lpLastUserAct<3000) lpDraftMarkDirty(); }catch(_d){} }
@@ -5628,6 +5663,7 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
       var _capsHtml=_capsKey?('<label style="display:inline-flex;gap:6px;align-items:center;font-weight:600;font-size:12px;margin-top:6px;cursor:pointer;"><input type="checkbox" id="sec-'+id+'-'+_capsKey+'"'+(_capsOn?' checked':'')+'> ALL CAPS</label>'):'';
       if(ta) h+='<div class="f"'+fst+'><label>'+label+'</label><textarea class="tin" id="sec-'+id+'-'+key+'" rows="'+_rows+'"'+_taStyle+' placeholder="'+ph+'"></textarea>'+_capsHtml+'</div>';
       else if(f[2]==='image') h+='<div class="f"'+fst+'><label>'+label+'</label>'+cwImgHTML('id="sec-'+id+'-'+key+'"',ph,f[3])+'<input type="hidden" id="sec-'+id+'-'+key+'-pid"></div>';
+      else if(lpIsHeadKey(key)) h+='<div class="f"'+fst+'><label>'+label+'</label>'+lpHeadTa('id="sec-'+id+'-'+key+'"', ph.replace(/&quot;/g,'"'))+_capsHtml+'</div>';
       else h+='<div class="f"'+fst+'><label>'+label+'</label><input type="text" class="tin" id="sec-'+id+'-'+key+'" placeholder="'+ph+'">'+_capsHtml+'</div>';
     });
     h+='</div>';
@@ -6401,9 +6437,12 @@ function heroCtaCard(c){
   var LP_CTA_BANNER_ACTIONS=[['quote','Go to the quote form'],['booking','Open the booking calendar'],['call','Call the phone number'],['section','Scroll to an app on this page'],['link','Go to a link or page']];
   var LPL_BTN_SHAPES=[['','Site default (Branding)'],['square','Square'],['rounded','Rounded'],['pill','Pill']];
   var LPL_BTN_ROW={t:'sel',k:'btnShape',label:'Button corners',opts:LPL_BTN_SHAPES};
+  /** Width of hero / trust bar bands: as the theme does it, edge to edge, or the site width. */
+  var LPL_WIDTH_ROW={t:'sel',k:'widthMode',label:'Width',opts:[['','Theme default'],['full','Full width (edge to edge)'],['site','Site width (maximum width in Settings)']]};
   var LPL_LAYOUT_SPECS={
     heroSlider:{lede:'Optional icon badges under the sub-headline, and whether the headline keeps the theme’s capitals. <b>Booking card</b> shows the first slide as a headline and photo beside a calendar: each day shows its price (from the Bookings rate cards) and, with Bookings hire set up, what\u2019s free \u2014 the button opens the booking.',rows:[LPL_BTN_ROW,
       {t:'sel',k:'layout',label:'Layout',opts:[['','Image slider (default)'],['booking','Booking card \u2014 headline, photo, calendar'],['half','Half-height banner \u2014 choose eyebrow / title / intro']]},
+      LPL_WIDTH_ROW,
       {t:'chk',k:'halfEyebrow',label:'Half banner: show eyebrow',def:true,when:'layout=half'},
       {t:'chk',k:'halfTitle',label:'Half banner: show title',def:true,when:'layout=half'},
       {t:'chk',k:'halfIntro',label:'Half banner: show intro text (slide sub-headline)',def:true,when:'layout=half'},
@@ -6420,10 +6459,10 @@ function heroCtaCard(c){
     activityCounter:{rows:[{t:'sel',k:'style',label:'Style',opts:[['','Big counters'],['strip','Compact spec strip (icon, figure, label)']]}]},
     hero:{title:'Text options',lede:'Headline and eyebrow case, and whether the eyebrow (small label) sits above or below the headline.',rows:[LPL_BTN_ROW,{t:'sel',k:'textCase',label:'Headline case',opts:[['','Theme default'],['normal','As typed (no forced capitals)'],['lower','all lowercase'],['upper','ALL CAPITALS']]},
       {t:'sel',k:'eyebrowCase',label:'Eyebrow case',opts:[['','Capitals (default)'],['normal','As typed'],['lower','all lowercase']]},
-      {t:'sel',k:'eyebrowPos',label:'Eyebrow position',opts:[['','Above the headline'],['below','Below the headline']]}]},
+      {t:'sel',k:'eyebrowPos',label:'Eyebrow position',opts:[['','Above the headline'],['below','Below the headline']]},LPL_WIDTH_ROW]},
     splitHero:{title:'Text options',lede:'Headline and eyebrow case, and whether the eyebrow (small label) sits above or below the headline.',rows:[LPL_BTN_ROW,{t:'sel',k:'textCase',label:'Headline case',opts:[['','Theme default'],['normal','As typed (no forced capitals)'],['lower','all lowercase'],['upper','ALL CAPITALS']]},
       {t:'sel',k:'eyebrowCase',label:'Eyebrow case',opts:[['','Capitals (default)'],['normal','As typed'],['lower','all lowercase']]},
-      {t:'sel',k:'eyebrowPos',label:'Eyebrow position',opts:[['','Above the headline'],['below','Below the headline']]}]},
+      {t:'sel',k:'eyebrowPos',label:'Eyebrow position',opts:[['','Above the headline'],['below','Below the headline']]},LPL_WIDTH_ROW]},
     services:[{title:'Feature layout',when:'mode=feature',lede:'A big photo on one side; the eyebrow, heading and intro above, then icon points (icon or small image, title and text) on the other side. Add the points under <b>Feature points</b> (each landing page can have its own). With no points, your service list is used.',rows:[
       {t:'image',k:'featureImage',label:'Photo'},
       {t:'text',k:'featureCaption',label:'Caption under the photo (optional)',ph:'e.g. Illustrative farm imagery'},
@@ -6436,14 +6475,14 @@ function heroCtaCard(c){
       {t:'text',k:'storyLinkHref',label:'Link',ph:'#featuredProjects, /page or https://\u2026'},
       {t:'sel',k:'storyTone',label:'Background',opts:[['','Page background'],['soft','Soft (theme light colour)'],['tint','Brand tint'],['dark','Dark']]},
       {t:'sel',k:'storySide',label:'Photo side',opts:[['','Photo on the right'],['left','Photo on the left']]}]}],
-    trustBar:{title:'Icons above, text below',when:'mode=stacked',lede:'Each item shows its icon (or its <b>Tile image</b>, e.g. a line drawing) above its title, with thin dividers between. Edit the items in the list below.',rows:[
+    trustBar:[{title:'Width',lede:'Edge to edge, or the same width as the rest of the site (e.g. to line up with the hero banner).',rows:[LPL_WIDTH_ROW]},{title:'Icons above, text below',when:'mode=stacked',lede:'Each item shows its icon (or its <b>Tile image</b>, e.g. a line drawing) above its title, with thin dividers between. Edit the items in the list below.',rows:[
       {t:'sel',k:'stackTone',label:'Background',opts:[['','Page background (or Section container style)'],['soft','Soft (theme light colour)'],['tint','Brand tint'],['dark','Dark']]},
       {t:'sel',k:'stackIconSize',label:'Icon size',opts:[['','Standard (44px)'],['32','Small (32px)'],['56','Large (56px)'],['72','Extra large (72px)']]},
       {t:'sel',k:'stackPerRow',label:'Items per row',opts:[['','All on one line'],['3','3'],['4','4'],['5','5'],['6','6'],['7','7'],['8','8']]},
       {t:'sel',k:'stackPerRowMobile',label:'Items per row on phones',opts:[['','Auto (2, or balanced rows of up to 4)'],['2','2'],['3','3'],['4','4'],['1','1']]},
       {t:'sel',k:'stackSpacing',label:'Spacing',opts:[['','Standard'],['compact','Compact'],['roomy','Roomy']]},
       {t:'chk',k:'stackDividers',label:'Dividers between items',def:true},
-      {t:'chk',k:'stackCaps',label:'Titles in capitals',def:true}]},
+      {t:'chk',k:'stackCaps',label:'Titles in capitals',def:true}]}],
     textBox:{lede:'Icon feature list and an outline button under the text. <b>Split</b>: text on one side, the photo filling the other half to the page edge (photo side follows the text box\u2019s image side setting). <b>Brand band</b>: a coloured band; a feature written as \u201cLabel: value\u201d (e.g. \u201cPayload: 850kg\u201d) shows as a spec row, others as ticks; add dimensions to draw a box instead of the photo.',rows:[LPL_BTN_ROW,
       {t:'sel',k:'layout',label:'Layout',opts:[['','Standard'],['band','Brand band \u2014 specs, ticks, photo or box drawing'],['bleed','Split \u2014 text beside a photo that runs to the page edge']]},
       {t:'sel',k:'bleedTone',label:'Background',opts:[['','Page background'],['soft','Soft (theme light colour)'],['tint','Brand tint'],['dark','Dark']],when:'layout=bleed'},
@@ -6541,11 +6580,11 @@ function heroCtaCard(c){
       {t:'sel',k:'boxImgMode',label:'Box icon / image colour',when:'layout=boxes',opts:[['','Auto \u2014 white on dark banners'],['original','Original image colours'],['tint','Choose a colour']]},
       {t:'color',k:'boxImgTint',label:'Icon / image colour',ph:'Pick a colour',when:'boxImgMode=tint'},
       {t:'color',k:'boxBorder',label:'Box outline colour',ph:'Default',when:'layout=boxes'},
-      {t:'sel',k:'tone',label:'Style',opts:[['','Brand colour (default)'],['dark','Dark'],['light','Light card'],['photo','Photo background']]},
+      {t:'sel',k:'tone',label:'Style',opts:[['','Brand colour (default)'],['dark','Dark'],['light','Light card'],['photo','Photo background'],['clear','No background \u2014 use the section colour (Section container style)']]},
       {t:'sel',k:'align',label:'Layout',opts:[['','Text left, buttons right'],['center','Centred']]},
       {t:'sel',k:'width',label:'Width',opts:[['','Card'],['full','Full-width band']]},
       {t:'image',k:'bgImage',label:'Background photo',when:'tone=photo'},
-      {t:'color',k:'cardBg',label:'Banner colour (replaces the style\u2019s colour)',ph:'Style colour'},
+      {t:'color',k:'cardBg',label:'Banner colour (replaces the style\u2019s colour)',ph:'Style colour',when:'tone!=clear'},
       {t:'color',k:'cardText',label:'Banner text colour',ph:'Style colour'},
       {t:'text',k:'btn1Label',label:'Main button text',ph:'e.g. Pick a day'},
       {t:'sel',k:'btn1Action',label:'Main button does',def:'quote',opts:LP_CTA_BANNER_ACTIONS},
@@ -6580,6 +6619,7 @@ function heroCtaCard(c){
       else if(r.t==='ta') h+='<div class="f"'+st+'><label>'+r.label+'</label><textarea class="tin" id="'+id+'" rows="2" style="min-height:64px;resize:vertical;width:100%;box-sizing:border-box;"></textarea></div>';
       else if(r.t==='image') h+='<div class="f"'+st+'><label>'+r.label+'</label>'+cwImgHTML('id="'+id+'"','')+'</div>';
       else if(r.t==='color'){ var _cv=(/^#[0-9a-fA-F]{6}$/.test(S[r.k]||'')?S[r.k]:''); h+='<div class="f"'+st+'><label>'+r.label+'</label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="'+id+'-clr" value="'+(_cv||'#1a1a1a')+'" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;flex:0 0 auto;"><input type="text" class="tin" id="'+id+'" value="'+_cv+'" placeholder="'+(r.ph||'Original colours')+'" style="flex:1;min-width:0;"><button type="button" class="btn ghost" id="'+id+'-def" style="padding:6px 10px;">Clear</button></div></div>'; }
+      else if(lpIsHeadKey(r.k)) h+='<div class="f"'+st+'><label>'+r.label+'</label>'+lpHeadTa('id="'+id+'"', r.ph)+'</div>';
       else h+='<div class="f"'+st+'><label>'+r.label+'</label><input type="text" class="tin" id="'+id+'" placeholder="'+(r.ph||'').replace(/"/g,'&quot;')+'"></div>';
     });
     h+='</div></div>';
@@ -6587,7 +6627,7 @@ function heroCtaCard(c){
     var first=body.querySelector('.card');
     if(first) first.insertAdjacentHTML('afterend',h); else body.insertAdjacentHTML('afterbegin',h);
     function syncWhen(){
-      body.querySelectorAll('[data-lpl-when]').forEach(function(el){ var w=el.getAttribute('data-lpl-when').split('='); var v=String(((c.sections&&c.sections[sub])||{})[w[0]]||''); el.style.display=(String(w[1]).split('|').indexOf(v)>=0)?'':'none'; });
+      body.querySelectorAll('[data-lpl-when]').forEach(function(el){ var raw=el.getAttribute('data-lpl-when'), neg=raw.indexOf('!=')>0; var w=neg?raw.split('!='):raw.split('='); var v=String(((c.sections&&c.sections[sub])||{})[w[0]]||''); var hit=String(w[1]).split('|').indexOf(v)>=0; el.style.display=(neg?!hit:hit)?'':'none'; });
     }
     window.lplSyncWhen=syncWhen;
     spec.rows.forEach(function(r){
@@ -7065,6 +7105,7 @@ function heroCtaCard(c){
           if(f.type==='check') return '<div class="f le-f-full" style="margin:0;"><label style="display:inline-flex;gap:8px;align-items:center;font-weight:500;font-size:13px;cursor:pointer;"><input type="checkbox" class="le-chk" data-k="'+f.k+'"> '+f.label+'</label></div>';
           if(f.type==='range') return '<div class="f le-f-full" style="margin:0;"><label>'+f.label+': <span class="le-rangeval" data-rk="'+f.k+'"></span></label><input type="range" class="le-range" data-k="'+f.k+'" min="'+(f.min!=null?f.min:0)+'" max="'+(f.max!=null?f.max:100)+'" step="'+(f.step||1)+'" data-def="'+(f.def!=null?f.def:100)+'" data-suf="'+(f.suf||'')+'" style="width:100%;"></div>';
           if(f.type==='radio') return '<div class="f le-f-full" style="margin:0;"><label>'+f.label+'</label><div class="le-radio" data-radiok="'+f.k+'" style="display:flex;gap:14px;flex-wrap:wrap;padding-top:3px;">'+(f.opts||[]).map(function(o){return '<label style="display:inline-flex;gap:5px;align-items:center;font-weight:500;font-size:13px;cursor:pointer;"><input type="radio" name="ler-'+f.k+'-'+i+'" value="'+o[0]+'">'+o[1]+'</label>';}).join('')+'</div></div>';
+          if(lpIsHeadKey(f.k)) return '<div class="f" style="margin:0;"><label>'+f.label+'</label>'+lpHeadTa('data-k="'+f.k+'"', f.ph)+'</div>';
           return '<div class="f" style="margin:0;"><label>'+f.label+'</label><input type="text" data-k="'+f.k+'" placeholder="'+(f.ph||'')+'" style="width:100%;box-sizing:border-box;"></div>';
         }).join('');
         var rowHead=sc.rowHeader?('<span class="le-row-head">'+sc.rowHeader(it,i)+'</span>'):'';
