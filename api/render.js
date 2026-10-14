@@ -1452,8 +1452,14 @@ module.exports = async (req, res) => {
         const _vp = orderShopPage(cfg, page);
         if (_vp) { _pageRow = _vp; cfg.pages = _pages.concat([_vp]); }
       }
-      if (!_pageRow) return notFound(res);
-      if (_pageRow.status !== 'published' && !isPreview) return notFound(res);
+      if (!_pageRow) {
+        // Editor preview of a page that is only in an unpublished draft (new page, or a
+        // changed address): serve the site shell — the editor hands the preview its own
+        // copy of the page, which the template renders from ?page=.
+        if (!isPreview) return notFound(res);
+        page = '';
+      }
+      if (_pageRow && _pageRow.status !== 'published' && !isPreview) return notFound(res);
     }
 
     // ---- SEO title/description (per-tenant, graceful, never plumber-specific) ----

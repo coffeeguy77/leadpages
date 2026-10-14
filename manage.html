@@ -405,6 +405,97 @@ textarea.tin{resize:vertical;}
 #lp-ord-list .ord-row--article{border-color:color-mix(in srgb,var(--accent) 45%,var(--line));background:var(--panel,var(--surface));box-shadow:inset 3px 0 0 var(--accent);}
 #lp-app-edit{border-top:1px solid var(--line);padding-top:16px;margin-top:18px;}
 #lp-editor.lp-kind-apps .lp-art{display:none!important;}
+/* Landing pages: page list beside (or above) the page being edited */
+.lpx{display:grid;grid-template-columns:minmax(230px,280px) minmax(0,1fr);gap:16px;align-items:start;}
+.lpx>.lpx-nav{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto;padding:14px;margin:0;}
+.lpx-main{min-width:0;}
+.lpx-main>.card{margin-top:0;}
+.lpx-nav-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;}
+.lpx-nav-head h2{margin:0;font-size:16px;white-space:nowrap;}
+.lpx-nav-tools{display:flex;gap:4px;}
+.lpx-ic{appearance:none;border:1px solid var(--line);background:var(--panel);color:var(--ink-soft);border-radius:8px;min-width:30px;height:30px;padding:0 6px;cursor:pointer;font-size:14px;line-height:1;}
+.lpx-ic:hover{border-color:var(--accent);color:var(--accent);}
+.lpx-search{width:100%;margin:0 0 10px;}
+.lpx-new{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px;}
+.lpx-new .btn{flex:1 1 auto;}
+.lpx-list{gap:8px;margin:0;}
+.lpx-card.lp-item{position:relative;display:flex;align-items:center;justify-content:flex-start;gap:10px;padding:8px 10px;cursor:pointer;text-align:left;}
+.lpx-card[hidden]{display:none!important;}
+.lpx-card:hover{border-color:color-mix(in srgb,var(--accent) 50%,var(--line));}
+.lpx-card.is-active{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent);background:var(--accent-soft,var(--panel));}
+.lpx-card:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.lpx-thumb{flex:none;width:42px;height:42px;border-radius:8px;background:#e9e4da center/cover no-repeat;display:flex;align-items:center;justify-content:center;}
+.lpx-thumb--txt{font:800 16px var(--font-ui);color:var(--accent);background:var(--accent-soft,#eef2ff);}
+.lpx-card-body{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1;}
+.lpx-card-body .lp-t{font-size:13.5px;line-height:1.25;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+.lpx-card-body .lp-s{font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.lpx-card-meta{display:flex;gap:5px;align-items:center;flex-wrap:wrap;}
+.lpx-card-meta .lp-badge{font-size:9.5px;padding:2px 7px;}
+.lpx-napps{font-size:11px;color:var(--ink-faint);font-weight:600;}
+.lpx-menu{position:relative;flex:none;align-self:flex-start;}
+.lpx-dots{min-width:26px;height:26px;border-color:transparent;background:transparent;font-size:16px;}
+.lpx-pop{position:absolute;right:0;top:28px;z-index:30;display:flex;flex-direction:column;min-width:150px;padding:6px;border:1px solid var(--line);border-radius:10px;background:var(--panel);box-shadow:0 10px 30px rgba(0,0,0,.14);}
+.lpx-pop[hidden]{display:none;}
+.lpx-pop button{appearance:none;border:0;background:none;text-align:left;padding:8px 10px;border-radius:6px;font:600 13px var(--font-ui);color:var(--ink);cursor:pointer;}
+.lpx-pop button:hover{background:var(--accent-soft,#f2f2f2);}
+.lpx-pop button.danger{color:var(--danger,#c0392b);}
+/* Slim: thumbnails only */
+.lpx--slim{grid-template-columns:64px minmax(0,1fr);}
+.lpx--slim .lpx-nav{padding:10px 8px;}
+.lpx--slim .lpx-nav-head{flex-direction:column;}
+.lpx--slim .lpx-nav-head h2,.lpx--slim .lpx-search,.lpx--slim .lpx-card-body,.lpx--slim .lpx-menu,.lpx--slim #lpx-mode{display:none;}
+.lpx--slim .lpx-new{flex-direction:column;}
+.lpx--slim .lpx-new .btn{font-size:0;padding:6px 0;}
+.lpx--slim .lpx-new .btn::before{content:'+';font-size:16px;}
+.lpx--slim .lpx-card.lp-item{padding:4px;justify-content:center;}
+/* Top: one row across the top */
+.lpx--top{grid-template-columns:minmax(0,1fr);}
+.lpx--top>.lpx-nav{position:static;max-height:none;display:grid;grid-template-columns:auto minmax(140px,220px) auto;align-items:center;gap:8px 10px;}
+.lpx--top .lpx-nav-head,.lpx--top .lpx-search,.lpx--top .lpx-new{margin:0;}
+.lpx--top .lpx-new{flex-wrap:nowrap;}
+.lpx--top .lpx-list{grid-column:1/-1;flex-direction:row;overflow-x:auto;padding-bottom:4px;}
+.lpx--top .lpx-card.lp-item{flex:0 0 230px;}
+.lpx-empty h2{margin-top:0;}
+.lpx-empty[hidden]{display:none!important;}
+@media (max-width:900px){
+  .lpx:not(.lpx--slim){grid-template-columns:minmax(0,1fr);}
+  .lpx:not(.lpx--slim)>.lpx-nav{position:static;max-height:none;}
+  .lpx:not(.lpx--slim) .lpx-list{flex-direction:row;overflow-x:auto;padding-bottom:4px;}
+  .lpx:not(.lpx--slim) .lpx-card.lp-item{flex:0 0 220px;}
+  .lpx--top>.lpx-nav{grid-template-columns:minmax(0,1fr);}
+}
+/* Page header */
+.lpx-pagehead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 6px;}
+.lpx-ph-main{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0;}
+.lpx-ph-main h2{margin:0;font-size:20px;}
+.lpx-ph-chip{font:800 10.5px var(--font-ui);letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:var(--accent-soft,#eef2ff);color:var(--accent);}
+.lpx-ph-slug{font:12.5px ui-monospace,monospace;color:var(--ink-faint);}
+.lpx-ph-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.lpx-subhead{margin-bottom:6px;}
+.lpx-draft-st{font-size:12px;color:var(--ink-faint);font-weight:600;}
+.lpx-draft-st.is-dirty{color:var(--warning,#b7791f);}
+.lpx-draft-st.is-draft{color:var(--accent);}
+.lpx-draft-st--bar{align-self:center;white-space:nowrap;}
+/* Positions + app editor */
+#lp-ord-list .ord-row{cursor:pointer;}
+#lp-ord-list .ord-row:hover{border-color:color-mix(in srgb,var(--accent) 55%,var(--line));}
+#lp-ord-list .ord-row:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+#lp-ord-list .ord-grip{cursor:grab;padding:4px 2px;}
+#lp-ord-list .ord-tag{display:block;font-weight:600;font-size:11px;color:var(--ink-faint);margin-top:2px;}
+#lp-ord-list .ord-chev{font-size:20px;line-height:1;color:var(--ink-faint);padding-left:4px;}
+#lp-ord-list .ord-rm:hover{border-color:var(--danger,#c0392b);color:var(--danger,#c0392b);}
+.lpx-add-sec{display:block;width:100%;margin:4px 0 0;padding:12px;border:2px dashed var(--line);border-radius:var(--radius-sm);background:none;color:var(--ink-soft);font:700 13.5px var(--font-ui);cursor:pointer;}
+.lpx-add-sec:hover{border-color:var(--accent);color:var(--accent);}
+#lp-app-addrow[hidden],#lp-app-list[hidden]{display:none!important;}
+#lp-editor.lpx-on-apps .lpx-subhead{display:none;}
+#lp-app-addrow{margin:12px 0 0;padding:12px;border:1px solid var(--line);border-radius:var(--radius-sm);}
+#lp-panel-apps.lpx-editing #lp-layout-order,#lp-panel-apps.lpx-editing #lp-app-addrow,#lp-panel-apps.lpx-editing #lp-app-warn{display:none!important;}
+.lpx-apphead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 6px;}
+.lpx-apphead h3{margin:0;font-size:17px;flex:1 1 140px;min-width:0;}
+.lpx-app-actions{display:flex;gap:6px;flex-wrap:wrap;}
+.lpx-app-note{margin:0 0 12px;}
+/* Unpublished draft banner */
+#lp-draft-banner{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:9999;display:flex;align-items:center;gap:10px;flex-wrap:wrap;max-width:calc(100vw - 32px);padding:12px 14px;border-radius:12px;background:var(--panel,#fff);color:var(--ink,#1a2230);border:1px solid var(--accent);box-shadow:0 12px 40px rgba(0,0,0,.2);font-size:14px;}
 /* contact / brokers */
 .bro{border:1px solid var(--line);border-radius:var(--radius-sm);padding:16px;margin-bottom:12px;background:#fff;}
 .bro-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;}
@@ -977,14 +1068,27 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 
   <!-- ===================== LANDING PAGES ===================== -->
   <div id="av-landing" hidden>
-    <div class="card">
-      <div class="card-head"><h2>Landing pages</h2><div style="display:flex;gap:8px;flex-wrap:wrap;"><button class="btn ghost" id="lp-new-apps" title="A page built only from apps \u2014 no article text">+ New app layout</button><button class="btn" id="lp-new">+ New page</button></div></div>
+   <div class="lpx" id="lpx">
+    <aside class="lpx-nav card" id="lpx-nav" aria-label="Landing pages">
+      <div class="lpx-nav-head"><h2>Landing pages</h2>
+        <div class="lpx-nav-tools"><button type="button" class="lpx-ic" id="lpx-mode" title="Show the pages in a row across the top" aria-label="Switch page list position">&#8645;</button><button type="button" class="lpx-ic" id="lpx-collapse" title="Make the page list slim" aria-label="Collapse page list" aria-expanded="true">&laquo;</button></div>
+      </div>
+      <input type="search" id="lpx-search" class="tin lpx-search" placeholder="Search pages" aria-label="Search pages">
+      <div class="lpx-new"><button class="btn ghost sm" id="lp-new-apps" title="A page built only from apps \u2014 no article text">+ New app layout</button><button class="btn sm" id="lp-new">+ New page</button></div>
+      <div id="lp-list" class="lp-list lpx-list"></div>
+    </aside>
+    <div class="lpx-main">
+    <div class="card lpx-empty" id="lpx-empty">
+      <h2>Choose a page</h2>
       <p class="lede">Build SEO-optimised pages that match your theme. Tick <strong>Show in site menu</strong> on a page to add it to the Navigation Menu — top level or under a parent submenu. Reorder with the arrows here, or fine-tune everything in <strong>Page editor → Menu</strong>. Published pages are included in <code>sitemap.xml</code> — after publishing, regenerate the sitemap under <strong>Settings → Search &amp; indexing</strong>.</p>
-      <div id="lp-list" class="lp-list"></div>
+      <p class="hint">Pick a page from the list to see its positions, or create a new one. Every app on a landing page is its own copy — editing it never changes your homepage.</p>
     </div>
-
     <div class="card" id="lp-editor" hidden>
-      <div class="card-head"><h2 id="lp-ed-title">Edit page</h2>
+      <div class="lpx-pagehead">
+        <div class="lpx-ph-main"><h2 id="lp-ed-title">Edit page</h2><span class="lpx-ph-chip" id="lpx-ph-count"></span><span class="lpx-ph-slug" id="lpx-ph-slug"></span><span class="lp-badge draft" id="lpx-ph-status">Draft</span></div>
+        <div class="lpx-ph-actions"><span class="lpx-draft-st" data-lp-draft-status></span><button class="btn" id="lp-save" data-lp-draft-save title="Saves your work as a draft. Visitors don’t see it until you click Publish Live Site.">Save draft</button></div>
+      </div>
+      <div class="card-head lpx-subhead">
         <div class="lp-tools">
           <button class="btn ghost sm" id="lp-undo" title="Undo">&#8630; Undo</button>
           <button class="btn ghost sm" id="lp-redo" title="Redo">&#8631; Redo</button>
@@ -993,8 +1097,8 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       </div>
 
       <div class="lp-ed-tabs" id="lp-ed-tabs" hidden>
-        <button type="button" class="lp-ed-tab" id="lp-tab-content" aria-selected="true">Page content</button>
-        <button type="button" class="lp-ed-tab" id="lp-tab-apps" aria-selected="false">Marketplace apps</button>
+        <button type="button" class="lp-ed-tab" id="lp-tab-apps" aria-selected="false">Positions</button>
+        <button type="button" class="lp-ed-tab" id="lp-tab-content" aria-selected="true">Page settings</button>
       </div>
 
       <div id="lp-panel-content">
@@ -1081,12 +1185,12 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
         </div>
       </div>
       <div class="f"><label>Status</label><select id="lp-status" class="apsel"><option value="draft">Draft (hidden)</option><option value="published">Published (live)</option></select></div>
-      <div class="lp-ed-foot"><button class="btn" id="lp-save">Save page</button><button class="btn ghost" id="lp-close">Close</button><button class="btn ghost" id="lp-dup" title="Make a copy of this page (apps, layout and content) as a new draft">Duplicate page</button><button class="btn ghost danger" id="lp-del">Delete page</button></div>
+      <div class="lp-ed-foot"><button class="btn ghost" id="lp-close">Close</button><button class="btn ghost" id="lp-dup" title="Make a copy of this page (apps, layout and content) as a new draft">Duplicate page</button><button class="btn ghost danger" id="lp-del">Delete page</button></div>
       </div>
 
       <div id="lp-panel-apps" hidden>
-        <p class="lede" style="margin-top:0;">Add marketplace apps to this landing page. <strong>Shared</strong> uses live homepage content. <strong>Unique</strong> keeps a per-page copy — choose Unique then click <strong>Use homepage content</strong> to copy styling, images, and text from the homepage before editing for this page. <strong>Order Storefront</strong> works the same way: Shared shows your homepage order catalogue; Unique lets this page carry its own order-section copy while still using the site’s Order Engine products.</p>
-        <div class="lp-app-add">
+        <p class="lede lpx-legacy-lede" style="margin-top:0;" hidden>Add marketplace apps to this landing page. <strong>Shared</strong> uses live homepage content. <strong>Unique</strong> keeps a per-page copy — choose Unique then click <strong>Use homepage content</strong> to copy styling, images, and text from the homepage before editing for this page. <strong>Order Storefront</strong> works the same way: Shared shows your homepage order catalogue; Unique lets this page carry its own order-section copy while still using the site’s Order Engine products.</p>
+        <div class="lp-app-add" id="lp-app-addrow" hidden>
           <div class="f" style="margin:0;flex:1;min-width:220px;"><label>App to add</label><select id="lp-app-pick" class="tin"><option value="">Choose an app…</option></select></div>
           <button type="button" class="btn" id="lp-app-add" style="margin-bottom:2px;">+ Add app</button>
         </div>
@@ -1098,14 +1202,28 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
           </div>
           <p class="hint lp-layout-lede">Drag sections and <strong>Page content</strong> into the order you want on this landing page — e.g. hero, article, quote form.</p>
           <div id="lp-ord-list"></div>
+          <button type="button" class="lpx-add-sec" id="lpx-add-sec">+ Add section</button>
         </div>
-        <div id="lp-app-list"><p class="hint">No apps on this page yet — add one above, or leave empty for a text-only article page.</p></div>
+        <div id="lp-app-list" hidden><p class="hint">No apps on this page yet — add one above, or leave empty for a text-only article page.</p></div>
         <div id="lp-app-edit" hidden>
-          <div class="card-head" style="margin-bottom:12px;"><h3 id="lp-app-edit-title" style="margin:0;">Edit app</h3><button type="button" class="btn ghost sm" id="lp-app-edit-close">Close editor</button></div>
+          <div class="lpx-apphead">
+            <button type="button" class="btn ghost sm lpx-back" id="lp-app-edit-close">&larr; Back to positions</button>
+            <h3 id="lp-app-edit-title">Edit app</h3>
+            <div class="lpx-app-actions">
+              <button type="button" class="btn ghost sm" id="lpx-app-undo" title="Undo your last change to this app" disabled>&#8630; Undo</button>
+              <button type="button" class="btn ghost sm" id="lpx-app-redo" title="Redo" disabled>&#8631; Redo</button>
+              <button type="button" class="btn ghost sm" id="lpx-app-reset" title="Replace this app’s content on this page with a fresh copy of the homepage version">Reset to homepage</button>
+              <button type="button" class="btn ghost sm" id="lpx-app-blank" title="Clear the text, images and items on this page so you can add your own">Start blank</button>
+              <button type="button" class="btn ghost sm danger" id="lpx-app-rm">Remove</button>
+            </div>
+          </div>
+          <p class="hint lpx-app-note">Changes here are for <strong>this page only</strong> — your homepage is never changed.</p>
           <div id="lp-app-edit-body" class="lp-themed-editor"></div>
         </div>
       </div>
     </div>
+    </div>
+   </div>
   </div>
 
   <!-- ===================== CONTACT / BROKERS ===================== -->
@@ -1542,9 +1660,140 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   }
 
   /* ---------- persistence + export ---------- */
-  function persist(){ try{ localStorage.setItem('linray_rates', JSON.stringify(data)); }catch(e){} }
+  function persist(){ try{ localStorage.setItem('linray_rates', JSON.stringify(data)); }catch(e){}
+    // A change the person just made (not page set-up): keep it safe as a server draft.
+    try{ if(currentSiteId&&Date.now()-_lpLastUserAct<3000) lpDraftMarkDirty(); }catch(_d){} }
+
+  /* ---------- Drafts: save without publishing ----------
+     Edits are kept as ONE server-side draft per site (a site backup labelled LP_DRAFT_LABEL,
+     replaced on every save) until Publish makes them live. Reopening the editor offers to
+     continue a draft that is newer than the live site. */
+  var LP_DRAFT_LABEL='Draft (not published)';
+  var lpDraft={ id:null, savedAt:null, dirty:false, saving:false, again:false, t:null, base:null, last:null, gen:0 };
+  /** What is live right now (set when a site loads / after Publish): a draft equal to it is not a draft. */
+  function lpDraftSetBase(){ try{ lpDraft.base=JSON.stringify(lpDraftConfig()); }catch(_b){ lpDraft.base=null; } lpDraft.last=lpDraft.base; lpDraft.dirty=false; if(lpDraft.t){ clearTimeout(lpDraft.t); lpDraft.t=null; } lpDraftUi(); }
+  function lpDraftConfig(){
+    if(currentSiteTemplate==='broker-app'&&typeof siteConfigForSave==='function') return siteConfigForSave();
+    var lc=JSON.parse(JSON.stringify(data||{})); delete lc.savedThemes; return lc;
+  }
+  function lpDraftTime(d){ try{ return new Date(d).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}); }catch(e){ return ''; } }
+  function lpDraftUi(){
+    var t=lpDraft.saving?'Saving draft…':(lpDraft.dirty?'Unsaved changes':(lpDraft.id&&lpDraft.savedAt?('Draft saved '+lpDraftTime(lpDraft.savedAt)+' · not live yet'):''));
+    document.querySelectorAll('[data-lp-draft-status]').forEach(function(el){ el.textContent=t; el.classList.toggle('is-dirty', !!lpDraft.dirty); el.classList.toggle('is-draft', !lpDraft.dirty&&!!lpDraft.id); });
+    document.querySelectorAll('[data-lp-draft-save]').forEach(function(b){ b.disabled=!!lpDraft.saving; });
+  }
+  function lpDraftMarkDirty(){
+    lpDraft.dirty=true; lpDraftUi();
+    if(lpDraft.t) clearTimeout(lpDraft.t);
+    lpDraft.t=setTimeout(function(){ lpDraft.t=null; lpDraftSave({auto:true}); }, 4000);
+  }
+  async function lpDraftSave(opts){
+    opts=opts||{};
+    if(!currentSiteId) return { ok:false, error:'no_site' };
+    if(lpDraft.t){ clearTimeout(lpDraft.t); lpDraft.t=null; }
+    if(lpDraft.saving){ lpDraft.again=true; return { ok:true, queued:true }; }
+    // An older draft is waiting for Continue / Discard: don't save over it yet.
+    if(document.getElementById('lp-draft-banner')){ lpDraft.dirty=true; lpDraftUi(); if(!opts.quiet&&!opts.auto) toast('Choose \u201cContinue draft\u201d or \u201cDiscard draft\u201d first','warn'); return { ok:false, error:'draft_pending' }; }
+    var siteAt=currentSiteId, prev=lpDraft.id, res, cfgNow=lpDraftConfig(), cfgStr=JSON.stringify(cfgNow);
+    if(lpDraft.base&&cfgStr===lpDraft.base){
+      // Same as the live site: nothing to keep (and an older draft is no longer needed).
+      lpDraft.dirty=false; lpDraft.last=cfgStr;
+      if(prev){ lpDraft.id=null; lpDraft.savedAt=null; lpBkFetch('?id='+encodeURIComponent(prev),{method:'DELETE'}).catch(function(){}); }
+      lpDraftUi(); if(!opts.quiet&&!opts.auto) toast('No changes since you last published');
+      return { ok:true, unchanged:true };
+    }
+    if(lpDraft.id&&cfgStr===lpDraft.last){ lpDraft.dirty=false; lpDraftUi(); if(!opts.quiet&&!opts.auto) toast('Draft saved \u2014 not live until you Publish'); return { ok:true, unchanged:true }; }
+    lpDraft.saving=true; lpDraftUi();
+    var gen=lpDraft.gen;
+    try{
+      var j=await lpBkFetch('', { method:'POST', body:JSON.stringify({ siteId:siteAt, config:cfgNow, source:'auto', label:LP_DRAFT_LABEL, force:true }) });
+      if(gen!==lpDraft.gen){
+        // Published (or the site changed) while this was saving: this draft is already out of date.
+        var stale=j&&j.backup&&j.backup.id; if(stale){ lpBkFetch('?id='+encodeURIComponent(stale),{method:'DELETE'}).catch(function(){}); }
+        return { ok:true, superseded:true };
+      }
+      if(siteAt!==currentSiteId) return { ok:false, error:'site_changed' };
+      lpDraft.id=(j&&j.backup&&j.backup.id)||null; lpDraft.savedAt=(j&&j.backup&&j.backup.created_at)||new Date().toISOString(); lpDraft.last=cfgStr;
+      // Still dirty if more was typed while saving.
+      lpDraft.dirty=false; try{ if(JSON.stringify(lpDraftConfig())!==cfgStr) lpDraft.again=true; }catch(_cmp){}
+      if(prev&&prev!==lpDraft.id){ try{ await lpBkFetch('?id='+encodeURIComponent(prev), { method:'DELETE' }); }catch(_dl){} }
+      if(!opts.quiet&&!opts.auto) toast('Draft saved — not live until you Publish');
+      res={ ok:true };
+    }catch(e){
+      if(!opts.quiet) toast('Could not save draft: '+((e&&e.message)||e),'warn');
+      res={ ok:false, error:(e&&e.message)||String(e) };
+    }finally{
+      lpDraft.saving=false; lpDraftUi();
+      if(lpDraft.again){ lpDraft.again=false; setTimeout(function(){ lpDraftSave({auto:true}); },0); }
+    }
+    return res;
+  }
+  /** After Publish: the draft is live now — remove it. */
+  async function lpDraftClear(){
+    if(lpDraft.t){ clearTimeout(lpDraft.t); lpDraft.t=null; }
+    lpDraft.gen++; lpDraft.again=false;
+    var id=lpDraft.id; lpDraft.id=null; lpDraft.savedAt=null; lpDraftSetBase();
+    try{ var sr=(allSites||[]).find(function(x){return x.id===currentSiteId;}); if(sr) sr.__liveStr=lpDraft.base; }catch(_lr){}
+    if(id){ try{ await lpBkFetch('?id='+encodeURIComponent(id), { method:'DELETE' }); }catch(_e){} }
+  }
+  /** On opening a site: offer to continue a draft newer than the live site. */
+  async function lpDraftCheck(site){
+    if(!site||!site.id||site.__draftChecked) return;
+    site.__draftChecked=true;
+    var list;
+    try{ list=(await lpBkFetch('?siteId='+encodeURIComponent(site.id)+'&limit=15')).backups||[]; }catch(e){ return; }
+    if(site.id!==currentSiteId) return;
+    var drafts=list.filter(function(b){ return b&&b.label===LP_DRAFT_LABEL; });
+    if(!drafts.length) return;
+    var d=drafts[0];
+    var liveAt=new Date(site.updated_at||0).getTime(), dAt=new Date(d.created_at||0).getTime();
+    // Older drafts (already published since) are stale: tidy them away.
+    drafts.slice(1).forEach(function(x){ lpBkFetch('?id='+encodeURIComponent(x.id),{method:'DELETE'}).catch(function(){}); });
+    if(!(dAt>liveAt)){ lpBkFetch('?id='+encodeURIComponent(d.id),{method:'DELETE'}).catch(function(){}); return; }
+    lpDraftBanner(site, d);
+  }
+  function lpDraftBanner(site, d){
+    var old=document.getElementById('lp-draft-banner'); if(old) old.remove();
+    var b=document.createElement('div'); b.id='lp-draft-banner'; b.setAttribute('role','alert');
+    b.innerHTML='<span>You have unpublished changes saved as a draft <b>'+esc(new Date(d.created_at).toLocaleString([], {day:'numeric',month:'short',hour:'numeric',minute:'2-digit'}))+'</b>.</span>'
+      +'<button type="button" class="btn" data-act="resume">Continue draft</button><button type="button" class="btn ghost" data-act="discard">Discard draft</button>';
+    document.body.appendChild(b);
+    b.addEventListener('click', async function(e){
+      var act=e.target&&e.target.getAttribute&&e.target.getAttribute('data-act'); if(!act) return;
+      if(act==='discard'){
+        if(!confirm('Discard the unpublished draft? The live site is not changed.')) return;
+        b.remove(); try{ await lpBkFetch('?id='+encodeURIComponent(d.id),{method:'DELETE'}); }catch(_e){} toast('Draft discarded');
+        if(lpDraft.dirty||lpDraftHasUnsaved()) lpDraftSave({auto:true});
+        return;
+      }
+      e.target.disabled=true;
+      try{
+        var j=await lpBkFetch('?id='+encodeURIComponent(d.id));
+        var cfg=j&&j.backup&&j.backup.config;
+        if(!cfg||typeof cfg!=='object') throw new Error('Draft is empty');
+        b.remove();
+        var liveBase=lpDraft.base; if(!site.__liveStr&&liveBase) site.__liveStr=liveBase;
+        site.config=JSON.parse(JSON.stringify(cfg)); site.__draftChecked=true; site.__draftResumed=true;
+        var keepView=(typeof activeView==='string')?activeView:'';
+        loadSite(site);
+        lpDraft.id=d.id; lpDraft.savedAt=d.created_at; lpDraft.dirty=false; lpDraft.base=liveBase; lpDraftUi();
+        try{ if(keepView&&typeof showView==='function') showView(keepView); }catch(_v){}
+        toast('Draft restored — Publish when you’re ready to make it live');
+      }catch(err){ e.target.disabled=false; toast('Could not open the draft: '+((err&&err.message)||err),'warn'); }
+    });
+  }
+  /** Changes since the last draft save (or since the live version), by content. */
+  function lpDraftHasUnsaved(){
+    if(!currentSiteId||lpDraft.base==null) return false;
+    try{ return JSON.stringify(lpDraftConfig())!==(lpDraft.last||lpDraft.base); }catch(_e){ return false; }
+  }
+  // Safety net: anything changed that no edit hook caught (slow uploads, tools) is saved too.
+  setInterval(function(){ try{ if(!lpDraft.saving&&!lpDraft.t&&lpDraftHasUnsaved()) lpDraftSave({auto:true}); }catch(_i){} }, 15000);
+  window.addEventListener('beforeunload', function(e){ if(lpDraft.dirty||lpDraft.saving||lpDraftHasUnsaved()){ e.preventDefault(); e.returnValue=''; return ''; } });
   var _lpSaveGen=0;
-  async function lpSaveDB(){
+  /** Writes the whole site config LIVE right away (SEO tools, sitemap rebuild, lead inbox).
+      Landing-page editing uses lpSaveDB (a draft) instead. */
+  async function lpSaveLiveDB(){
     if(!currentSiteId) return { ok:false, error:'no_site' };
     var gen=++_lpSaveGen;
     try{
@@ -1563,12 +1812,23 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       if(gen!==_lpSaveGen) return { ok:false, superseded:true };
       if(up&&up.error) throw new Error(up.error.message||'save_failed');
       if(sref) sref.config=cfg;
+      // Everything in the editor is live now, so any draft is superseded.
+      try{ lpDraftClear(); }catch(_dc){}
       return { ok:true };
     }catch(e){
       return { ok:false, error:(e&&e.message)||String(e) };
     }
   }
-  var _lpAS=null; function lpAutosave(){ if(_lpAS) clearTimeout(_lpAS); _lpAS=setTimeout(function(){ lpSaveDB(); },1000); }
+  /** Landing pages save here: a server DRAFT (not live). Publish makes it live. */
+  async function lpSaveDB(){
+    if(!currentSiteId) return { ok:false, error:'no_site' };
+    if(lpCur&&(!(data&&data.pages)||!data.pages.some(function(p){return p&&p.id===lpCur.id;}))){ lpResetLandingEditor(); }
+    var r=await lpDraftSave({ quiet:true });
+    if(r&&r.ok){ try{ var sref=(typeof allSites!=='undefined'&&allSites)?allSites.find(function(x){return x.id===currentSiteId;}):null; if(sref) sref.config=lpDraftConfig(); }catch(_s){} }
+    return r;
+  }
+  var _lpQuietConvert=false;
+  var _lpAS=null; function lpAutosave(){ if(_lpQuietConvert) return; if(_lpAS) clearTimeout(_lpAS); lpDraft.dirty=true; lpDraftUi(); _lpAS=setTimeout(function(){ lpSaveDB(); },1500); }
   function lpCancelAutosave(){ if(_lpAS){ clearTimeout(_lpAS); _lpAS=null; } }
   function toast(msg, kind){ const t=$('toast'); if(!t) return; t.textContent=msg; t.classList.remove('warn'); if(kind==='warn') t.classList.add('warn'); t.classList.add('show'); setTimeout(function(){ t.classList.remove('show'); }, kind==='warn'?2400:1800); }
   window.toast = toast;
@@ -1795,9 +2055,9 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     if(_lpEditing){
       var _ed=document.getElementById('lp-app-edit');
       if(_ed&&!_ed.hidden&&_ed.offsetParent){
-        persist(); lpAutosave();
+        persist(); lpAutosave(); try{ lpAppHistRecord(); }catch(_ah){}
         if(_lpRouteT) clearTimeout(_lpRouteT);
-        _lpRouteT=setTimeout(function(){ _lpRouteBusy=true; try{ lpPagePreviewReload(); }finally{ _lpRouteBusy=false; } },350);
+        _lpRouteT=setTimeout(function(){ _lpRouteBusy=true; try{ lpPagePreviewReload(); }finally{ _lpRouteBusy=false; } },300);
         return;
       }
     }
@@ -1805,7 +2065,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     try{ if(typeof _syncSectionOrder==='function'&&data) _syncSectionOrder(data); }catch(_so){}
     try{ var w=fr.contentWindow; if(!w) return;
       if(currentIsPartnerHome){ if(w.__applyAgencyConfig) w.__applyAgencyConfig(Object.assign({business:currentBusinessName},data)); }
-      else if(currentSiteTemplate==='trade'){ if(w.__applyTradeConfig) w.__applyTradeConfig(data); /* colourOverrides remapped inside __applyTradeConfig */ }
+      else if(currentSiteTemplate==='trade'){ if(w.__applyTradeConfig) w.__applyTradeConfig(data); /* colourOverrides remapped inside __applyTradeConfig */ try{ lpPreviewSyncPageOrder(); }catch(_po){} }
       else if(currentSiteTemplate==='broker-leads'){ if(w.__applyBrokerConfig) w.__applyBrokerConfig(data); }
       else if(currentSiteTemplate==='broker-app'){ if(w.__applyBrokerAppConfig) w.__applyBrokerAppConfig(data); else if(w.__applyAppearance) w.__applyAppearance(a||curAppr()); }
       else if(w.__applyAppearance){ w.__applyAppearance(a||curAppr()); }
@@ -1840,17 +2100,19 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     d.documentElement.classList.toggle('lp-autoselect', !!secAutoSelect);
     Array.prototype.forEach.call(d.querySelectorAll('.lp-edit-active'),function(n){ n.classList.remove('lp-edit-active'); });
     var editing=(typeof activeView!=='string'||activeView==='details');
-    if(editing&&lpEditableSec(landingSub)){
-      var nodes=d.querySelectorAll('[data-sec="'+landingSub+'"]');
+    var markKey=landingSub;
+    try{ if(activeView==='landing'&&lpPageEditKey&&lpPreviewOnCurPage()){ editing=true; markKey=lpPageEditKey; } }catch(_lk){}
+    if(editing&&lpEditableSec(markKey)){
+      var nodes=d.querySelectorAll('[data-sec="'+markKey+'"]');
       for(var i=0;i<nodes.length;i++){
         var cs=null; try{ cs=fr.contentWindow.getComputedStyle(nodes[i]); }catch(_c){}
         if(cs&&cs.display==='none') continue;
         nodes[i].classList.add('lp-edit-active');
-        if(lpPreviewMarkActive._last!==landingSub){ try{ nodes[i].scrollIntoView({ behavior:'smooth', block:'nearest' }); }catch(_sv){} }
+        if(lpPreviewMarkActive._last!==markKey){ try{ nodes[i].scrollIntoView({ behavior:'smooth', block:'nearest' }); }catch(_sv){} }
         break;
       }
     }
-    lpPreviewMarkActive._last=(editing&&lpEditableSec(landingSub))?landingSub:'';
+    lpPreviewMarkActive._last=(editing&&lpEditableSec(markKey))?markKey:'';
     lpAutoSelectBind(d);
   }
   function lpAsNorm(v){ return String(v==null?'':v).replace(/[\u2018\u2019\u201c\u201d"']/g,'').replace(/\s+/g,' ').trim().toLowerCase(); }
@@ -1910,6 +2172,14 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       e.preventDefault(); e.stopPropagation(); if(e.stopImmediatePropagation) e.stopImmediatePropagation();
       if(e.type!=='click') return;
       var hint=lpAutoSelectHint(e.target, sec);
+      // Editing a landing page: a click in the preview opens THAT page's copy of the app.
+      // It must never switch to the homepage editor (edits there change the homepage).
+      var onLanding=false; try{ onLanding=(typeof activeView==='string'&&activeView==='landing'); }catch(_av){}
+      if(onLanding){
+        if(lpCur&&lpPreviewOnCurPage()&&(lpCur.pageApps||[]).some(function(a){ return (a.key||a.section_key)===key; })){ lpOpenPosition(key); }
+        else toast(lpCur?'That part isn\u2019t on this landing page \u2014 use the preview\u2019s Back link to return to it.':'Open a landing page to edit it. Homepage content is edited in the Page editor.');
+        return;
+      }
       try{ if(typeof activeView==='string'&&activeView!=='details'&&typeof showView==='function') showView('details'); }catch(_v){}
       landingSub=key;
       renderDetails();
@@ -2433,7 +2703,39 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     if(changed) lpPinHeroArticleQuote(p);
     return changed;
   }
-  function lpPagePreviewReload(){ if(document.body.classList.contains('lp-prev-open')) previewLoad(); else previewApply(data); }
+  /** True when the preview is showing the landing page open in the editor. */
+  function lpPreviewOnCurPage(){
+    if(!lpCur||!lpCur.slug||!lpPrevReady) return false;
+    var fr=lpFrame(); if(!fr) return false;
+    try{
+      var path=String(fr.contentWindow.location.pathname||'').replace(/\/+$/,'');
+      var q=new URLSearchParams(fr.contentWindow.location.search).get('page')||'';
+      return path==='/'+(lpPrevSlug||'')&&q===lpCur.slug;
+    }catch(_x){ return false; }
+  }
+  /** Landing page changed: redraw the preview from the editor's copy (drafts are not on the
+      server yet), and only reload it when it isn't showing this page. */
+  function lpPagePreviewReload(){
+    if(!document.body.classList.contains('lp-prev-open')){ previewApply(data); return; }
+    if(lpPreviewOnCurPage()){ _lpInPrevLoad=true; try{ previewApply(curAppr()); }finally{ _lpInPrevLoad=false; } return; }
+    previewLoad();
+  }
+  /** The server pre-paints the LIVE page's position order (#lp-section-order, !important);
+      in the preview it must follow the editor's (draft) order instead. */
+  function lpPreviewSyncPageOrder(){
+    if(!lpPreviewOnCurPage()) return;
+    var d; try{ d=lpFrame().contentDocument; }catch(_d){ return; } if(!d) return;
+    var ord=lpEnsurePageLayoutOrder(lpCur).filter(function(id){ return id&&id!=='__lpArticle'; });
+    var rules='main#top{display:flex!important;flex-direction:column!important}', n=0;
+    ord.forEach(function(id){
+      n+=1;
+      if(id==='promotions'){ rules+='[data-sec="promotions-hero"]{order:'+n+'!important}'; n+=1; rules+='[data-sec="promotions-inline"]{order:'+n+'!important}'; return; }
+      rules+='[data-sec="'+String(id).replace(/["\\]/g,'')+'"]{order:'+n+'!important}';
+    });
+    var st=d.getElementById('lp-section-order');
+    if(!st){ st=d.createElement('style'); st.id='lp-section-order'; (d.head||d.documentElement).appendChild(st); }
+    if(st.textContent!==rules) st.textContent=rules;
+  }
   function lpSetEdTab(tab){
     lpEdTab=tab;
     var tc=$('lp-tab-content'), ta=$('lp-tab-apps'), pc=$('lp-panel-content'), pa=$('lp-panel-apps');
@@ -2441,6 +2743,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     if(ta) ta.setAttribute('aria-selected', tab==='apps'?'true':'false');
     if(pc) pc.hidden=(tab!=='content');
     if(pa) pa.hidden=(tab!=='apps');
+    var edc=$('lp-editor'); if(edc) edc.classList.toggle('lpx-on-apps', tab==='apps');
     if(activeView==='landing') lpNavStateSave({lpEdTab:tab});
     if(tab==='apps') lpRenderAppsTab();
   }
@@ -2510,7 +2813,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     lpPageAppSeed(secKey);
     persist(); lpAutosave();
     if(!opts.skipRender) lpRenderAppsTab();
-    lpPagePreviewReload();
+    if(!opts.noPreview) lpPagePreviewReload();
     if(!opts.silent) toast('Homepage content copied — edit text for this landing page; styling and images are kept.');
   }
   function lpPageAppCopyFromHome(secKey, opts){
@@ -2610,7 +2913,10 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       lpCur.pageSections[secKey]=lpBlankCustomHtmlSection({on:true});
       lpPageAppSeed(secKey);
     } else {
-      apps.push({key:secKey, mode:'shared'});
+      // Every app on a landing page is its own copy: starts with the homepage content, and
+      // edits never change the homepage.
+      apps.push({key:secKey, mode:'unique', homeCopied:true});
+      lpCopyPageAppFromHome(secKey, {silent:true, skipRender:true});
     }
     lpForgetRemoved(lpCur, secKey);
     lpEnsurePageLayoutOrder(lpCur);
@@ -2628,8 +2934,8 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     if(lpCur.pageSections) delete lpCur.pageSections[secKey];
     if(lpCur.pageLayoutOrder) lpCur.pageLayoutOrder=lpCur.pageLayoutOrder.filter(function(id){ return id!==secKey; });
     lpEnsurePageLayoutOrder(lpCur);
-    if(lpPageEditKey===secKey){ lpPageEditKey=null; var ed=$('lp-app-edit'); if(ed) ed.hidden=true; }
-    persist(); lpAutosave(); lpRenderAppsTab(); lpPagePreviewReload();
+    if(lpPageEditKey===secKey){ lpPageEditKey=null; var ed=$('lp-app-edit'); if(ed) ed.hidden=true; var pa1=$('lp-panel-apps'); if(pa1) pa1.classList.remove('lpx-editing'); }
+    persist(); lpAutosave(); lpRenderAppsTab(); lpPagePreviewReload(); lpxHead();
   }
   function lpPageAppSetMode(secKey, mode){
     if(!lpCur) return;
@@ -2775,7 +3081,9 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     function flip(prev){ host.querySelectorAll('.ord-row').forEach(function(r){ var id=r.getAttribute('data-id'); if(prev[id]==null) return; var dy=prev[id]-r.getBoundingClientRect().top; if(dy){ r.style.transition='none'; r.style.transform='translateY('+dy+'px)'; requestAnimationFrame(function(){ r.style.transition=''; r.style.transform=''; }); } }); }
     function rowHtml(id,i,n){
       var art=(id==='__lpArticle');
-      return '<div class="ord-row'+(art?' ord-row--article':'')+'" draggable="true" data-id="'+id+'"><span class="ord-grip">\u22ee\u22ee</span><span class="ord-label">'+esc(lpPageLayoutLabel(id))+'</span><span class="ord-actions"><button type="button" class="ord-mv ord-up" data-id="'+id+'" title="Move up"'+(i===0?' disabled':'')+'>\u2191</button><button type="button" class="ord-mv ord-down" data-id="'+id+'" title="Move down"'+(i===n-1?' disabled':'')+'>\u2193</button></span></div>';
+      var sec=(!art&&p.pageSections&&p.pageSections[id])||null;
+      var tag=art?'Page text':(sec&&sec._own?'Own content':'This page only');
+      return '<div class="ord-row'+(art?' ord-row--article':'')+'" draggable="true" data-id="'+id+'" tabindex="0" role="button" aria-label="Edit '+esc(lpPageLayoutLabel(id))+'"><span class="ord-grip" title="Drag to move">\u22ee\u22ee</span><span class="ord-label">'+esc(lpPageLayoutLabel(id))+'<small class="ord-tag">'+tag+'</small></span><span class="ord-actions"><button type="button" class="ord-mv ord-up" data-id="'+id+'" title="Move up"'+(i===0?' disabled':'')+'>\u2191</button><button type="button" class="ord-mv ord-down" data-id="'+id+'" title="Move down"'+(i===n-1?' disabled':'')+'>\u2193</button><button type="button" class="ord-mv ord-edit" data-id="'+id+'" title="Edit">\u270e</button>'+(art?'':'<button type="button" class="ord-mv ord-rm" data-id="'+id+'" title="Remove from this page">\u2715</button>')+'<span class="ord-chev" aria-hidden="true">\u203a</span></span></div>';
     }
     function draw(animate){ var prev=animate?rects():null; var ord=lpEnsurePageLayoutOrder(p); host.innerHTML=ord.map(function(id,i){ return rowHtml(id,i,ord.length); }).join(''); if(animate) flip(prev); }
     function saveOrd(ord){ p.pageLayoutOrder=ord; persist(); lpAutosave(); lpPagePreviewReload(); }
@@ -2783,7 +3091,11 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     function clearDrop(){ host.querySelectorAll('.drop-before,.drop-after').forEach(function(r){ r.classList.remove('drop-before','drop-after'); }); }
     draw(false);
     if(!host.__lpOrdBound){ host.__lpOrdBound=true;
-      host.addEventListener('click',function(e){ var u=e.target.closest&&e.target.closest('.ord-up'); var d=e.target.closest&&e.target.closest('.ord-down'); if(u){ move(u.getAttribute('data-id'),-1); } else if(d){ move(d.getAttribute('data-id'),1); } });
+      host.addEventListener('click',function(e){ var u=e.target.closest&&e.target.closest('.ord-up'); var d=e.target.closest&&e.target.closest('.ord-down'); var rm=e.target.closest&&e.target.closest('.ord-rm'); if(u){ move(u.getAttribute('data-id'),-1); return; } if(d){ move(d.getAttribute('data-id'),1); return; }
+        if(rm){ var rk=rm.getAttribute('data-id'); if(confirm('Remove '+_secLabel(rk)+' from this page? The homepage is not changed.')) lpPageAppRemove(rk); return; }
+        if(e.target.closest&&e.target.closest('.ord-grip')) return;
+        var row=e.target.closest&&e.target.closest('.ord-row'); if(row) lpOpenPosition(row.getAttribute('data-id')); });
+      host.addEventListener('keydown',function(e){ if(e.key!=='Enter'&&e.key!==' ') return; var row=e.target.classList&&e.target.classList.contains('ord-row')?e.target:null; if(!row) return; e.preventDefault(); lpOpenPosition(row.getAttribute('data-id')); });
       host.addEventListener('dragstart',function(e){ var r=e.target.closest&&e.target.closest('.ord-row'); if(!r) return; dragId=r.getAttribute('data-id'); try{e.dataTransfer.effectAllowed='move';}catch(_e){} setTimeout(function(){ r.classList.add('dragging'); },0); });
       host.addEventListener('dragend',function(){ dragId=null; clearDrop(); host.querySelectorAll('.dragging').forEach(function(r){r.classList.remove('dragging');}); });
       host.addEventListener('dragover',function(e){ e.preventDefault(); var r=e.target.closest&&e.target.closest('.ord-row'); if(!r||r.getAttribute('data-id')===dragId){ clearDrop(); return; } var rc=r.getBoundingClientRect(); var after=(e.clientY-rc.top)>rc.height/2; clearDrop(); r.classList.add(after?'drop-after':'drop-before'); });
@@ -2797,7 +3109,9 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     var ed=$('lp-app-edit'), body=$('lp-app-edit-body'), title=$('lp-app-edit-title');
     if(!ed||!body) return;
     ed.hidden=false;
-    if(title) title.textContent='Edit unique: '+_secLabel(secKey);
+    var pa=$('lp-panel-apps'); if(pa) pa.classList.add('lpx-editing');
+    if(title) title.textContent=_secLabel(secKey);
+    if(!lpAppHist||lpAppHist.page!==(lpCur&&lpCur.id)||lpAppHist.key!==secKey) lpAppHistStart(secKey);
     var savedSub=landingSub, savedPreview=previewApply;
     landingSub=secKey;
     previewApply=function(){ persist(); lpAutosave(); lpPagePreviewReload(); };
@@ -2809,7 +3123,8 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       previewApply=savedPreview;
       window.previewApply = previewApply;
     }
-    try{ ed.scrollIntoView({behavior:'smooth',block:'nearest'}); }catch(e){}
+    try{ ed.scrollIntoView({behavior:'smooth',block:'start'}); }catch(e){}
+    lpAppHistUi(); setTimeout(lpPreviewMarkActive, 60);
   }
   async function lpRenderAppsTab(){
     if(!lpCur) return;
@@ -2879,23 +3194,167 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     if(lpPageEditKey){
       var appStill=(lpCur.pageApps||[]).some(function(a){ return (a.key||a.section_key)===lpPageEditKey&&(a.mode||'shared')==='unique'; });
       var edOpen=$('lp-app-edit');
-      if(!appStill){ lpPageEditKey=null; if(edOpen) edOpen.hidden=true; }
+      if(!appStill){ lpPageEditKey=null; if(edOpen) edOpen.hidden=true; var pa0=$('lp-panel-apps'); if(pa0) pa0.classList.remove('lpx-editing'); }
       else if(!edOpen||edOpen.hidden) lpRenderPageAppEditor(lpPageEditKey);
     }
+  }
+
+  /* ---------- Landing pages layout: page list (side / slim / top) + page header ---------- */
+  var LPX_NAV_KEY='lp_landing_nav_v1';
+  function lpxNavPref(){ try{ return JSON.parse(localStorage.getItem(LPX_NAV_KEY)||'{}')||{}; }catch(_e){ return {}; } }
+  function lpxNavSave(p){ try{ localStorage.setItem(LPX_NAV_KEY, JSON.stringify(Object.assign(lpxNavPref(), p||{}))); }catch(_e){} }
+  function lpxApplyNav(){
+    var root=$('lpx'); if(!root) return;
+    var pr=lpxNavPref(), top=pr.mode==='top', slim=!top&&!!pr.collapsed;
+    root.classList.toggle('lpx--top', top); root.classList.toggle('lpx--slim', slim);
+    var m=$('lpx-mode'); if(m){ m.title=top?'Show the pages in a side list':'Show the pages in a row across the top'; m.innerHTML=top?'&#8693;':'&#8645;'; }
+    var c=$('lpx-collapse'); if(c){ c.hidden=top; c.innerHTML=slim?'&raquo;':'&laquo;'; c.title=slim?'Show the full page list':'Make the page list slim'; c.setAttribute('aria-expanded', slim?'false':'true'); }
+  }
+  function lpxInitNav(){
+    var m=$('lpx-mode'), c=$('lpx-collapse');
+    if(m&&!m.__lpx){ m.__lpx=true; m.addEventListener('click',function(){ var pr=lpxNavPref(); lpxNavSave({mode:pr.mode==='top'?'side':'top'}); lpxApplyNav(); }); }
+    if(c&&!c.__lpx){ c.__lpx=true; c.addEventListener('click',function(){ var pr=lpxNavPref(); lpxNavSave({collapsed:!pr.collapsed}); lpxApplyNav(); }); }
+    lpxApplyNav();
+  }
+  function lpxThumb(p){
+    var u=p&&p.img;
+    if(!u&&p&&p.pageSections){ var hs=p.pageSections.heroSlider; var s0=hs&&Array.isArray(hs.slides)&&hs.slides.find(function(x){ return x&&(x.imageUrl||x.image); }); if(s0) u=s0.imageUrl||s0.image; }
+    if(!u&&p&&p.pageSections&&p.pageSections.hero) u=p.pageSections.hero.image||p.pageSections.hero.bgImage||'';
+    if(u&&/^https:\/\//i.test(String(u))) return '<span class="lpx-thumb" style="background-image:url(&quot;'+esc(String(u).replace(/["()\\\s]/g,''))+'&quot;)"></span>';
+    var t=String((p&&(p.title||p.slug))||'?').trim().charAt(0).toUpperCase()||'?';
+    return '<span class="lpx-thumb lpx-thumb--txt">'+esc(t)+'</span>';
+  }
+  function lpxCardHtml(p){
+    var live=p.status==='published', n=(p.pageApps||[]).length;
+    var inMenu=p.slug&&typeof lpFindNavIdx==='function'&&lpFindNavIdx(p.slug)>=0;
+    return '<div class="lpx-card lp-item" data-edit="'+esc(p.id)+'" data-search="'+esc(((p.title||'')+' '+(p.slug||'')).toLowerCase())+'" tabindex="0" role="button" title="'+esc(p.title||'Untitled')+'">'
+      +lpxThumb(p)
+      +'<span class="lpx-card-body"><span class="lp-t">'+esc(p.title||'Untitled')+'</span>'
+      +'<span class="lpx-card-meta"><span class="lp-badge '+(live?'pub':'draft')+'">'+(live?'Live':'Draft')+'</span>'+(inMenu?'<span class="lp-badge pub lpx-inmenu">In menu</span>':'')+(n?'<span class="lpx-napps">'+n+' app'+(n===1?'':'s')+'</span>':'')+'</span>'
+      +'<span class="lp-s">/'+esc(p.slug||'')+'</span></span>'
+      +'<span class="lpx-menu"><button type="button" class="lpx-ic lpx-dots" data-lpx-menu="'+esc(p.id)+'" aria-label="Page actions" aria-haspopup="true">⋮</button>'
+      +'<span class="lpx-pop" hidden><button type="button" data-lpx-act="open" data-id="'+esc(p.id)+'">Positions</button><button type="button" data-lpx-act="settings" data-id="'+esc(p.id)+'">Page settings</button><button type="button" data-lpx-act="dup" data-id="'+esc(p.id)+'">Duplicate</button><button type="button" class="danger" data-lpx-act="del" data-id="'+esc(p.id)+'">Delete</button></span></span>'
+      +'</div>';
+  }
+  function lpxCloseMenus(){ document.querySelectorAll('.lpx-pop').forEach(function(x){ x.hidden=true; }); }
+  function lpxCardMenu(btn){
+    var pop=btn.parentNode.querySelector('.lpx-pop'); var was=pop&&!pop.hidden; lpxCloseMenus();
+    if(!pop||was) return;
+    // Fixed position so the scrolling page list can't clip it.
+    var r=btn.getBoundingClientRect(); pop.hidden=false;
+    var w=pop.offsetWidth||160, h=pop.offsetHeight||170;
+    var top=r.bottom+4; if(top+h>window.innerHeight-8) top=Math.max(8, r.top-h-4);
+    pop.style.position='fixed'; pop.style.top=top+'px'; pop.style.left=Math.max(8, Math.min(window.innerWidth-w-8, r.right-w))+'px'; pop.style.right='auto';
+  }
+  window.addEventListener('scroll', function(){ lpxCloseMenus(); }, true);
+  function lpxUpdateCard(p){
+    var list=$('lp-list'); if(!list||!p) return;
+    var old=null; list.querySelectorAll('.lpx-card').forEach(function(c){ if(c.getAttribute('data-edit')===String(p.id)) old=c; });
+    if(!old) return;
+    var t=document.createElement('div'); t.innerHTML=lpxCardHtml(p);
+    old.parentNode.replaceChild(t.firstChild, old); lpxMarkActive();
+  }
+  function lpxFilterList(q){
+    q=String(q||'').trim().toLowerCase();
+    var list=$('lp-list'); if(!list) return;
+    list.querySelectorAll('.lpx-card').forEach(function(c){ c.hidden=!!q&&(c.getAttribute('data-search')||'').indexOf(q)<0; });
+  }
+  function lpxMarkActive(){
+    var id=lpCur&&lpCur.id, ed=$('lp-editor');
+    var em=$('lpx-empty'); if(em) em.hidden=!!(ed&&!ed.hidden);
+    document.querySelectorAll('#lp-list .lpx-card').forEach(function(c){ var on=!!id&&!!ed&&!ed.hidden&&c.getAttribute('data-edit')===String(id); c.classList.toggle('is-active', on); if(on) c.setAttribute('aria-current','page'); else c.removeAttribute('aria-current'); });
+  }
+  function lpxHead(){
+    if(!lpCur) return;
+    var t=$('lp-ed-title'); if(t) t.textContent=lpCur.title||'Untitled page';
+    var n=(lpCur.pageApps||[]).length, c=$('lpx-ph-count'); if(c){ c.textContent=n+' app'+(n===1?'':'s'); c.hidden=(currentSiteTemplate!=='trade'); }
+    var sl=$('lpx-ph-slug'); if(sl) sl.textContent='/'+(lpCur.slug||'');
+    var st=$('lpx-ph-status'); if(st){ var live=lpCur.status==='published'; st.className='lp-badge '+(live?'pub':'draft'); st.textContent=live?'Live':'Draft'; }
+  }
+  /** Shared apps (homepage content shown live) become this page's own copies. */
+  function lpMakeAppsUnique(p){
+    if(!p||!Array.isArray(p.pageApps)) return 0;
+    var keep=lpCur, n=0; lpCur=p;
+    var wasClean=!lpDraft.dirty&&!lpDraftHasUnsaved();
+    _lpQuietConvert=true;
+    try{
+      p.pageApps.forEach(function(a){
+        var k=a&&(a.key||a.section_key); if(!k||(a.mode||'shared')==='unique') return;
+        a.mode='unique';
+        var ps=p.pageSections&&p.pageSections[k];
+        if(!ps||!Object.keys(ps).length||lpPageSectionLooksUninitialized(k, ps)){ lpCopyPageAppFromHome(k,{silent:true, skipRender:true, noPreview:true}); a.homeCopied=true; }
+        n++;
+      });
+    } finally { lpCur=keep; _lpQuietConvert=false; }
+    if(n){
+      persist();
+      // Converting on open looks the same on the site, so on its own it isn't a draft:
+      // it is saved with the next real edit (or Publish).
+      if(wasClean){ if(lpDraft.t){ clearTimeout(lpDraft.t); lpDraft.t=null; } lpDraft.dirty=false; try{ lpDraft.last=JSON.stringify(lpDraftConfig()); }catch(_l){} lpDraftUi(); }
+      else lpAutosave();
+    }
+    return n;
+  }
+  /** Positions → open one app's editor for this page (or the page text). */
+  function lpOpenPosition(id){
+    if(!lpCur||!id) return;
+    if(id==='__lpArticle'){ lpSetEdTab('content'); try{ var h=$('lp-h1'); h&&h.scrollIntoView({behavior:'smooth',block:'center'}); h&&h.focus({preventScroll:true}); }catch(_f){} return; }
+    var app=(lpCur.pageApps||[]).find(function(a){ return (a.key||a.section_key)===id; });
+    if(!app) return;
+    if(lpEdTab!=='apps') lpSetEdTab('apps');
+    if((app.mode||'shared')!=='unique') lpMakeAppsUnique(lpCur);
+    lpRenderPageAppEditor(id);
+  }
+  function lpBackToPositions(){
+    lpPageEditKey=null; lpAppHist=null;
+    var ed=$('lp-app-edit'); if(ed) ed.hidden=true;
+    var pa=$('lp-panel-apps'); if(pa) pa.classList.remove('lpx-editing');
+    try{ wireLpPageOrder(lpCur); }catch(_w){}
+    setTimeout(lpPreviewMarkActive, 60);
+    try{ var lo=$('lp-layout-order'); lo&&lo.scrollIntoView({behavior:'smooth',block:'nearest'}); }catch(_s){}
+  }
+  /* Per-app undo / redo for the app open in the landing editor. */
+  var lpAppHist=null, _lpAppHistT=null;
+  function lpAppSecJson(k){ try{ return JSON.stringify((lpCur&&lpCur.pageSections&&lpCur.pageSections[k])||null); }catch(_e){ return 'null'; } }
+  function lpAppHistStart(k){ lpAppHist={ page:lpCur&&lpCur.id, key:k, stack:[lpAppSecJson(k)], i:0 }; lpAppHistUi(); }
+  function lpAppHistRecord(now){
+    if(_lpAppHistT){ clearTimeout(_lpAppHistT); _lpAppHistT=null; }
+    var go=function(){
+      if(!lpAppHist||!lpCur||lpAppHist.page!==lpCur.id||lpPageEditKey!==lpAppHist.key) return;
+      var cur=lpAppSecJson(lpAppHist.key);
+      if(cur===lpAppHist.stack[lpAppHist.i]) return;
+      lpAppHist.stack=lpAppHist.stack.slice(0, lpAppHist.i+1); lpAppHist.stack.push(cur);
+      if(lpAppHist.stack.length>60) lpAppHist.stack.shift();
+      lpAppHist.i=lpAppHist.stack.length-1; lpAppHistUi();
+    };
+    if(now) go(); else _lpAppHistT=setTimeout(go, 500);
+  }
+  function lpAppHistStep(dir){
+    lpAppHistRecord(true);
+    if(!lpAppHist||!lpCur) return;
+    var j=lpAppHist.i+dir; if(j<0||j>=lpAppHist.stack.length) return;
+    lpAppHist.i=j;
+    var k=lpAppHist.key, v=JSON.parse(lpAppHist.stack[j]);
+    if(!lpCur.pageSections) lpCur.pageSections={};
+    if(v==null) delete lpCur.pageSections[k]; else lpCur.pageSections[k]=v;
+    persist(); lpAutosave();
+    lpRenderPageAppEditor(k); lpPagePreviewReload(); lpAppHistUi();
+  }
+  function lpAppHistUi(){
+    var u=$('lpx-app-undo'), r=$('lpx-app-redo');
+    if(u) u.disabled=!(lpAppHist&&lpAppHist.i>0);
+    if(r) r.disabled=!(lpAppHist&&lpAppHist.i<lpAppHist.stack.length-1);
   }
   function renderSeoPages(){
     if(!data.pages) data.pages=[];
     const list=$('lp-list');
-    list.innerHTML = data.pages.length ? data.pages.map(function(p){
-      var n=(p.pageApps&&p.pageApps.length)?(' <span class="lp-app-badge">'+p.pageApps.length+' app'+(p.pageApps.length===1?'':'s')+'</span>'):'';
-      var inMenu=p.slug&&lpFindNavIdx&&lpFindNavIdx(p.slug)>=0; var menuBadge=inMenu?' <span class="lp-badge pub" style="opacity:.85">In menu</span>':'';
-      return '<div class="lp-item"><span class="lp-meta"><span class="lp-t">'+esc(p.title||'Untitled')+n+'</span> <span class="lp-s">/'+esc(p.slug||'')+'</span></span><span style="display:flex;gap:10px;align-items:center"><span class="lp-badge '+(p.status==='published'?'pub':'draft')+'">'+(p.status==='published'?'Live':'Draft')+'</span>'+menuBadge+'<button class="btn ghost sm" data-edit="'+p.id+'">Edit</button></span></div>';
-    }).join('') : '<p class="hint">No pages yet. Create one to build an SEO-optimised page that matches your theme.</p>';
+    list.innerHTML = data.pages.length ? data.pages.map(lpxCardHtml).join('') : '<p class="hint">No pages yet. Create one to build an SEO-optimised page that matches your theme.</p>';
+    try{ lpxFilterList(($('lpx-search')&&$('lpx-search').value)||''); lpxMarkActive(); }catch(_lx){}
     const ap=$('lp-ai-presets'); if(ap && !ap.children.length){ aiPresets().forEach(function(pr){ const b=document.createElement('button'); b.type='button'; b.className='ai-chip'; b.textContent=pr[0]; b.addEventListener('click',function(){ lpAiApplyPreset(pr); }); ap.appendChild(b); }); }
     if($('lp-ai-mode')){ $('lp-ai-mode').addEventListener('change',function(){ lpAiSetMode(this.value); }); lpAiSetMode($('lp-ai-mode').value||'seo'); }
     try{ lpConsumeSiHandoff({ autoGenerate: false }); }catch(_siH){}
     if(lpWired) return; lpWired=true;
-    $('lp-new-apps').addEventListener('click',function(){ const p={id:uid(),kind:'apps',title:'',slug:'',meta:'',h1:'',body:'',menu:'top',status:'draft',imgMode:'wrap-right',pageApps:[],pageSections:{},pageLayoutOrder:[]}; data.pages.push(p); persist(); lpSaveDB(); renderSeoPages(); lpOpen(p.id); lpSetEdTab('apps'); toast('New app layout \u2014 give it a title and address, then add apps.'); });
+    $('lp-new-apps').addEventListener('click',function(){ const p={id:uid(),kind:'apps',title:'',slug:'',meta:'',h1:'',body:'',menu:'top',status:'draft',imgMode:'wrap-right',pageApps:[],pageSections:{},pageLayoutOrder:[]}; data.pages.push(p); persist(); lpSaveDB(); renderSeoPages(); lpOpen(p.id); lpSetEdTab('content'); try{ $('lp-title').focus(); }catch(_f){} toast('New app layout \u2014 give it a title and address, then add apps.'); });
     $('lp-kind').addEventListener('change',function(){ if(!lpCur) return; if(this.value==='apps') lpCur.kind='apps'; else delete lpCur.kind; $('lp-editor').classList.toggle('lp-kind-apps', lpCur.kind==='apps'); persist(); lpAutosave(); });
     $('lp-dup').addEventListener('click',function(){
       if(!lpCur) return;
@@ -2905,11 +3364,19 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       var copy=Object.assign(src,{ id:uid(), slug:slug, title:(src.title?src.title+' (copy)':'Copy'), status:'draft', updatedAt:new Date().toISOString() });
       delete copy.previousUrls; delete copy._siPrevStatus; delete copy.menuLabel; delete copy.menuIcon;
       data.pages.push(copy);
-      persist(); lpSaveDB(); renderSeoPages(); lpOpen(copy.id);
+      persist(); lpSaveDB(); renderSeoPages(); lpOpen(copy.id); lpSetEdTab('content');
       toast('Duplicated as a draft \u2014 change the title, address and content, then publish.');
     });
-    $('lp-new').addEventListener('click',function(){ const p={id:uid(),title:'',slug:'',meta:'',h1:'',body:'',menu:'top',status:'draft',imgMode:'wrap-right',pageApps:[],pageSections:{},pageLayoutOrder:[]}; data.pages.push(p); try{ lpEnsureDefaultLandingApps(p); }catch(e){} persist(); lpSaveDB(); renderSeoPages(); lpOpen(p.id); });
-    list.addEventListener('click',function(e){ const ed=e.target.closest('[data-edit]'); if(ed) lpOpen(ed.getAttribute('data-edit')); });
+    $('lp-new').addEventListener('click',function(){ const p={id:uid(),title:'',slug:'',meta:'',h1:'',body:'',menu:'top',status:'draft',imgMode:'wrap-right',pageApps:[],pageSections:{},pageLayoutOrder:[]}; data.pages.push(p); try{ lpEnsureDefaultLandingApps(p); }catch(e){} persist(); lpSaveDB(); renderSeoPages(); lpOpen(p.id); lpSetEdTab('content'); try{ $('lp-title').focus(); }catch(_f){} });
+    list.addEventListener('click',function(e){
+      var mb=e.target.closest('[data-lpx-menu]');
+      if(mb){ e.stopPropagation(); lpxCardMenu(mb); return; }
+      var act=e.target.closest('[data-lpx-act]');
+      if(act){ e.stopPropagation(); var aid=act.getAttribute('data-id'), what=act.getAttribute('data-lpx-act'); lpxCloseMenus(); if(!lpCur||lpCur.id!==aid) lpOpen(aid); if(what==='dup') $('lp-dup').click(); else if(what==='del') $('lp-del').click(); else if(what==='settings') lpSetEdTab('content'); return; }
+      const ed=e.target.closest('[data-edit]'); if(ed) lpOpen(ed.getAttribute('data-edit'));
+    });
+    list.addEventListener('keydown',function(e){ if((e.key==='Enter'||e.key===' ')&&e.target.matches&&e.target.matches('.lpx-card[data-edit]')){ e.preventDefault(); lpOpen(e.target.getAttribute('data-edit')); } });
+    document.addEventListener('click',function(e){ if(!(e.target.closest&&e.target.closest('.lpx-menu'))) lpxCloseMenus(); });
     $('lp-tips').addEventListener('change',function(){ $('lp-editor').classList.toggle('show-tips', this.checked); });
     $('lp-slug').addEventListener('input',function(){ this.value=this.value.toLowerCase().replace(/[^a-z0-9-]+/g,'-').replace(/^-+/,'').replace(/--+/g,'-'); lpField('slug',this.value); });
     $('lp-slug').addEventListener('blur',function(){ this.value=this.value.replace(/-+$/,''); lpField('slug',this.value); });
@@ -2995,8 +3462,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       lpCancelAutosave();
       persist();
       var savedRes=await lpSaveDB();
-      if(!savedRes||(!savedRes.ok&&!savedRes.superseded)){ toast('Cloud save failed \u2014 your changes are not live yet. Try Save again.','warn'); return; }
-      if(savedRes.ok&&currentSiteStatus==='live') lpPurgeLiveCache();
+      if(!savedRes||(!savedRes.ok&&!savedRes.superseded)){ toast('Could not save the draft \u2014 try Save again.','warn'); return; }
       var pub=lpCur&&lpCur.status==='published';
       if(lpCur){
         if(pub && prevStatus!=='published'){
@@ -3011,9 +3477,9 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
         lpCur._siPrevStatus=lpCur.status;
       }
       renderSeoPages();
-      toast(pub?'Page saved — regenerate sitemap in Settings when you add or publish pages.':'Page saved');
+      toast('Draft saved \u2014 click Publish Live Site to make it live');
     });
-    $('lp-close').addEventListener('click',function(){ $('lp-editor').hidden=true; lpCur=null; });
+    $('lp-close').addEventListener('click',function(){ $('lp-editor').hidden=true; lpCur=null; lpPageEditKey=null; renderSeoPages(); });
     $('lp-del').addEventListener('click',async function(){
       if(!lpCur) return;
       if(!confirm('Delete this landing page? It will disappear from Campaign Builder after save.')) return;
@@ -3028,9 +3494,9 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       renderSeoPages();
       var saved=await lpSaveDB();
       if(!saved||!saved.ok){
-        toast('Page removed locally but cloud save failed — try Save again or refresh','warn');
+        toast('Page removed here but the draft could not be saved \u2014 try Save draft again','warn');
       } else {
-        toast('Deleted “'+title+'”');
+        toast('Deleted \u201c'+title+'\u201d \u2014 click Publish Live Site to remove it from your live site');
       }
       try{
         if(typeof _gadsCache!=='undefined') _gadsCache={};
@@ -3072,10 +3538,19 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     if(lptc) lptc.addEventListener('click',function(){ lpSetEdTab('content'); });
     if(lpta) lpta.addEventListener('click',function(){ lpSetEdTab('apps'); });
     var lpaa=$('lp-app-add');
-    if(lpaa) lpaa.addEventListener('click',function(){ var k=($('lp-app-pick')&&$('lp-app-pick').value)||''; var w=$('lp-app-warn'); if(!k){ if(w) w.hidden=false; toast('Choose an app first','warn'); return; } if(w) w.hidden=true; lpPageAppAdd(k); });
+    if(lpaa) lpaa.addEventListener('click',function(){ var k=($('lp-app-pick')&&$('lp-app-pick').value)||''; var w=$('lp-app-warn'); if(!k){ if(w) w.hidden=false; toast('Choose an app first','warn'); return; } if(w) w.hidden=true; var had=(lpCur&&lpCur.pageApps||[]).length; lpPageAppAdd(k); var r=$('lp-app-addrow'); if(r) r.hidden=true; if(lpCur&&(lpCur.pageApps||[]).length>had) lpOpenPosition(k); });
     if($('lp-app-pick')) $('lp-app-pick').addEventListener('change',function(){ var w=$('lp-app-warn'); if(w&&this.value) w.hidden=true; });
     var lpaec=$('lp-app-edit-close');
-    if(lpaec) lpaec.addEventListener('click',function(){ lpPageEditKey=null; var ed=$('lp-app-edit'); if(ed) ed.hidden=true; });
+    if(lpaec) lpaec.addEventListener('click',function(){ lpBackToPositions(); });
+    var lpxAdd=$('lpx-add-sec');
+    if(lpxAdd) lpxAdd.addEventListener('click',function(){ var r=$('lp-app-addrow'); if(!r) return; r.hidden=!r.hidden; if(!r.hidden){ var pk=$('lp-app-pick'); try{ pk&&pk.focus(); }catch(_f){} } });
+    [['lpx-app-undo',function(){ lpAppHistStep(-1); }],['lpx-app-redo',function(){ lpAppHistStep(1); }],
+     ['lpx-app-reset',function(){ if(!lpPageEditKey) return; var k=lpPageEditKey; lpPageAppCopyFromHome(k,{force:false}); lpAppHistRecord(true); }],
+     ['lpx-app-blank',function(){ if(!lpPageEditKey) return; lpPageAppStartBlank(lpPageEditKey); lpAppHistRecord(true); }],
+     ['lpx-app-rm',function(){ if(!lpPageEditKey) return; var k=lpPageEditKey; if(!confirm('Remove '+_secLabel(k)+' from this page? The homepage is not changed.')) return; lpPageAppRemove(k); lpBackToPositions(); }]
+    ].forEach(function(x){ var b=$(x[0]); if(b) b.addEventListener('click',x[1]); });
+    var lpxS=$('lpx-search'); if(lpxS) lpxS.addEventListener('input',function(){ lpxFilterList(this.value); });
+    lpxInitNav();
   }
   function lpNavMenuEns(){
     if(!data.sections) data.sections={};
@@ -3298,6 +3773,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       }
       if(f==='h1'||f==='body') lpEnsurePageLayoutOrder(lpCur);
       persist(); lpAutosave();
+      if(f==='title'||f==='slug'||f==='status'){ try{ lpxHead(); lpxUpdateCard(lpCur); }catch(_h){} }
       // Typing the address: reload the preview once typing pauses, not on every key.
       if(f==='slug'&&document.body.classList.contains('lp-prev-open')){ if(_lpSlugPrevT) clearTimeout(_lpSlugPrevT); _lpSlugPrevT=setTimeout(function(){ _lpSlugPrevT=null; previewLoad(); },900); }
       else if(f==='h1'||f==='body'||f==='h1Color'||f==='h2Color'||f==='paragraphColor') lpPagePreviewReload();
@@ -3323,9 +3799,12 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     lpHist=[lpCur.body||'']; lpHi=0;
     var tabs=$('lp-ed-tabs');
     if(tabs) tabs.hidden=(currentSiteTemplate!=='trade');
-    lpSetEdTab('content');
     var ed=$('lp-app-edit'); if(ed) ed.hidden=true;
-    lpPageEditKey=null;
+    var paX=$('lp-panel-apps'); if(paX) paX.classList.remove('lpx-editing');
+    var arX=$('lp-app-addrow'); if(arX) arX.hidden=true;
+    lpPageEditKey=null; lpAppHist=null;
+    if(currentSiteTemplate==='trade') lpMakeAppsUnique(lpCur);
+    lpSetEdTab(currentSiteTemplate==='trade'?'apps':'content');
     // Page type: "App layout" pages hide the article fields (H1, text, image, AI writer).
     var kSel=$('lp-kind'); if(kSel) kSel.value=(lpCur.kind==='apps'?'apps':'');
     $('lp-editor').classList.toggle('lp-kind-apps', lpCur.kind==='apps');
@@ -3333,6 +3812,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     lpSlugAtOpen=(lpCur.status==='published')?String(lpCur.slug||'').trim():'';
     if(lpCur.slug&&document.body.classList.contains('lp-prev-open')) previewLoad();
     lpNavStateSave({view:'landing', lpPageId:id});
+    lpxHead(); lpxUpdateCard(lpCur); lpxMarkActive();
     try{$('lp-editor').scrollIntoView({behavior:'smooth',block:'start'});}catch(e){}
   }
   function mdToHtml(t){
@@ -4596,6 +5076,9 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
     // Close any open landing-page editor from the previous site and cancel pending autosaves
     // so Bean Culture pages never appear (or save) under Lukes etc.
     lpResetLandingEditor();
+    // Leaving a site with unsaved edits: keep them as that site's draft first.
+    try{ if(lpDraft.dirty&&currentSiteId&&currentSiteId!==site.id) lpDraftSave({quiet:true}); }catch(_dsw){}
+    try{ if(lpDraft.t){ clearTimeout(lpDraft.t); lpDraft.t=null; } if(currentSiteId!==site.id){ lpDraft.id=null; lpDraft.savedAt=null; } lpDraft.dirty=false; lpDraft.base=null; }catch(_dr){}
     if(manageMsgEmbed&&manageMsgEmbed.destroy){ try{ manageMsgEmbed.destroy(); }catch(_e){} manageMsgEmbed=null; }
     updateSupportNavBadge(0);
     currentSiteId=site.id; currentSiteSlug=site.slug; currentSiteTemplate=site.template||'broker-app'; currentIsPartnerHome=!!site.is_partner_home;
@@ -4648,6 +5131,7 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
         try{ lpScopeSync(); lpBkSync(); }catch(e){}
         lpSyncManageUrl();
         lpNavRestoreLanding();
+        lpDraftAfterLoad(site);
       });
       return; // async reconcile continues in background
     }
@@ -4661,6 +5145,18 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
     try{ lpScopeSync(); lpBkSync(); }catch(e){}
     lpSyncManageUrl();
     lpNavRestoreLanding();
+    lpDraftAfterLoad(site);
+  }
+  /** Loaded: remember what is live, then offer any newer unpublished draft. */
+  function lpDraftAfterLoad(site){
+    try{
+      // The live version is remembered on the site row the first time it loads, because
+      // after a draft is resumed (or saved) site.config holds the draft, not what is live.
+      var resumed=!!site.__draftResumed; site.__draftResumed=false;
+      if(!site.__liveStr&&!resumed){ lpDraftSetBase(); site.__liveStr=lpDraft.base; }
+      else { if(lpDraft.t){ clearTimeout(lpDraft.t); lpDraft.t=null; } lpDraft.dirty=false; lpDraft.base=site.__liveStr||lpDraft.base||null; try{ lpDraft.last=JSON.stringify(lpDraftConfig()); }catch(_l){} lpDraftUi(); }
+      if(!resumed) lpDraftCheck(site);
+    }catch(_dal){}
   }
   /* Partner Program: show the customer (site owner) their assigned support contact. */
   var _lpSupportOpenPrefill=null;
@@ -7769,7 +8265,7 @@ function heroCtaCard(c){
         gr.disabled=true;
         if(msg){ msg.style.color='var(--ink-faint)'; msg.textContent='Saving pages and rebuilding\u2026'; }
         try{
-          await lpSaveDB();
+          await lpSaveLiveDB();
           var token=await cwToken();
           var r=await fetch('/api/site/sitemap',{method:'POST',headers:{'content-type':'application/json',Authorization:'Bearer '+(token||'')},body:JSON.stringify({siteId:currentSiteId,action:'regenerate'})});
           var j=await r.json();
@@ -12505,6 +13001,8 @@ function heroCtaCard(c){
     if(wentLive) currentSiteStatus='live';
     var sref=allSites.find(function(x){return x.id===currentSiteId;}); if(sref){ if(payload.business_name) sref.business_name=payload.business_name; sref.custom_domain=payload.custom_domain; if(payload.owner_email!==undefined) sref.owner_email=payload.owner_email; sref.config=payload.config; if(wentLive) sref.status='live'; }
     lpRefreshViewLiveLabel();
+    // The draft is live now.
+    try{ lpDraftClear(); }catch(_dc){}
     // Invalidate CDN HTML for this site so longer cache does not delay live updates.
     lpPurgeLiveCache();
     if(currentSiteTemplate!=='broker-app' && document.body.classList.contains('lp-prev-open')) previewLoad();
@@ -12536,6 +13034,15 @@ function heroCtaCard(c){
   }
   function ensureSiteBar(){
     const dl=$('btn-download'); if(!dl) return; const bar=dl.parentNode;
+    if(!$('btn-save-draft')){
+      const sd=document.createElement('button'); sd.className='btn ghost'; sd.id='btn-save-draft'; sd.setAttribute('data-lp-draft-save','');
+      sd.title='Save your changes without making them live. Click Publish Live Site when you\u2019re ready.';
+      sd.textContent='Save draft'; sd.addEventListener('click',function(){ lpDraftSave({}); });
+      bar.insertBefore(sd, dl);
+      const st=document.createElement('span'); st.className='lpx-draft-st lpx-draft-st--bar'; st.id='lp-draft-status'; st.setAttribute('data-lp-draft-status',''); st.setAttribute('aria-live','polite');
+      bar.insertBefore(st, dl);
+      lpDraftUi();
+    }
     if(!$('btn-publish')){
       const pb=document.createElement('button'); pb.className='btn'; pb.id='btn-publish';
       pb.textContent='Publish Live Site'; pb.addEventListener('click',publishToDB);
@@ -15796,7 +16303,7 @@ function heroCtaCard(c){
     _siEnsureSearchCanvasPosition(!!opts.forcePosition);
     if(typeof _syncSectionOrder==='function') _syncSectionOrder(target===data?data:target);
     if(typeof persist==='function') persist();
-    if(typeof lpSaveDB==='function') await lpSaveDB();
+    if(typeof lpSaveLiveDB==='function') await lpSaveLiveDB();
     try{ if(typeof previewApply==='function') previewApply(); }catch(_pa){}
     try{ if(typeof window.lpTrack==='function') window.lpTrack(existed?'searchcanvas_regenerated':'searchcanvas_generated_from_seo',{siteId:currentSiteId,source:opts.source||'seo-command',tabs:(next.tabs||[]).length}); }catch(_e){}
     return { existed:existed, tabs:(next.tabs||[]).length, searchCanvas:next };
@@ -15852,7 +16359,7 @@ function heroCtaCard(c){
     if(data.sections.seoText) data.sections.seoText.on=false;
     _siEnsureSearchCanvasPosition();
     if(typeof persist==='function') persist();
-    if(typeof lpSaveDB==='function') await lpSaveDB();
+    if(typeof lpSaveLiveDB==='function') await lpSaveLiveDB();
     try{ if(typeof window.lpTrack==='function') window.lpTrack('searchcanvas_converted_from_seo_text',{siteId:currentSiteId}); }catch(_e){}
     return true;
   }
@@ -15898,7 +16405,7 @@ function heroCtaCard(c){
     data.sections.seoText=cur;
     _siEnsureSeoTextAboveFaq();
     if(typeof persist==='function') persist();
-    if(typeof lpSaveDB==='function') return lpSaveDB();
+    if(typeof lpSaveLiveDB==='function') return lpSaveLiveDB();
     return Promise.resolve();
   }
   function _siApplyFaqsToHomepageFaq(faqs, opts){
@@ -15954,7 +16461,7 @@ function heroCtaCard(c){
     }
     if(typeof _syncSectionOrder==='function') _syncSectionOrder(data);
     if(typeof persist==='function') persist();
-    if(typeof lpSaveDB==='function') return lpSaveDB().then(function(){ return items.length; });
+    if(typeof lpSaveLiveDB==='function') return lpSaveLiveDB().then(function(){ return items.length; });
     return Promise.resolve(items.length);
   }
   window._siApplyFaqsToHomepageFaq=_siApplyFaqsToHomepageFaq;
@@ -19111,7 +19618,7 @@ function heroCtaCard(c){
   function _dashLeadInboxPersist(){
     persist();
     if(typeof lpAutosave==='function') try{ lpAutosave(); }catch(_e){}
-    if(typeof lpSaveDB==='function') try{ lpSaveDB(); }catch(_e){}
+    if(typeof lpSaveLiveDB==='function') try{ lpSaveLiveDB(); }catch(_e){}
   }
   function _dashLeadNorm(v){ return String(v==null?'':v).trim().toLowerCase(); }
   function _dashLeadResolveCountry(value){
