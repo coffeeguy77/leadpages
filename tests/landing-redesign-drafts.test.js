@@ -87,3 +87,9 @@ test('preview shows the draft page: in-place redraw and draft position order', (
   // A page only in a draft still previews (server serves the shell, editor supplies the page).
   assert.match(render, /if \(!isPreview\) return notFound\(res\);\n\s*page = '';/);
 });
+
+test('typing in a landing app keeps the preview where it was (no jump to the top)', () => {
+  const r = between('function lpPagePreviewReload(){', 'function lpPreviewSyncPageOrder(){');
+  assert.match(r, /_y=_fw\.scrollY/);
+  assert.match(r, /_fw\.scrollTo\(0,_y\)/);
+});
