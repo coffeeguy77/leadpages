@@ -42,3 +42,9 @@ test('hero slider / hero banners / trust bar: width option', () => {
   assert.match(css, /section\[data-sec\]\.lpw-site\{width:100%;max-width:var\(--site-maxw,1920px\)/);
   assert.match(css, /section\[data-sec="trustBar"\]\.lpw-full \.tb-band\{max-width:none!important\}/);
 });
+
+test('header Order button is pushed clear of the logo (logo offsets use transforms)', () => {
+  assert.match(js, /function ctaClearLogo\(\)/);
+  assert.match(js, /if \(overlap && c\.top > l\.top\) push = /);
+  assert.match(js, /bindCtaClear\(\); ctaClearSoon\(\);/);
+});
