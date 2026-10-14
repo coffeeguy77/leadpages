@@ -108,7 +108,7 @@
         keys = global.LP_searchIcons(q, (cat && cat !== '__pop__') ? cat : '');
       }
     } else {
-      keys = Object.keys(global.LP_ICONS || {});
+      keys = Object.keys(global.LP_ICONS || {}).filter(function (k) { return /^[a-z0-9-]+$/.test(k); });
       if (q) {
         keys = keys.filter(function (k) {
           return k.replace(/-/g, ' ').indexOf(q) >= 0;

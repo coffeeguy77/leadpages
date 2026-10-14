@@ -492,9 +492,9 @@ function buildAgencyHtml(site, host, demos, base) {
 
   const svcs = (Array.isArray(cfg.services) ? cfg.services : []).filter(function (x) { return x && x.on !== false && (x.title || x.body); }).slice(0, 6);
   const svcList = svcs.length ? svcs : [
-    { icon: '\uD83D\uDCF1', title: 'Mobile-first design', body: 'Sites that look sharp and load fast on the phone, where most local customers find you.' },
-    { icon: '\u26A1', title: 'Lead forms that work', body: 'Enquiry forms that land straight in your inbox so you never miss a job.' },
-    { icon: '\uD83D\uDD0E', title: 'Found on Google', body: 'Local search basics built in so nearby customers can actually find you.' }
+    { icon: 'smartphone', title: 'Mobile-first design', body: 'Sites that look sharp and load fast on the phone, where most local customers find you.' },
+    { icon: 'zap', title: 'Lead forms that work', body: 'Enquiry forms that land straight in your inbox so you never miss a job.' },
+    { icon: 'search', title: 'Found on Google', body: 'Local search basics built in so nearby customers can actually find you.' }
   ];
   const services = svcList.map(function (x) { return '<div class="svc"><span class="ic">' + esc(x.icon || '\u2728') + '</span><h3>' + esc(x.title || '') + '</h3><p>' + esc(x.body || x.desc || '') + '</p></div>'; }).join('');
 

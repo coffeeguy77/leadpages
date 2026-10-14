@@ -34,3 +34,5 @@ On phones (≤700px) every layout except Photo cards becomes the side rail; Phot
 | App registry | `api/api-apps.js` `STORY_TIMELINE_APP` (registered automatically), or `scripts/seed-story-timeline-app.sql` |
 
 Excluded from the AI composer until it has prompts for it. Tests: `node --test tests/story-timeline.test.js`.
+
+**Space above / below** (`spaceTop`, `spaceBottom`): standard · compact · small · none — none joins the timeline to the app next to it.

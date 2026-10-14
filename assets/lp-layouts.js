@@ -78,10 +78,8 @@
   /** LeadPages icon name → inline SVG; a short emoji / symbol typed in the editor is shown as text. */
   function icon(name, cls) {
     var p = name && window.LP_ICONS && window.LP_ICONS[name];
-    if (!p) {
-      var t = txt(name);
-      return (t && t.length <= 4 && !/^[a-z0-9-]+$/i.test(t)) ? '<span class="lp-ic lpl-emo" aria-hidden="true">' + esc(t) + '</span>' : '';
-    }
+    // Stroke icons only: an emoji is drawn as its matching stroke icon (icons.js), never in colour.
+    if (!p) return '';
     return '<svg class="lp-ic' + (cls ? ' ' + cls : '') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + p + '</svg>';
   }
   var CHECK = '<svg class="lp-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
@@ -96,6 +94,15 @@
   }
   function live(list) {
     return (Array.isArray(list) ? list : []).filter(function (it) { return it && it.on !== false; });
+  }
+  /* The template's plumbing starter services (never content a non-plumbing business chose). */
+  var STARTER_SVC = { 'blocked drains': 1, 'burst & leaking pipes': 1, 'hot water systems': 1, 'cctv drain camera': 1, 'leak detection': 1, 'general plumbing': 1 };
+  /** The site's service list, without untouched plumbing starters unless the site is a plumber. */
+  function siteServices(C) {
+    var list = live(C && C.services);
+    var trade = String((C && (C.trade || C.tradeType)) || '');
+    if (/plumb|drain|gas\s*fit/i.test(trade)) return list;
+    return list.filter(function (x) { return !STARTER_SVC[txt(x.title).toLowerCase()]; });
   }
   /** '#quote', '/page', 'https://…', 'tel:…', 'mailto:…' pass through; a bare word becomes '#word'. */
   function hrefOf(v, fallback) {
@@ -491,7 +498,7 @@
       var head = node.querySelector('.section-head'), wrapS = node.querySelector('.wrap');
       var lab = txt(SV.storyLinkLabel);
       if (head && lab) head.insertAdjacentHTML('beforeend', '<a class="lpl-link" data-lpl="svst" data-lpe="storyLinkLabel" ' + linkAttrs(hrefOf(SV.storyLinkHref, contactHref())) + '>' + esc(lab) + ARROW + '</a>');
-      var first = live(C.services).filter(function (x) { return txt(x.image); })[0];
+      var first = siteServices(C).filter(function (x) { return txt(x.image); })[0];
       var pic = bgUrl(SV.storyImage) || bgUrl(first && first.image);
       if (wrapS) wrapS.insertAdjacentHTML('beforeend', '<div class="svst-media" data-lpl="svst">' + (pic ? '<img src="' + esc(pic) + '" alt="" loading="lazy">' : '') + '</div>');
       return;
@@ -506,7 +513,7 @@
     if (!row) node.style.removeProperty('--svr-size');
     if (!on && !row) return;
     var grid = node.querySelector('.svcs'); if (!grid) return;
-    var items = live(C.services).filter(function (s) { return txt(s.title) || txt(s.image); });
+    var items = siteServices(C).filter(function (s) { return txt(s.title) || txt(s.image); });
     if (row) {
       // Icon row: icon, title and a short line per item (e.g. "Included with every hire").
       // Size applies to both icons and images (sections.services.iconRowSize, px).
@@ -543,10 +550,12 @@
   /* ---------- Services: big photo beside a heading, intro and icon points ---------- */
   function servicesFeature(node, C, SV) {
     var wrap = node.querySelector('.wrap'); if (!wrap) return;
-    // This page's own points (sections.services.featureItems); otherwise the service list.
+    // This page's own points (sections.services.featureItems) — once there is a list, even an
+    // empty one, only it is shown; before any points are added, the site's service list.
+    var hasOwn = Array.isArray(SV.featureItems);
     var own = live(SV.featureItems).filter(function (x) { return txt(x.title) || txt(x.text); });
-    var items = own.length ? own.map(function (x) { return { icon: x.icon, image: x.image, title: x.title, body: x.text }; })
-      : live(C.services).filter(function (x) { return txt(x.title); }).map(function (x) { return { icon: x.icon, image: '', title: x.title, body: x.body }; });
+    var items = hasOwn ? own.map(function (x) { return { icon: x.icon, image: x.image, title: x.title, body: x.text }; })
+      : siteServices(C).filter(function (x) { return txt(x.title); }).map(function (x) { return { icon: x.icon, image: '', title: x.title, body: x.body }; });
     var pic = bgUrl(SV.featureImage);
     var cap = txt(SV.featureCaption);
     wrap.insertAdjacentHTML('afterbegin', '<figure class="svf-media" data-lpl="svf" data-lpe="featureImage">' +
@@ -1496,6 +1505,11 @@
     var layout = STL_LAYOUTS[M.layout] ? M.layout : 'line';
     ['line', 'alternate', 'rail', 'cards'].forEach(function (l) { node.classList.toggle('stl-' + l, l === layout); });
     ['soft', 'dark'].forEach(function (t) { node.classList.toggle('stl-tone-' + t, M.tone === t); });
+    // Space above / below: standard · compact · small · none (to join the app next to it).
+    ['Top', 'Bottom'].forEach(function (side) {
+      var v = M['space' + side];
+      ['compact', 'small', 'none'].forEach(function (k) { node.classList.toggle('stl-sp' + side.charAt(0).toLowerCase() + '-' + k, v === k); });
+    });
     var lc = hexOk(M.lineColor);
     if (lc) node.style.setProperty('--stl-accent', lc); else node.style.removeProperty('--stl-accent');
     if (M.on !== true) return;
@@ -1556,7 +1570,23 @@
       });
     }
   }
-  var STEPS = [heroSlider, heroBanners, headerCta, minimalFooter, logoTint, buttonShapes, orderLayout, featuredProjects, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, trustBar, mapHours, ctaBanner, storyTimeline, bookingWeek, heroBooking, bookingHire, fontSet, mobileBarSpace, appWidths, headingBreaks];
+  /* ---------- Stroke icons only: emoji left in an icon spot become their stroke icon ---------- */
+  var EMOJI_RE = /[\u2190-\u2bff\u2600-\u27bf\ud83c-\udbff\ufe0f\u200d\u20e3]/;
+  var ICON_SPOT = '.ic,.b-ic,.svf-ic,.tbs-ic,.cbx-ic,.hb-ic,.mh-ic,.stl-mk,.lp-icon,[class$="-ic"],[class*="-ic "]';
+  function strokeIcons() {
+    var els = document.querySelectorAll(ICON_SPOT);
+    for (var i = 0; i < els.length; i++) {
+      var el = els[i];
+      if (el.children.length) continue;
+      var t = (el.textContent || '').trim();
+      if (!t || t.length > 8 || !EMOJI_RE.test(t)) continue;
+      var map = window.LP_EMOJI_ICONS || {};
+      var name = map[t] || map[t.replace(/\ufe0f/g, '')] || map[t + '\ufe0f'];
+      if (name) el.innerHTML = icon(name);
+      else if (/[\ud83c-\udbff]/.test(t)) el.innerHTML = ''; // an unknown colour emoji: no icon
+    }
+  }
+  var STEPS = [heroSlider, heroBanners, headerCta, minimalFooter, logoTint, buttonShapes, orderLayout, featuredProjects, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, trustBar, mapHours, ctaBanner, storyTimeline, bookingWeek, heroBooking, bookingHire, fontSet, mobileBarSpace, appWidths, headingBreaks, strokeIcons];
 
   function run(cfg) {
     // On a landing page the template builds the page's own config (homepage + the page's
@@ -1566,6 +1596,7 @@
     else if (cfg) LAST = cfg;
     var C = cfgOf();
     if (!C) return;
+    try { if (window.LP_registerIcons) window.LP_registerIcons(C.iconLib); } catch (_il) {}
     for (var i = 0; i < STEPS.length; i++) {
       try { STEPS[i](C); } catch (e) { try { console.warn('[lp-layouts]', STEPS[i].name, e && e.message); } catch (_x) {} }
     }
