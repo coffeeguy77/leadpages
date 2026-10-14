@@ -56,7 +56,7 @@ test('page editor: chips, on/off defaults, Position rule, editors and auto-selec
   assert.match(m, /\['crew','area','why','mapHours','navMenu','footer','lpFooter'\]/);
   assert.match(m, /OFF_BY_DEFAULT_SECTIONS=\[[^\]]*'mapHours','ctaBanner'\]/);
   assert.match(m, /OPTIONAL_COMPONENTS=\[[^\]]*'mapHours','ctaBanner'\]/);
-  assert.match(m, /LP_BEFORE_FOOTER_APPS=\['mapHours','ctaBanner'\]/);
+  assert.match(m, /LP_BEFORE_FOOTER_APPS=\[[^\]]*'mapHours','ctaBanner'\]/);
   assert.match(m, /sub==='mapHours'\)\{/);
   assert.match(m, /sub==='ctaBanner'\)\{/);
   assert.match(m, /mapHoursRows:\{secId:'mapHours',key:'rows'/);

@@ -3533,5 +3533,77 @@
         }
       }
     ]
+  },
+  "storyTimeline": {
+    "name": "Timeline",
+    "tagline": "Your story in milestones: year, title and a short line",
+    "summary": "Show how the business got here with a clean milestone timeline.",
+    "hero_image_url": "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=1400&h=560&fit=crop&q=80",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Timeline",
+          "text": "Tell the story behind the business \u2014 or how a job, product or partnership comes together \u2014 as a row of milestones: year, title and a short line. Line, alternating, side rail or photo-card layouts with ring, dot, icon or year markers."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=720&fit=crop&q=80",
+          "alt": "Business history timeline",
+          "caption": "Milestones on a line, down a rail, zig-zag or as photo cards."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "Key features",
+          "items": [
+            {
+              "title": "Four layouts",
+              "text": "Line, alternating with photos, side rail or photo cards."
+            },
+            {
+              "title": "Markers your way",
+              "text": "Ring, dot, an icon per milestone or the year in a circle."
+            },
+            {
+              "title": "Phone friendly",
+              "text": "Every layout turns into a neat side rail on phones."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "Why partners sell it",
+          "items": [
+            {
+              "title": "Trust in one glance",
+              "text": "Years in business and milestones prove you are established."
+            },
+            {
+              "title": "Provenance stories",
+              "text": "Perfect for farms, makers and family businesses."
+            },
+            {
+              "title": "Easy to keep current",
+              "text": "Add a milestone when something big happens."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "section_key": "storyTimeline",
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
   }
 }

@@ -1483,6 +1483,53 @@
     if (host) host.insertAdjacentHTML('beforeend', html); else document.body.insertAdjacentHTML('beforeend', html);
   }
 
+  /* ---------- Timeline app (sections.storyTimeline): milestones with year, title, text ----------
+   layout: '' line (horizontal line, markers above, centred text) · 'alternate' (zig-zag down a
+   centre line, optional photos) · 'rail' (down a line on the left) · 'cards' (year badges on a
+   line, a photo card under each). marker: ring · dot · icon · year. tone: page · soft · dark.
+   On phones every layout becomes the side rail. */
+  var STL_LAYOUTS = { line: 1, alternate: 1, rail: 1, cards: 1 };
+  function storyTimeline(C) {
+    var node = sec('storyTimeline'); if (!node) return;
+    var M = (C.sections && C.sections.storyTimeline) || {};
+    clear(node, 'stl');
+    var layout = STL_LAYOUTS[M.layout] ? M.layout : 'line';
+    ['line', 'alternate', 'rail', 'cards'].forEach(function (l) { node.classList.toggle('stl-' + l, l === layout); });
+    ['soft', 'dark'].forEach(function (t) { node.classList.toggle('stl-tone-' + t, M.tone === t); });
+    var lc = hexOk(M.lineColor);
+    if (lc) node.style.setProperty('--stl-accent', lc); else node.style.removeProperty('--stl-accent');
+    if (M.on !== true) return;
+    var marker = ({ dot: 1, icon: 1, year: 1 })[M.marker] ? M.marker : 'ring';
+    var items = liveIdx(M.items).filter(function (x) { return txt(x.it.year) || txt(x.it.title) || txt(x.it.text); });
+    var per = parseInt(M.perRow, 10);
+    var cols = Math.max(1, Math.min(items.length || 1, (per >= 2 && per <= 6) ? per : Math.min(items.length || 1, 5)));
+    var lines = function (v) { return esc(v).replace(/\n/g, '<br>'); };
+    var head = (txt(M.eyebrow) ? '<span class="eyebrow stl-eyebrow" data-lpe="eyebrow">' + esc(M.eyebrow) + '</span>' : '') +
+      (txt(M.heading) ? '<h2 class="stl-h" data-lpe="heading">' + lines(M.heading) + '</h2>' : '') +
+      (txt(M.intro) ? '<p class="stl-intro" data-lpe="intro">' + lines(M.intro) + '</p>' : '');
+    var showImg = layout === 'alternate' || layout === 'cards' || M.showImages === true;
+    var list = items.map(function (x, k) {
+      var it = x.it, yr = txt(it.year);
+      var mk = marker === 'year' && yr ? '<span class="stl-mk stl-mk-year">' + esc(yr) + '</span>'
+        : (marker === 'icon' && icon(it.icon) ? '<span class="stl-mk stl-mk-icon">' + icon(it.icon) + '</span>'
+          : '<span class="stl-mk stl-mk-' + (marker === 'dot' ? 'dot' : 'ring') + '"></span>');
+      var im = showImg ? bgUrl(it.image) : '';
+      var col = k % cols;
+      var cls = 'stl-item' + (col === 0 ? ' stl-first' : '') + (col === cols - 1 || k === items.length - 1 ? ' stl-last' : '') + (k % 2 ? ' stl-even' : ' stl-odd');
+      var yearHtml = (yr && !(marker === 'year' && layout !== 'cards')) ? '<div class="stl-year" data-lpe="list:storyTimelineItems:' + x.i + ':year">' + lines(yr) + '</div>' : '';
+      return '<li class="' + cls + '">' + mk + '<div class="stl-body">' +
+        (layout === 'cards' ? yearHtml : '') +
+        (im ? '<div class="stl-img"><img src="' + esc(im) + '" alt="' + esc(txt(it.title)) + '" loading="lazy"></div>' : '') +
+        '<div class="stl-txt">' + (layout === 'cards' ? '' : yearHtml) +
+        (txt(it.title) ? '<h3 class="stl-t" data-lpe="list:storyTimelineItems:' + x.i + ':title">' + lines(it.title) + '</h3>' : '') +
+        (txt(it.text) ? '<p class="stl-p" data-lpe="list:storyTimelineItems:' + x.i + ':text">' + lines(it.text) + '</p>' : '') +
+        '</div></div></li>';
+    }).join('');
+    node.insertAdjacentHTML('afterbegin', '<div class="wrap stl-wrap" data-lpl="stl">' +
+      (head ? '<div class="stl-head">' + head + '</div>' : '') +
+      (list ? '<ol class="stl-list stl-m-' + marker + '" style="--stl-cols:' + cols + '">' + list + '</ol>' : '') + '</div>');
+  }
+
   /* ---------- Hero / hero slider / trust bar width: theme default, full width or site width ---------- */
   var WIDTH_SECS = ['heroSlider', 'hero', 'splitHero', 'trustBar'];
   function appWidths(C) {
@@ -1509,7 +1556,7 @@
       });
     }
   }
-  var STEPS = [heroSlider, heroBanners, headerCta, minimalFooter, logoTint, buttonShapes, orderLayout, featuredProjects, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, trustBar, mapHours, ctaBanner, bookingWeek, heroBooking, bookingHire, fontSet, mobileBarSpace, appWidths, headingBreaks];
+  var STEPS = [heroSlider, heroBanners, headerCta, minimalFooter, logoTint, buttonShapes, orderLayout, featuredProjects, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, trustBar, mapHours, ctaBanner, storyTimeline, bookingWeek, heroBooking, bookingHire, fontSet, mobileBarSpace, appWidths, headingBreaks];
 
   function run(cfg) {
     // On a landing page the template builds the page's own config (homepage + the page's

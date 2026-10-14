@@ -4984,5 +4984,137 @@
       "key": "theme.hivis",
       "label": "Brand colour"
     }
+  ],
+  "storyTimeline": [
+    {
+      "type": "text",
+      "key": "sections.storyTimeline.eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "key": "sections.storyTimeline.heading",
+      "label": "Heading"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.storyTimeline.intro",
+      "label": "Intro",
+      "rows": 2
+    },
+    {
+      "type": "select",
+      "key": "sections.storyTimeline.layout",
+      "label": "Layout",
+      "options": [
+        {
+          "value": "",
+          "label": "Line"
+        },
+        {
+          "value": "alternate",
+          "label": "Alternating"
+        },
+        {
+          "value": "rail",
+          "label": "Side rail"
+        },
+        {
+          "value": "cards",
+          "label": "Photo cards"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "key": "sections.storyTimeline.marker",
+      "label": "Markers",
+      "options": [
+        {
+          "value": "",
+          "label": "Ring"
+        },
+        {
+          "value": "dot",
+          "label": "Dot"
+        },
+        {
+          "value": "year",
+          "label": "Year in a circle"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "key": "sections.storyTimeline.tone",
+      "label": "Background",
+      "options": [
+        {
+          "value": "",
+          "label": "Page"
+        },
+        {
+          "value": "soft",
+          "label": "Soft"
+        },
+        {
+          "value": "dark",
+          "label": "Dark"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "key": "sections.storyTimeline.items.0.year",
+      "label": "Year"
+    },
+    {
+      "type": "text",
+      "key": "sections.storyTimeline.items.0.title",
+      "label": "Title"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.storyTimeline.items.0.text",
+      "label": "Text",
+      "rows": 2
+    },
+    {
+      "type": "text",
+      "key": "sections.storyTimeline.items.1.year",
+      "label": "Year"
+    },
+    {
+      "type": "text",
+      "key": "sections.storyTimeline.items.1.title",
+      "label": "Title"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.storyTimeline.items.1.text",
+      "label": "Text",
+      "rows": 2
+    },
+    {
+      "type": "text",
+      "key": "sections.storyTimeline.items.2.year",
+      "label": "Year"
+    },
+    {
+      "type": "text",
+      "key": "sections.storyTimeline.items.2.title",
+      "label": "Title"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.storyTimeline.items.2.text",
+      "label": "Text",
+      "rows": 2
+    },
+    {
+      "type": "color",
+      "key": "sections.storyTimeline.lineColor",
+      "label": "Line & marker colour"
+    }
   ]
 }

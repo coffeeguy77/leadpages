@@ -2724,5 +2724,49 @@
       "btn2Label": "Call (02) 6100 0000",
       "btn2Action": "call"
     }
+  },
+  "storyTimeline": {
+    "business": "Ace Plumbing Co.",
+    "trade": "plumber",
+    "phone": "(02) 6100 0000",
+    "theme": {
+      "pipe": "#1f7bb8",
+      "hivis": "#ff6a1f"
+    },
+    "storyTimeline": {
+      "on": true,
+      "eyebrow": "Our story",
+      "heading": "How we got here",
+      "intro": "Twenty-five years of turning up on time and doing the job properly.",
+      "layout": "",
+      "marker": "",
+      "tone": "soft",
+      "items": [
+        {
+          "on": true,
+          "year": "1998",
+          "title": "Where it started",
+          "text": "Started with one van and a toolbox, fixing taps for neighbours."
+        },
+        {
+          "on": true,
+          "year": "2009",
+          "title": "Our first apprentice",
+          "text": "The team grew and we took on our first apprentice."
+        },
+        {
+          "on": true,
+          "year": "2016",
+          "title": "A workshop of our own",
+          "text": "Moved into a proper workshop with room for stock and vans."
+        },
+        {
+          "on": true,
+          "year": "2024",
+          "title": "Around the clock",
+          "text": "Added 24/7 emergency call-outs across the region."
+        }
+      ]
+    }
   }
 }
