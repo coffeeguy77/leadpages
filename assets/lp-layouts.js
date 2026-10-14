@@ -368,12 +368,13 @@
   function logoTint(C) {
     var head = hexOk(C.logo && C.logo.tint), foot = hexOk(C.sections && C.sections.footer && C.sections.footer.logoTint);
     var step = hexOk(C.sections && C.sections.serviceProcess && C.sections.serviceProcess.stepImageTint);
+    var cbx = cbBoxTint((C.sections && C.sections.ctaBanner) || {});
     var defs = document.getElementById('lpl-tint-defs');
-    if (!head && !foot && !step && !defs) return;
+    if (!head && !foot && !step && !cbx && !defs) return;
     var f = function (id, col) {
       return col ? '<filter id="' + id + '" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB"><feFlood flood-color="' + col + '"/><feComposite in2="SourceAlpha" operator="in"/></filter>' : '';
     };
-    var html = f('lpl-tint-h', head) + f('lpl-tint-f', foot) + f('lpl-tint-s', step);
+    var html = f('lpl-tint-h', head) + f('lpl-tint-f', foot) + f('lpl-tint-s', step) + f('lpl-tint-cb', cbx);
     if (!defs) {
       defs = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
       defs.id = 'lpl-tint-defs'; defs.setAttribute('width', '0'); defs.setAttribute('height', '0'); defs.setAttribute('aria-hidden', 'true');
@@ -977,6 +978,18 @@
     node.classList.toggle('cb-full', M.width === 'full');
     var bg = bgUrl(M.bgImage);
     if (tone === 'photo' && bg) node.style.setProperty('--cb-bg', 'url("' + bg + '")'); else node.style.removeProperty('--cb-bg');
+    // Optional own colours: banner, text and (Title + boxes) box outline / icon size.
+    var cardBg = tone !== 'photo' ? hexOk(M.cardBg) : '', ink = hexOk(M.cardText), line = hexOk(M.boxBorder);
+    [['--cb-card', cardBg, 'cb-has-bg'], ['--cb-ink', ink, 'cb-has-ink'], ['--cbx-line', line, 'cb-has-line']].forEach(function (v) {
+      if (v[1]) node.style.setProperty(v[0], v[1]); else node.style.removeProperty(v[0]);
+      node.classList.toggle(v[2], !!v[1]);
+    });
+    var icPx = CBX_IC[M.boxIconSize];
+    if (icPx) node.style.setProperty('--cbx-ic', icPx + 'px'); else node.style.removeProperty('--cbx-ic');
+    node.classList.toggle('cbx-ic-set', !!icPx);
+    var tint = cbBoxTint(M);
+    if (tint) node.style.setProperty('--cbx-tint', tint); else node.style.removeProperty('--cbx-tint');
+    node.classList.toggle('cbx-tinted', !!tint);
     if (M.on !== true) return;
     var boxesOn = M.layout === 'boxes';
     node.classList.toggle('cb-boxes', boxesOn);
@@ -999,6 +1012,19 @@
   }
 
   /* ---------- CTA banner: title + outlined boxes (icon, title, text) ---------- */
+  var CBX_IC = { sm: 26, lg: 60, xl: 88, xxl: 128 };
+  function hexLum(h) { var n = parseInt(h.slice(1), 16); var c = [n >> 16, (n >> 8) & 255, n & 255].map(function (x) { x /= 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); }); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; }
+  /** Colour box images/icons are painted (transparent images become that colour), or ''.
+   *  Auto: dark banners paint them the text colour (white by default) so dark line drawings
+   *  show up; light banners keep the images' own colours. */
+  function cbBoxTint(M) {
+    if (!M || M.layout !== 'boxes' || M.boxImgMode === 'original') return '';
+    if (M.boxImgMode === 'tint') return hexOk(M.boxImgTint);
+    var bg = M.tone !== 'photo' ? hexOk(M.cardBg) : '';
+    var dark = bg ? hexLum(bg) < 0.4 : M.tone !== 'light';
+    if (!dark) return '';
+    return hexOk(M.cardText) || '#ffffff';
+  }
   function ctaBoxes(node, C, M) {
     var boxes = liveIdx(M.boxes).filter(function (x) { return txt(x.it.title) || txt(x.it.text); });
     var btns = M.boxesButtons === true ? (ctaBtn(C, M, 1) + ctaBtn(C, M, 2)) : '';
@@ -1011,7 +1037,7 @@
       (btns ? '<div class="cb-btns">' + btns + '</div>' : '') + '</div>' +
       (boxes.length ? '<div class="cbx-grid" style="--cbx-n:' + Math.min(boxes.length, 4) + '">' + boxes.map(function (x) {
         var im = bgUrl(x.it.image);
-        var media = im ? '<img class="cbx-img" src="' + esc(im) + '" alt="" loading="lazy">' : icon(x.it.icon);
+        var media = im ? '<img class="cbx-img' + (cbBoxTint(M) ? ' lpl-tint-cb' : '') + '" src="' + esc(im) + '" alt="" loading="lazy">' : icon(x.it.icon);
         var inner = (media ? '<span class="cbx-ic">' + media + '</span>' : '') +
           (txt(x.it.title) ? '<h3 class="cbx-t">' + lines(x.it.title) + '</h3>' : '') +
           (txt(x.it.text) ? '<p class="cbx-p">' + lines(x.it.text) + '</p>' : '');

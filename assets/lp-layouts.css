@@ -742,6 +742,14 @@ section[data-sec="ctaBanner"].cb-boxes .cbx-ic img{width:40px;height:40px;object
 section[data-sec="ctaBanner"].cb-boxes .cbx-t{margin:0;color:inherit;font-size:clamp(19px,1.7vw,23px);line-height:1.18;text-transform:none;letter-spacing:0}
 section[data-sec="ctaBanner"].cb-boxes .cbx-p{margin:0;font-size:15px;line-height:1.5;opacity:.88}
 section[data-sec="ctaBanner"].cb-boxes.cb-tone-light .cbx-box{border-color:var(--line,#dde4ec)}
+/* CTA banner: own colours + box icon/image size and colour */
+section[data-sec="ctaBanner"].cb-has-bg:not(.cb-full) .cb{background:var(--cb-card)!important}
+section[data-sec="ctaBanner"].cb-has-bg.cb-full{background:var(--cb-card)!important}
+section[data-sec="ctaBanner"].cb-has-ink .cb,section[data-sec="ctaBanner"].cb-has-ink .cb-eyebrow,section[data-sec="ctaBanner"].cb-has-ink .cb-p,section[data-sec="ctaBanner"].cb-has-ink .cb-h{color:var(--cb-ink)!important}
+section[data-sec="ctaBanner"].cb-boxes.cb-has-line .cbx-box{border-color:var(--cbx-line)!important}
+section[data-sec="ctaBanner"].cb-boxes.cbx-ic-set .cbx-ic .lp-ic,section[data-sec="ctaBanner"].cb-boxes.cbx-ic-set .cbx-ic img{width:var(--cbx-ic);height:var(--cbx-ic)}
+section[data-sec="ctaBanner"].cb-boxes.cbx-tinted .cbx-ic{color:var(--cbx-tint)}
+img.lpl-tint-cb{filter:url(#lpl-tint-cb)!important}
 @media(max-width:860px){
   section[data-sec="ctaBanner"].cb-boxes .cb{grid-template-columns:1fr}
 }

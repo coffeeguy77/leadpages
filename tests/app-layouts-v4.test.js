@@ -89,7 +89,7 @@ test('logo colour override: header and footer each get their own colour, off by 
   assert.match(js, /hexOk\(C\.logo && C\.logo\.tint\)/);
   assert.match(js, /C\.sections\.footer\.logoTint/);
   assert.match(js, /<feComposite in2="SourceAlpha" operator="in"\/>/);
-  assert.match(js, /if \(!head && !foot && !step && !defs\) return;/);
+  assert.match(js, /if \(!head && !foot && !step && !cbx && !defs\) return;/);
   assert.match(css, /img\.lpl-tint-h\{filter:url\(#lpl-tint-h\)/);
   assert.match(css, /img\.lpl-tint-f\{filter:url\(#lpl-tint-f\)/);
   assert.match(manage, /id="lg-tint-on"/);

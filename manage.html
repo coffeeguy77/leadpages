@@ -6529,10 +6529,16 @@ function heroCtaCard(c){
     ctaBanner:{title:'Banner style & buttons',lede:'Leave a button\u2019s text empty to hide it. \u201cOpen the booking calendar\u201d opens the live hire calendar when Bookings is set up, otherwise it goes to the booking bar or quote form. <b>Title + boxes</b>: the heading on the left and outlined boxes (icon, title, text) on the right \u2014 add as many as you like under <b>Boxes</b>.',lists:[['ctaBannerBoxes','Boxes','Title + boxes layout: each box has an icon (or a small image), a title and a short line. Optional link makes the whole box clickable.']],rows:[LPL_BTN_ROW,
       {t:'sel',k:'layout',label:'Layout',opts:[['','Text + buttons (default)'],['boxes','Title + boxes (icon, title, text)']]},
       {t:'chk',k:'boxesButtons',label:'Show the buttons under the title',def:false,when:'layout=boxes'},
+      {t:'sel',k:'boxIconSize',label:'Box icon / image size',when:'layout=boxes',opts:[['sm','Small'],['','Standard'],['lg','Large'],['xl','Extra large'],['xxl','Huge']]},
+      {t:'sel',k:'boxImgMode',label:'Box icon / image colour',when:'layout=boxes',opts:[['','Auto \u2014 white on dark banners'],['original','Original image colours'],['tint','Choose a colour']]},
+      {t:'color',k:'boxImgTint',label:'Icon / image colour',ph:'Pick a colour',when:'boxImgMode=tint'},
+      {t:'color',k:'boxBorder',label:'Box outline colour',ph:'Default',when:'layout=boxes'},
       {t:'sel',k:'tone',label:'Style',opts:[['','Brand colour (default)'],['dark','Dark'],['light','Light card'],['photo','Photo background']]},
       {t:'sel',k:'align',label:'Layout',opts:[['','Text left, buttons right'],['center','Centred']]},
       {t:'sel',k:'width',label:'Width',opts:[['','Card'],['full','Full-width band']]},
       {t:'image',k:'bgImage',label:'Background photo',when:'tone=photo'},
+      {t:'color',k:'cardBg',label:'Banner colour (replaces the style\u2019s colour)',ph:'Style colour'},
+      {t:'color',k:'cardText',label:'Banner text colour',ph:'Style colour'},
       {t:'text',k:'btn1Label',label:'Main button text',ph:'e.g. Pick a day'},
       {t:'sel',k:'btn1Action',label:'Main button does',def:'quote',opts:LP_CTA_BANNER_ACTIONS},
       {t:'secsel',k:'btn1Target',label:'Scroll to',when:'btn1Action=section'},
@@ -6565,7 +6571,7 @@ function heroCtaCard(c){
         +'<div id="'+id+'-res" style="display:none;margin-top:8px;border:1px solid var(--line);border-radius:10px;overflow:hidden;"></div></div>';
       else if(r.t==='ta') h+='<div class="f"'+st+'><label>'+r.label+'</label><textarea class="tin" id="'+id+'" rows="2" style="min-height:64px;resize:vertical;width:100%;box-sizing:border-box;"></textarea></div>';
       else if(r.t==='image') h+='<div class="f"'+st+'><label>'+r.label+'</label>'+cwImgHTML('id="'+id+'"','')+'</div>';
-      else if(r.t==='color'){ var _cv=(/^#[0-9a-fA-F]{6}$/.test(S[r.k]||'')?S[r.k]:''); h+='<div class="f"'+st+'><label>'+r.label+'</label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="'+id+'-clr" value="'+(_cv||'#1a1a1a')+'" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;flex:0 0 auto;"><input type="text" class="tin" id="'+id+'" value="'+_cv+'" placeholder="Original colours" style="flex:1;min-width:0;"><button type="button" class="btn ghost" id="'+id+'-def" style="padding:6px 10px;">Clear</button></div></div>'; }
+      else if(r.t==='color'){ var _cv=(/^#[0-9a-fA-F]{6}$/.test(S[r.k]||'')?S[r.k]:''); h+='<div class="f"'+st+'><label>'+r.label+'</label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="'+id+'-clr" value="'+(_cv||'#1a1a1a')+'" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;flex:0 0 auto;"><input type="text" class="tin" id="'+id+'" value="'+_cv+'" placeholder="'+(r.ph||'Original colours')+'" style="flex:1;min-width:0;"><button type="button" class="btn ghost" id="'+id+'-def" style="padding:6px 10px;">Clear</button></div></div>'; }
       else h+='<div class="f"'+st+'><label>'+r.label+'</label><input type="text" class="tin" id="'+id+'" placeholder="'+(r.ph||'').replace(/"/g,'&quot;')+'"></div>';
     });
     h+='</div></div>';

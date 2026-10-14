@@ -226,3 +226,8 @@ order page on that category.
 - Preview: landing pages redraw from the editor's copy (no reload) and use the draft position order. `api/render.js` serves the site shell for a `?preview=` page that is only in a draft (new page / changed address); live requests still 404.
 
 **Tests:** `tests/landing-redesign-drafts.test.js`.
+
+## CTA banner: box icon size, image colour, own colours (Oct 2026)
+- **Box icon / image size** (Title + boxes): Small 26px, Standard, Large 60px, Extra large 88px, Huge 128px (`boxIconSize`).
+- **Box icon / image colour** (`boxImgMode`): Auto paints transparent box images (and icons) the banner's text colour on dark banners, so dark line drawings show up; light banners keep the images' own colours. Or Original image colours, or Choose a colour (`boxImgTint`). Uses the same SVG tint filter as the logo colour (`#lpl-tint-cb`).
+- **Box outline colour** (`boxBorder`), **Banner colour** (`cardBg`, replaces the style's colour — not used with Photo background) and **Banner text colour** (`cardText`). All layouts get the banner/text colours. The area around the card is still **Section container style**.
