@@ -22,7 +22,7 @@ test('heading / title fields are growing text boxes (Enter = new line)', () => {
 
 test('site shows a typed line break in a heading as a line break', () => {
   assert.match(js, /function headingBreaks\(\)/);
-  assert.match(js, /appWidths, headingBreaks\];/);
+  assert.match(js, /appWidths, headingBreaks(, [a-zA-Z]+)*\];/);
 });
 
 test('pressing the mouse in a text box inside a draggable row selects text', () => {

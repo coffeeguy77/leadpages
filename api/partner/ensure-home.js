@@ -62,10 +62,10 @@ module.exports = async (req,res) => {
         textBox:{ on:true, eyebrow:'About the studio', heading:'Local websites, done properly', intro:'', content:'We design and build websites for local trades and small businesses \u2014 clean, quick to launch, and easy to update. You get a site that earns its keep and a real person to call when you need a change.' }
       },
       services:[
-        { on:true, icon:'\uD83D\uDCF1', title:'Mobile-first design', body:'Sites that look sharp and load fast on the phone, where most local customers find you.' },
-        { on:true, icon:'\u26A1', title:'Lead forms that work', body:'Enquiry forms that land straight in your inbox so you never miss a job.' },
-        { on:true, icon:'\uD83D\uDD0E', title:'Found on Google', body:'Local search basics built in so nearby customers can actually find you.' },
-        { on:true, icon:'\uD83D\uDE80', title:'Live in days', body:'No drawn-out web project \u2014 your site can be online and taking enquiries this week.' }
+        { on:true, icon:'smartphone', title:'Mobile-first design', body:'Sites that look sharp and load fast on the phone, where most local customers find you.' },
+        { on:true, icon:'zap', title:'Lead forms that work', body:'Enquiry forms that land straight in your inbox so you never miss a job.' },
+        { on:true, icon:'search', title:'Found on Google', body:'Local search basics built in so nearby customers can actually find you.' },
+        { on:true, icon:'rocket', title:'Live in days', body:'No drawn-out web project \u2014 your site can be online and taking enquiries this week.' }
       ]
     }
   };

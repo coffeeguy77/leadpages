@@ -536,19 +536,19 @@
       "sub": "Fast, fixed-price plumbing across the ACT — blocked drains, burst pipes, hot water and leaks. You'll know the price before we start.",
       "badges": [
         {
-          "icon": "✓",
+          "icon": "check",
           "text": "Licensed & insured"
         },
         {
-          "icon": "★",
+          "icon": "star",
           "text": "4.9 from 212 reviews"
         },
         {
-          "icon": "$",
+          "icon": "dollar-sign",
           "text": "Upfront fixed pricing"
         },
         {
-          "icon": "⚡",
+          "icon": "zap",
           "text": "Same-day service"
         }
       ]
