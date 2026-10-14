@@ -208,8 +208,43 @@
     var sp = sec('splitHero'); if (sp) heroText(sp, S.splitHero || {}, '.sph-h', '.sph-eyebrow');
   }
 
+  /* ---------- Header button never covers the logo ----------
+     The logo's position/offset settings move it with a transform, which doesn't push anything
+     else down — so on phones the full-width header button could sit over the logo. Measure
+     the real logo box and push the button just clear of it. */
+  function ctaClearLogo() {
+    var hc = document.getElementById('headCall');
+    if (!hc) return;
+    if (hc.__lpClear) { hc.style.marginTop = ''; hc.__lpClear = 0; }
+    if (!hc.offsetParent) return;
+    var head = hc.closest ? hc.closest('header') : null;
+    var logos = (head || document).querySelectorAll('img.lp-logo, a.brand');
+    var c = hc.getBoundingClientRect(), push = 0;
+    for (var i = 0; i < logos.length; i++) {
+      if (!logos[i].offsetParent) continue;
+      var l = logos[i].getBoundingClientRect();
+      if (!l.width || !l.height) continue;
+      var overlap = !(c.left >= l.right || c.right <= l.left || c.top >= l.bottom || c.bottom <= l.top);
+      // Only when the button sits below the top of the logo (stacked header on phones/tablets).
+      if (overlap && c.top > l.top) push = Math.max(push, Math.ceil(l.bottom - c.top) + 8);
+    }
+    if (push > 0) {
+      var cur = parseFloat(getComputedStyle(hc).marginTop) || 0;
+      hc.style.marginTop = (cur + push) + 'px'; hc.__lpClear = 1;
+    }
+  }
+  var _ctaClearT = null;
+  function ctaClearSoon() { if (_ctaClearT) clearTimeout(_ctaClearT); _ctaClearT = setTimeout(ctaClearLogo, 60); }
+  function bindCtaClear() {
+    if (window.__lpCtaClearBound) return; window.__lpCtaClearBound = 1;
+    window.addEventListener('resize', ctaClearSoon);
+    window.addEventListener('load', ctaClearSoon);
+    document.addEventListener('load', function (e) { var t = e.target; if (t && t.tagName === 'IMG' && t.closest && t.closest('header')) ctaClearSoon(); }, true);
+  }
+
   /* ---------- Header button: square outline + arrow; menu in spaced capitals ---------- */
   function headerCta(C) {
+    bindCtaClear(); ctaClearSoon(); setTimeout(ctaClearLogo, 400);
     var H = (C.sections && C.sections.header) || {};
     var hc = document.getElementById('headCall');
     if (hc) {
