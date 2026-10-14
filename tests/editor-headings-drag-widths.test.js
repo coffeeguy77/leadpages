@@ -48,3 +48,8 @@ test('header Order button is pushed clear of the logo (logo offsets use transfor
   assert.match(js, /if \(overlap && c\.top > l\.top\) push = /);
   assert.match(js, /bindCtaClear\(\); ctaClearSoon\(\);/);
 });
+
+test('menu: parent items and their links use the same type as the other menu items', () => {
+  assert.match(css, /html\.lpl-nav-caps header\.site button\.hn-link\.hn-parent,/);
+  assert.match(css, /\.hnm-children \.hnm-item,\.hnm-children \.hnm-item\.hnm-child\{font-size:19px\}/);
+});

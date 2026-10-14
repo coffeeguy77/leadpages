@@ -552,7 +552,7 @@ section.lpl-eb-below :is(.hsl-eyebrow,.sph-eyebrow,.wrap > .eyebrow){margin-top:
 #headCall:has(.lpl-cta-arrow){display:inline-flex;align-items:center}
 
 /* ---------- Menu: small spaced capitals ---------- */
-html.lpl-nav-caps .hn-link,html.lpl-nav-caps .hn-sub-link{text-transform:uppercase;letter-spacing:.14em;font-size:12.5px;font-weight:500;font-family:var(--lp-font-label,var(--lp-font-body,"Barlow")),system-ui,sans-serif}
+html.lpl-nav-caps .hn-link,html.lpl-nav-caps .hn-sub-link,html.lpl-nav-caps header.site .hn-link,html.lpl-nav-caps header.site button.hn-link.hn-parent,html.lpl-nav-caps header.site .hn-sub-link,html.lpl-nav-caps button.hn-link.hn-parent{text-transform:uppercase;letter-spacing:.14em;font-size:12.5px;font-weight:500;font-family:var(--lp-font-label,var(--lp-font-body,"Barlow")),system-ui,sans-serif}
 html.lpl-nav-caps .hn-txt{text-transform:inherit;letter-spacing:inherit}
 
 /* ---------- Shared: band tones + text link ---------- */
@@ -918,3 +918,6 @@ section[data-sec="storyTimeline"].stl-cards .stl-t{margin-top:0}
   section[data-sec="storyTimeline"].stl-cards .stl-list{grid-template-columns:1fr}
   section[data-sec="storyTimeline"].stl-cards .stl-item::before{left:0}
 }
+
+/* Menus: items under a parent (dropdown / phone menu) use the same size as the top level */
+.hnm-children .hnm-item,.hnm-children .hnm-item.hnm-child{font-size:19px}
