@@ -6847,7 +6847,9 @@ function heroCtaCard(c){
   }
   /* ---------- Image library: every image uploaded for this site (pick, upload, delete unused) ---------- */
   var CWLIB={ items:null, pick:null, filter:'all', busy:false };
-  function cwLibThumb(u){ return String(u||'').replace('/upload/','/upload/c_fill,w_320,h_240,f_auto,q_auto/'); }
+  /** Formats that can be transparent (icons, line drawings, logos). */
+  function cwLibClear(it){ return /^(png|svg|webp|gif)$/i.test(String((it&&it.format)||'')) || /\.(png|svg|webp|gif)(\?|$)/i.test(String((it&&it.url)||'')); }
+  function cwLibThumb(u, clear){ return String(u||'').replace('/upload/', clear?'/upload/c_limit,w_320,h_240,f_png/':'/upload/c_fill,w_320,h_240,f_auto,q_auto/'); }
   function cwLibSize(b){ b=+b||0; return b>=1048576?(b/1048576).toFixed(1)+' MB':Math.max(1,Math.round(b/1024))+' KB'; }
   async function cwLibFetch(){
     var t=await cwToken(); if(!t) throw new Error('Please sign in again');
@@ -6872,6 +6874,8 @@ function heroCtaCard(c){
         +'#cwlib .cwl-tile{border:1px solid var(--line,#e5e7eb);border-radius:10px;overflow:hidden;background:var(--panel-soft,#fafafa);display:flex;flex-direction:column}'
         +'#cwlib .cwl-img{aspect-ratio:4/3;background:repeating-conic-gradient(rgba(128,128,128,.14) 0 25%,transparent 0 50%) 0 0/16px 16px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:0;padding:0;width:100%}'
         +'#cwlib .cwl-img img{width:100%;height:100%;object-fit:cover;display:block}'
+        +'#cwlib .cwl-img.cwl-clear{background:#fff repeating-conic-gradient(#e6e6e6 0 25%,#fff 0 50%) 0 0/16px 16px}'
+        +'#cwlib .cwl-img.cwl-clear img{object-fit:contain;padding:10px;box-sizing:border-box}'
         +'#cwlib .cwl-meta{display:flex;justify-content:space-between;gap:6px;align-items:center;padding:7px 8px 0;font-size:11.5px;color:var(--muted,#6b7280)}'
         +'#cwlib .cwl-badge{font-weight:700;font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--accent)}'
         +'#cwlib .cwl-act{display:flex;gap:6px;padding:7px 8px 8px}'
@@ -6920,7 +6924,10 @@ function heroCtaCard(c){
       var u=cwLibUsed(it);
       if(CWLIB.filter==='used'&&!u) return ''; if(CWLIB.filter==='unused'&&u) return '';
       var dims=(it.width&&it.height)?(it.width+'×'+it.height):'';
-      return '<div class="cwl-tile"><button type="button" class="cwl-img" data-cwl-act="use" data-i="'+i+'" title="'+(CWLIB.pick?'Use this image':'Preview')+'"><img src="'+esc(cwLibThumb(it.url))+'" alt="" loading="lazy"></button>'
+      var clr=cwLibClear(it);
+      // Transparent images sit on a light checkerboard and aren't cropped, so dark line icons show
+      // in the dark workspace theme. If a thumbnail can't be made, the original image is shown.
+      return '<div class="cwl-tile"><button type="button" class="cwl-img'+(clr?' cwl-clear':'')+'" data-cwl-act="use" data-i="'+i+'" title="'+(CWLIB.pick?'Use this image':'Preview')+'"><img src="'+esc(cwLibThumb(it.url, clr))+'" data-full="'+esc(it.url)+'" alt="" loading="lazy" onerror="if(this.dataset.full&&this.src!==this.dataset.full){this.src=this.dataset.full;}"></button>'
         +'<div class="cwl-meta"><span>'+esc(dims)+(it.bytes?' · '+cwLibSize(it.bytes):'')+'</span>'+(u?'<span class="cwl-badge">In use</span>':'')+'</div>'
         +'<div class="cwl-act">'+(CWLIB.pick?'<button type="button" class="btn ghost" data-cwl-act="use" data-i="'+i+'">Use</button>':'<a class="btn ghost" href="'+esc(it.url)+'" target="_blank" rel="noopener">Open</a>')
         +'<button type="button" class="btn ghost" data-cwl-act="del" data-i="'+i+'"'+(u?' disabled title="In use on the site — remove it from the page first"':' title="Delete this image"')+'>Delete</button></div></div>';

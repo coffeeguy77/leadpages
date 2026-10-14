@@ -95,3 +95,11 @@ test('trust bar items can open an Order shop category, switched in place when th
   const tpl = JSON.parse(read('trade.template.json')).html;
   assert.match(tpl, /if\(act==='orderCat'\)\{ var oc=String\(b\.orderCategory/);
 });
+
+test('image library: transparent images on a light checkerboard, not cropped, with fallback', () => {
+  const m = require('fs').readFileSync(require('path').join(__dirname, '..', 'manage.html'), 'utf8');
+  assert.match(m, /function cwLibClear\(it\)/);
+  assert.match(m, /clear\?'\/upload\/c_limit,w_320,h_240,f_png\/'/);
+  assert.match(m, /#cwlib \.cwl-img\.cwl-clear\{background:#fff repeating-conic-gradient/);
+  assert.match(m, /onerror="if\(this\.dataset\.full/);
+});
