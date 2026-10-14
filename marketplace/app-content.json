@@ -1876,5 +1876,42 @@
     "presets": [
       "default"
     ]
+  },
+  "storyTimeline": {
+    "name": "Timeline",
+    "tagline": "Your story in milestones: year, title and a short line",
+    "summary": "Show how the business got here with a clean milestone timeline.",
+    "pitch": "Tell the story behind the business \u2014 or how a job, product or partnership comes together \u2014 as a row of milestones: year, title and a short line. Line, alternating, side rail or photo-card layouts with ring, dot, icon or year markers.",
+    "features": [
+      {
+        "title": "Four layouts",
+        "text": "Line, alternating with photos, side rail or photo cards."
+      },
+      {
+        "title": "Markers your way",
+        "text": "Ring, dot, an icon per milestone or the year in a circle."
+      },
+      {
+        "title": "Phone friendly",
+        "text": "Every layout turns into a neat side rail on phones."
+      }
+    ],
+    "partnerBenefits": [
+      {
+        "title": "Trust in one glance",
+        "text": "Years in business and milestones prove you are established."
+      },
+      {
+        "title": "Provenance stories",
+        "text": "Perfect for farms, makers and family businesses."
+      },
+      {
+        "title": "Easy to keep current",
+        "text": "Add a milestone when something big happens."
+      }
+    ],
+    "presets": [
+      "default"
+    ]
   }
 }

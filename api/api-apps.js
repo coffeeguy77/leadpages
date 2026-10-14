@@ -178,6 +178,27 @@ const CTA_BANNER_APP = {
   sort_order: 77
 };
 
+/** Timeline — milestones with year, title and text; drawn by /assets/lp-layouts.js (sections.storyTimeline). */
+const STORY_TIMELINE_APP = {
+  name: 'Timeline',
+  slug: 'story-timeline',
+  section_key: 'storyTimeline',
+  tier: 'free',
+  price_monthly_aud: 0,
+  price_annual_aud: 0,
+  tagline: 'Your story in milestones: year, title and a short line',
+  description:
+    'Show how the business got here — or how a job, product or partnership comes together. '
+    + 'Line, alternating, side rail or photo-card layouts, with ring, dot, icon or year markers. '
+    + 'Off by default; enable from App Marketplace or Page editor.',
+  default_position: 'lower',
+  marketplace_status: 'live',
+  builder_visible: true,
+  can_reposition: true,
+  hero_exclusive: false,
+  sort_order: 78
+};
+
 const STALE_PROMOTIONS_SECTION_KEYS = ['promotions-hero', 'promotions-inline'];
 
 async function ensureLpAccessibilityApp() {
@@ -486,6 +507,7 @@ module.exports = async (req, res) => {
       await ensureAboutUsApp();
       await ensureNewApp(MAP_HOURS_APP);
       await ensureNewApp(CTA_BANNER_APP);
+      await ensureNewApp(STORY_TIMELINE_APP);
     }
     // Public marketplace list should also auto-register SearchCanvas / Custom HTML / Promotions once.
     if (!all && !slug) {
@@ -496,6 +518,7 @@ module.exports = async (req, res) => {
       try { await ensureAboutUsApp(); } catch (_e) { /* non-fatal */ }
       try { await ensureNewApp(MAP_HOURS_APP); } catch (_e) { /* non-fatal */ }
       try { await ensureNewApp(CTA_BANNER_APP); } catch (_e) { /* non-fatal */ }
+      try { await ensureNewApp(STORY_TIMELINE_APP); } catch (_e) { /* non-fatal */ }
     }
     const {data:apps,error:ae} = await q;
     if (ae) return res.status(500).json({error:ae.message});

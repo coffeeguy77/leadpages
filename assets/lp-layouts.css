@@ -831,3 +831,83 @@ section[data-sec="textBox"].tbx-bleed.lpl-tone-dark .tbl-h{color:#fff}
   section[data-sec="textBox"].tbx-bleed .tbl-media{order:-1;aspect-ratio:16/10;min-height:0}
   section[data-sec="textBox"].tbx-bleed .tbl-text,section[data-sec="textBox"].tbx-bleed.tbl-left .tbl-text{justify-content:flex-start;padding:32px 20px}
 }
+
+/* ============ Timeline app (sections.storyTimeline) ============ */
+section[data-sec="storyTimeline"]{--stl-accent:color-mix(in srgb,currentColor 55%,transparent);--stl-line:color-mix(in srgb,var(--stl-accent) 70%,transparent);--stl-bg:var(--bg,#fff);color:var(--ink,#1a2230);background:var(--stl-bg)}
+section[data-sec="storyTimeline"].stl-tone-soft{--stl-bg:var(--light,#f4f1ea)}
+section[data-sec="storyTimeline"].stl-tone-dark{--stl-bg:var(--steel-900,#1a2230);color:#fff}
+section[data-sec="storyTimeline"] .stl-wrap{padding-top:clamp(44px,6vw,80px);padding-bottom:clamp(44px,6vw,80px)}
+section[data-sec="storyTimeline"] .stl-head{text-align:center;max-width:760px;margin:0 auto clamp(28px,4vw,48px)}
+section[data-sec="storyTimeline"] .stl-h{margin:6px 0 0;color:inherit;font-size:clamp(28px,3.4vw,44px);line-height:1.08;text-transform:var(--lp-heading-case,none)}
+section[data-sec="storyTimeline"] .stl-intro{margin:12px auto 0;font-size:16.5px;line-height:1.6;opacity:.82;max-width:60ch}
+section[data-sec="storyTimeline"] .stl-list{list-style:none;margin:0;padding:0}
+section[data-sec="storyTimeline"] .stl-item{position:relative;min-width:0}
+section[data-sec="storyTimeline"] .stl-year{font-family:var(--lp-font-head,inherit);font-weight:800;font-size:clamp(20px,2vw,26px);line-height:1.1;letter-spacing:0;color:inherit}
+section[data-sec="storyTimeline"] .stl-t{margin:6px 0 0;color:inherit;font-size:clamp(15px,1.3vw,17px);line-height:1.3;font-weight:700;text-transform:none;letter-spacing:0}
+section[data-sec="storyTimeline"] .stl-p{margin:8px 0 0;font-size:15px;line-height:1.55;opacity:.8}
+section[data-sec="storyTimeline"] .stl-img{overflow:hidden;border-radius:10px;background:color-mix(in srgb,currentColor 8%,transparent)}
+section[data-sec="storyTimeline"] .stl-img img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover}
+/* Markers */
+section[data-sec="storyTimeline"] .stl-mk{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;flex:none;box-sizing:border-box;color:var(--stl-accent);background:var(--stl-bg)}
+section[data-sec="storyTimeline"] .stl-mk-ring{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--stl-accent)}
+section[data-sec="storyTimeline"] .stl-mk-ring::after{content:"";width:6px;height:6px;border-radius:50%;background:var(--stl-accent)}
+section[data-sec="storyTimeline"] .stl-mk-dot{width:12px;height:12px;border-radius:50%;background:var(--stl-accent);box-shadow:0 0 0 5px var(--stl-bg)}
+section[data-sec="storyTimeline"] .stl-mk-icon{width:44px;height:44px;border-radius:50%;border:1.5px solid var(--stl-accent)}
+section[data-sec="storyTimeline"] .stl-mk-icon .lp-ic{width:22px;height:22px;stroke-width:1.6}
+section[data-sec="storyTimeline"] .stl-mk-year{min-width:64px;height:64px;padding:0 8px;border-radius:999px;border:1.5px solid var(--stl-accent);font-family:var(--lp-font-head,inherit);font-weight:800;font-size:17px;color:inherit}
+/* Line (default): one horizontal line, markers on it, text centred under each */
+section[data-sec="storyTimeline"].stl-line .stl-list{display:grid;grid-template-columns:repeat(var(--stl-cols,3),minmax(0,1fr));row-gap:40px}
+section[data-sec="storyTimeline"].stl-line .stl-item{display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 clamp(8px,1.6vw,22px)}
+section[data-sec="storyTimeline"].stl-line .stl-item::before{content:"";position:absolute;top:var(--stl-mid,8px);left:0;right:0;height:1px;background:var(--stl-line)}
+section[data-sec="storyTimeline"].stl-line .stl-list.stl-m-icon .stl-item::before{top:22px}
+section[data-sec="storyTimeline"].stl-line .stl-list.stl-m-year .stl-item::before{top:32px}
+section[data-sec="storyTimeline"].stl-line .stl-list.stl-m-dot .stl-item::before{top:6px}
+section[data-sec="storyTimeline"].stl-line .stl-item.stl-first::before{left:50%}
+section[data-sec="storyTimeline"].stl-line .stl-item.stl-last::before{right:50%}
+section[data-sec="storyTimeline"].stl-line .stl-item.stl-first.stl-last::before{display:none}
+section[data-sec="storyTimeline"].stl-line .stl-body{margin-top:16px;max-width:30ch}
+/* Alternating: zig-zag down a centre line */
+section[data-sec="storyTimeline"].stl-alternate .stl-list{position:relative;max-width:1000px;margin:0 auto}
+section[data-sec="storyTimeline"].stl-alternate .stl-list::before{content:"";position:absolute;top:0;bottom:0;left:50%;width:1px;background:var(--stl-line)}
+section[data-sec="storyTimeline"].stl-alternate .stl-item{width:50%;box-sizing:border-box;padding:0 clamp(28px,4vw,56px) clamp(28px,4vw,44px) 0;text-align:right}
+section[data-sec="storyTimeline"].stl-alternate .stl-item.stl-even{margin-left:50%;padding:0 0 clamp(28px,4vw,44px) clamp(28px,4vw,56px);text-align:left}
+section[data-sec="storyTimeline"].stl-alternate .stl-mk{position:absolute;top:4px;right:0;transform:translateX(50%)}
+section[data-sec="storyTimeline"].stl-alternate .stl-even .stl-mk{right:auto;left:0;transform:translateX(-50%)}
+section[data-sec="storyTimeline"].stl-alternate .stl-img{margin:0 0 14px}
+section[data-sec="storyTimeline"].stl-alternate .stl-img img{aspect-ratio:16/9}
+/* Side rail: down a line on the left (also the phone layout for every style) */
+section[data-sec="storyTimeline"].stl-rail .stl-list{position:relative;max-width:760px;margin:0 auto}
+section[data-sec="storyTimeline"].stl-rail .stl-item{display:flex;gap:clamp(16px,2.4vw,28px);padding-bottom:clamp(22px,3vw,34px)}
+section[data-sec="storyTimeline"].stl-rail .stl-item::before{content:"";position:absolute;left:var(--stl-rail-x,8px);top:8px;bottom:-8px;width:1px;background:var(--stl-line)}
+section[data-sec="storyTimeline"].stl-rail .stl-item:last-child::before{display:none}
+section[data-sec="storyTimeline"].stl-rail .stl-list.stl-m-icon{--stl-rail-x:22px}
+section[data-sec="storyTimeline"].stl-rail .stl-list.stl-m-year{--stl-rail-x:32px}
+section[data-sec="storyTimeline"].stl-rail .stl-list.stl-m-dot{--stl-rail-x:6px}
+section[data-sec="storyTimeline"].stl-rail .stl-body{flex:1;min-width:0}
+section[data-sec="storyTimeline"].stl-rail .stl-img{max-width:420px;margin:0 0 12px}
+/* Photo cards: year badges on a line, a card under each */
+section[data-sec="storyTimeline"].stl-cards .stl-list{display:grid;grid-template-columns:repeat(var(--stl-cols,3),minmax(0,1fr));gap:clamp(14px,2vw,24px)}
+section[data-sec="storyTimeline"].stl-cards .stl-mk{display:none}
+section[data-sec="storyTimeline"].stl-cards .stl-item::before{content:"";position:absolute;top:17px;left:calc(-1 * clamp(14px,2vw,24px));right:0;height:1px;background:var(--stl-line)}
+section[data-sec="storyTimeline"].stl-cards .stl-item.stl-first::before{left:0}
+section[data-sec="storyTimeline"].stl-cards .stl-year{position:relative;z-index:1;display:inline-block;align-self:flex-start;margin:0 0 14px;padding:5px 14px;border-radius:999px;border:1.5px solid var(--stl-accent);background:var(--stl-bg);font-size:16px}
+section[data-sec="storyTimeline"].stl-cards .stl-body{height:100%;display:flex;flex-direction:column}
+section[data-sec="storyTimeline"].stl-cards .stl-txt{flex:1;padding:16px 18px 18px;border:1px solid color-mix(in srgb,currentColor 14%,transparent);border-top:0;border-radius:0 0 12px 12px;background:color-mix(in srgb,currentColor 3%,var(--stl-bg))}
+section[data-sec="storyTimeline"].stl-cards .stl-img{border-radius:12px 12px 0 0}
+section[data-sec="storyTimeline"].stl-cards .stl-body>.stl-year+.stl-txt{border-top:1px solid color-mix(in srgb,currentColor 14%,transparent);border-radius:12px}
+section[data-sec="storyTimeline"].stl-cards .stl-t{margin-top:0}
+/* Phones: every layout becomes the side rail */
+@media (max-width:700px){
+  section[data-sec="storyTimeline"]:not(.stl-cards) .stl-list{display:block;position:relative;max-width:none;margin:0}
+  section[data-sec="storyTimeline"]:not(.stl-cards) .stl-list::before{display:none}
+  section[data-sec="storyTimeline"]:not(.stl-cards) .stl-item,section[data-sec="storyTimeline"]:not(.stl-cards) .stl-item.stl-even{display:flex;flex-direction:row;align-items:flex-start;gap:16px;width:auto;margin:0;padding:0 0 26px;text-align:left}
+  section[data-sec="storyTimeline"]:not(.stl-cards) .stl-item::before,section[data-sec="storyTimeline"]:not(.stl-cards) .stl-item.stl-first::before,section[data-sec="storyTimeline"]:not(.stl-cards) .stl-item.stl-last::before{content:"";display:block;position:absolute;left:var(--stl-rail-x,8px);right:auto;top:8px;bottom:-8px;width:1px;height:auto;background:var(--stl-line)}
+  section[data-sec="storyTimeline"]:not(.stl-cards) .stl-item:last-child::before{display:none}
+  section[data-sec="storyTimeline"]:not(.stl-cards) .stl-list.stl-m-icon{--stl-rail-x:22px}
+  section[data-sec="storyTimeline"]:not(.stl-cards) .stl-list.stl-m-year{--stl-rail-x:32px}
+  section[data-sec="storyTimeline"]:not(.stl-cards) .stl-list.stl-m-dot{--stl-rail-x:6px}
+  section[data-sec="storyTimeline"]:not(.stl-cards) .stl-mk{position:relative;top:0;left:auto;right:auto;transform:none}
+  section[data-sec="storyTimeline"]:not(.stl-cards) .stl-body{margin:0;max-width:none;flex:1;min-width:0}
+  section[data-sec="storyTimeline"].stl-cards .stl-list{grid-template-columns:1fr}
+  section[data-sec="storyTimeline"].stl-cards .stl-item::before{left:0}
+}
