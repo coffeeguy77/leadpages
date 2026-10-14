@@ -805,6 +805,16 @@ function injectOnlineQuote(html, slug, cfg) {
 }
 
 
+/** A landing page's app order (same rules as the template's _lpPageLayoutOrder), or null. */
+function pageSectionOrder(page) {
+  if (!page || !Array.isArray(page.pageApps) || !page.pageApps.length) return null;
+  const apps = page.pageApps.map(function (a) { return a && (a.key || a.section_key); }).filter(Boolean);
+  const valid = {}; apps.forEach(function (k) { valid[k] = 1; });
+  let ord = Array.isArray(page.pageLayoutOrder) ? page.pageLayoutOrder.filter(function (id) { return valid[id]; }) : [];
+  apps.forEach(function (k) { if (ord.indexOf(k) < 0) ord.push(k); });
+  return ord;
+}
+
 // ---- Built-in order page (/order, or /:site/order on the LeadPages address) ----
 const ORDER_PAGE_SLUG = 'order';
 /** A virtual landing page that shows only the Order Storefront app, or null. Turns the
@@ -1537,7 +1547,9 @@ module.exports = async (req, res) => {
       html = injectTradeThemeVars(html, cfg);
       try {
         const { prepareTradeLiveHtml } = require('../lib/trade-render-guard');
-        html = prepareTradeLiveHtml(html, cfg);
+        // Landing page with apps: pre-paint order follows the page's own Position list.
+        const _po = pageSectionOrder(_pageRow);
+        html = prepareTradeLiveHtml(html, _po ? Object.assign({}, cfg, { pageSectionOrder: _po }) : cfg);
       } catch (_guardErr) { /* never break live render */ }
       html = injectOnlineQuote(html, site.slug, cfg);
       html = injectOrderStorefront(html, site.slug, cfg);
@@ -1562,3 +1574,4 @@ module.exports = async (req, res) => {
 module.exports._injectBookingStorefront = injectBookingStorefront;
 module.exports._injectFontSet = injectFontSet;
 module.exports._orderShopPage = orderShopPage;
+module.exports._pageSectionOrder = pageSectionOrder;

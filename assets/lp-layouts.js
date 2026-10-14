@@ -1421,7 +1421,11 @@
   var STEPS = [heroSlider, heroBanners, headerCta, minimalFooter, logoTint, buttonShapes, orderLayout, featuredProjects, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, trustBar, mapHours, ctaBanner, bookingWeek, heroBooking, bookingHire, fontSet, mobileBarSpace];
 
   function run(cfg) {
-    if (cfg) LAST = cfg;
+    // On a landing page the template builds the page's own config (homepage + the page's
+    // unique apps) — use that, not the homepage config the editor preview passes in.
+    var live = window.__lpLiveCfg;
+    if (live && live.__lpPageMerged) LAST = live;
+    else if (cfg) LAST = cfg;
     var C = cfgOf();
     if (!C) return;
     for (var i = 0; i < STEPS.length; i++) {
