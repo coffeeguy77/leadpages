@@ -1544,6 +1544,64 @@
       (list ? '<ol class="stl-list stl-m-' + marker + '" style="--stl-cols:' + cols + '">' + list + '</ol>' : '') + '</div>');
   }
 
+  /* ---------- Story rows app (sections.storyRows): alternating image + text rows ----------
+   Each row: a photo (fills its half to the page edge) or a drawing (whole image, padded), on the
+   left or right; eyebrow, heading, short rule, text, a bold note and an optional button; its own
+   background (page · soft · tint · dark); photos can fade into the row colour. Optional heading
+   above the rows. On phones the image sits above the text. */
+  var SRW_TONES = { soft: 1, tint: 1, dark: 1 };
+  function storyRows(C) {
+    var node = sec('storyRows'); if (!node) return;
+    var M = (C.sections && C.sections.storyRows) || {};
+    clear(node, 'srw');
+    ['Top', 'Bottom'].forEach(function (side) {
+      var v = M['space' + side];
+      ['compact', 'small', 'none'].forEach(function (k) { node.classList.toggle('srw-sp' + side.charAt(0).toLowerCase() + '-' + k, v === k); });
+    });
+    var tint = hexOk(M.tintColor);
+    if (tint) node.style.setProperty('--srw-tint', tint); else node.style.removeProperty('--srw-tint');
+    var soft = hexOk(M.softColor);
+    if (soft) node.style.setProperty('--srw-soft', soft); else node.style.removeProperty('--srw-soft');
+    var dk = hexOk(M.darkColor);
+    if (dk) node.style.setProperty('--srw-dark', dk); else node.style.removeProperty('--srw-dark');
+    var ac = hexOk(M.ruleColor);
+    if (ac) node.style.setProperty('--srw-rule', ac); else node.style.removeProperty('--srw-rule');
+    node.classList.toggle('srw-norule', M.rule === false);
+    node.classList.toggle('srw-tall', M.rowHeight === 'tall');
+    node.classList.toggle('srw-compact', M.rowHeight === 'compact');
+    if (M.on !== true) return;
+    var lines = function (v) { return esc(v).replace(/\n/g, '<br>'); };
+    var paras = function (v, i) {
+      return txt(v).split(/\n\s*\n/).map(function (pp) { return txt(pp) ? '<p class="srw-p">' + lines(txt(pp)) + '</p>' : ''; }).join('');
+    };
+    var head = (txt(M.eyebrow) ? '<span class="eyebrow srw-eyebrow" data-lpe="eyebrow">' + esc(M.eyebrow) + '</span>' : '') +
+      (txt(M.heading) ? '<h2 class="srw-h" data-lpe="heading">' + lines(M.heading) + '</h2>' : '') +
+      (txt(M.intro) ? '<p class="srw-intro" data-lpe="intro">' + lines(M.intro) + '</p>' : '');
+    var rows = liveIdx(M.items).filter(function (x) {
+      var it = x.it; return txt(it.title) || txt(it.text) || txt(it.image) || txt(it.note);
+    }).map(function (x) {
+      var it = x.it, k = 'list:storyRowsItems:' + x.i + ':';
+      var im = bgUrl(it.image);
+      var kind = it.imageKind === 'drawing' ? 'drawing' : 'photo';
+      var side = it.imageSide === 'right' ? 'right' : 'left';
+      var tone = SRW_TONES[it.tone] ? it.tone : '';
+      var cls = 'srw-row srw-' + kind + ' srw-img-' + side + (tone ? ' srw-tone-' + tone : '') +
+        (it.fade === 'fade' && kind === 'photo' && im ? ' srw-fade' : '') + (im ? '' : ' srw-noimg');
+      var btn = txt(it.btnLabel) ? '<a class="srw-btn" ' + linkAttrs(hrefOf(it.btnLink)) + ' data-lpe="' + k + 'btnLabel">' + esc(it.btnLabel) + '</a>' : '';
+      var text = (txt(it.eyebrow) ? '<span class="eyebrow srw-row-eyebrow" data-lpe="' + k + 'eyebrow">' + esc(it.eyebrow) + '</span>' : '') +
+        (txt(it.title) ? '<h3 class="srw-t" data-lpe="' + k + 'title">' + lines(it.title) + '</h3>' : '') +
+        (txt(it.title) ? '<span class="srw-rule" aria-hidden="true"></span>' : '') +
+        (txt(it.text) ? '<div class="srw-body" data-lpe="' + k + 'text">' + paras(it.text) + '</div>' : '') +
+        (txt(it.note) ? '<p class="srw-note" data-lpe="' + k + 'note">' + lines(it.note) + '</p>' : '') + btn;
+      return '<div class="' + cls + '">' +
+        (im ? '<div class="srw-media"><img src="' + esc(im) + '" alt="' + esc(txt(it.alt) || txt(it.title).replace(/\n/g, ' ')) + '" loading="lazy"></div>' : '') +
+        '<div class="srw-text"><div class="srw-inner">' + text + '</div></div></div>';
+    }).join('');
+    node.insertAdjacentHTML('afterbegin', '<div class="srw-wrap" data-lpl="srw">' +
+      (head ? '<div class="wrap srw-head">' + head + '</div>' : '') +
+      (rows ? '<div class="srw-list">' + rows + '</div>' : '') + '</div>');
+  }
+
   /* ---------- Hero / hero slider / trust bar width: theme default, full width or site width ---------- */
   var WIDTH_SECS = ['heroSlider', 'hero', 'splitHero', 'trustBar'];
   function appWidths(C) {
@@ -1586,7 +1644,7 @@
       else if (/[\ud83c-\udbff]/.test(t)) el.innerHTML = ''; // an unknown colour emoji: no icon
     }
   }
-  var STEPS = [heroSlider, heroBanners, headerCta, minimalFooter, logoTint, buttonShapes, orderLayout, featuredProjects, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, trustBar, mapHours, ctaBanner, storyTimeline, bookingWeek, heroBooking, bookingHire, fontSet, mobileBarSpace, appWidths, headingBreaks, strokeIcons];
+  var STEPS = [heroSlider, heroBanners, headerCta, minimalFooter, logoTint, buttonShapes, orderLayout, featuredProjects, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, trustBar, mapHours, ctaBanner, storyTimeline, storyRows, bookingWeek, heroBooking, bookingHire, fontSet, mobileBarSpace, appWidths, headingBreaks, strokeIcons];
 
   function run(cfg) {
     // On a landing page the template builds the page's own config (homepage + the page's

@@ -2768,5 +2768,61 @@
         }
       ]
     }
+  },
+  "storyRows": {
+    "business": "Ace Plumbing Co.",
+    "trade": "plumber",
+    "phone": "(02) 6100 0000",
+    "theme": {
+      "pipe": "#1f7bb8",
+      "hivis": "#ff6a1f"
+    },
+    "storyRows": {
+      "on": true,
+      "eyebrow": "",
+      "heading": "",
+      "intro": "",
+      "rule": true,
+      "rowHeight": "",
+      "tintColor": "#d6dcd0",
+      "items": [
+        {
+          "on": true,
+          "eyebrow": "",
+          "title": "Where it starts.\nWhy it matters.",
+          "text": "A short paragraph about the people, the place or the first step in the story.\n\nA second paragraph adds the detail customers care about.",
+          "note": "",
+          "image": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1600&h=1200&fit=crop&q=80",
+          "imageKind": "photo",
+          "imageSide": "left",
+          "tone": "",
+          "fade": "",
+          "btnLabel": "",
+          "btnLink": ""
+        },
+        {
+          "on": true,
+          "title": "Room to work.\nTime to do it properly.",
+          "text": "Rows can put the photo on either side, on their own background, and fade the photo into the row colour.",
+          "image": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1600&h=1200&fit=crop&q=80",
+          "imageKind": "photo",
+          "imageSide": "right",
+          "tone": "tint",
+          "fade": "fade"
+        },
+        {
+          "on": true,
+          "title": "Drawings work too.",
+          "text": "Line drawings and watermarks are shown whole, with space around them.",
+          "note": "Ask our team about the options available.",
+          "image": "",
+          "imageKind": "drawing",
+          "imageSide": "left",
+          "tone": "",
+          "btnLabel": "Ask us a question",
+          "btnLink": "#quote"
+        }
+      ]
+    }
   }
 }

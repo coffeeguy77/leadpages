@@ -16,7 +16,7 @@ test('trade template has a hidden placeholder; visibility lists include it', () 
   assert.match(html, /<section data-sec="storyTimeline" class="section" id="storyTimeline" style="display:none"><\/section>/);
   const ds = read('marketplace/demos/demo-shared.js');
   assert.ok(ds.match(/var __OPTV=\[([^\]]+)\]/)[1].indexOf("'storyTimeline'") >= 0);
-  assert.equal((html.match(/'customHtml','storyTimeline','mapHours','ctaBanner'\]/g) || []).length, 2);
+  assert.equal((html.match(/'customHtml','storyTimeline',(?:'storyRows',)?'mapHours','ctaBanner'\]/g) || []).length, 2);
 });
 
 test('off by default, and a switched-on timeline lands just above the footer', () => {
@@ -29,7 +29,7 @@ test('off by default, and a switched-on timeline lands just above the footer', (
 
 test('editor: chip, defaults, list, layout options, landing-page app', () => {
   const m = read('manage.html');
-  assert.match(m, /\['storyTimeline','Timeline'\],\['mapHours','Map & Hours'\]/);
+  assert.match(m, /\['storyTimeline','Timeline'\],(?:\['storyRows','Story Rows'\],)?\['mapHours','Map & Hours'\]/);
   assert.match(m, /storyTimeline:\{on:false,eyebrow:'Our story'/);
   assert.match(m, /'storyTimeline\.items':\[/);
   assert.match(m, /storyTimelineItems:\{secId:'storyTimeline',key:'items'/);

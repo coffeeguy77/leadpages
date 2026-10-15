@@ -3605,5 +3605,77 @@
         }
       }
     ]
+  },
+  "storyRows": {
+    "name": "Story Rows",
+    "tagline": "Alternating photo or drawing and text rows that tell your story",
+    "summary": "Tell your story in rows of a photo or drawing beside a heading and text.",
+    "hero_image_url": "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=1400&h=560&fit=crop&q=80",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Story Rows",
+          "text": "Tell a story in rows: each one has a heading, text, an optional button and a photo or line drawing on the left or right, on its own background. Photos can fill to the page edge or fade softly into the row colour."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=720&fit=crop&q=80",
+          "alt": "Story rows of photos and text",
+          "caption": "Photo or drawing on either side, each row on its own background."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "Key features",
+          "items": [
+            {
+              "title": "Photo or drawing",
+              "text": "Photos fill their half to the page edge; drawings show whole with space around them."
+            },
+            {
+              "title": "Each row its own look",
+              "text": "Image left or right, page, soft, tint or dark background, and photos that fade into the row."
+            },
+            {
+              "title": "Phone friendly",
+              "text": "On phones the image sits neatly above the text."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "Why partners sell it",
+          "items": [
+            {
+              "title": "Story-led pages",
+              "text": "Perfect for growers, makers and family businesses with a story to tell."
+            },
+            {
+              "title": "No designer needed",
+              "text": "Add, reorder or switch sides on rows in a couple of clicks."
+            },
+            {
+              "title": "Works with any theme",
+              "text": "Uses the site\u2019s fonts and colours."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "section_key": "storyRows",
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
   }
 }

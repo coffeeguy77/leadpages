@@ -178,6 +178,27 @@ const CTA_BANNER_APP = {
   sort_order: 77
 };
 
+/** Story Rows — alternating photo/drawing + text rows; drawn by /assets/lp-layouts.js (sections.storyRows). */
+const STORY_ROWS_APP = {
+  name: 'Story Rows',
+  slug: 'story-rows',
+  section_key: 'storyRows',
+  tier: 'free',
+  price_monthly_aud: 0,
+  price_annual_aud: 0,
+  tagline: 'Alternating photo or drawing and text rows that tell your story',
+  description:
+    'Tell a story in rows: each has a heading, text, an optional button and a photo or line drawing on the left or right, '
+    + 'with its own background. Photos can fill to the page edge or fade into the row colour. '
+    + 'Off by default; enable from App Marketplace or Page editor.',
+  default_position: 'mid',
+  marketplace_status: 'live',
+  builder_visible: true,
+  can_reposition: true,
+  hero_exclusive: false,
+  sort_order: 79
+};
+
 /** Timeline — milestones with year, title and text; drawn by /assets/lp-layouts.js (sections.storyTimeline). */
 const STORY_TIMELINE_APP = {
   name: 'Timeline',
@@ -508,6 +529,7 @@ module.exports = async (req, res) => {
       await ensureNewApp(MAP_HOURS_APP);
       await ensureNewApp(CTA_BANNER_APP);
       await ensureNewApp(STORY_TIMELINE_APP);
+      await ensureNewApp(STORY_ROWS_APP);
     }
     // Public marketplace list should also auto-register SearchCanvas / Custom HTML / Promotions once.
     if (!all && !slug) {
@@ -519,6 +541,7 @@ module.exports = async (req, res) => {
       try { await ensureNewApp(MAP_HOURS_APP); } catch (_e) { /* non-fatal */ }
       try { await ensureNewApp(CTA_BANNER_APP); } catch (_e) { /* non-fatal */ }
       try { await ensureNewApp(STORY_TIMELINE_APP); } catch (_e) { /* non-fatal */ }
+      try { await ensureNewApp(STORY_ROWS_APP); } catch (_e) { /* non-fatal */ }
     }
     const {data:apps,error:ae} = await q;
     if (ae) return res.status(500).json({error:ae.message});
