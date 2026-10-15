@@ -921,3 +921,10 @@ section[data-sec="storyTimeline"].stl-cards .stl-t{margin-top:0}
 
 /* Menus: items under a parent (dropdown / phone menu) use the same size as the top level */
 .hnm-children .hnm-item,.hnm-children .hnm-item.hnm-child{font-size:19px}
+
+/* Why section: the editor's reason heading / text / icon colours and item outline were saved
+   (as --why-* variables on the section) but nothing read them. Applied only when set. */
+[data-sec="why"][style*="--why-heading"] .why-item h3{color:var(--why-heading)}
+[data-sec="why"][style*="--why-text"] .why-item p{color:var(--why-text)}
+[data-sec="why"][style*="--why-icon"] .why-item .n,[data-sec="why"][style*="--why-icon"] .why-item .wic{color:var(--why-icon)}
+[data-sec="why"][style*="--why-item-stroke"] .why-item{border:var(--why-item-stroke-w,1px) solid var(--why-item-stroke);padding:var(--why-item-pad,18px 16px)}
