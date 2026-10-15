@@ -22,7 +22,8 @@
     'chevrons-right': '<path d="m6 17 5-5-5-5"/><path d="m13 17 5-5-5-5"/>',
     'chevrons-up-down': '<path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/>',
     menu: '<path d="M4 6h16M4 12h16M4 18h16"/>',
-    dot: '<circle cx="12" cy="12" r="3"/>'
+    dot: '<circle cx="12" cy="12" r="3"/>',
+    images: '<path d="M18 22H4a2 2 0 0 1-2-2V6"/><path d="m22 13-1.296-1.296a2.41 2.41 0 0 0-3.408 0L11 18"/><circle cx="12" cy="8" r="2"/><rect width="16" height="16" x="6" y="2" rx="2"/>'
   };
   function svg(name) {
     var p = (global.LP_ICONS && global.LP_ICONS[name]) || EXTRA_ICONS[name] || EXTRA_ICONS.dot;
@@ -43,7 +44,7 @@
   /* Site tools / account buttons → icon, by their label */
   var TOOL_ICONS = [
     [/^settings/i, 'settings'], [/^account/i, 'user'], [/appearance/i, 'sun'], [/billing/i, 'credit-card'],
-    [/domain finder/i, 'search'], [/domains?/i, 'globe'], [/scope/i, 'clipboard-list'], [/backup/i, 'archive'],
+    [/domain finder/i, 'search'], [/domains?/i, 'globe'], [/scope/i, 'clipboard-list'], [/backup/i, 'archive'], [/image library/i, 'images'],
     [/new site/i, 'plus'], [/orders/i, 'shopping-bag'], [/bookings/i, 'calendar-days'], [/ops command/i, 'command'],
     [/partner admin/i, 'building-2'], [/partner/i, 'arrow-left'], [/marketplace admin/i, 'store'], [/site switcher/i, 'repeat'],
     [/sign ?out/i, 'log-out'], [/classic|standard/i, 'toggle-left'], [/publish/i, 'rocket'], [/view live/i, 'external-link'],
@@ -81,7 +82,7 @@
   /* The editor moves these buttons between rows (desktop card, phone drawer), so they are read by id. */
   var PRIMARY_IDS = ['btn-publish', 'btn-viewlive', 'lpc-preview'];
   var TOOL_IDS = ['btn-settings', 'btn-account', 'btn-appearance-aa', 'btn-billing', 'btn-domains', 'btn-domain-finder', 'lpc-scope',
-    'lpc-backups', 'btn-fav', 'btn-newsite', 'lpc-order-desk', 'lpc-bookings-desk', 'lpc-ops-command', 'lpc-partner-admin',
+    'lpc-backups', 'lpc-image-library', 'btn-fav', 'btn-newsite', 'lpc-order-desk', 'lpc-bookings-desk', 'lpc-ops-command', 'lpc-partner-admin',
     'lpc-marketplace-admin', 'lpc-partner-console'];
   function readIds(ids, tag) {
     var out = [];
