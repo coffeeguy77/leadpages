@@ -1913,5 +1913,42 @@
     "presets": [
       "default"
     ]
+  },
+  "storyRows": {
+    "name": "Story Rows",
+    "tagline": "Alternating photo or drawing and text rows that tell your story",
+    "summary": "Tell your story in rows of a photo or drawing beside a heading and text.",
+    "pitch": "Tell a story in rows: each one has a heading, text, an optional button and a photo or line drawing on the left or right, on its own background. Photos can fill to the page edge or fade softly into the row colour.",
+    "features": [
+      {
+        "title": "Photo or drawing",
+        "text": "Photos fill their half to the page edge; drawings show whole with space around them."
+      },
+      {
+        "title": "Each row its own look",
+        "text": "Image left or right, page, soft, tint or dark background, and photos that fade into the row."
+      },
+      {
+        "title": "Phone friendly",
+        "text": "On phones the image sits neatly above the text."
+      }
+    ],
+    "partnerBenefits": [
+      {
+        "title": "Story-led pages",
+        "text": "Perfect for growers, makers and family businesses with a story to tell."
+      },
+      {
+        "title": "No designer needed",
+        "text": "Add, reorder or switch sides on rows in a couple of clicks."
+      },
+      {
+        "title": "Works with any theme",
+        "text": "Uses the site\u2019s fonts and colours."
+      }
+    ],
+    "presets": [
+      "default"
+    ]
   }
 }

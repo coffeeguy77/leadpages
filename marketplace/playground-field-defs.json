@@ -5116,5 +5116,176 @@
       "key": "sections.storyTimeline.lineColor",
       "label": "Line & marker colour"
     }
+  ],
+  "storyRows": [
+    {
+      "type": "select",
+      "key": "sections.storyRows.rowHeight",
+      "label": "Row height",
+      "options": [
+        {
+          "value": "",
+          "label": "Standard"
+        },
+        {
+          "value": "tall",
+          "label": "Tall"
+        },
+        {
+          "value": "compact",
+          "label": "Compact"
+        }
+      ]
+    },
+    {
+      "type": "textarea",
+      "key": "sections.storyRows.items.0.title",
+      "label": "Row 1 heading",
+      "rows": 2
+    },
+    {
+      "type": "textarea",
+      "key": "sections.storyRows.items.0.text",
+      "label": "Text",
+      "rows": 3
+    },
+    {
+      "type": "select",
+      "key": "sections.storyRows.items.0.imageSide",
+      "label": "Image side",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "key": "sections.storyRows.items.0.tone",
+      "label": "Background",
+      "options": [
+        {
+          "value": "",
+          "label": "Page"
+        },
+        {
+          "value": "soft",
+          "label": "Soft"
+        },
+        {
+          "value": "tint",
+          "label": "Tint"
+        },
+        {
+          "value": "dark",
+          "label": "Dark"
+        }
+      ]
+    },
+    {
+      "type": "textarea",
+      "key": "sections.storyRows.items.1.title",
+      "label": "Row 2 heading",
+      "rows": 2
+    },
+    {
+      "type": "textarea",
+      "key": "sections.storyRows.items.1.text",
+      "label": "Text",
+      "rows": 3
+    },
+    {
+      "type": "select",
+      "key": "sections.storyRows.items.1.imageSide",
+      "label": "Image side",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "key": "sections.storyRows.items.1.tone",
+      "label": "Background",
+      "options": [
+        {
+          "value": "",
+          "label": "Page"
+        },
+        {
+          "value": "soft",
+          "label": "Soft"
+        },
+        {
+          "value": "tint",
+          "label": "Tint"
+        },
+        {
+          "value": "dark",
+          "label": "Dark"
+        }
+      ]
+    },
+    {
+      "type": "textarea",
+      "key": "sections.storyRows.items.2.title",
+      "label": "Row 3 heading",
+      "rows": 2
+    },
+    {
+      "type": "textarea",
+      "key": "sections.storyRows.items.2.text",
+      "label": "Text",
+      "rows": 3
+    },
+    {
+      "type": "select",
+      "key": "sections.storyRows.items.2.imageSide",
+      "label": "Image side",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "key": "sections.storyRows.items.2.tone",
+      "label": "Background",
+      "options": [
+        {
+          "value": "",
+          "label": "Page"
+        },
+        {
+          "value": "soft",
+          "label": "Soft"
+        },
+        {
+          "value": "tint",
+          "label": "Tint"
+        },
+        {
+          "value": "dark",
+          "label": "Dark"
+        }
+      ]
+    }
   ]
 }

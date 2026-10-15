@@ -928,3 +928,57 @@ section[data-sec="storyTimeline"].stl-cards .stl-t{margin-top:0}
 [data-sec="why"][style*="--why-text"] .why-item p{color:var(--why-text)}
 [data-sec="why"][style*="--why-icon"] .why-item .n,[data-sec="why"][style*="--why-icon"] .why-item .wic{color:var(--why-icon)}
 [data-sec="why"][style*="--why-item-stroke"] .why-item{border:var(--why-item-stroke-w,1px) solid var(--why-item-stroke);padding:var(--why-item-pad,18px 16px)}
+
+/* Story rows app (sections.storyRows): alternating image + text rows, drawn by lp-layouts.js */
+section[data-sec="storyRows"]{padding-top:0;padding-bottom:0;--srw-soft:var(--light,#f4f1ea);--srw-tint:#d6dcd0;--srw-rule:color-mix(in srgb,currentColor 40%,transparent);color:var(--ink,#1a2230);background:var(--bg,#fff)}
+section[data-sec="storyRows"] .srw-head{text-align:center;max-width:760px;margin:0 auto;padding-top:clamp(44px,6vw,80px);padding-bottom:clamp(24px,3vw,40px)}
+section[data-sec="storyRows"] .srw-h{margin:6px 0 0;color:inherit;font-size:clamp(28px,3.4vw,44px);line-height:1.08;text-transform:var(--lp-heading-case,none)}
+section[data-sec="storyRows"] .srw-intro{margin:12px auto 0;font-size:16.5px;line-height:1.6;opacity:.82;max-width:60ch}
+section[data-sec="storyRows"] .srw-row{display:grid;grid-template-columns:1fr 1fr;align-items:stretch;min-height:clamp(300px,31vw,460px);position:relative}
+section[data-sec="storyRows"].srw-tall .srw-row{min-height:clamp(360px,38vw,560px)}
+section[data-sec="storyRows"].srw-compact .srw-row{min-height:clamp(240px,24vw,340px)}
+section[data-sec="storyRows"] .srw-row.srw-tone-soft{background:var(--srw-soft)}
+section[data-sec="storyRows"] .srw-row.srw-tone-tint{background:var(--srw-tint)}
+section[data-sec="storyRows"] .srw-row.srw-tone-dark{background:var(--srw-dark,var(--steel-900,#1f2826));color:#fff}
+section[data-sec="storyRows"] .srw-img-right .srw-media{order:2}
+section[data-sec="storyRows"] .srw-media{position:relative;min-width:0;overflow:hidden}
+section[data-sec="storyRows"] .srw-photo .srw-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+section[data-sec="storyRows"] .srw-drawing .srw-media{display:flex;align-items:center;justify-content:center;padding:clamp(28px,4vw,56px) clamp(24px,5vw,72px)}
+section[data-sec="storyRows"] .srw-drawing .srw-media img{display:block;max-width:100%;max-height:clamp(220px,26vw,360px);width:auto;height:auto;object-fit:contain}
+section[data-sec="storyRows"] .srw-row.srw-tone-dark.srw-drawing .srw-media img{filter:invert(1) brightness(1.6)}
+/* A photo that fades into the row colour (wider photo, soft inner edge) */
+section[data-sec="storyRows"] .srw-fade.srw-img-right{grid-template-columns:42fr 58fr}
+section[data-sec="storyRows"] .srw-fade.srw-img-left{grid-template-columns:58fr 42fr}
+section[data-sec="storyRows"] .srw-fade.srw-img-right .srw-media img{-webkit-mask-image:linear-gradient(to right,transparent 0,#000 34%);mask-image:linear-gradient(to right,transparent 0,#000 34%)}
+section[data-sec="storyRows"] .srw-fade.srw-img-left .srw-media img{-webkit-mask-image:linear-gradient(to left,transparent 0,#000 34%);mask-image:linear-gradient(to left,transparent 0,#000 34%)}
+section[data-sec="storyRows"] .srw-noimg{grid-template-columns:1fr}
+section[data-sec="storyRows"] .srw-text{display:flex;align-items:center;min-width:0;padding:clamp(40px,5vw,72px) clamp(24px,5vw,72px)}
+section[data-sec="storyRows"] .srw-img-right .srw-text{justify-content:flex-end}
+section[data-sec="storyRows"] .srw-row.srw-noimg .srw-text{justify-content:center}
+section[data-sec="storyRows"] .srw-inner{width:100%;max-width:540px}
+section[data-sec="storyRows"] .srw-row-eyebrow{display:block;margin:0 0 10px}
+section[data-sec="storyRows"] .srw-t{margin:0;color:inherit;font-family:var(--lp-font-head,inherit);font-size:clamp(30px,3.3vw,46px);line-height:1.07;letter-spacing:-.01em;text-transform:var(--lp-heading-case,none)}
+section[data-sec="storyRows"] .srw-rule{display:block;width:44px;height:1px;background:var(--srw-rule);margin:clamp(16px,2vw,24px) 0}
+section[data-sec="storyRows"].srw-norule .srw-rule{display:none}
+section[data-sec="storyRows"].srw-norule .srw-t{margin-bottom:16px}
+section[data-sec="storyRows"] .srw-p{margin:0 0 12px;font-size:16px;line-height:1.62;opacity:.86}
+section[data-sec="storyRows"] .srw-p:last-child{margin-bottom:0}
+section[data-sec="storyRows"] .srw-note{margin:14px 0 0;font-size:16px;line-height:1.5;font-weight:700}
+section[data-sec="storyRows"] .srw-btn{display:inline-flex;align-items:center;gap:8px;margin-top:22px;padding:12px 22px;border:1px solid currentColor;color:inherit;text-decoration:none;font-family:var(--lp-font-label,var(--lp-font-body,"Barlow")),system-ui,sans-serif;font-size:14px;font-weight:600;letter-spacing:.02em;border-radius:var(--btn-radius,0);transition:background .15s,color .15s}
+section[data-sec="storyRows"] .srw-btn::after{content:"\2192"}
+section[data-sec="storyRows"] .srw-btn:hover{background:currentColor}
+section[data-sec="storyRows"] .srw-btn:hover{color:var(--bg,#fff)}
+section[data-sec="storyRows"] .srw-tone-dark .srw-btn:hover{color:var(--srw-dark,var(--steel-900,#1f2826))}
+section[data-sec="storyRows"].srw-spt-compact .srw-list{padding-top:clamp(24px,3vw,40px)}
+section[data-sec="storyRows"].srw-spt-small .srw-list{padding-top:12px}
+section[data-sec="storyRows"].srw-spb-compact .srw-list{padding-bottom:clamp(24px,3vw,40px)}
+section[data-sec="storyRows"].srw-spb-small .srw-list{padding-bottom:12px}
+@media (max-width:760px){
+  section[data-sec="storyRows"] .srw-row,section[data-sec="storyRows"] .srw-fade.srw-img-right,section[data-sec="storyRows"] .srw-fade.srw-img-left{grid-template-columns:1fr;min-height:0}
+  section[data-sec="storyRows"] .srw-img-right .srw-media{order:0}
+  section[data-sec="storyRows"] .srw-photo .srw-media{aspect-ratio:4/3}
+  section[data-sec="storyRows"] .srw-fade .srw-media img{-webkit-mask-image:none;mask-image:none}
+  section[data-sec="storyRows"] .srw-drawing .srw-media{padding:32px 24px 0}
+  section[data-sec="storyRows"] .srw-drawing .srw-media img{max-height:220px}
+  section[data-sec="storyRows"] .srw-text,section[data-sec="storyRows"] .srw-img-right .srw-text{justify-content:flex-start;padding:32px 20px 40px}
+}
