@@ -2453,27 +2453,53 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     $('hub').classList.add('on');
   }
 
+  // Supabase renews the sign-in token in the background (tokens last about an hour).
+  // Keep state.session in step so every request sends the current token, not the one from page load.
+  try {
+    sb.auth.onAuthStateChange(function(_event, session){
+      if (session && session.access_token) state.session = session;
+    });
+  } catch (_e) {}
+
+  /** Current (auto-renewed) session; falls back to the last known one. */
+  async function currentSession(){
+    try {
+      var s = (await sb.auth.getSession()).data.session;
+      if (s && s.access_token) { state.session = s; return s; }
+    } catch (_e) {}
+    return state.session && state.session.access_token ? state.session : null;
+  }
+
   async function api(path, opts){
     opts = opts || {};
-    var session = state.session;
-    if (!session || !session.access_token) {
-      session = (await sb.auth.getSession()).data.session;
-      if (session) state.session = session;
-    }
+    var session = await currentSession();
     if (!session) throw new Error('Not signed in');
-    var headers = Object.assign({
-      'Authorization': 'Bearer ' + session.access_token,
-      'Content-Type': 'application/json'
-    }, opts.headers || {});
     var init = {
       method: opts.method || 'GET',
-      headers: headers
+      headers: null
     };
     if (opts.body != null) init.body = typeof opts.body === 'string' ? opts.body : JSON.stringify(opts.body);
-    var r = await fetch(path, init);
+    function send(tok){
+      init.headers = Object.assign({
+        'Authorization': 'Bearer ' + tok,
+        'Content-Type': 'application/json'
+      }, opts.headers || {});
+      return fetch(path, init);
+    }
+    var r = await send(session.access_token);
+    if (r.status === 401) {
+      // Token expired between renewals: renew once and retry.
+      var fresh = null;
+      try { fresh = (await sb.auth.refreshSession()).data.session; } catch (_e) { fresh = null; }
+      if (fresh && fresh.access_token) {
+        state.session = fresh;
+        r = await send(fresh.access_token);
+      }
+    }
     var j = null;
     try { j = await r.json(); } catch (_e) { j = null; }
     if (!r.ok) {
+      if (r.status === 401) throw new Error('Your sign-in has expired — please sign in again.');
       var err = (j && (j.error || j.message)) || ('HTTP ' + r.status);
       throw new Error(typeof err === 'string' ? err : JSON.stringify(err));
     }
@@ -8320,7 +8346,9 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
   async function downloadExport(kind, extra){
     if (!requireSite()) return;
     var path = '/api/order/export?' + siteQuery('kind=' + encodeURIComponent(kind) + (extra ? '&' + extra : ''));
-    var r = await fetch(path, { headers: { Authorization: 'Bearer ' + state.session.access_token } });
+    var sess = await currentSession();
+    if (!sess) { toast('Your sign-in has expired — please sign in again.', 'err'); return; }
+    var r = await fetch(path, { headers: { Authorization: 'Bearer ' + sess.access_token } });
     if (!r.ok) { toast('Export failed', 'err'); return; }
     var blob = await r.blob();
     var a = document.createElement('a');
