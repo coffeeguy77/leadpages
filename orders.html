@@ -313,6 +313,14 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
   display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,38%);gap:20px;align-items:start;
 }
 .no-products-col{min-width:0;max-width:100%;overflow:visible;padding-right:0}
+.lpe-special{margin-top:14px;padding:12px 14px;border:1px solid var(--line);border-radius:10px}
+.lpe-special-toggle{display:flex;gap:8px;align-items:center;cursor:pointer}
+.lpe-special-body{margin-top:10px}
+.lpe-special .radio-row{margin-bottom:12px}
+.lpe-special-preview{margin:10px 0 0;font-weight:600}
+.lpe-special-preview.ok{color:#067647}.lpe-special-preview.warn{color:#b42318}
+.prod-special-badge{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;background:#b42318;color:#fff;font-size:11px;font-weight:700;vertical-align:middle}
+.prod-special-badge.later{background:#6b7280}
 .no-editor-col{
   min-width:0;align-self:stretch;
   padding:16px 18px;border-radius:14px;
@@ -1061,6 +1069,35 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
                   </div>
                 </div>
                 <p class="lpe-summary" id="prod-pricing-summary" aria-live="polite"></p>
+                <div class="lpe-special" id="prod-sp-box">
+                  <label class="lpe-special-toggle"><input type="checkbox" id="prod-sp-on" value="1"> <strong>Put this product on special</strong></label>
+                  <p class="lpe-special-tbc muted hide" id="prod-sp-tbc">Specials need a price — not available for "Price confirmed later".</p>
+                  <div class="lpe-special-body hide" id="prod-sp-body">
+                    <div class="radio-row" role="radiogroup" aria-label="Special type">
+                      <label><input type="radio" name="prod-sp-mode" id="prod-sp-mode-price" value="price" checked> Set special price</label>
+                      <label><input type="radio" name="prod-sp-mode" id="prod-sp-mode-pct" value="percent"> Percentage off</label>
+                    </div>
+                    <div class="grid2">
+                      <div class="field" id="prod-sp-price-field"><label for="prod-sp-price" id="prod-sp-price-label">Special price (dollars)</label>
+                        <div class="money-input"><span class="prefix">$</span><input id="prod-sp-price" type="number" min="0" step="0.01" placeholder="0.00"></div>
+                      </div>
+                      <div class="field hide" id="prod-sp-pct-field"><label for="prod-sp-pct">Percentage off (%)</label>
+                        <input id="prod-sp-pct" type="number" min="1" max="95" step="1" placeholder="10">
+                      </div>
+                      <div class="field"><label for="prod-sp-timing">How long</label>
+                        <select id="prod-sp-timing">
+                          <option value="ongoing">Ongoing — until I turn it off</option>
+                          <option value="until">Until a date</option>
+                          <option value="scheduled">Scheduled — start and end dates</option>
+                        </select>
+                      </div>
+                      <div class="field hide" id="prod-sp-start-field"><label for="prod-sp-start">Starts (first day)</label><input id="prod-sp-start" type="date"></div>
+                      <div class="field hide" id="prod-sp-end-field"><label for="prod-sp-end">Ends (last day)</label><input id="prod-sp-end" type="date"></div>
+                    </div>
+                    <p class="lpe-special-preview" id="prod-sp-preview" aria-live="polite"></p>
+                    <p class="muted" style="margin:4px 0 0;font-size:12px">Specials show in the shop's Specials tab and in their category with a Special badge. The price is locked in when the customer orders.</p>
+                  </div>
+                </div>
               </section>
 
               <section class="lpe-section" data-lpe-section="stock" id="lpe-sec-stock">
@@ -5815,6 +5852,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       card.classList.toggle('on', card.getAttribute('data-pricing') === v);
     });
     syncPricingSummary();
+    if (typeof syncSpecialUI === 'function') syncSpecialUI();
   }
   function prodDepositMode(){
     var el = document.querySelector('input[name="prod-deposit"]:checked');
@@ -5931,6 +5969,139 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     if ($('prod-section-select')) $('prod-section-select').value = id;
   }
 
+  /* ---------- Specials (options.special — see lib/order/specials.js) ---------- */
+  function spTodayLocal(){
+    try {
+      return new Intl.DateTimeFormat('en-CA', { timeZone: 'Australia/Sydney', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+    } catch (_e) { return new Date().toISOString().slice(0, 10); }
+  }
+  function spNiceDate(ymd){
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(ymd || ''));
+    if (!m) return '';
+    return Number(m[3]) + ' ' + ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][Number(m[2]) - 1] + ' ' + m[1];
+  }
+  /** 'live' | 'later' | 'ended' | '' for a stored special. */
+  function spStatus(sp){
+    if (!sp || !sp.on) return '';
+    var today = spTodayLocal();
+    var timing = sp.timing || 'ongoing';
+    if (timing === 'scheduled' && sp.start && today < sp.start) return 'later';
+    if (timing !== 'ongoing' && sp.end && today > sp.end) return 'ended';
+    return 'live';
+  }
+  function spMode(){
+    return $('prod-sp-mode-pct') && $('prod-sp-mode-pct').checked ? 'percent' : 'price';
+  }
+  /** Normal price the special discounts: { cents, perKg, tbc }. */
+  function spBase(){
+    var pricing = prodPricingValue();
+    if (pricing === 'per_weight') {
+      return { cents: $('prod-perkg') && $('prod-perkg').value !== '' ? dollarsToCents($('prod-perkg').value) : null, perKg: true, tbc: false };
+    }
+    if (pricing === 'price_tbc' || pricing === 'quote_required') return { cents: null, perKg: false, tbc: true };
+    return { cents: $('prod-price') && $('prod-price').value !== '' ? dollarsToCents($('prod-price').value) : null, perKg: false, tbc: false };
+  }
+  /** Special worked out from the form (same rule as the server). */
+  function spCalc(){
+    var base = spBase();
+    var out = { base: base, price: null, saving: null, pct: null, valid: false };
+    if (!base.cents) return out;
+    if (spMode() === 'percent') {
+      var pct = $('prod-sp-pct') && $('prod-sp-pct').value !== '' ? Number($('prod-sp-pct').value) : NaN;
+      if (!isFinite(pct) || pct <= 0 || pct >= 100) return out;
+      pct = Math.min(95, pct);
+      out.pct = pct;
+      out.price = Math.round(base.cents * (100 - pct) / 100);
+    } else {
+      out.price = $('prod-sp-price') && $('prod-sp-price').value !== '' ? dollarsToCents($('prod-sp-price').value) : null;
+      if (out.price) out.pct = Math.round((1 - out.price / base.cents) * 1000) / 10;
+    }
+    if (out.price != null) out.saving = base.cents - out.price;
+    out.valid = out.price > 0 && out.price < base.cents;
+    return out;
+  }
+  function syncSpecialUI(){
+    if (!$('prod-sp-box')) return;
+    var base = spBase();
+    var on = $('prod-sp-on').checked;
+    $('prod-sp-tbc').classList.toggle('hide', !base.tbc);
+    $('prod-sp-on').disabled = base.tbc;
+    $('prod-sp-body').classList.toggle('hide', !on || base.tbc);
+    var pct = spMode() === 'percent';
+    $('prod-sp-price-field').classList.toggle('hide', pct);
+    $('prod-sp-pct-field').classList.toggle('hide', !pct);
+    $('prod-sp-price-label').textContent = base.perKg ? 'Special price per kg (dollars)' : 'Special price (dollars)';
+    var timing = $('prod-sp-timing').value;
+    $('prod-sp-start-field').classList.toggle('hide', timing !== 'scheduled');
+    $('prod-sp-end-field').classList.toggle('hide', timing === 'ongoing');
+    var el = $('prod-sp-preview');
+    if (!on || base.tbc) { el.textContent = ''; el.className = 'lpe-special-preview'; return; }
+    var unit = base.perKg ? '/kg' : '';
+    var c = spCalc();
+    var text = '';
+    var cls = 'ok';
+    if (!base.cents) { text = 'Enter the normal ' + (base.perKg ? 'price per kg' : 'price') + ' first.'; cls = 'warn'; }
+    else if (c.price == null) { text = pct ? 'Enter the percentage off.' : 'Enter the special price.'; cls = 'warn'; }
+    else if (!c.valid) { text = 'The special must be lower than the normal price of ' + formatAud(base.cents) + unit + '.'; cls = 'warn'; }
+    else if (pct) {
+      text = c.pct + '% off ' + formatAud(base.cents) + unit + ' = save ' + formatAud(c.saving) + unit + ' → ' + formatAud(c.price) + unit;
+    } else {
+      text = formatAud(c.price) + unit + ' instead of ' + formatAud(base.cents) + unit + ' — save ' + formatAud(c.saving) + unit + ' (' + c.pct + '% off)';
+    }
+    if (cls === 'ok') {
+      var st = $('prod-sp-start').value, en = $('prod-sp-end').value, today = spTodayLocal();
+      if (timing === 'until') {
+        if (en) text += ' · until ' + spNiceDate(en) + (en < today ? ' (already ended)' : '');
+        else { text += ' — pick the end date'; cls = 'warn'; }
+      } else if (timing === 'scheduled') {
+        if (!st && !en) { text += ' — pick the dates'; cls = 'warn'; }
+        else {
+          text += ' · ' + (st ? spNiceDate(st) : 'now') + ' – ' + (en ? spNiceDate(en) : 'ongoing');
+          if (en && en < today) text += ' (already ended)';
+          else if (st && st > today) text += ' (starts later)';
+        }
+      } else text += ' · ongoing';
+    }
+    el.textContent = text;
+    el.className = 'lpe-special-preview ' + cls;
+  }
+  function fillSpecialForm(p){
+    if (!$('prod-sp-box')) return;
+    var sp = (p && p.options && p.options.special) || null;
+    $('prod-sp-on').checked = !!(sp && sp.on);
+    var pctMode = !!(sp && sp.mode === 'percent');
+    $('prod-sp-mode-pct').checked = pctMode;
+    $('prod-sp-mode-price').checked = !pctMode;
+    $('prod-sp-price').value = sp && sp.price_cents != null ? centsToDollarsInput(sp.price_cents) : '';
+    $('prod-sp-pct').value = sp && sp.percent != null ? sp.percent : '';
+    $('prod-sp-timing').value = (sp && sp.timing) || 'ongoing';
+    $('prod-sp-start').value = (sp && sp.start) || '';
+    $('prod-sp-end').value = (sp && sp.end) || '';
+    syncSpecialUI();
+  }
+  /** Value sent to the API (always sent, so turning it off saves too). */
+  function readSpecialForm(){
+    if (!$('prod-sp-box')) return undefined;
+    var timing = $('prod-sp-timing').value;
+    var pct = spMode() === 'percent';
+    return {
+      on: $('prod-sp-on').checked && !spBase().tbc,
+      mode: pct ? 'percent' : 'price',
+      price_cents: !pct && $('prod-sp-price').value !== '' ? dollarsToCents($('prod-sp-price').value) : null,
+      percent: pct && $('prod-sp-pct').value !== '' ? Number($('prod-sp-pct').value) : null,
+      timing: timing,
+      start: timing === 'scheduled' ? ($('prod-sp-start').value || null) : null,
+      end: timing !== 'ongoing' ? ($('prod-sp-end').value || null) : null
+    };
+  }
+  /** Small badge for the staff product list. */
+  function spBadgeHtml(p){
+    var st = spStatus(p && p.options && p.options.special);
+    if (st === 'live') return ' <span class="prod-special-badge">Special</span>';
+    if (st === 'later') return ' <span class="prod-special-badge later">Special soon</span>';
+    return '';
+  }
+
   function syncPricingSummary(){
     var el = $('prod-pricing-summary');
     if (!el || !pe().pricingSummary) return;
@@ -5980,6 +6151,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     syncPricingSummary();
     syncRulesSummary();
     syncProdPreview();
+    syncSpecialUI();
   }
 
   function updateProdSaveStatus(){
@@ -6544,7 +6716,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
           (p.short_description ? '<div class="muted prod-row-sub">' + esc(p.short_description) + '</div>' : '') +
           '</div></div></td>' +
         '<td class="prod-col-wide">' + esc(catLabel) + '</td>' +
-        '<td>' + esc(price) + '</td>' +
+        '<td>' + esc(price) + spBadgeHtml(p) + '</td>' +
         '<td class="prod-col-wide">' + esc(LPE.stockLabel ? LPE.stockLabel(p) : (p.stock_method || '—')) + '</td>' +
         '<td class="prod-col-wide">' + esc(cutoffLabel(p)) + '</td>' +
         '<td>' + (p.active !== false ? '<span class="badge ok">active</span>' : '<span class="badge muted">off</span>') + '</td>' +
@@ -6856,6 +7028,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     if ($('prod-deposit-amount')) $('prod-deposit-amount').value = p && p.deposit_amount_cents != null ? centsToDollarsInput(p.deposit_amount_cents) : '';
     if ($('prod-deposit-pct')) $('prod-deposit-pct').value = p && p.deposit_percent_bps != null ? String(Math.round(Number(p.deposit_percent_bps) / 100)) : '';
     if ($('prod-price-explain')) $('prod-price-explain').value = (p && p.price_label) || '';
+    fillSpecialForm(p);
     $('prod-stock').value = (p && p.stock_method) || 'made_to_order';
     if ($('prod-stock-qty')) $('prod-stock-qty').value = p && p.stock_qty != null ? p.stock_qty : '';
     $('prod-cutoff-mode').value = (p && p.cutoff_mode) || 'store_default';
@@ -6950,8 +7123,23 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       pack_label: $('prod-pack-label') ? ($('prod-pack-label').value.trim() || null) : null,
       minimum_kg: $('prod-min-kg') && $('prod-min-kg').value !== '' ? Number($('prod-min-kg').value) : null,
       quantity_prompt: $('prod-qty-prompt') ? ($('prod-qty-prompt').value.trim() || null) : null,
+      special: readSpecialForm(),
       questions: readProductOptionsFromForm()
     };
+    if (body.special && body.special.on) {
+      var spBad = !spCalc().valid
+        ? 'Special price must be lower than the normal price.'
+        : (body.special.timing === 'until' && !body.special.end) || (body.special.timing === 'scheduled' && !body.special.start && !body.special.end)
+          ? 'Pick the date(s) for the special.'
+          : '';
+      if (spBad) {
+        if (msg) msg.textContent = spBad;
+        toast(spBad, 'err');
+        if (btn) btn.disabled = false;
+        setProdEditorSection('pricing');
+        return false;
+      }
+    }
     if (!body.name) {
       if (msg) msg.textContent = 'Product name is required.';
       toast('Product name is required', 'err');

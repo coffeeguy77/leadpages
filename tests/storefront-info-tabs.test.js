@@ -20,7 +20,7 @@ test('render passes sections.orderStorefront.infoTabs as an escaped data attribu
 
 test('storefront draws info tabs next to Browse menu and My orders', () => {
   assert.match(js, /data-act="info-tab" data-tab="/);
-  assert.match(js, /if \(!this\.slug \|\| \(!this\.showPortal && !tabs\.length\)\) return '';/);
+  assert.match(js, /if \(!this\.slug \|\| \(!this\.showPortal && !tabs\.length && !specials\)\) return '';/);
   assert.match(js, /this\.state\.view === 'info' && this\.activeInfoTab\(\)/);
   assert.match(js, /OrderStorefront\.prototype\.renderInfoTab = function/);
   // My orders stays exactly where it was when the portal is on
@@ -32,7 +32,7 @@ test('linked items jump to the product in the order form', () => {
   assert.match(js, /OrderStorefront\.prototype\.gotoProduct = function \(id\)/);
   assert.match(js, /self\.productInCategory\(p, c\.id\)/);
   assert.match(js, /el\.classList\.add\('lp-oe-linked'\)/);
-  assert.match(js, /'info-tab': 1,\s*'goto-product': 1,/);
+  assert.match(js, /'info-tab': 1,\s*'specials-tab': 1,\s*'goto-product': 1,/);
 });
 
 test('item text is escaped and products resolve by slug, id or name', () => {
