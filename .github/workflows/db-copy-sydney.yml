@@ -1,0 +1,94 @@
+# One-off: copy the LeadPages database (Tokyo) into the new Sydney Supabase project.
+# Uses Supabase's documented CLI backup/restore (roles, schema incl. RLS policies & functions,
+# then data incl. auth users) — see docs/ops/Database-move-Sydney.md.
+#
+# Needs two repo secrets (Settings → Secrets and variables → Actions):
+#   OLD_DB_URL  Tokyo project  → Connect → Session pooler connection string (with password)
+#   NEW_DB_URL  Sydney project → Connect → Session pooler connection string (with password)
+#
+# Run modes (Actions → "DB copy to Sydney" → Run workflow):
+#   full   first copy: roles + schema + data into the empty Sydney project
+#   data   re-copy data only (switch-over): empties the Sydney tables, then loads fresh data
+#   check  row counts on both sides, nothing written
+# Dumps are never uploaded or printed; they're deleted at the end of the run.
+name: DB copy to Sydney
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'full | data | check'
+        required: true
+        default: 'check'
+
+concurrency: db-copy-sydney
+
+jobs:
+  copy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      OLD_DB_URL: ${{ secrets.OLD_DB_URL }}
+      NEW_DB_URL: ${{ secrets.NEW_DB_URL }}
+      MODE: ${{ github.event.inputs.mode }}
+    steps:
+      - name: Check inputs
+        run: |
+          case "$MODE" in full|data|check) ;; *) echo "mode must be full, data or check"; exit 1;; esac
+          [ -n "$OLD_DB_URL" ] || { echo "Missing secret OLD_DB_URL"; exit 1; }
+          [ -n "$NEW_DB_URL" ] || { echo "Missing secret NEW_DB_URL"; exit 1; }
+
+      - name: Install Postgres 17 client
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list >/dev/null
+          sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client-17
+          echo "/usr/lib/postgresql/17/bin" >> "$GITHUB_PATH"
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Row counts before
+        run: |
+          Q="select table_schema||'.'||table_name||' '||(xpath('/row/c/text()', query_to_xml('select count(*) as c from '||quote_ident(table_schema)||'.'||quote_ident(table_name), false, true, '')))[1]::text from information_schema.tables where table_schema in ('public','auth') and table_type='BASE TABLE' order by 1"
+          echo "== Tokyo (source) =="; psql "$OLD_DB_URL" -Atc "$Q" > old_counts.txt; wc -l < old_counts.txt
+          echo "== Sydney (target) =="; psql "$NEW_DB_URL" -Atc "$Q" > new_counts.txt || true; wc -l < new_counts.txt
+
+      - name: Dump Tokyo
+        if: env.MODE != 'check'
+        run: |
+          supabase db dump --db-url "$OLD_DB_URL" -f roles.sql --role-only
+          supabase db dump --db-url "$OLD_DB_URL" -f schema.sql
+          supabase db dump --db-url "$OLD_DB_URL" -f data.sql --use-copy --data-only
+          ls -la roles.sql schema.sql data.sql | awk '{print $5, $9}'
+
+      - name: Restore into Sydney (full)
+        if: env.MODE == 'full'
+        run: |
+          psql "$NEW_DB_URL" --single-transaction --variable ON_ERROR_STOP=1 \
+            --file roles.sql --file schema.sql \
+            --command 'SET session_replication_role = replica' --file data.sql
+
+      - name: Re-copy data into Sydney (switch-over)
+        if: env.MODE == 'data'
+        run: |
+          # Empty every public + auth table in Sydney, then load the fresh data, in one transaction.
+          T=$(psql "$NEW_DB_URL" -Atc "select string_agg(format('%I.%I', schemaname, tablename), ', ') from pg_tables where schemaname in ('public','auth') and tablename <> 'schema_migrations'")
+          psql "$NEW_DB_URL" --single-transaction --variable ON_ERROR_STOP=1 \
+            --command 'SET session_replication_role = replica' \
+            --command "TRUNCATE $T CASCADE" \
+            --file data.sql
+
+      - name: Row counts after (must match)
+        if: env.MODE != 'check'
+        run: |
+          Q="select table_schema||'.'||table_name||' '||(xpath('/row/c/text()', query_to_xml('select count(*) as c from '||quote_ident(table_schema)||'.'||quote_ident(table_name), false, true, '')))[1]::text from information_schema.tables where table_schema in ('public','auth') and table_type='BASE TABLE' order by 1"
+          psql "$OLD_DB_URL" -Atc "$Q" > old_counts.txt
+          psql "$NEW_DB_URL" -Atc "$Q" > new_counts.txt
+          if diff old_counts.txt new_counts.txt; then echo "All $(wc -l < old_counts.txt) tables match"; else echo "Row counts differ (lines above)"; exit 1; fi
+
+      - name: Remove dumps
+        if: always()
+        run: rm -f roles.sql schema.sql data.sql
