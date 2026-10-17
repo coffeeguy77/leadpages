@@ -6,7 +6,7 @@
 const { createClient } = require('@supabase/supabase-js');
 const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
-const FROM = process.env.LEADS_FROM || 'LeadPages <noreply@leadpages.webculture.au>';
+const FROM = process.env.LEADS_FROM || 'LeadPages <noreply@leadpages.com.au>';
 const BASE = process.env.BASE_URL || 'https://www.leadpages.com.au';
 
 async function ensureAuthUser(email) {

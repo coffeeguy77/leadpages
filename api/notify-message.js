@@ -9,7 +9,7 @@
 const { createClient } = require('@supabase/supabase-js');
 
 const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
-const FROM = process.env.LEADS_FROM || 'leadpages <noreply@leadpages.webculture.au>';
+const FROM = process.env.LEADS_FROM || 'LeadPages <noreply@leadpages.com.au>';
 const APP = 'https://leadpages.com.au/messages';
 
 async function getUser(token) {
