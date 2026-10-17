@@ -495,6 +495,14 @@ textarea.tin{resize:vertical;}
 .lpx-app-actions{display:flex;gap:6px;flex-wrap:wrap;}
 .lpx-app-note{margin:0 0 12px;}
 /* Unpublished draft banner */
+#lp-sync-banner{position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:9999;display:flex;align-items:center;gap:10px;flex-wrap:wrap;max-width:calc(100vw - 32px);padding:12px 14px;border-radius:12px;background:var(--panel,#fff);color:var(--ink,#1a2230);border:1px solid #d97706;box-shadow:0 12px 40px rgba(0,0,0,.2);font-size:14px;}
+#lp-sync-modal{position:fixed;inset:0;z-index:10000;background:rgba(15,20,25,.45);display:flex;align-items:center;justify-content:center;padding:16px;}
+#lp-sync-modal .lps-box{background:var(--panel,#fff);color:var(--ink,#1a2230);border-radius:14px;max-width:640px;width:100%;max-height:calc(100vh - 32px);overflow:auto;padding:20px 22px;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+#lp-sync-modal h2{margin:0 0 6px;font-size:18px;}
+#lp-sync-modal .lps-item{border:1px solid var(--line,#e2e6ea);border-radius:10px;padding:10px 12px;margin:0 0 8px;display:grid;gap:6px;font-size:13.5px;}
+#lp-sync-modal .lps-path{font-weight:700;}
+#lp-sync-modal .lps-item label{display:flex;gap:8px;align-items:flex-start;word-break:break-word;}
+#lp-sync-modal .lps-actions{display:flex;justify-content:flex-end;gap:8px;margin:12px 0 0;}
 #lp-draft-banner{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:9999;display:flex;align-items:center;gap:10px;flex-wrap:wrap;max-width:calc(100vw - 32px);padding:12px 14px;border-radius:12px;background:var(--panel,#fff);color:var(--ink,#1a2230);border:1px solid var(--accent);box-shadow:0 12px 40px rgba(0,0,0,.2);font-size:14px;}
 /* contact / brokers */
 .bro{border:1px solid var(--line);border-radius:var(--radius-sm);padding:16px;margin-bottom:12px;background:#fff;}
@@ -824,6 +832,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 <script src="/icons.js"></script>
 <script src="/icons-more.js" defer></script>
 <script src="/icons-pack.js" defer></script>
+<script src="/assets/lp-config-merge.js?v=1"></script>
 <script src="/assets/lp-country-codes.js?v=dash-country-1"></script>
 <script src="/assets/lp-quote-wizard-logic.js?v=oq-portal-style-1"></script>
 <script src="/assets/lp-quote-display.js?v=oq-portal-style-1"></script>
@@ -1829,6 +1838,130 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   // Safety net: anything changed that no edit hook caught (slow uploads, tools) is saved too.
   setInterval(function(){ try{ if(!lpDraft.saving&&!lpDraft.t&&lpDraftHasUnsaved()) lpDraftSave({auto:true}); }catch(_i){} }, 15000);
   window.addEventListener('beforeunload', function(e){ if(lpDraft.dirty||lpDraft.saving||lpDraftHasUnsaved()){ e.preventDefault(); e.returnValue=''; return ''; } });
+  /* ---------- Changed elsewhere: Publish merges instead of overwriting ----------
+     The editor holds a whole copy of sites.config. If the site is changed somewhere else while it
+     is open (another tab, a backup restore, Claude, Website Studio), Publish used to write the old
+     copy back and wipe those changes. Now each site remembers what the server had when it loaded
+     (site.__liveRaw + site.__liveAt). Before writing, the server row is re-read; if it changed,
+     the two are merged (assets/lp-config-merge.js) and only real clashes are asked about. */
+  var lpSync={ busy:false, checkAt:0, shownAt:'' };
+  function lpSyncSite(){ try{ return (allSites||[]).find(function(x){ return x.id===currentSiteId; })||null; }catch(_e){ return null; } }
+  function lpSyncSameTime(a,b){ if(!a||!b) return !a&&!b; var x=Date.parse(a), y=Date.parse(b); return isFinite(x)&&isFinite(y)? x===y : String(a)===String(b); }
+  /** What the server holds now becomes the base (after Publish, a restore, or loading the latest). */
+  function lpSyncSetBase(site, rawCfg, at){ if(!site) return; try{ site.__liveRaw=JSON.stringify(rawCfg||{}); }catch(_e){ site.__liveRaw=null; } site.__liveAt=at||null; }
+  async function lpSyncFetch(){
+    var r=await sb.from('sites').select('config,updated_at').eq('id', currentSiteId).maybeSingle();
+    if(r.error||!r.data) return null;
+    return r.data;
+  }
+  function lpSyncMerge(site, mine, theirs, decisions){
+    var raw={}; try{ raw=JSON.parse(site.__liveRaw||'{}'); }catch(_e){}
+    var norm=raw; try{ if(site.__liveStr) norm=JSON.parse(site.__liveStr); }catch(_n){}
+    return window.LPConfigMerge.lpMergeConfig(raw, norm, mine, theirs, decisions);
+  }
+  function lpSyncShort(v){
+    if(v===undefined) return '(removed)';
+    var s; try{ s=typeof v==='string'? v : JSON.stringify(v); }catch(_e){ s=String(v); }
+    s=String(s==null?'':s).replace(/\s+/g,' ').trim(); if(!s) return '(empty)';
+    return s.length>90? s.slice(0,90)+'…' : s;
+  }
+  /** Ask which version to keep for each clash. Resolves {key:'mine'|'theirs'} or null (cancelled). */
+  function lpSyncAskConflicts(conflicts, actionLabel){
+    return new Promise(function(resolve){
+      var old=document.getElementById('lp-sync-modal'); if(old) old.remove();
+      var m=document.createElement('div'); m.id='lp-sync-modal'; m.setAttribute('role','dialog'); m.setAttribute('aria-modal','true');
+      var h='<div class="lps-box"><h2>This site was changed somewhere else</h2>'
+        +'<p class="lede">Since you opened the editor, the site was also changed elsewhere (another tab, a restore, or Claude). Everything else is combined automatically. '+(conflicts.length===1?'One item was':conflicts.length+' items were')+' changed in both places — choose which to keep:</p><div class="lps-list">';
+      conflicts.forEach(function(c,i){
+        h+='<div class="lps-item"><div class="lps-path">'+esc(c.label||c.key)+(c.note?' <span class="aphint">('+esc(c.note)+')</span>':'')+'</div>'
+          +'<label><input type="radio" name="lps'+i+'" value="mine" checked> <b>This editor:</b> '+esc(lpSyncShort(c.mine))+'</label>'
+          +'<label><input type="radio" name="lps'+i+'" value="theirs"> <b>Saved elsewhere:</b> '+esc(lpSyncShort(c.theirs))+'</label></div>';
+      });
+      h+='</div><p class="lps-actions"><button type="button" class="btn ghost" data-lps="cancel">Cancel</button><button type="button" class="btn" data-lps="ok">'+esc(actionLabel||'Publish')+'</button></p></div>';
+      m.innerHTML=h; document.body.appendChild(m);
+      m.addEventListener('click', function(e){
+        var a=e.target&&e.target.getAttribute&&e.target.getAttribute('data-lps'); if(!a) return;
+        var dec=null;
+        if(a==='ok'){ dec={}; conflicts.forEach(function(c,i){ var r=m.querySelector('input[name="lps'+i+'"]:checked'); dec[c.key]=r?r.value:'mine'; }); }
+        m.remove(); resolve(dec);
+      });
+    });
+  }
+  /**
+   * Before writing the editor's config: if the server copy changed since it loaded, merge.
+   * opts.ask: show the clash dialog (Publish). Without it, clashes keep this editor's value.
+   * Returns { cfg, at, merged, theirs } — or null when cancelled. at = server updated_at seen.
+   */
+  async function lpSyncPrepare(cfg, opts){
+    opts=opts||{};
+    var site=lpSyncSite();
+    if(!site||site.__liveRaw==null||!window.LPConfigMerge) return { cfg:cfg, at:null, merged:false };
+    var row=null; try{ row=await lpSyncFetch(); }catch(_f){}
+    if(!row) return { cfg:cfg, at:null, merged:false };
+    if(lpSyncSameTime(row.updated_at, site.__liveAt)) return { cfg:cfg, at:row.updated_at, merged:false, theirs:row.config||{} };
+    var res=lpSyncMerge(site, cfg, row.config||{});
+    if(res.conflicts.length&&opts.ask){
+      var dec=await lpSyncAskConflicts(res.conflicts, opts.actionLabel);
+      if(!dec) return null;
+      res=lpSyncMerge(site, cfg, row.config||{}, dec);
+    }
+    return { cfg:res.config, at:row.updated_at, merged:res.differsFromMine, theirs:row.config||{} };
+  }
+  /** Show the editor what is on the server now (keeps unpublished edits on top). */
+  async function lpSyncLoadLatest(){
+    var site=lpSyncSite(); if(!site) return;
+    var row=await lpSyncFetch(); if(!row){ toast('Could not load the latest version','warn'); return; }
+    var mine=lpDraftConfig();
+    var res=lpSyncMerge(site, mine, row.config||{});
+    if(res.conflicts.length){
+      var dec=await lpSyncAskConflicts(res.conflicts, 'Load latest');
+      if(!dec) return;
+      res=lpSyncMerge(site, mine, row.config||{}, dec);
+    }
+    var hadEdits=!window.LPConfigMerge.same(mine, JSON.parse(site.__liveStr||site.__liveRaw||'{}'));
+    lpSyncSetBase(site, row.config||{}, row.updated_at);
+    site.__liveStr=JSON.stringify(row.config||{});
+    site.config=JSON.parse(JSON.stringify(res.config)); site.__draftChecked=true;
+    var keepView=(typeof activeView==='string')?activeView:'';
+    loadSite(site);
+    try{ if(keepView&&typeof showView==='function') showView(keepView); }catch(_v){}
+    if(hadEdits){ lpDraft.base=site.__liveStr; lpDraftMarkDirty(); }
+    var b=document.getElementById('lp-sync-banner'); if(b) b.remove();
+    toast(hadEdits?'Latest version loaded — your unpublished edits are kept':'Latest version loaded');
+  }
+  function lpSyncBanner(){
+    if(document.getElementById('lp-sync-banner')) return;
+    var b=document.createElement('div'); b.id='lp-sync-banner'; b.setAttribute('role','alert');
+    b.innerHTML='<span>This site was changed somewhere else since you opened it (another tab, a restore, or Claude). Publishing now keeps both.</span>'
+      +'<button type="button" class="btn" data-act="load">Load latest</button><button type="button" class="btn ghost" data-act="hide">Hide</button>';
+    document.body.appendChild(b);
+    b.addEventListener('click', function(e){
+      var a=e.target&&e.target.getAttribute&&e.target.getAttribute('data-act'); if(!a) return;
+      if(a==='hide'){ b.remove(); return; }
+      e.target.disabled=true; lpSyncLoadLatest().catch(function(err){ toast('Could not load the latest version: '+((err&&err.message)||err),'warn'); }).then(function(){ try{ e.target.disabled=false; }catch(_d){} });
+    });
+  }
+  /** Quietly check (on focus, and every 2 minutes) whether the site changed somewhere else. */
+  async function lpSyncCheck(){
+    if(lpSync.busy||!currentSiteId||document.hidden||!window.LPConfigMerge) return;
+    var site=lpSyncSite(); if(!site||site.__liveRaw==null) return;
+    if(Date.now()-lpSync.checkAt<20000) return;
+    lpSync.busy=true; lpSync.checkAt=Date.now();
+    try{
+      var r=await sb.from('sites').select('updated_at').eq('id', currentSiteId).maybeSingle();
+      var at=r&&r.data&&r.data.updated_at;
+      if(!at||lpSyncSameTime(at, site.__liveAt)||lpSync.shownAt===at) return;
+      var row=await lpSyncFetch(); if(!row) return;
+      var res=lpSyncMerge(site, lpDraftConfig(), row.config||{});
+      // Only our own saves (SEO tools, scope) since load: nothing new to show.
+      if(!res.differsFromMine) return;
+      lpSync.shownAt=at; lpSyncBanner();
+    }catch(_c){}
+    finally{ lpSync.busy=false; }
+  }
+  document.addEventListener('visibilitychange', function(){ if(!document.hidden) setTimeout(lpSyncCheck, 400); });
+  window.addEventListener('focus', function(){ setTimeout(lpSyncCheck, 400); });
+  setInterval(lpSyncCheck, 120000);
   var _lpSaveGen=0;
   /** Writes the whole site config LIVE right away (SEO tools, sitemap rebuild, lead inbox).
       Landing-page editing uses lpSaveDB (a draft) instead. */
@@ -1847,9 +1980,19 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       }
       cfg.pages=JSON.parse(JSON.stringify((data&&data.pages)||[]));
       if(gen!==_lpSaveGen) return { ok:false, superseded:true };
-      var up=await sb.from('sites').update({ config:cfg, updated_at:new Date().toISOString() }).eq('id', currentSiteId);
+      // Keep changes made elsewhere since the editor loaded (clashes keep this editor's value).
+      var prep=null; try{ prep=await lpSyncPrepare(cfg, { ask:false }); }catch(_sp){}
+      if(gen!==_lpSaveGen) return { ok:false, superseded:true };
+      var toWrite=(prep&&prep.cfg)||cfg;
+      var up=await sb.from('sites').update({ config:toWrite, updated_at:new Date().toISOString() }).eq('id', currentSiteId).select('updated_at');
       if(gen!==_lpSaveGen) return { ok:false, superseded:true };
       if(up&&up.error) throw new Error(up.error.message||'save_failed');
+      if(prep&&prep.merged){
+        // The editor doesn't show those outside changes yet: keep the old base so Publish merges them again.
+        lpSync.shownAt=''; lpSyncBanner();
+      } else {
+        try{ var _at=up&&up.data&&up.data[0]&&up.data[0].updated_at; if(sref&&_at) lpSyncSetBase(sref, cfg, _at); }catch(_sb){}
+      }
       if(sref) sref.config=cfg;
       // Everything in the editor is live now, so any draft is superseded.
       try{ lpDraftClear(); }catch(_dc){}
@@ -5178,6 +5321,9 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
     lpNavStateSave({siteId:site.id, siteSlug:site.slug, lpPageId:null, lpEdTab:null});
     if(window.LPLogo&&window.LPLogo.refreshWorkspaceLogos){ window.LPLogo.refreshWorkspaceLogos(); }
     currentBusinessName=site.business_name||''; currentCustomDomain=site.custom_domain||''; currentOwnerEmail=site.owner_email||'';
+    // What the server held when this site was opened (Publish merges against it — see lpSyncPrepare).
+    try{ if(site.__liveRaw==null&&!site.__draftResumed) lpSyncSetBase(site, site.config, site.updated_at); }catch(_lsb){}
+    try{ var _sb0=document.getElementById('lp-sync-banner'); if(_sb0) _sb0.remove(); lpSync.shownAt=''; }catch(_sbr){}
     landingSub='details';
     if(currentSiteTemplate==='broker-app'){
       const cfg=site.config||{};
@@ -13543,22 +13689,61 @@ function heroCtaCard(c){
       try{ if(typeof _syncSectionOrder==='function'){ _syncSectionOrder(lc); if(data) data.sectionOrder=lc.sectionOrder.slice(); } }catch(_soPub){}
       payload={ config:lc, business_name:(currentBusinessName||'').trim(), custom_domain:((currentCustomDomain||'').trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/.*$/,'').replace(/^www\./,'')||null), status:'live', updated_at:new Date().toISOString() }; if(currentRole==='super'){ payload.owner_email=((currentOwnerEmail||'').trim().toLowerCase()||null); }
     }
-    // Smart backup: automatic restore point before every publish (deduped if unchanged)
-    try{
-      if(typeof lpBkSave==='function'){
-        await lpBkSave({ source:'pre_publish', config:payload.config, quiet:true, label:'Before publish' });
+    // Changed somewhere else since this editor loaded it? Merge, so those changes aren't wiped.
+    var prep=null, mergedElsewhere=false, newAt=null, result=null, wentLive=true;
+    for(var _try=0; _try<3; _try++){
+      try{ prep=await lpSyncPrepare(payload.config, { ask:true }); }catch(_sp){ prep={ cfg:payload.config, at:null, merged:false }; }
+      if(!prep){ if(btn){ btn.disabled=false; btn.textContent='Publish Live Site'; } toast('Publish cancelled — nothing was changed','warn'); return; }
+      payload.config=prep.cfg; if(prep.merged) mergedElsewhere=true;
+      // Smart backup: automatic restore point before every publish (deduped if unchanged)
+      if(_try===0){
+        try{
+          if(typeof lpBkSave==='function'){
+            // What is live right now (so restoring "Before publish" really goes back).
+            await lpBkSave({ source:'pre_publish', config:(prep.theirs||payload.config), quiet:true, label:'Before publish' });
+          }
+        }catch(_bkPub){ /* never block publish on backup failure */ }
       }
-    }catch(_bkPub){ /* never block publish on backup failure */ }
-    var wentLive=true;
-    var result=await sb.from('sites').update(payload).eq('id', currentSiteId);
-    // Some owner policies can save config but not flip status — retry without status.
-    if(result.error && payload.status){
-      delete payload.status;
-      wentLive=false;
-      result=await sb.from('sites').update(payload).eq('id', currentSiteId);
+      payload.updated_at=new Date().toISOString();
+      var q=sb.from('sites').update(payload).eq('id', currentSiteId);
+      // Only write if nobody saved in between (otherwise merge again).
+      if(prep.at) q=q.eq('updated_at', prep.at);
+      result=await q.select('updated_at');
+      // Some owner policies can save config but not flip status — retry without status.
+      if(result.error && payload.status){
+        delete payload.status;
+        wentLive=false;
+        q=sb.from('sites').update(payload).eq('id', currentSiteId);
+        if(prep.at) q=q.eq('updated_at', prep.at);
+        result=await q.select('updated_at');
+      }
+      if(result.error) break;
+      if(result.data&&result.data.length){ newAt=result.data[0].updated_at; break; }
+      if(!prep.at) break;
+      // Nothing written: either saved elsewhere in between (loop merges again) or the row can't be read back.
+      var chk=null; try{ chk=(await sb.from('sites').select('updated_at').eq('id', currentSiteId).maybeSingle()).data; }catch(_ck){}
+      if(chk&&lpSyncSameTime(chk.updated_at, prep.at)){
+        result=await sb.from('sites').update(payload).eq('id', currentSiteId);
+        break;
+      }
     }
     if(btn){ btn.disabled=false; btn.textContent='Publish Live Site'; }
-    if(result.error){ toast('Publish failed: '+result.error.message); return; }
+    if(result&&result.error){ toast('Publish failed: '+result.error.message); return; }
+    if(result&&!result.error&&!newAt&&result.data&&!result.data.length&&prep&&prep.at){ toast('Publish failed: the site kept changing elsewhere — please try again','warn'); return; }
+    try{ var _ss=lpSyncSite(); if(_ss){ lpSyncSetBase(_ss, payload.config, newAt||payload.updated_at); } }catch(_ssb){}
+    if(mergedElsewhere){
+      // Show the combined version in the editor.
+      try{
+        var _sm=lpSyncSite();
+        if(_sm){
+          _sm.config=JSON.parse(JSON.stringify(payload.config)); _sm.__liveStr=null; _sm.__draftChecked=true;
+          var _kv=(typeof activeView==='string')?activeView:'';
+          loadSite(_sm);
+          try{ if(_kv&&typeof showView==='function') showView(_kv); }catch(_v){}
+        }
+      }catch(_ml){}
+    }
+    var _sbn=document.getElementById('lp-sync-banner'); if(_sbn) _sbn.remove();
     try{ persist(); }catch(e){}
     if(wentLive) currentSiteStatus='live';
     var sref=allSites.find(function(x){return x.id===currentSiteId;}); if(sref){ if(payload.business_name) sref.business_name=payload.business_name; sref.custom_domain=payload.custom_domain; if(payload.owner_email!==undefined) sref.owner_email=payload.owner_email; sref.config=payload.config; if(wentLive) sref.status='live'; }
@@ -13579,7 +13764,7 @@ function heroCtaCard(c){
         }).catch(function(){});
       }catch(_ca){}
     }
-    toast(wentLive?'Published \u2014 live on your site':'Published — saved. Use Preview until this site is set live.');
+    toast(mergedElsewhere?'Published \u2014 combined with changes made elsewhere':(wentLive?'Published \u2014 live on your site':'Published — saved. Use Preview until this site is set live.'));
   }
   async function signOutLP(){ try{ localStorage.removeItem(LP_NAV_STATE_KEY); }catch(_e){} try{ await sb.auth.signOut(); }catch(e){} location.reload(); }
   window.signOutLP=signOutLP;
@@ -16148,6 +16333,8 @@ function heroCtaCard(c){
     if(!currentSiteId||!cfg) return false;
     cfg=_oqSanitizeImportedConfig(cfg);
     var s=(allSites||[]).find(function(x){return x.id===currentSiteId;}); if(s){ s.config=cfg; }
+    // The restored config is what the server holds now (merge base for the next Publish).
+    if(s){ try{ lpSyncSetBase(s, cfg, null); s.__liveStr=null; var _rr=await sb.from('sites').select('updated_at').eq('id', currentSiteId).maybeSingle(); if(_rr&&_rr.data) s.__liveAt=_rr.data.updated_at; }catch(_rs){} }
     if(typeof data!=='undefined') data=cfg;
     if(typeof loadSite==='function' && s){ loadSite(s); }
     else if(typeof loadSite==='function'){ loadSite({ id:currentSiteId, config:cfg, slug:currentSiteSlug, template:currentSiteTemplate }); }
