@@ -16,7 +16,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-const FROM = process.env.LEADS_FROM || 'leadpages <noreply@leadpages.webculture.au>';
+const FROM = process.env.LEADS_FROM || 'LeadPages <noreply@leadpages.com.au>';
 const ADMIN_TO = process.env.PARTNER_APPLY_TO || process.env.LEADS_ADMIN_TO || 'info@beanculture.com.au';
 
 function readBody(req) {

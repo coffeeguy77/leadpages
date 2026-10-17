@@ -24,7 +24,7 @@ const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_KEY  = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const admin = createClient(SUPABASE_URL, SERVICE_KEY);
 
-const FROM = process.env.CAMPAIGN_FROM || process.env.LEADS_FROM || 'leadpages <noreply@leadpages.webculture.au>';
+const FROM = process.env.CAMPAIGN_FROM || process.env.LEADS_FROM || 'LeadPages <noreply@leadpages.com.au>';
 const BASE = (process.env.PUBLIC_BASE_URL || 'https://leadpages.com.au').replace(/\/+$/, '');
 
 const clean = (s, n = 400) => (s == null ? '' : String(s)).trim().slice(0, n);

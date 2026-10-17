@@ -35,7 +35,7 @@ const supabase = createClient(
 );
 
 // Verified sender for leadpages (Resend). Override with LEADS_FROM if needed.
-const FROM = process.env.LEADS_FROM || 'leadpages <noreply@leadpages.webculture.au>';
+const FROM = process.env.LEADS_FROM || 'LeadPages <noreply@leadpages.com.au>';
 
 function readBody(req) {
   return new Promise((resolve) => {
