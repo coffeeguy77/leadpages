@@ -627,6 +627,8 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
 #icon-search{flex:1;padding:11px 14px;border:1px solid var(--line);border-radius:10px;font:inherit;background:var(--input-bg,var(--panel-soft,#f3f4f6));color:var(--text,#1b2430)}
 .icon-cats{display:flex;flex-wrap:wrap;gap:7px;padding:12px 16px;border-bottom:1px solid var(--line)}
 .icchip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 12px;font-size:12.5px;cursor:pointer;white-space:nowrap}
+.icchip.icchip-pack{border-color:var(--accent);color:var(--accent)}
+.icon-own{padding:12px 16px;border-bottom:1px solid var(--line);background:var(--panel-soft,#fafafa)}
 .icchip.on{background:var(--brand,#1a2230);color:#fff;border-color:var(--brand,#1a2230)}
 .icon-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(54px,1fr));gap:8px;padding:16px;overflow:auto}
 .icbtn{aspect-ratio:1;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--text,#26313f);font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .12s,box-shadow .12s,border-color .12s}
@@ -821,6 +823,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 <script src="/assets/ai-website-team.js?v=forge-landing-1"></script>
 <script src="/icons.js"></script>
 <script src="/icons-more.js" defer></script>
+<script src="/icons-pack.js" defer></script>
 <script src="/assets/lp-country-codes.js?v=dash-country-1"></script>
 <script src="/assets/lp-quote-wizard-logic.js?v=oq-portal-style-1"></script>
 <script src="/assets/lp-quote-display.js?v=oq-portal-style-1"></script>
@@ -6823,14 +6826,16 @@ function heroCtaCard(c){
   }
   /* Online icon search (Iconify): more stroke icons, fetched on demand and saved into the site
      when picked. Only outline sets with a 24px grid, so they match the site's stroke icons. */
-  var LP_ONLINE_SETS={tabler:'Tabler',iconoir:'Iconoir',mynaui:'Myna UI','lucide-lab':'Lucide Lab'};
+  var LP_ONLINE_SETS={tabler:'Tabler',hugeicons:'Hugeicons','icon-park-outline':'IconPark','lucide-lab':'Lucide Lab',iconoir:'Iconoir',mynaui:'Myna UI',tdesign:'TDesign',ph:'Phosphor',healthicons:'Health Icons'};
+  /* Sets that mix styles: only these names are outline icons. */
+  function lpOnlineNameOk(prefix,nm){ if(/(^|-)(filled|solid|fill|bold|duotone|thin|light|negative)(-|$)/.test(nm)) return false; if(prefix==='healthicons') return /-outline$/.test(nm); return true; }
   var __lpOnlineQ='', __lpOnlineT=null;
   function lpOnlineIconName(prefix,name){ return 'x-'+prefix+'-'+name; }
   async function lpOnlineIconSearch(q){
-    var url='https://api.iconify.design/search?query='+encodeURIComponent(q)+'&limit=96&prefixes='+Object.keys(LP_ONLINE_SETS).join(',');
+    var url='https://api.iconify.design/search?query='+encodeURIComponent(q)+'&limit=160&prefixes='+Object.keys(LP_ONLINE_SETS).join(',');
     var r=await fetch(url); if(!r.ok) throw new Error('search '+r.status);
     var j=await r.json(); var by={};
-    (j.icons||[]).forEach(function(full){ var p=full.split(':'); if(p.length!==2) return; if(/(^|-)(filled|solid|fill|bold)(-|$)/.test(p[1])) return; (by[p[0]]=by[p[0]]||[]).push(p[1]); });
+    (j.icons||[]).forEach(function(full){ var p=full.split(':'); if(p.length!==2||!lpOnlineNameOk(p[0],p[1])) return; (by[p[0]]=by[p[0]]||[]).push(p[1]); });
     var out=[];
     await Promise.all(Object.keys(by).map(async function(prefix){
       if(!LP_ONLINE_SETS[prefix]) return;
@@ -6839,14 +6844,72 @@ function heroCtaCard(c){
       var w=jj.width||24, h=jj.height||24;
       Object.keys(jj.icons||{}).forEach(function(nm){
         var ic=jj.icons[nm]; var iw=ic.width||w, ih=ic.height||h;
-        if(iw!==24||ih!==24||ic.left||ic.top) return;
         var body=String(ic.body||'');
+        // Other grid sizes (e.g. 48 or 256) are scaled onto the 24px grid.
+        if(iw!==24||ih!==24||ic.left||ic.top){ var kk=24/Math.max(iw,ih); body='<g transform="translate('+(+((24-iw*kk)/2-(ic.left||0)*kk).toFixed(3))+' '+(+((24-ih*kk)/2-(ic.top||0)*kk).toFixed(3))+') scale('+(+kk.toFixed(5))+')">'+body+'</g>'; }
         if(window.LP_iconBodyOk&&!window.LP_iconBodyOk(body)) return;
         var key=lpOnlineIconName(prefix,nm).toLowerCase().replace(/[^a-z0-9-]/g,'-');
         __lpOnlineIcons[key]=body; out.push({k:key,set:LP_ONLINE_SETS[prefix],nm:nm});
       });
     }));
     return out;
+  }
+  /* "Add your own" icon: an uploaded or pasted SVG becomes a site icon (config.iconLib, "my-<name>").
+     Shapes only (no scripts, links, styles or images), colours become the text colour, scaled to the
+     24px grid. Line icons stay line icons; solid icons are drawn solid in the text colour. */
+  function lpIconFromSvg(text){
+    var doc=new DOMParser().parseFromString(String(text||''),'image/svg+xml');
+    var svg=doc.documentElement; if(!svg||String(svg.nodeName).toLowerCase()!=='svg'||doc.getElementsByTagName('parsererror').length) throw new Error('That isn’t an SVG file.');
+    var vb=String(svg.getAttribute('viewBox')||'').trim().split(/[\s,]+/).map(Number);
+    var x0=0,y0=0,w=parseFloat(svg.getAttribute('width'))||24,h=parseFloat(svg.getAttribute('height'))||24;
+    if(vb.length===4&&vb.every(function(n){ return isFinite(n); })){ x0=vb[0]; y0=vb[1]; w=vb[2]; h=vb[3]; }
+    if(!(w>0&&h>0)) throw new Error('The SVG has no size.');
+    var OK={path:1,circle:1,rect:1,line:1,polyline:1,polygon:1,ellipse:1,g:1};
+    var KEEP={d:1,cx:1,cy:1,r:1,rx:1,ry:1,x:1,y:1,x1:1,y1:1,x2:1,y2:1,width:1,height:1,points:1,transform:1,fill:1,stroke:1,'stroke-width':1,'stroke-linecap':1,'stroke-linejoin':1,'fill-rule':1,'clip-rule':1,opacity:1,'fill-opacity':1,'stroke-opacity':1};
+    function styleAttrs(el){ var st=el.getAttribute&&el.getAttribute('style'); if(!st) return; st.split(';').forEach(function(d){ var m=/^\s*([a-z-]+)\s*:\s*(.+?)\s*$/i.exec(d); if(m&&KEEP[m[1]]&&!el.getAttribute(m[1])) el.setAttribute(m[1],m[2]); }); }
+    function col(v){ v=String(v||'').trim(); if(!v||v==='none'||v==='transparent') return v==='transparent'?'none':v; return 'currentColor'; }
+    function clean(el){
+      var out=[];
+      Array.prototype.forEach.call(el.childNodes,function(n){
+        if(n.nodeType!==1) return; var tag=String(n.localName||n.nodeName).toLowerCase();
+        if(!OK[tag]) return;
+        styleAttrs(n);
+        var a=[]; Array.prototype.forEach.call(n.attributes,function(at){ var k=at.name.toLowerCase(); if(!KEEP[k]) return; var v=at.value; if(/url\(|javascript:/i.test(v)) return; if(k==='fill'||k==='stroke') v=col(v); if(k==='d'||k==='points'||k==='transform') v=v.replace(/(\d*\.\d{3})\d+/g,'$1'); a.push(k+'="'+String(v).replace(/[<>"&]/g,'')+'"'); });
+        out.push('<'+tag+(a.length?' '+a.join(' '):'')+(tag==='g'?'>'+clean(n)+'</g>':'/>'));
+      });
+      return out.join('');
+    }
+    styleAttrs(svg);
+    var inner=clean(svg); if(!inner) throw new Error('No shapes found in the SVG.');
+    var rs=String(svg.getAttribute('stroke')||'').trim(), rf=String(svg.getAttribute('fill')||'').trim();
+    var line=(rs&&rs!=='none')||rf==='none';
+    var sw=parseFloat(svg.getAttribute('stroke-width'))||2;
+    var k=24/Math.max(w,h), dx=(24-w*k)/2-x0*k, dy=(24-h*k)/2-y0*k;
+    var wrap=line?' fill="'+(rf==='none'||!rf?'none':'currentColor')+'" stroke="currentColor" stroke-width="'+(+(sw).toFixed(3))+'"':' fill="currentColor" stroke="none"';
+    var body='<g transform="translate('+(+dx.toFixed(3))+' '+(+dy.toFixed(3))+') scale('+(+k.toFixed(5))+')"'+wrap+'>'+inner+'</g>';
+    if(window.LP_iconBodyOk&&!window.LP_iconBodyOk(body)) throw new Error(body.length>6000?'That SVG is too detailed to use as an icon (keep it simple, under about 6 KB of shapes).':'That SVG has parts that can’t be used in an icon.');
+    return body;
+  }
+  function lpIconOwnWire(ov){
+    var btn=ov.querySelector('#icon-own'), pan=ov.querySelector('#icon-own-panel'); if(!btn||!pan) return;
+    var file=ov.querySelector('#icon-own-file'), code=ov.querySelector('#icon-own-code'), nm=ov.querySelector('#icon-own-name'), msg=ov.querySelector('#icon-own-msg');
+    btn.addEventListener('click',function(){ pan.hidden=!pan.hidden; if(!pan.hidden) nm.focus(); });
+    file.addEventListener('change',function(){ var f=file.files&&file.files[0]; if(!f) return; if(!nm.value) nm.value=f.name.replace(/\.svg$/i,''); var r=new FileReader(); r.onload=function(){ code.value=String(r.result||''); msg.textContent='Loaded '+f.name+' — press Save icon.'; }; r.readAsText(f); });
+    ov.querySelector('#icon-own-save').addEventListener('click',function(){
+      try{
+        var body=lpIconFromSvg(code.value);
+        var base=String(nm.value||'icon').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').replace(/^my-/,'').slice(0,40)||'icon';
+        if(typeof data==='undefined'||!data){ throw new Error('Open a site first.'); }
+        if(!data.iconLib||typeof data.iconLib!=='object') data.iconLib={};
+        var key='my-'+base, n=2; while(data.iconLib[key]&&data.iconLib[key]!==body){ key='my-'+base+'-'+(n++); }
+        data.iconLib[key]=body; if(window.LP_ICONS) window.LP_ICONS[key]=body;
+        try{ var fr=lpFrame(); var w=fr&&fr.contentWindow; if(w&&w.LP_ICONS) w.LP_ICONS[key]=body; }catch(_f){}
+        try{ persist(); }catch(_p){}
+        code.value=''; file.value=''; nm.value=''; pan.hidden=true; msg.textContent='';
+        toast('Icon saved to My icons');
+        if(__iconCb){ __iconCb(key); hideIconModal(); } else { __iconCat='__mine__'; renderIconGrid(); }
+      }catch(e){ msg.textContent=String((e&&e.message)||e); msg.style.color='#b4543c'; }
+    });
   }
   window.iconBtnInner = iconBtnInner;
   var LP_CATS=(window.LP_ICON_CATS||[]);
@@ -6855,19 +6918,26 @@ function heroCtaCard(c){
   var __iconCb=null,__iconCat='',__iconModal=null;
   function ensureIconModal(){ if(__iconModal) return __iconModal;
     var ov=document.createElement('div'); ov.id='icon-modal'; ov.className='icon-ov'; ov.style.display='none';
-    ov.innerHTML='<div class="icon-box"><div class="icon-top"><input type="text" id="icon-search" placeholder="Search \u2014 e.g. builder, cafe, plumber, quote, house\u2026" autocomplete="off"><button type="button" class="btn ghost" id="icon-remove">Remove icon</button><button type="button" class="btn ghost" id="icon-close">Close</button></div><div class="icon-cats" id="icon-cats"></div><div class="icon-grid" id="icon-grid"></div></div>';
+    ov.innerHTML='<div class="icon-box"><div class="icon-top"><input type="text" id="icon-search" placeholder="Search \u2014 e.g. builder, cafe, plumber, quote, house\u2026" autocomplete="off"><button type="button" class="btn ghost" id="icon-own">+ Add your own</button><button type="button" class="btn ghost" id="icon-remove">Remove icon</button><button type="button" class="btn ghost" id="icon-close">Close</button></div><div class="icon-own" id="icon-own-panel" hidden><div class="hint" style="margin:0 0 8px;">Upload an SVG icon (or paste its code). It is turned into a stroke icon in your text colour and saved to this site under <b>My icons</b>. PNG and JPG pictures can\u2019t be icons \u2014 use an image field for those.</div><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;"><input type="file" id="icon-own-file" accept=".svg,image/svg+xml" style="max-width:240px;"><input type="text" id="icon-own-name" placeholder="Name, e.g. lamb" style="flex:1 1 140px;min-width:120px;"><button type="button" class="btn" id="icon-own-save">Save icon</button></div><textarea id="icon-own-code" rows="3" placeholder="\u2026or paste SVG code here (<svg \u2026>\u2026</svg>)" style="width:100%;margin-top:8px;font:12px ui-monospace,monospace;"></textarea><div id="icon-own-msg" class="hint" style="margin:6px 0 0;"></div></div><div class="icon-cats" id="icon-cats"></div><div class="icon-grid" id="icon-grid"></div></div>';
     document.body.appendChild(ov); __iconModal=ov;
     ov.addEventListener('click',function(e){ if(e.target===ov) hideIconModal(); });
     ov.querySelector('#icon-close').addEventListener('click',hideIconModal);
     var _rm=ov.querySelector('#icon-remove'); if(_rm) _rm.addEventListener('click',function(){ if(__iconCb) __iconCb(''); hideIconModal(); });
     ov.querySelector('#icon-search').addEventListener('input',renderIconGrid);
     var cc=ov.querySelector('#icon-cats');
-    cc.innerHTML='<button type="button" class="icchip on" data-cat="__pop__">\u2605 Popular</button><button type="button" class="icchip" data-cat="">All</button>'+ICON_CATS.map(function(x){return '<button type="button" class="icchip" data-cat="'+esc(x)+'">'+esc(x)+'</button>';}).join('');
+    var _packCats=Object.keys((window.LP_ICON_PACK&&window.LP_ICON_PACK.cats)||{});
+    cc.innerHTML='<button type="button" class="icchip on" data-cat="__pop__">\u2605 Popular</button><button type="button" class="icchip" data-cat="">All</button><button type="button" class="icchip" data-cat="__mine__">My icons</button>'+_packCats.map(function(x){return '<button type="button" class="icchip icchip-pack" data-cat="__pack:'+esc(x)+'">'+esc(x)+'</button>';}).join('')+ICON_CATS.map(function(x){return '<button type="button" class="icchip" data-cat="'+esc(x)+'">'+esc(x)+'</button>';}).join('');
+    lpIconOwnWire(ov);
     cc.addEventListener('click',function(e){ var b=e.target.closest('[data-cat]'); if(!b) return; __iconCat=b.getAttribute('data-cat'); cc.querySelectorAll('[data-cat]').forEach(function(x){ x.classList.toggle('on',x===b); }); renderIconGrid(); });
     ov.querySelector('#icon-grid').addEventListener('click',function(e){ var on=e.target.closest('[data-online]'); if(on){ lpIconPickerOnline(true); return; } var b=e.target.closest('[data-ch]'); if(!b) return; var ch=b.getAttribute('data-ch'); lpIconRemember(ch); if(__iconCb) __iconCb(ch); hideIconModal(); });
     document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&__iconModal&&__iconModal.style.display!=='none') hideIconModal(); });
     return ov; }
   function renderIconGrid(){ var ov=__iconModal; if(!ov) return; var q=(ov.querySelector('#icon-search').value||'').trim().toLowerCase(); var cat=__iconCat; var keys;
+    if(cat==='__mine__'||cat.indexOf('__pack:')===0){ var _T=window.LP_ICON_TAGS||{}; var _hit=function(k){ return !q||k.replace(/-/g,' ').indexOf(q)>=0||(_T[k]||[]).some(function(t){ return String(t).toLowerCase().indexOf(q)>=0; }); };
+      var _src=cat==='__mine__'?Object.keys((typeof data!=='undefined'&&data&&data.iconLib)||{}):(((window.LP_ICON_PACK||{}).cats||{})[cat.slice(7)]||[]);
+      var _ks=_src.filter(_hit); var _g=ov.querySelector('#icon-grid');
+      _g.innerHTML=_ks.length?_ks.map(function(k){ return '<button type="button" class="icbtn" data-ch="'+esc(k)+'" title="'+esc(k.replace(/^(x|my)-/,'').replace(/-/g,' '))+'">'+iconBtnInner(k)+'</button>'; }).join(''):'<div style="grid-column:1/-1;padding:24px;text-align:center;color:#8a93a0;font-size:13px;">'+(cat==='__mine__'?'No icons saved on this site yet. Icons you pick from the full library or online, and icons you add with <b>+ Add your own</b>, show here.':'No icons match.')+'</div>';
+      return; }
     if(window.LP_searchIcons){ if(!q && cat==='__pop__'){ keys=(window.LP_popularIcons?window.LP_popularIcons():[]); } else { keys=window.LP_searchIcons(q,(cat&&cat!=='__pop__')?cat:''); } }
     else { keys=TRADE_ICONS.filter(function(ic){ if(cat&&cat!=='__pop__'&&ic.cat!==cat) return false; if(!q) return true; return (ic.l+' '+ic.k+' '+ic.cat).toLowerCase().indexOf(q)>=0; }).map(function(ic){return ic.c;}); }
     function _lbl(k){ return String(k).replace(/-/g,' ').replace(/(^|\s)\S/g,function(m){return m.toUpperCase();}); }
@@ -6885,7 +6955,7 @@ function heroCtaCard(c){
     }
     var g=ov.querySelector('#icon-grid'); var CAP=600; var shown=keys.slice(0,CAP); var more=keys.length-shown.length;
     g.innerHTML = keys.length ? (shown.map(function(k){ return '<button type="button" class="icbtn" data-ch="'+esc(k)+'" title="'+esc(_lbl(k))+'">'+iconBtnInner(k)+'</button>'; }).join('')+(more>0?'<div style="grid-column:1/-1;padding:14px;text-align:center;color:#8a93a0;font-size:13px;">+'+more+' more \u2014 search or pick a category to narrow.</div>':'')) : '<div style="grid-column:1/-1;padding:26px;text-align:center;color:#8a93a0;">No icons match \u201c'+esc(q)+'\u201d here. Try another word, or search online below.</div>';
-    if(q&&q.length>=2) g.insertAdjacentHTML('beforeend','<div class="icon-online" id="icon-online" style="grid-column:1/-1;padding:12px 4px 4px;border-top:1px solid var(--line);margin-top:6px;"><button type="button" class="btn ghost sm" data-online="1">Search thousands more stroke icons online for \u201c'+esc(q)+'\u201d</button><span class="hint" style="margin-left:8px;">Tabler, Iconoir, Myna UI and Lucide Lab outline icons \u2014 the one you pick is saved into this site.</span></div>');
+    if(q&&q.length>=2) g.insertAdjacentHTML('beforeend','<div class="icon-online" id="icon-online" style="grid-column:1/-1;padding:12px 4px 4px;border-top:1px solid var(--line);margin-top:6px;"><button type="button" class="btn ghost sm" data-online="1">Search thousands more stroke icons online for \u201c'+esc(q)+'\u201d</button><span class="hint" style="margin-left:8px;">Tabler, Hugeicons, IconPark, Lucide Lab, Phosphor and more \u2014 outline icons only; the one you pick is saved into this site.</span></div>');
     if(q&&q===__lpOnlineQ) lpIconPickerOnline(false); }
   /** Online results under the grid (q = the search box). */
   function lpIconPickerOnline(force){
