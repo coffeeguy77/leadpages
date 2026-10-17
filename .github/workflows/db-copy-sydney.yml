@@ -101,7 +101,31 @@ jobs:
         run: |
           supabase db dump --db-url "$OLD_DB_URL" -f roles.sql --role-only
           supabase db dump --db-url "$OLD_DB_URL" -f schema.sql
-          supabase db dump --db-url "$OLD_DB_URL" -f data.sql --use-copy --data-only
+          supabase db dump --db-url "$OLD_DB_URL" -f data_all.sql --use-copy --data-only
+          # Keep only our data (public) and logins (auth); Supabase's internal schemas (storage,
+          # realtime, vault…) are managed by the new project itself and refuse direct writes.
+          python3 - <<'PY'
+          import re
+          keep = ('"public".', '"auth".', 'public.', 'auth.')
+          out, skip, kept, dropped = [], False, 0, 0
+          for line in open('data_all.sql', encoding='utf-8'):
+              if skip:
+                  if line.rstrip('\n') == '\\.':
+                      skip = False
+                  continue
+              m = re.match(r'COPY\s+(\S+)', line)
+              if m:
+                  if m.group(1).startswith(keep): kept += 1; out.append(line)
+                  else: dropped += 1; skip = True
+                  continue
+              m = re.match(r"SELECT pg_catalog\.setval\('([^']+)'", line)
+              if m and not m.group(1).lstrip('"').startswith(('public', 'auth')):
+                  continue
+              out.append(line)
+          open('data.sql', 'w', encoding='utf-8').writelines(out)
+          print(f"::notice::Data tables kept {kept}, skipped {dropped} (Supabase internal)")
+          PY
+          rm -f data_all.sql
           echo "::notice::Dumped roles $(wc -c < roles.sql)B, schema $(wc -c < schema.sql)B, data $(wc -c < data.sql)B"
 
       - name: Restore into Sydney (full)
@@ -134,4 +158,4 @@ jobs:
 
       - name: Remove dumps
         if: always()
-        run: rm -f roles.sql schema.sql data.sql
+        run: rm -f roles.sql schema.sql data.sql data_all.sql
