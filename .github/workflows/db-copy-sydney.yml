@@ -50,6 +50,25 @@ jobs:
         with:
           version: latest
 
+      - name: Use Session pooler addresses (GitHub runners have no IPv6)
+        run: |
+          # A Direct connection string (db.<ref>.supabase.co, IPv6 only) is turned into the same
+          # project's Session pooler string (IPv4): user postgres.<ref>, same password.
+          topooler() {
+            local url="$1" region="$2" rest userpart pw hostpart host ref cand p
+            rest="${url#*://}"; userpart="${rest%%@*}"; hostpart="${rest#*@}"; host="${hostpart%%[:/]*}"
+            case "$host" in db.*.supabase.co) ;; *) echo "$url"; return;; esac
+            ref="${host#db.}"; ref="${ref%.supabase.co}"; pw="${userpart#*:}"
+            for p in aws-0 aws-1 aws-2; do
+              cand="postgresql://postgres.${ref}:${pw}@${p}-${region}.pooler.supabase.com:5432/postgres"
+              if psql "$cand" -Atc 'select 1' >/dev/null 2>&1; then echo "$cand"; return; fi
+            done
+            echo "$url"
+          }
+          o=$(topooler "$OLD_DB_URL" ap-northeast-1); n=$(topooler "$NEW_DB_URL" ap-southeast-2)
+          echo "::add-mask::$o"; echo "::add-mask::$n"
+          { echo "OLD_DB_URL=$o"; echo "NEW_DB_URL=$n"; } >> "$GITHUB_ENV"
+
       - name: Test connections
         run: |
           ok=1
