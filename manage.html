@@ -7005,14 +7005,19 @@ function heroCtaCard(c){
             var ctx=cv.getContext('2d');
             /* keepAlpha (chroma logos): always PNG. Else large PNGs → JPEG. */
             var asJpeg=keepAlpha?false:(!/^image\/png$/i.test(file.type) || file.size>SKIP_BYTES);
-            if(asJpeg){ ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,cw,ch); }
             ctx.drawImage(img,0,0,cw,ch);
             URL.revokeObjectURL(url);
-            var mime=asJpeg?'image/jpeg':'image/png';
+            /* Transparent PNG / WebP (line drawings, icons, logos) stay transparent: WebP (PNG where
+               the browser can't make WebP) instead of a JPEG on white. */
+            var _alpha=false;
+            if(asJpeg&&/^image\/(png|webp)$/i.test(file.type)){ try{ var _px=ctx.getImageData(0,0,cw,ch).data, _st=Math.max(4,Math.floor(_px.length/4/40000)*4); for(var _i=3;_i<_px.length;_i+=_st){ if(_px[_i]<250){ _alpha=true; break; } } }catch(_ae){} }
+            if(_alpha) asJpeg=false;
+            if(asJpeg){ ctx.globalCompositeOperation='destination-over'; ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,cw,ch); ctx.globalCompositeOperation='source-over'; }
+            var mime=asJpeg?'image/jpeg':(_alpha?'image/webp':'image/png');
             cv.toBlob(function(b){
               if(!b) return resolve(file);
               if(b.size>=file.size && scale>=1) return resolve(file);
-              try{ b.name=(file.name||'upload').replace(/\.[^.]+$/,'')+(asJpeg?'.jpg':'.png'); }catch(_n){}
+              try{ b.name=(file.name||'upload').replace(/\.[^.]+$/,'')+(asJpeg?'.jpg':(b.type==='image/webp'?'.webp':'.png')); }catch(_n){}
               resolve(b);
             }, mime, quality);
           }catch(_e){ try{URL.revokeObjectURL(url);}catch(_x){} resolve(file); }
@@ -7067,13 +7072,27 @@ function heroCtaCard(c){
     var token=await cwToken(); if(!token) throw new Error('Please sign in again');
     try{ file=await cwPrepImage(file, opts); }catch(_e){ try{console.error('[mm wiring]',_e&&_e.message);}catch(_x){} }
     var _folder='leadpages/'+cwSiteSeg()+'/'+parts.map(cwSeg).join('/');
-    var pid=_folder+'/'+cwRand();
+    var pid=_folder+'/'+(opts.publicName?String(opts.publicName):cwRand());
     var sr=await fetch('/api/cloudinary/sign',{method:'POST',headers:{'content-type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({publicId:pid,assetFolder:_folder})});
     if(!sr.ok) throw new Error('Could not authorise upload'); var s=await sr.json();
     var fd=new FormData(); fd.append('file',file,(file&&file.name)||'upload.jpg'); fd.append('api_key',s.apiKey); fd.append('timestamp',s.timestamp); fd.append('public_id',s.publicId); if(s.assetFolder) fd.append('asset_folder',s.assetFolder); if(s.overwrite) fd.append('overwrite',s.overwrite); fd.append('signature',s.signature);
     var _cloud=(s.cloudName&&/^[a-zA-Z0-9_\-]+$/.test(s.cloudName))?s.cloudName:CW_CLOUD;
-    var ur; try{ ur=await fetch('https://api.cloudinary.com/v1_1/'+_cloud+'/image/upload',{method:'POST',body:fd}); }catch(_ne){ throw new Error('Network error reaching Cloudinary \u2014 the image may be too large or the connection dropped. Try a smaller image.'); }
-    var uj=await ur.json().catch(function(){return {};}); if(!ur.ok||!uj.secure_url) throw new Error((uj.error&&uj.error.message)||('Cloudinary rejected the upload ('+ur.status+')'));
+    var ur, uj;
+    if(typeof opts.onProgress==='function'){
+      // XHR so the library can show how far the current file is.
+      var res=await new Promise(function(resolve,reject){
+        var x=new XMLHttpRequest(); x.open('POST','https://api.cloudinary.com/v1_1/'+_cloud+'/image/upload');
+        x.upload.onprogress=function(ev){ if(ev.lengthComputable){ try{ opts.onProgress(Math.round(ev.loaded/ev.total*100)); }catch(_p){} } };
+        x.onload=function(){ var j={}; try{ j=JSON.parse(x.responseText||'{}'); }catch(_j){} resolve({ok:x.status>=200&&x.status<300,status:x.status,json:j}); };
+        x.onerror=function(){ reject(new Error('Network error reaching Cloudinary \u2014 the image may be too large or the connection dropped. Try a smaller image.')); };
+        x.send(fd);
+      });
+      ur={ok:res.ok,status:res.status}; uj=res.json;
+    } else {
+      try{ ur=await fetch('https://api.cloudinary.com/v1_1/'+_cloud+'/image/upload',{method:'POST',body:fd}); }catch(_ne){ throw new Error('Network error reaching Cloudinary \u2014 the image may be too large or the connection dropped. Try a smaller image.'); }
+      uj=await ur.json().catch(function(){return {};});
+    }
+    if(!ur.ok||!uj.secure_url) throw new Error((uj.error&&uj.error.message)||('Cloudinary rejected the upload ('+ur.status+')'));
     return { url:uj.secure_url, publicId:uj.public_id };
   }
   /** True while the site config (homepage + landing pages) still points at this image. */
@@ -7146,28 +7165,38 @@ function heroCtaCard(c){
         +'#cwlib .cwl-act{display:flex;gap:6px;padding:7px 8px 8px}'
         +'#cwlib .cwl-act .btn{flex:1;padding:6px 8px;font-size:12px}'
         +'#cwlib .cwl-act .btn[disabled]{opacity:.4;cursor:not-allowed}'
+        +'#cwlib .cwl-box.cwl-drop{outline:3px dashed var(--accent);outline-offset:-8px}'
+        +'#cwlib .cwl-queue{margin:10px 18px 0;padding:12px 14px;border:1px solid var(--line,#e5e7eb);border-radius:10px;background:var(--panel-soft,#fafafa);max-height:220px;overflow:auto;flex:none}'
+        +'#cwlib .cwq-head{display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:13px;font-weight:600;margin-bottom:6px}'
+        +'#cwlib .cwq-bar{height:6px;border-radius:99px;background:rgba(128,128,128,.2);overflow:hidden}'
+        +'#cwlib .cwq-bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}'
+        +'#cwlib .cwq-row{display:grid;grid-template-columns:1fr 120px 100px;gap:10px;align-items:center;font-size:12.5px;padding:5px 0;border-top:1px solid var(--line,#eee)}'
+        +'#cwlib .cwq-row .cwq-n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'
+        +'#cwlib .cwq-row .cwq-s{text-align:right;color:var(--muted,#6b7280);white-space:nowrap}'
+        +'#cwlib .cwq-row.cwq-done .cwq-s{color:#15803d;font-weight:600}'
+        +'#cwlib .cwq-row.cwq-fail .cwq-s{color:#b4543c;font-weight:600}'
         +'#cwlib .cwl-empty{grid-column:1/-1;text-align:center;color:var(--muted,#6b7280);padding:40px 10px}';
       document.head.appendChild(st);
     }
     m=document.createElement('div'); m.id='cwlib'; m.hidden=true; m.setAttribute('role','dialog'); m.setAttribute('aria-modal','true'); m.setAttribute('aria-label','Image library');
     m.innerHTML='<div class="cwl-box"><div class="cwl-head"><h2>Image library</h2><span class="hint" id="cwl-count" style="margin:0;"></span>'
-      +'<button type="button" class="btn" id="cwl-upload">Upload new</button><button type="button" class="btn ghost" id="cwl-close">Close</button></div>'
+      +'<button type="button" class="btn" id="cwl-upload">Upload images</button><button type="button" class="btn ghost" id="cwl-close">Close</button></div>'
       +'<div class="cwl-sub" id="cwl-sub"></div>'
       +'<div class="cwl-tabs"><button type="button" class="btn ghost sm" data-cwl-f="all">All</button><button type="button" class="btn ghost sm" data-cwl-f="used">In use</button><button type="button" class="btn ghost sm" data-cwl-f="unused">Not used</button></div>'
-      +'<div class="cwl-grid" id="cwl-grid"></div></div>';
+      +'<div class="cwl-queue" id="cwl-queue" hidden></div><div class="cwl-grid" id="cwl-grid"></div></div>';
     document.body.appendChild(m);
     m.addEventListener('click',function(e){ if(e.target===m) cwLibClose(); });
     document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&!m.hidden) cwLibClose(); });
     m.querySelector('#cwl-close').addEventListener('click',cwLibClose);
     m.querySelectorAll('[data-cwl-f]').forEach(function(b){ b.addEventListener('click',function(){ CWLIB.filter=b.getAttribute('data-cwl-f'); cwLibRender(); }); });
     m.querySelector('#cwl-upload').addEventListener('click',function(){
-      var btn=this;
-      cwPick(function(file){ cwBusy(btn,true); cwUpload(file,['library']).then(function(r){
-          toast('Image uploaded');
-          if(CWLIB.pick){ var cb=CWLIB.pick; cwLibClose(); cb(r.url); return; }
-          return cwLibLoad();
-        }).catch(function(err){ toast('Upload failed: '+((err&&err.message)||err),'warn'); }).then(function(){ cwBusy(btn,false); }); });
+      cwPickMany(function(files){ cwLibBatch(files); },{accept:'image/*'});
     });
+    // Drop images anywhere on the library to upload them.
+    var _box=m.querySelector('.cwl-box');
+    _box.addEventListener('dragover',function(e){ if(e.dataTransfer&&Array.prototype.indexOf.call(e.dataTransfer.types||[],'Files')>=0){ e.preventDefault(); _box.classList.add('cwl-drop'); } });
+    _box.addEventListener('dragleave',function(e){ if(e.target===_box) _box.classList.remove('cwl-drop'); });
+    _box.addEventListener('drop',function(e){ e.preventDefault(); _box.classList.remove('cwl-drop'); var fs=Array.prototype.slice.call((e.dataTransfer&&e.dataTransfer.files)||[]).filter(function(f){ return /^image\//.test(f.type); }); if(fs.length) cwLibBatch(fs); });
     m.querySelector('#cwl-grid').addEventListener('click',function(e){
       var t=e.target.closest('[data-cwl-act]'); if(!t) return;
       var it=(CWLIB.items||[])[+t.getAttribute('data-i')]; if(!it) return;
@@ -7176,6 +7205,39 @@ function heroCtaCard(c){
       if(act==='del') cwLibDelete(it, t);
     });
     return m;
+  }
+  /** Upload several images to the library, one after another, with a progress meter.
+      Library uploads keep their file name (e.g. leadpages/<site>/library/pie-drawing). */
+  var _cwlBusy=false;
+  function cwLibSlug(name){ return String(name||'image').replace(/\.[^.]+$/,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,60)||'image'; }
+  async function cwLibBatch(files){
+    files=(files||[]).filter(function(f){ return f&&/^image\//.test(f.type||''); });
+    if(!files.length){ toast('Choose image files to upload','warn'); return; }
+    if(_cwlBusy){ toast('Still uploading \u2014 wait for the current batch to finish','warn'); return; }
+    _cwlBusy=true;
+    var m=cwLibEnsureDom(), q=m.querySelector('#cwl-queue'), btn=m.querySelector('#cwl-upload'); if(btn) btn.disabled=true;
+    var taken={}; (CWLIB.items||[]).forEach(function(it){ var id=String(it.publicId||''); taken[id.slice(id.lastIndexOf('/')+1)]=1; });
+    var done=0, failed=0, last=null, n=files.length;
+    q.hidden=false;
+    q.innerHTML='<div class="cwq-head"><span id="cwq-title">Uploading 0 of '+n+'</span><span id="cwq-pct">0%</span></div><div class="cwq-bar"><i id="cwq-all"></i></div>'
+      +files.map(function(f,i){ return '<div class="cwq-row" id="cwq-r'+i+'"><span class="cwq-n" title="'+esc(f.name||'')+'">'+esc(f.name||('Image '+(i+1)))+'</span><div class="cwq-bar"><i></i></div><span class="cwq-s">Waiting</span></div>'; }).join('');
+    function overall(cur){ var pct=Math.round(((done+failed)+(cur||0)/100)/n*100); var a=q.querySelector('#cwq-all'); if(a) a.style.width=pct+'%'; var p=q.querySelector('#cwq-pct'); if(p) p.textContent=pct+'%'; }
+    for(var i=0;i<n;i++){
+      var f=files[i], row=q.querySelector('#cwq-r'+i), bar=row.querySelector('.cwq-bar i'), st=row.querySelector('.cwq-s');
+      q.querySelector('#cwq-title').textContent='Uploading '+(i+1)+' of '+n;
+      st.textContent='0%'; try{ row.scrollIntoView({block:'nearest'}); }catch(_s){}
+      var slug=cwLibSlug(f.name); if(taken[slug]) slug=slug+'-'+cwRand().slice(-5); taken[slug]=1;
+      try{
+        var r=await cwUpload(f,['library'],{ publicName:slug, onProgress:function(pc){ bar.style.width=pc+'%'; st.textContent=(pc>=100?'Saving\u2026':pc+'%'); overall(pc); } });
+        done++; last=r; row.classList.add('cwq-done'); bar.style.width='100%'; st.textContent='\u2713 Uploaded';
+      }catch(err){ failed++; row.classList.add('cwq-fail'); st.textContent='Failed'; st.title=String((err&&err.message)||err); }
+      overall(0);
+    }
+    q.querySelector('#cwq-title').textContent=done+' of '+n+' uploaded'+(failed?' \u00b7 '+failed+' failed (hover for why)':'');
+    _cwlBusy=false; if(btn) btn.disabled=false;
+    toast(done===1?'Image uploaded':(done+' images uploaded'), failed?'warn':undefined);
+    if(CWLIB.pick&&n===1&&last){ var cb=CWLIB.pick; cwLibClose(); q.hidden=true; cb(last.url); return; }
+    await cwLibLoad();
   }
   function cwLibUsed(it){ return !!(it.inUse||cwImageInUse(it.publicId)); }
   function cwLibRender(){
@@ -7221,6 +7283,7 @@ function heroCtaCard(c){
   function cwLibOpen(onPick){
     if(!currentSiteId){ toast('Open a site first'); return; }
     var m=cwLibEnsureDom(); CWLIB.pick=(typeof onPick==='function')?onPick:null; CWLIB.filter='all';
+    if(!_cwlBusy){ var _q=m.querySelector('#cwl-queue'); if(_q){ _q.hidden=true; _q.innerHTML=''; } }
     m.hidden=false; cwLibLoad();
   }
   function cwLibClose(){ var m=document.getElementById('cwlib'); if(m) m.hidden=true; CWLIB.pick=null; }
