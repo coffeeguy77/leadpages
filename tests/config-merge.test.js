@@ -81,3 +81,17 @@ test('manage.html checks for outside changes before Publish and writes condition
   assert.match(m, /\.eq\('updated_at', prep\.at\)/);
   assert.match(m, /function lpSyncBanner\(/);
 });
+
+test('an editor tab on an older LeadPages release reloads before Publish (edits kept as a based draft)', () => {
+  const m = fs.readFileSync(path.join(__dirname, '..', 'manage.html'), 'utf8');
+  assert.match(m, /fetch\('\/manage\.html', \{ method:'HEAD', cache:'no-store' \}\)/);
+  assert.match(m, /if\(await lpBuildIsStale\(\)\)\{/);
+  assert.match(m, /sessionStorage\.setItem\('lpResumeDraft', String\(currentSiteId\)\)/);
+  assert.match(m, /__lpDraftBase:\{ at:_ds\.__liveAt\|\|null, raw:_ds\.__liveRaw \}/);
+  assert.match(m, /var dBase=cfg\.__lpDraftBase; delete cfg\.__lpDraftBase;/);
+});
+
+test('functions run in Sydney', () => {
+  const v = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'vercel.json'), 'utf8'));
+  assert.deepEqual(v.regions, ['syd1']);
+});

@@ -495,6 +495,7 @@ textarea.tin{resize:vertical;}
 .lpx-app-actions{display:flex;gap:6px;flex-wrap:wrap;}
 .lpx-app-note{margin:0 0 12px;}
 /* Unpublished draft banner */
+#lp-build-banner{position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:10001;display:flex;align-items:center;gap:10px;flex-wrap:wrap;max-width:calc(100vw - 32px);padding:12px 14px;border-radius:12px;background:var(--panel,#fff);color:var(--ink,#1a2230);border:1px solid #d97706;box-shadow:0 12px 40px rgba(0,0,0,.2);font-size:14px;}
 #lp-sync-banner{position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:9999;display:flex;align-items:center;gap:10px;flex-wrap:wrap;max-width:calc(100vw - 32px);padding:12px 14px;border-radius:12px;background:var(--panel,#fff);color:var(--ink,#1a2230);border:1px solid #d97706;box-shadow:0 12px 40px rgba(0,0,0,.2);font-size:14px;}
 #lp-sync-modal{position:fixed;inset:0;z-index:10000;background:rgba(15,20,25,.45);display:flex;align-items:center;justify-content:center;padding:16px;}
 #lp-sync-modal .lps-box{background:var(--panel,#fff);color:var(--ink,#1a2230);border-radius:14px;max-width:640px;width:100%;max-height:calc(100vh - 32px);overflow:auto;padding:20px 22px;box-shadow:0 20px 60px rgba(0,0,0,.3);}
@@ -1751,11 +1752,15 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       lpDraftUi(); if(!opts.quiet&&!opts.auto) toast('No changes since you last published');
       return { ok:true, unchanged:true };
     }
-    if(lpDraft.id&&cfgStr===lpDraft.last){ lpDraft.dirty=false; lpDraftUi(); if(!opts.quiet&&!opts.auto) toast('Draft saved \u2014 not live until you Publish'); return { ok:true, unchanged:true }; }
+    if(lpDraft.id&&cfgStr===lpDraft.last&&!opts.force){ lpDraft.dirty=false; lpDraftUi(); if(!opts.quiet&&!opts.auto) toast('Draft saved \u2014 not live until you Publish'); return { ok:true, unchanged:true }; }
     lpDraft.saving=true; lpDraftUi();
     var gen=lpDraft.gen;
     try{
-      var j=await lpBkFetch('', { method:'POST', body:JSON.stringify({ siteId:siteAt, config:cfgNow, source:'auto', label:LP_DRAFT_LABEL, force:true }) });
+      // The draft remembers what the server had when its edits began, so Publish after
+      // "Continue draft" (or a reload) merges against that instead of overwriting newer changes.
+      var draftCfg=cfgNow;
+      try{ var _ds=lpSyncSite(); if(_ds&&_ds.__liveRaw!=null) draftCfg=Object.assign({}, cfgNow, { __lpDraftBase:{ at:_ds.__liveAt||null, raw:_ds.__liveRaw } }); }catch(_db){}
+      var j=await lpBkFetch('', { method:'POST', body:JSON.stringify({ siteId:siteAt, config:draftCfg, source:'auto', label:LP_DRAFT_LABEL, force:true }) });
       if(gen!==lpDraft.gen){
         // Published (or the site changed) while this was saving: this draft is already out of date.
         var stale=j&&j.backup&&j.backup.id; if(stale){ lpBkFetch('?id='+encodeURIComponent(stale),{method:'DELETE'}).catch(function(){}); }
@@ -1798,7 +1803,22 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     var liveAt=new Date(site.updated_at||0).getTime(), dAt=new Date(d.created_at||0).getTime();
     // Older drafts (already published since) are stale: tidy them away.
     drafts.slice(1).forEach(function(x){ lpBkFetch('?id='+encodeURIComponent(x.id),{method:'DELETE'}).catch(function(){}); });
-    if(!(dAt>liveAt)){ lpBkFetch('?id='+encodeURIComponent(d.id),{method:'DELETE'}).catch(function(){}); return; }
+    if(!(dAt>liveAt)){
+      // Older than the live site. A draft that knows its own base (saved by this editor version) may
+      // still hold edits that were never published — the site was just changed elsewhere since:
+      // offer it (Publish merges against its base). Older drafts were superseded by a publish.
+      var keep=false;
+      try{
+        var jd=await lpBkFetch('?id='+encodeURIComponent(d.id));
+        var dc=jd&&jd.backup&&jd.backup.config;
+        if(dc&&dc.__lpDraftBase&&typeof dc.__lpDraftBase.raw==='string'){
+          var dcl=Object.assign({}, dc); delete dcl.__lpDraftBase;
+          keep=!window.LPConfigMerge.same(dcl, JSON.parse(dc.__lpDraftBase.raw||'{}'));
+        }
+      }catch(_dk){}
+      if(site.id!==currentSiteId) return;
+      if(!keep){ lpBkFetch('?id='+encodeURIComponent(d.id),{method:'DELETE'}).catch(function(){}); return; }
+    }
     lpDraftBanner(site, d);
   }
   function lpDraftBanner(site, d){
@@ -1807,6 +1827,9 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     b.innerHTML='<span>You have unpublished changes saved as a draft <b>'+esc(new Date(d.created_at).toLocaleString([], {day:'numeric',month:'short',hour:'numeric',minute:'2-digit'}))+'</b>.</span>'
       +'<button type="button" class="btn" data-act="resume">Continue draft</button><button type="button" class="btn ghost" data-act="discard">Discard draft</button>';
     document.body.appendChild(b);
+    // Reloaded to publish on the latest LeadPages version: bring the edits straight back.
+    var _auto=false; try{ _auto=sessionStorage.getItem('lpResumeDraft')===String(site.id); if(_auto) sessionStorage.removeItem('lpResumeDraft'); }catch(_ss){}
+    if(_auto) setTimeout(function(){ var rb=b.querySelector('[data-act="resume"]'); if(rb) rb.click(); }, 0);
     b.addEventListener('click', async function(e){
       var act=e.target&&e.target.getAttribute&&e.target.getAttribute('data-act'); if(!act) return;
       if(act==='discard'){
@@ -1822,7 +1845,10 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
         if(!cfg||typeof cfg!=='object') throw new Error('Draft is empty');
         b.remove();
         var liveBase=lpDraft.base; if(!site.__liveStr&&liveBase) site.__liveStr=liveBase;
-        site.config=JSON.parse(JSON.stringify(cfg)); site.__draftChecked=true; site.__draftResumed=true;
+        cfg=JSON.parse(JSON.stringify(cfg));
+        var dBase=cfg.__lpDraftBase; delete cfg.__lpDraftBase;
+        if(dBase&&typeof dBase.raw==='string'){ site.__liveRaw=dBase.raw; site.__liveAt=dBase.at||null; }
+        site.config=cfg; site.__draftChecked=true; site.__draftResumed=true;
         var keepView=(typeof activeView==='string')?activeView:'';
         loadSite(site);
         lpDraft.id=d.id; lpDraft.savedAt=d.created_at; lpDraft.dirty=false; lpDraft.base=liveBase; lpDraftUi();
@@ -1858,6 +1884,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   function lpSyncMerge(site, mine, theirs, decisions){
     var raw={}; try{ raw=JSON.parse(site.__liveRaw||'{}'); }catch(_e){}
     var norm=raw; try{ if(site.__liveStr) norm=JSON.parse(site.__liveStr); }catch(_n){}
+    if(theirs&&theirs.__lpDraftBase){ theirs=Object.assign({}, theirs); delete theirs.__lpDraftBase; }
     return window.LPConfigMerge.lpMergeConfig(raw, norm, mine, theirs, decisions);
   }
   function lpSyncShort(v){
@@ -1960,7 +1987,37 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     }catch(_c){}
     finally{ lpSync.busy=false; }
   }
+  /* ---------- LeadPages updated while this tab is open ----------
+     An editor tab keeps the code it loaded with. When manage.html changes on the server (a new
+     release), show a reload banner, and make Publish reload first (edits come back as a draft). */
+  var lpBuild={ tag:null, stale:false };
+  async function lpBuildTag(){
+    try{ var r=await fetch('/manage.html', { method:'HEAD', cache:'no-store' }); if(!r.ok) return null; return r.headers.get('etag')||r.headers.get('last-modified')||null; }catch(_e){ return null; }
+  }
+  lpBuildTag().then(function(t){ lpBuild.tag=t; });
+  async function lpBuildIsStale(){
+    if(lpBuild.stale) return true;
+    if(!lpBuild.tag) return false;
+    var t=await lpBuildTag();
+    if(t&&t!==lpBuild.tag){ lpBuild.stale=true; lpBuildBanner(); }
+    return lpBuild.stale;
+  }
+  function lpBuildBanner(){
+    if(document.getElementById('lp-build-banner')) return;
+    var b=document.createElement('div'); b.id='lp-build-banner'; b.setAttribute('role','alert');
+    b.innerHTML='<span>LeadPages has been updated since this tab was opened. Reload to keep working on the latest version \u2014 your unpublished edits are kept.</span><button type="button" class="btn" data-act="reload">Reload now</button>';
+    document.body.appendChild(b);
+    b.addEventListener('click', function(e){ if(e.target&&e.target.getAttribute&&e.target.getAttribute('data-act')==='reload'){ e.target.disabled=true; lpBuildReload(); } });
+  }
+  /** Keep unpublished edits as a draft, then reload; the draft is restored straight after. */
+  async function lpBuildReload(){
+    try{ if(currentSiteId&&(lpDraft.dirty||lpDraftHasUnsaved()||lpDraft.id)){ await lpDraftSave({ quiet:true, force:true }); sessionStorage.setItem('lpResumeDraft', String(currentSiteId)); } }catch(_e){}
+    lpDraft.dirty=false;
+    location.reload();
+  }
+  setInterval(function(){ if(!document.hidden) lpBuildIsStale(); }, 300000);
   document.addEventListener('visibilitychange', function(){ if(!document.hidden) setTimeout(lpSyncCheck, 400); });
+  document.addEventListener('visibilitychange', function(){ if(!document.hidden) setTimeout(lpBuildIsStale, 600); });
   window.addEventListener('focus', function(){ setTimeout(lpSyncCheck, 400); });
   setInterval(lpSyncCheck, 120000);
   var _lpSaveGen=0;
@@ -13728,6 +13785,15 @@ function heroCtaCard(c){
       try{ if(typeof _syncSectionOrder==='function'){ _syncSectionOrder(lc); if(data) data.sectionOrder=lc.sectionOrder.slice(); } }catch(_soPub){}
       payload={ config:lc, business_name:(currentBusinessName||'').trim(), custom_domain:((currentCustomDomain||'').trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/.*$/,'').replace(/^www\./,'')||null), status:'live', updated_at:new Date().toISOString() }; if(currentRole==='super'){ payload.owner_email=((currentOwnerEmail||'').trim().toLowerCase()||null); }
     }
+    // This tab is running an older LeadPages release: reload first (edits come back as a draft).
+    try{
+      if(await lpBuildIsStale()){
+        if(btn){ btn.disabled=false; btn.textContent='Publish Live Site'; }
+        if(confirm('LeadPages has been updated since this tab was opened. Reload now and publish from the latest version?\n\nYour unpublished edits are saved as a draft and come straight back after the reload \u2014 then press Publish again.')) lpBuildReload();
+        else toast('Not published \u2014 reload to publish','warn');
+        return;
+      }
+    }catch(_bs){}
     // Changed somewhere else since this editor loaded it? Merge, so those changes aren't wiped.
     var prep=null, mergedElsewhere=false, newAt=null, result=null, wentLive=true;
     for(var _try=0; _try<3; _try++){
@@ -16371,6 +16437,7 @@ function heroCtaCard(c){
   async function lpBkHydrateConfig(cfg, toastMsg){
     if(!currentSiteId||!cfg) return false;
     cfg=_oqSanitizeImportedConfig(cfg);
+    if(cfg&&typeof cfg==='object') delete cfg.__lpDraftBase;
     var s=(allSites||[]).find(function(x){return x.id===currentSiteId;}); if(s){ s.config=cfg; }
     // The restored config is what the server holds now (merge base for the next Publish).
     if(s){ try{ lpSyncSetBase(s, cfg, null); s.__liveStr=null; var _rr=await sb.from('sites').select('updated_at').eq('id', currentSiteId).maybeSingle(); if(_rr&&_rr.data) s.__liveAt=_rr.data.updated_at; }catch(_rs){} }

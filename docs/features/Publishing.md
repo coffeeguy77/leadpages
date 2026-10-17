@@ -928,3 +928,11 @@ The editor holds a whole copy of `sites.config`. If the same site changes somewh
 - The "Before publish" backup now holds what was live before publishing (previously it held the version being published).
 - When the tab regains focus (and every 2 minutes) the editor checks for outside changes and shows a banner with **Load latest**, which brings them into the editor and keeps unpublished edits.
 - `lpSaveLiveDB` (SEO tools, sitemap, lead inbox) merges the same way; clashes keep the editor's value and the banner is shown.
+
+### Editor tabs on an older release
+- The editor remembers `manage.html`'s ETag when it opens and re-checks on focus and every 5 minutes. If it changed (a new release), a banner offers **Reload now**, and **Publish** asks to reload first. An old tab can't publish with outdated code.
+- Before reloading, unpublished edits are saved as a draft, which comes straight back after the reload. Press Publish again.
+- Drafts now carry the base they were edited from (`__lpDraftBase`: `at` + raw config). "Continue draft" merges against that base, so changes made elsewhere since are kept. A draft older than the live site is offered again if it still differs from its base, instead of being silently deleted. The key is stripped on resume and restore, and ignored by the merge.
+
+## Function region
+`vercel.json` → `"regions": ["syd1"]`: serverless functions run in Sydney (database: Supabase ap-northeast-1, Tokyo).
