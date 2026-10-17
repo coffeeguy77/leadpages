@@ -50,6 +50,27 @@ jobs:
         with:
           version: latest
 
+      - name: Test connections
+        run: |
+          ok=1
+          for v in OLD_DB_URL NEW_DB_URL; do
+            [ "$v" = OLD_DB_URL ] && name="Tokyo (OLD_DB_URL)" || name="Sydney (NEW_DB_URL)"
+            url="${!v}"
+            # Describe the string's shape without revealing it (no password, no full host).
+            scheme="${url%%://*}"; rest="${url#*://}"; userpart="${rest%%@*}"; user="${userpart%%:*}"; hostpart="${rest#*@}"; host="${hostpart%%/*}"; hostonly="${host%%:*}"; port="${host##*:}"
+            case "$userpart" in *:*) haspw=yes;; *) haspw=no;; esac
+            case "$url" in *'['*|*']'*) brackets=yes;; *) brackets=no;; esac
+            shape="scheme=$scheme user=$user password_given=$haspw brackets_left_in=$brackets host_kind=$(echo "$hostonly" | sed -E 's/^[^.]+\.//') port=$port"
+            rc=0; psql "$url" -Atc "select current_database()||' '||split_part(version(),' ',2)" > conn.txt 2>&1 || rc=$?
+            out=$(head -2 conn.txt | sed -E 's#postgres(ql)?://[^ ]*#<url>#g' | tr '\n' ' '); rm -f conn.txt
+            if [ "$rc" = 0 ]; then
+              echo "::notice::$name connected ($out) [$shape]"
+            else
+              echo "::error::$name could not connect: $out [$shape]"; ok=0
+            fi
+          done
+          [ $ok = 1 ]
+
       - name: Row counts before
         run: |
           Q="select table_schema||'.'||table_name||' '||(xpath('/row/c/text()', query_to_xml('select count(*) as c from '||quote_ident(table_schema)||'.'||quote_ident(table_name), false, true, '')))[1]::text from information_schema.tables where table_schema in ('public','auth') and table_type='BASE TABLE' order by 1"
@@ -62,14 +83,17 @@ jobs:
           supabase db dump --db-url "$OLD_DB_URL" -f roles.sql --role-only
           supabase db dump --db-url "$OLD_DB_URL" -f schema.sql
           supabase db dump --db-url "$OLD_DB_URL" -f data.sql --use-copy --data-only
-          ls -la roles.sql schema.sql data.sql | awk '{print $5, $9}'
+          echo "::notice::Dumped roles $(wc -c < roles.sql)B, schema $(wc -c < schema.sql)B, data $(wc -c < data.sql)B"
 
       - name: Restore into Sydney (full)
         if: env.MODE == 'full'
         run: |
+          set -o pipefail
           psql "$NEW_DB_URL" --single-transaction --variable ON_ERROR_STOP=1 \
             --file roles.sql --file schema.sql \
-            --command 'SET session_replication_role = replica' --file data.sql
+            --command 'SET session_replication_role = replica' --file data.sql > restore.log 2>&1 \
+            || { echo "::error::Restore failed (nothing was kept — it runs as one transaction): $(grep -m3 -i 'error' restore.log | sed -E 's#postgres(ql)?://[^ ]*#<url>#g' | tr '\n' ' ')"; exit 1; }
+          echo "::notice::Restore into Sydney finished"
 
       - name: Re-copy data into Sydney (switch-over)
         if: env.MODE == 'data'
@@ -87,7 +111,7 @@ jobs:
           Q="select table_schema||'.'||table_name||' '||(xpath('/row/c/text()', query_to_xml('select count(*) as c from '||quote_ident(table_schema)||'.'||quote_ident(table_name), false, true, '')))[1]::text from information_schema.tables where table_schema in ('public','auth') and table_type='BASE TABLE' order by 1"
           psql "$OLD_DB_URL" -Atc "$Q" > old_counts.txt
           psql "$NEW_DB_URL" -Atc "$Q" > new_counts.txt
-          if diff old_counts.txt new_counts.txt; then echo "All $(wc -l < old_counts.txt) tables match"; else echo "Row counts differ (lines above)"; exit 1; fi
+          if diff old_counts.txt new_counts.txt > diff.txt; then echo "::notice::All $(wc -l < old_counts.txt) tables match (public + auth row counts)"; else echo "::error::Row counts differ: $(grep '^[<>]' diff.txt | head -15 | tr '\n' ';')"; exit 1; fi
 
       - name: Remove dumps
         if: always()
