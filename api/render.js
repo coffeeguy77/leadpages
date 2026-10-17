@@ -870,7 +870,7 @@ function injectOrderStorefront(html, slug, cfg) {
   const sec = cfg && cfg.sections && cfg.sections.orderStorefront;
   if (!sec || sec.on !== true) return html;
   const safeSlug = esc(slug || (cfg && cfg.slug) || '');
-  const SCRIPT = '/assets/lp-order-storefront.js?v=oe-21';
+  const SCRIPT = '/assets/lp-order-storefront.js?v=oe-22';
   const showPortal = sec.showPortalLink !== false;
   const portalLabel = esc(sec.portalCtaLabel || 'Sign in to your orders');
 
@@ -881,7 +881,7 @@ function injectOrderStorefront(html, slug, cfg) {
     if (doc.indexOf('/assets/lp-order-storefront.js') >= 0) {
       return doc.replace(
         /\/assets\/lp-order-storefront\.js(?:\?[^"']*)?/g,
-        '/assets/lp-order-storefront.js?v=oe-21'
+        '/assets/lp-order-storefront.js?v=oe-22'
       );
     }
     return doc.indexOf('</body>') !== -1
@@ -958,8 +958,18 @@ function injectOrderStorefront(html, slug, cfg) {
       (sec.layout === 'editorial' ? ' data-layout="editorial"' : '') +
       (sec.catIntro ? ' data-cat-intro="' + esc(sec.catIntro) + '"' : '') +
       (sec.searchPlaceholder ? ' data-search-ph="' + esc(sec.searchPlaceholder) + '"' : '') +
-      (sec.cartTitle ? ' data-cart-title="' + esc(sec.cartTitle) + '"' : '')
+      (sec.cartTitle ? ' data-cart-title="' + esc(sec.cartTitle) + '"' : '') +
+      infoTabsAttr()
     );
+  }
+  // Extra storefront tabs beside Browse menu / My orders (e.g. store hours, a brochure whose
+  // items link to products). sections.orderStorefront.infoTabs[] — passed as JSON.
+  function infoTabsAttr() {
+    const tabs = (Array.isArray(sec.infoTabs) ? sec.infoTabs : []).filter(
+      (t) => t && t.on !== false && String(t.label || '').trim()
+    );
+    if (!tabs.length) return '';
+    return ' data-info-tabs="' + esc(JSON.stringify(tabs)) + '"';
   }
 
   const eyebrow = esc(sec.eyebrow || 'Order online');

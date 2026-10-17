@@ -5924,6 +5924,182 @@ function onlineQuoteStyleCard(c){
     colWire('oq-bg','bg'); colWire('oq-eyebrow','eyebrowColor'); colWire('oq-heading','headingColor'); colWire('oq-intro','introColor');
   }
 
+  /* ---------- Order Storefront: info tabs beside Browse menu / My orders (sections.orderStorefront.infoTabs) ---------- */
+  function orderInfoTabsCard(){
+    return '<div class="card" style="margin-bottom:22px;" id="os-info-card"><h2 style="margin:0 0 4px;">Info tabs</h2>'
+      +'<p class="lede" style="margin:0 0 12px;">Extra tabs next to <b>Browse menu</b> and <b>My orders</b> — store hours, a seasonal brochure, ordering notes. Items you link to a product open that product in the menu (its category is selected and the row is highlighted).</p>'
+      +'<div id="os-info-list"></div>'
+      +'<p style="margin:12px 0 0;"><button type="button" class="btn" id="os-info-add">+ Add tab</button></p></div>';
+  }
+  function lpInfoItemsToText(items){
+    return (Array.isArray(items)?items:[]).map(function(it){
+      var l=String(it&&it.label||''), d=String(it&&it.detail||''), p=String(it&&it.product||'');
+      if(d) return l+' | '+d+' | '+p;
+      if(p) return l+' | '+p;
+      return l;
+    }).join('\n');
+  }
+  function lpInfoTextToItems(text){
+    return String(text||'').split(/\n/).map(function(line){
+      var parts=line.split('|').map(function(x){ return x.trim(); });
+      if(!parts[0]) return null;
+      if(parts.length===1) return { label:parts[0], detail:'', product:'' };
+      if(parts.length===2) return { label:parts[0], detail:'', product:parts[1] };
+      return { label:parts[0], detail:parts[1], product:parts.slice(2).join('|').trim() };
+    }).filter(Boolean);
+  }
+  function lpInfoHoursToText(rows){
+    return (Array.isArray(rows)?rows:[]).map(function(r){ return String(r&&r.label||'')+' | '+String(r&&r.value||''); }).join('\n');
+  }
+  function lpInfoTextToHours(text){
+    return String(text||'').split(/\n/).map(function(line){
+      var i=line.indexOf('|'); var l=(i<0?line:line.slice(0,i)).trim(), v=(i<0?'':line.slice(i+1)).trim();
+      return (l||v)?{ label:l, value:v }:null;
+    }).filter(Boolean);
+  }
+  var _lpInfoCat=null, _lpInfoCatSlug='';
+  function lpInfoCatalogue(cb){
+    if(_lpInfoCat&&_lpInfoCatSlug===currentSiteSlug){ cb(_lpInfoCat); return; }
+    if(!currentSiteSlug){ cb(null); return; }
+    fetch('/api/order/storefront?slug='+encodeURIComponent(currentSiteSlug)).then(function(r){ return r.json(); }).then(function(j){
+      _lpInfoCat=(j&&Array.isArray(j.products))?j.products:[]; _lpInfoCatSlug=currentSiteSlug; cb(_lpInfoCat);
+    }).catch(function(){ cb(null); });
+  }
+  function lpInfoFind(products,want){
+    want=String(want||'').trim().toLowerCase(); if(!want||!products) return null;
+    return products.find(function(p){ return String(p.slug||'').toLowerCase()===want; })
+      ||products.find(function(p){ return String(p.id||'').toLowerCase()===want; })
+      ||products.find(function(p){ return String(p.name||'').trim().toLowerCase()===want; })||null;
+  }
+  function wireOrderInfoTabs(c){
+    var list=$('os-info-list'); if(!list) return;
+    function ens(){ if(!c.sections)c.sections={}; if(!c.sections.orderStorefront)c.sections.orderStorefront={}; var OS=c.sections.orderStorefront; if(!Array.isArray(OS.infoTabs)) OS.infoTabs=[]; return OS.infoTabs; }
+    var open={};
+    function save(){ persist(); previewApply(); }
+    function fld(k,label,val,ta,ph,rows){
+      return '<div class="f" style="margin:0 0 10px;"><label>'+label+'</label>'+(ta
+        ?'<textarea class="tin" data-k="'+k+'" rows="'+(rows||3)+'" placeholder="'+esc(ph||'')+'" spellcheck="'+(/items|hours/.test(k)?'false':'true')+'">'+esc(val||'')+'</textarea>'
+        :'<input type="text" class="tin" data-k="'+k+'" value="'+esc(val||'')+'" placeholder="'+esc(ph||'')+'">')+'</div>';
+    }
+    function draw(){
+      var tabs=ens(); var h='';
+      if(!tabs.length) h='<p class="hint" style="margin:0;">No info tabs yet.</p>';
+      tabs.forEach(function(t,ti){
+        h+='<details class="os-info-tab" data-ti="'+ti+'"'+(open[ti]?' open':'')+' style="border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 10px;">'
+          +'<summary style="cursor:pointer;font-weight:700;display:flex;gap:10px;align-items:center;">'+esc(t.label||'Untitled tab')+(t.on===false?' <span class="hint" style="margin:0;font-weight:500;">(hidden)</span>':'')+'</summary>'
+          +'<div style="padding-top:12px;">'
+          +'<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 10px;"><input type="checkbox" data-k="on"'+(t.on!==false?' checked':'')+'> Show this tab</label>'
+          +fld('label','Tab label',t.label,false,'Christmas Store Hours')
+          +fld('eyebrow','Eyebrow',t.eyebrow,false,'CHRISTMAS & NEW YEAR')
+          +fld('heading','Heading',t.heading,false,'Trading hours')
+          +fld('intro','Intro',t.intro,true,'Short introduction. Leave a blank line between paragraphs.')
+          +fld('hoursTitle','Hours title',t.hoursTitle,false,'Christmas & New Year hours')
+          +fld('hours','Hours <span class="aphint">(one per line: Day | Hours)</span>',lpInfoHoursToText(t.hours),true,'Mon 21 Dec | 7:30am – 6pm\nFri 25 Dec | Closed',4)
+          +'<h3 style="margin:14px 0 8px;font-size:14px;">Groups</h3>';
+        (Array.isArray(t.groups)?t.groups:[]).forEach(function(g,gi){
+          h+='<div class="os-info-group" data-gi="'+gi+'" style="border:1px dashed var(--line);border-radius:10px;padding:10px 12px;margin:0 0 10px;">'
+            +'<div style="display:flex;justify-content:space-between;gap:8px;align-items:center;margin:0 0 8px;"><strong>'+esc(g.title||('Group '+(gi+1)))+'</strong><span style="display:flex;gap:6px;">'
+            +'<button type="button" class="btn ghost" data-gact="up" style="padding:4px 9px;" aria-label="Move group up">↑</button>'
+            +'<button type="button" class="btn ghost" data-gact="down" style="padding:4px 9px;" aria-label="Move group down">↓</button>'
+            +'<button type="button" class="btn ghost" data-gact="del" style="padding:4px 9px;">Remove</button></span></div>'
+            +fld('g.eyebrow','Eyebrow',g.eyebrow,false,'FREE RANGE · REFALO HOLDINGS')
+            +fld('g.title','Title',g.title,false,'Ham')
+            +fld('g.text','Text',g.text,true,'Optional description.')
+            +fld('g.items','Items <span class="aphint">(one per line: Label | size or detail | product)</span>',lpInfoItemsToText(g.items),true,'Whole ham | Small 7–8kg | ham-whole-7',5)
+            +'<div class="f" style="margin:-4px 0 10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><select class="tin" data-k="g.pick" style="flex:1;min-width:200px;"><option value="">Add a product from your menu…</option></select><span class="hint" data-k="g.check" style="margin:0;"></span></div>'
+            +fld('g.note','Note',g.note,true,'Optional note under the items.',2)
+            +'</div>';
+        });
+        h+='<p style="margin:0 0 12px;"><button type="button" class="btn ghost" data-tact="addg">+ Add group</button></p>'
+          +fld('footnote','Footnote',t.footnote,true,'Optional text at the bottom of the tab.',2)
+          +'<p style="margin:0;display:flex;gap:8px;flex-wrap:wrap;">'
+          +'<button type="button" class="btn ghost" data-tact="up">Move left</button>'
+          +'<button type="button" class="btn ghost" data-tact="down">Move right</button>'
+          +'<button type="button" class="btn ghost" data-tact="del">Delete tab</button></p>'
+          +'</div></details>';
+      });
+      list.innerHTML=h;
+      wire();
+    }
+    function move(arr,i,d){ var j=i+d; if(j<0||j>=arr.length) return false; var x=arr[i]; arr[i]=arr[j]; arr[j]=x; return true; }
+    function checkItems(box,g){
+      var out=box.querySelector('[data-k="g.check"]'); if(!out) return;
+      lpInfoCatalogue(function(products){
+        if(!products){ out.textContent=''; return; }
+        var linked=0, missing=[];
+        (g.items||[]).forEach(function(it){ if(!it.product) return; if(lpInfoFind(products,it.product)) linked++; else missing.push(it.product); });
+        out.textContent=(linked?('✓ '+linked+' linked'):'')+(missing.length?((linked?' · ':'')+'⚠ Not on your menu (or hidden): '+missing.join(', ')):'');
+        out.style.color=missing.length?'#b45309':'';
+      });
+    }
+    function fillPicker(sel){
+      lpInfoCatalogue(function(products){
+        if(!products||!sel) return;
+        sel.innerHTML='<option value="">Add a product from your menu…</option>'+products.map(function(p){ return '<option value="'+esc(p.slug||p.id)+'">'+esc(p.name||p.slug)+'</option>'; }).join('');
+      });
+    }
+    function wire(){
+      var tabs=ens();
+      list.querySelectorAll('details.os-info-tab').forEach(function(det){
+        var ti=Number(det.getAttribute('data-ti')); var t=tabs[ti]; if(!t) return;
+        det.addEventListener('toggle',function(){ open[ti]=det.open; });
+        det.querySelectorAll(':scope > div > [data-k], :scope > div > .f > [data-k], :scope > div > label > [data-k]').forEach(function(inp){
+          var k=inp.getAttribute('data-k');
+          inp.addEventListener(inp.type==='checkbox'?'change':'input',function(){
+            if(k==='on') t.on=inp.checked;
+            else if(k==='hours') t.hours=lpInfoTextToHours(inp.value);
+            else t[k]=inp.value;
+            if(k==='label'||k==='on'){ var sm=det.querySelector('summary'); if(sm) sm.textContent=(t.label||'Untitled tab')+(t.on===false?' (hidden)':''); }
+            save();
+          });
+        });
+        det.querySelectorAll('.os-info-group').forEach(function(box){
+          var gi=Number(box.getAttribute('data-gi')); var g=t.groups[gi]; if(!g) return;
+          box.querySelectorAll('[data-k^="g."]').forEach(function(inp){
+            var k=inp.getAttribute('data-k').slice(2);
+            if(k==='check') return;
+            if(k==='pick'){
+              fillPicker(inp);
+              inp.addEventListener('change',function(){
+                var v=inp.value; if(!v) return;
+                var p=lpInfoFind(_lpInfoCat,v);
+                g.items=(g.items||[]).concat([{ label:String((p&&p.name)||v), detail:'', product:v }]);
+                var ta=box.querySelector('[data-k="g.items"]'); if(ta) ta.value=lpInfoItemsToText(g.items);
+                inp.value=''; save(); checkItems(box,g);
+              });
+              return;
+            }
+            inp.addEventListener('input',function(){
+              if(k==='items'){ g.items=lpInfoTextToItems(inp.value); checkItems(box,g); }
+              else g[k]=inp.value;
+              save();
+            });
+          });
+          checkItems(box,g);
+          box.querySelectorAll('[data-gact]').forEach(function(b){
+            b.addEventListener('click',function(){
+              var a=b.getAttribute('data-gact');
+              if(a==='del'){ if(!confirm('Remove this group?')) return; t.groups.splice(gi,1); }
+              else if(!move(t.groups,gi,a==='up'?-1:1)) return;
+              save(); draw();
+            });
+          });
+        });
+        det.querySelectorAll('[data-tact]').forEach(function(b){
+          b.addEventListener('click',function(){
+            var a=b.getAttribute('data-tact');
+            if(a==='addg'){ if(!Array.isArray(t.groups)) t.groups=[]; t.groups.push({ eyebrow:'', title:'', text:'', items:[], note:'' }); }
+            else if(a==='del'){ if(!confirm('Delete the “'+(t.label||'Untitled')+'” tab?')) return; tabs.splice(ti,1); open={}; }
+            else { var d=a==='up'?-1:1; if(!move(tabs,ti,d)) return; var o=open[ti]; open[ti]=open[ti+d]; open[ti+d]=o; }
+            save(); draw();
+          });
+        });
+      });
+    }
+    var add=$('os-info-add');
+    if(add) add.addEventListener('click',function(){ var tabs=ens(); tabs.push({ on:true, label:'New tab', eyebrow:'', heading:'', intro:'', hoursTitle:'', hours:[], groups:[], footnote:'' }); open[tabs.length-1]=true; save(); draw(); });
+    draw();
+  }
   function orderStorefrontStyleCard(c){
     var OS=(c.sections&&c.sections.orderStorefront)||{}; var th=c.theme||{};
     var DEF={ bg:'#ffffff', eyebrowColor:(th.pipe||'#1f7bb8'), headingColor:'#1a2230', introColor:'#46535f', accent:(th.pipe||'#1f7bb8'), cardBg:'#ffffff', cardBorder:'#e4e0d8', text:'#1c241e', muted:'#667066', btnBg:(th.hivis||'#ff6a1f'), btnText:'#ffffff', inputBg:'#ffffff', inputBorder:'#dde4ec' };
@@ -10951,6 +11127,7 @@ function heroCtaCard(c){
     } else if(sub==='orderStorefront'){
       body.innerHTML=secCard(c,'orderStorefront','Order Storefront',true,[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro','ta']])
         +orderStorefrontStyleCard(c)
+        +orderInfoTabsCard()
         +'<div class="card" style="margin-bottom:22px;"><h2>How it works</h2>'
         +'<p class="lede">Shows the Order Engine catalogue on the live site (cart, pickup date, deposit checkout). Place it with <strong>Position</strong>. On Landing pages, add it under <strong>Apps</strong> as Shared (homepage) or Unique — same as other marketplace apps.</p>'
         +'<p class="hint" style="margin:0 0 12px;">Order page on your site: <code>/order</code> (header, shop and footer \u2014 works even with the app off on the homepage; link it from <b>Menu</b> \u2192 <b>Order shop (full page)</b>) · Direct shop URL: <code>/order-shop?slug='+esc(currentSiteSlug||'your-slug')+'</code> · Customer SMS portal: <code>/order-portal?slug='+esc(currentSiteSlug||'your-slug')+'</code></p>'
@@ -10963,6 +11140,7 @@ function heroCtaCard(c){
         +'</p></div>';
       wireSec(c,'orderStorefront',true,[['eyebrow'],['heading'],['intro']]);
       wireOrderStorefrontStyle(c);
+      wireOrderInfoTabs(c);
       (function(){
         function ens(){ if(!c.sections)c.sections={}; if(!c.sections.orderStorefront)c.sections.orderStorefront={}; return c.sections.orderStorefront; }
         var po=$('os-portal-on'); if(po) po.addEventListener('change',function(){ ens().showPortalLink=po.checked; persist(); previewApply(); });

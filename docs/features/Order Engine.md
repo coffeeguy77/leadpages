@@ -93,3 +93,13 @@ node --test tests/order-import.test.js
 - Never store card PANs.
 - Preserve order-item snapshots.
 - AI messages require admin save before send.
+
+## Storefront info tabs
+
+Extra tabs beside **Browse menu** and **My orders** (e.g. store hours, a seasonal brochure). Edit them in the editor under **Order Storefront → Info tabs**.
+
+- Stored in `sections.orderStorefront.infoTabs[]` (or the page's unique `pageSections.orderStorefront`). Each tab: `on`, `label`, `eyebrow`, `heading`, `intro`, `hoursTitle`, `hours[] {label,value}`, `groups[] {eyebrow,title,text,items[] {label,detail,product},note}`, `footnote`.
+- `api/render.js` passes visible tabs to the mount as `data-info-tabs` (JSON, HTML-escaped); `assets/lp-layouts.js` keeps it in sync in the editor preview.
+- `item.product` is a product slug, id or exact name. Linked items show "Order →"; clicking switches to Browse menu, selects a category that contains the product (current one first), scrolls to the row and highlights it. Products with no category fall back to "All" (if enabled), a name search (editorial fast menu) or the product page (traditional mode).
+- Items whose product is inactive or missing render as plain text; the editor flags them under the Items box.
+- With the SMS portal off, the nav still shows when info tabs exist (Browse menu + info tabs, no My orders).
