@@ -729,3 +729,7 @@ stateDiagram-v2
 ---
 
 *Last updated: July 2026 — reflects `manage.html` Landing pages implementation on branch `main`.*
+
+## Send an app to the homepage
+
+Landing page → open an app (Positions) → **Send to homepage**, or Apps list → **Send to homepage**. Copies this page's own version of the app (e.g. the trust bar) over `sections.<app>` on the homepage, switches it on and places it after the banner if it isn't in the homepage order. If the homepage already has that app, a warning says its content will be overwritten. Afterwards the two copies are edited separately. Marketplace apps not installed on the homepage are copied but must be added there under Apps to show.

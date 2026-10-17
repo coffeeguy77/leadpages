@@ -1227,10 +1227,11 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
               <button type="button" class="btn ghost sm" id="lpx-app-redo" title="Redo" disabled>&#8631; Redo</button>
               <button type="button" class="btn ghost sm" id="lpx-app-reset" title="Replace this app’s content on this page with a fresh copy of the homepage version">Reset to homepage</button>
               <button type="button" class="btn ghost sm" id="lpx-app-blank" title="Clear the text, images and items on this page so you can add your own">Start blank</button>
+              <button type="button" class="btn ghost sm" id="lpx-app-sendhome" title="Copy this page’s version over the homepage’s and switch it on there">Send to homepage</button>
               <button type="button" class="btn ghost sm danger" id="lpx-app-rm">Remove</button>
             </div>
           </div>
-          <p class="hint lpx-app-note">Changes here are for <strong>this page only</strong> — your homepage is never changed.</p>
+          <p class="hint lpx-app-note">Changes here are for <strong>this page only</strong> — your homepage only changes if you press <strong>Send to homepage</strong>.</p>
           <div id="lp-app-edit-body" class="lp-themed-editor"></div>
         </div>
       </div>
@@ -3022,6 +3023,40 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     if(app) app.homeCopied=true;
     if(lpPageEditKey===secKey) lpRenderPageAppEditor(secKey);
   }
+  /** Landing pages \u2192 Apps \u2192 "Send to homepage": copy this page's own version of an app over the homepage's,
+      switch it on there and place it on the homepage. The two stay separate copies afterwards. */
+  function lpPageAppSendHome(secKey){
+    if(!lpCur||!secKey) return;
+    var ps=lpCur.pageSections&&lpCur.pageSections[secKey];
+    if(!ps||!Object.keys(ps).length){ toast('This app has no content on this page yet','warn'); return; }
+    if(!data.sections) data.sections={};
+    var home=data.sections[secKey];
+    var label=_secLabel(secKey);
+    var homeUsed=!!(home&&typeof home==='object'&&Object.keys(home).length);
+    var msg=homeUsed
+      ? 'The homepage already has its own '+label+(home.on===true?' (switched on)':' (switched off)')+'.\n\nReplace it with this page\u2019s '+label+'? The homepage version\u2019s content will be overwritten. After this, the two are edited separately.'
+      : 'Copy this page\u2019s '+label+' to the homepage and switch it on there? After this, the two are edited separately.';
+    if(!confirm(msg)) return;
+    var placed=null;
+    var copy=JSON.parse(JSON.stringify(ps));
+    delete copy._own;
+    copy.on=true;
+    data.sections[secKey]=copy;
+    // Place it on the homepage: keep its spot if it has one, otherwise right after the banner.
+    try{
+      if(!Array.isArray(data.sectionOrder)) data.sectionOrder=[];
+      var ord=data.sectionOrder;
+      if(ord.indexOf(secKey)<0){
+        var at=ord.indexOf('heroSlider'); if(at<0) at=ord.indexOf('hero');
+        if(at>=0) ord.splice(at+1,0,secKey); else ord.unshift(secKey);
+      }
+      placed=(typeof _syncSectionOrder==='function')?_syncSectionOrder(data):ord;
+    }catch(_ord){}
+    persist(); lpAutosave();
+    try{ previewApply(); }catch(_pa){}
+    if(placed&&placed.indexOf(secKey)<0) toast(label+' copied to the homepage \u2014 add it to the homepage under Apps to show it there, then Publish.','warn');
+    else toast(label+' copied to the homepage and switched on \u2014 Publish to make it live.');
+  }
   /** Text + image keys cleared by "Start blank" (layout, colours and form labels are kept). */
   var LP_BLANK_TEXT_KEYS=['eyebrow','heading','title','intro','text','sub','subText','body','content','caption','description','formTitle','ctaLabel','storyLinkLabel','calloutTitle','calloutText','calloutLinkLabel','msFigure','featureCaption','summaryText','highlightText','primaryCtaText','secondaryCtaText'];
   var LP_BLANK_IMAGE_KEYS=['image','imageUrl','bgImage','sideImage','storyImage','featureImage','msWatermark','img'];
@@ -3363,7 +3398,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
         +'<select class="tin lp-app-mode-sel" data-key="'+k+'" style="min-width:130px;">'
         +'<option value="shared"'+(mode==='shared'?' selected':'')+'>Shared (homepage)</option>'
         +'<option value="unique"'+(mode==='unique'?' selected':'')+'>Unique to page</option></select>'
-        +(isUnique?'<button type="button" class="btn ghost sm lp-app-copy-home" data-key="'+k+'">Use homepage content</button><button type="button" class="btn ghost sm lp-app-blank" data-key="'+k+'" title="Clear the homepage text, images and items so this page has its own">Start blank</button><button type="button" class="btn ghost sm lp-app-edit-btn" data-key="'+k+'">Edit content</button>'
+        +(isUnique?'<button type="button" class="btn ghost sm lp-app-copy-home" data-key="'+k+'">Use homepage content</button><button type="button" class="btn ghost sm lp-app-blank" data-key="'+k+'" title="Clear the homepage text, images and items so this page has its own">Start blank</button><button type="button" class="btn ghost sm lp-app-send-home" data-key="'+k+'" title="Copy this page\u2019s version over the homepage\u2019s and switch it on there">Send to homepage</button><button type="button" class="btn ghost sm lp-app-edit-btn" data-key="'+k+'">Edit content</button>'
           :'<button type="button" class="btn ghost sm lp-app-home-btn" data-key="'+k+'">Edit on homepage</button>')
         +'<button type="button" class="btn ghost sm danger lp-app-rm" data-key="'+k+'">Remove</button></div>';
     }).join('');
@@ -3378,6 +3413,9 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     });
     list.querySelectorAll('.lp-app-blank').forEach(function(b){
       b.addEventListener('click',function(){ lpPageAppStartBlank(b.getAttribute('data-key')); });
+    });
+    list.querySelectorAll('.lp-app-send-home').forEach(function(b){
+      b.addEventListener('click',function(){ lpPageAppSendHome(b.getAttribute('data-key')); });
     });
     list.querySelectorAll('.lp-app-home-btn').forEach(function(b){
       b.addEventListener('click',function(){ var k=b.getAttribute('data-key'); showView('details'); landingSub=k; renderDetails(); toast('Editing homepage '+_secLabel(k)); });
@@ -3762,6 +3800,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     [['lpx-app-undo',function(){ lpAppHistStep(-1); }],['lpx-app-redo',function(){ lpAppHistStep(1); }],
      ['lpx-app-reset',function(){ if(!lpPageEditKey) return; var k=lpPageEditKey; lpPageAppCopyFromHome(k,{force:false}); lpAppHistRecord(true); }],
      ['lpx-app-blank',function(){ if(!lpPageEditKey) return; lpPageAppStartBlank(lpPageEditKey); lpAppHistRecord(true); }],
+     ['lpx-app-sendhome',function(){ if(!lpPageEditKey) return; lpPageAppSendHome(lpPageEditKey); }],
      ['lpx-app-rm',function(){ if(!lpPageEditKey) return; var k=lpPageEditKey; if(!confirm('Remove '+_secLabel(k)+' from this page? The homepage is not changed.')) return; lpPageAppRemove(k); lpBackToPositions(); }]
     ].forEach(function(x){ var b=$(x[0]); if(b) b.addEventListener('click',x[1]); });
     var lpxS=$('lpx-search'); if(lpxS) lpxS.addEventListener('input',function(){ lpxFilterList(this.value); });
@@ -6107,7 +6146,7 @@ function onlineQuoteStyleCard(c){
   function lpInfoCatalogue(cb){
     if(_lpInfoCat&&_lpInfoCatSlug===currentSiteSlug){ cb(_lpInfoCat); return; }
     if(!currentSiteSlug){ cb(null); return; }
-    fetch('/api/order/storefront?slug='+encodeURIComponent(currentSiteSlug)).then(function(r){ return r.json(); }).then(function(j){
+    fetch('/api/order/storefront?fresh=1&slug='+encodeURIComponent(currentSiteSlug)).then(function(r){ return r.json(); }).then(function(j){
       _lpInfoCat=(j&&Array.isArray(j.products))?j.products:[]; _lpInfoCatSlug=currentSiteSlug; cb(_lpInfoCat);
     }).catch(function(){ cb(null); });
   }
@@ -7448,7 +7487,7 @@ function heroCtaCard(c){
       if(cur&&!found) opts+='<option value="'+esc(cur)+'" selected>'+esc(cur)+' (not found)</option>';
       sel.innerHTML=opts; }); }
     if(_lpOeCats){ paint(); return; }
-    if(!_lpOeCatsP){ _lpOeCatsP=fetch('/api/order/storefront?slug='+encodeURIComponent(currentSiteSlug||'')).then(function(r){ return r.ok?r.json():{}; }).then(function(j){ _lpOeCats=(j&&j.categories)||[]; }).catch(function(){ _lpOeCats=[]; }); }
+    if(!_lpOeCatsP){ _lpOeCatsP=fetch('/api/order/storefront?fresh=1&slug='+encodeURIComponent(currentSiteSlug||'')).then(function(r){ return r.ok?r.json():{}; }).then(function(j){ _lpOeCats=(j&&j.categories)||[]; }).catch(function(){ _lpOeCats=[]; }); }
     _lpOeCatsP.then(paint);
   }
   /* ---------- Image library: every image uploaded for this site (pick, upload, delete unused) ---------- */
@@ -7702,7 +7741,7 @@ function heroCtaCard(c){
           if(f.type==='landingPage') return '<div class="f" style="margin:0;flex:'+(f.w||'1 1 100%')+';min-width:160px;"><label>'+f.label+'</label><select data-k="'+f.k+'" style="width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#fff;box-sizing:border-box;">'+lpLandingPageOptsHtml(it[f.k]||'')+'</select></div>';
           if(f.type==='ta') return '<div class="f le-f-full" style="margin:0;"><label>'+f.label+'</label><textarea data-k="'+f.k+'" rows="2" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;resize:vertical;box-sizing:border-box;"></textarea></div>';
           if(f.type==='image') return '<div class="f le-f-full" style="margin:0;"><label>'+f.label+'</label>'+cwImgHTML('data-k="'+f.k+'"',f.ph,f.hint)+'<input type="hidden" data-k="'+f.k+'_pid"></div>';
-          if(f.type==='orderCat'){ setTimeout(lpOrderCatFill,0); return '<div class="f" style="margin:0;flex:1 1 100%;"><label>'+f.label+'</label><select data-k="'+f.k+'" data-oecat="'+esc(it[f.k]||'')+'" style="width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;background:var(--input-bg,#fff);color:inherit;box-sizing:border-box;"><option value="">\u2014 None \u2014</option>'+(it[f.k]?'<option value="'+esc(it[f.k])+'" selected>'+esc(it[f.k])+'</option>':'')+'</select><span class="hint" style="display:block;margin-top:4px;">Opens your Order shop on this category \u2014 switched in place when the shop is on the same page.</span></div>'; }
+          if(f.type==='orderCat'){ setTimeout(lpOrderCatFill,0); return '<div class="f" style="margin:0;flex:1 1 100%;"><label>'+f.label+'</label><select data-k="'+f.k+'" data-oecat="'+esc(it[f.k]||'')+'" style="width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;background:var(--input-bg,#fff);color:inherit;box-sizing:border-box;"><option value="">\u2014 None \u2014</option>'+(it[f.k]?'<option value="'+esc(it[f.k])+'" selected>'+esc(it[f.k])+'</option>':'')+'</select><span class="hint" style="display:block;margin-top:4px;">Opens your shop on this category \u2014 switched in place when the shop is on the same page; from other pages it goes to your shop page (the published landing page with the Order Storefront app), or /order if there isn\u2019t one.</span></div>'; }
           if(f.type==='color'){ var _cdef=listColorDefault(f.k,c); return '<div class="f" style="margin:0;"><label>'+f.label+'</label><div class="le-color-row"><input type="color" class="le-color" data-colorfor="'+f.k+'" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer;flex:0 0 auto;"><input type="text" data-k="'+f.k+'" placeholder="'+_cdef+' (site)"><button type="button" class="le-eyedrop" data-colorfor="'+f.k+'" tabindex="-1" title="Pick a colour from anywhere on screen" style="border:1px solid var(--line);background:#fff;border-radius:8px;padding:7px 9px;cursor:pointer;line-height:1;flex:0 0 auto;">\uD83D\uDD0D</button></div></div>'; }
           if(f.type==='check') return '<div class="f le-f-full" style="margin:0;"><label style="display:inline-flex;gap:8px;align-items:center;font-weight:500;font-size:13px;cursor:pointer;"><input type="checkbox" class="le-chk" data-k="'+f.k+'"> '+f.label+'</label></div>';
           if(f.type==='range') return '<div class="f le-f-full" style="margin:0;"><label>'+f.label+': <span class="le-rangeval" data-rk="'+f.k+'"></span></label><input type="range" class="le-range" data-k="'+f.k+'" min="'+(f.min!=null?f.min:0)+'" max="'+(f.max!=null?f.max:100)+'" step="'+(f.step||1)+'" data-def="'+(f.def!=null?f.def:100)+'" data-suf="'+(f.suf||'')+'" style="width:100%;"></div>';

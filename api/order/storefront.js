@@ -12,23 +12,32 @@ const { listWindows, buildPickupSlots, parsePickupSchedule } = require('../../li
 const { isMasterLockActive, msUntilMasterLock } = require('../../lib/order/master-lock');
 const { enrichSlotsWithCapacity, isDateAvailable } = require('../../lib/order/capacity');
 
+// Only the two config parts the storefront appearance reads (not the whole site config).
+const SITE_COLS = 'id,slug,business_name,cfg_os:config->sections->orderStorefront,cfg_co:config->colorOverrides';
+function withConfig(row) {
+  if (!row) return row;
+  row.config = { sections: { orderStorefront: row.cfg_os || undefined }, colorOverrides: row.cfg_co || undefined };
+  delete row.cfg_os;
+  delete row.cfg_co;
+  return row;
+}
 async function resolveSite(slug, siteId) {
   const admin = getAdmin();
   if (siteId) {
     const { data } = await admin
       .from('sites')
-      .select('id,slug,business_name,config')
+      .select(SITE_COLS)
       .eq('id', siteId)
       .maybeSingle();
-    return data;
+    return withConfig(data);
   }
   if (!slug) return null;
   const { data } = await admin
     .from('sites')
-    .select('id,slug,business_name,config')
+    .select(SITE_COLS)
     .eq('slug', slug)
     .maybeSingle();
-  return data;
+  return withConfig(data);
 }
 
 module.exports = async function (req, res) {
@@ -45,7 +54,8 @@ module.exports = async function (req, res) {
     }
 
     const admin = getAdmin();
-    const { data: categories } = await admin
+    // Independent reads run together (this endpoint gates how fast the shop appears).
+    const categoriesPromise = admin
       .from('order_categories')
       .select('id,name,slug,description,sort_order')
       .eq('order_system_id', system.id)
@@ -54,7 +64,7 @@ module.exports = async function (req, res) {
 
     const windowsPromise = listWindows(system.id);
 
-    const { data: products } = await admin
+    const productsPromise = admin
       .from('order_products')
       .select(
         'id,category_id,name,slug,short_description,description,image_url,gallery,sku,pricing_method,price_cents,price_per_kg_cents,price_label,weight_required,unit_label,stock_method,cutoff_mode,cutoff_value,lead_time_mode,lead_time_value,featured,tags,active,options'
@@ -62,6 +72,7 @@ module.exports = async function (req, res) {
       .eq('order_system_id', system.id)
       .eq('active', true)
       .order('sort_order');
+    const [{ data: categories }, { data: products }] = await Promise.all([categoriesPromise, productsPromise]);
 
     const productIds = (products || []).map(function (p) {
       return p.id;
@@ -69,18 +80,20 @@ module.exports = async function (req, res) {
     let questions = [];
     let relationships = [];
     if (productIds.length) {
-      const q = await admin
-        .from('order_product_questions')
-        .select('*')
-        .in('product_id', productIds)
-        .eq('staff_only', false)
-        .order('sort_order');
+      const [q, r] = await Promise.all([
+        admin
+          .from('order_product_questions')
+          .select('*')
+          .in('product_id', productIds)
+          .eq('staff_only', false)
+          .order('sort_order'),
+        admin
+          .from('order_product_relationships')
+          .select('*')
+          .in('product_id', productIds)
+          .order('sort_order')
+      ]);
       questions = q.data || [];
-      const r = await admin
-        .from('order_product_relationships')
-        .select('*')
-        .in('product_id', productIds)
-        .order('sort_order');
       relationships = r.data || [];
     }
 
@@ -198,6 +211,8 @@ module.exports = async function (req, res) {
     }
 
     const tz = system.timezone || 'Australia/Sydney';
+    // Same menu for every visitor: let the CDN serve it for a few seconds (edits show within a minute).
+    if (!(req.query && req.query.fresh)) res.setHeader('Cache-Control', 'public, s-maxage=15, stale-while-revalidate=45');
     return json(res, 200, {
       site: { id: site.id, slug: site.slug, business_name: site.business_name },
       system: {

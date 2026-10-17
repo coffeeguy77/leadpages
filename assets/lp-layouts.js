@@ -133,10 +133,27 @@
     if (!b || path === b || path.indexOf(b + '/') === 0) return path;
     return (b + '/' + path.replace(/^\/+/, '')).replace(/\/{2,}/g, '/');
   }
-  /** Link to the Order shop page, opened on one category (by slug or name). */
+  /** The site's own shop page: the first published landing page with the Order Storefront app on it. */
+  function shopPageSlug() {
+    var C = cfgOf() || {};
+    var pages = Array.isArray(C.pages) ? C.pages : [];
+    for (var i = 0; i < pages.length; i++) {
+      var p = pages[i];
+      if (!p || !txt(p.slug) || (p.status && p.status !== 'published')) continue;
+      var onPage = (Array.isArray(p.pageLayoutOrder) && p.pageLayoutOrder.indexOf('orderStorefront') >= 0) ||
+        (Array.isArray(p.pageApps) && p.pageApps.some(function (a) { return a && (a.key || a.section_key) === 'orderStorefront'; }));
+      var ps = p.pageSections && p.pageSections.orderStorefront;
+      if (onPage && !(ps && ps.on === false)) return txt(p.slug).replace(/^\/+/, '');
+    }
+    return '';
+  }
+  /** Link to the shop opened on one category (by slug or name): the site's shop page when it has
+   *  one (lands on the ordering form), else the built-in /order page. */
   function orderCatHref(cat) {
     var c = txt(cat);
-    return withBase('/order') + (c ? '?cat=' + encodeURIComponent(c) : '');
+    var q = c ? '?cat=' + encodeURIComponent(c) : '';
+    var shop = shopPageSlug();
+    return shop ? withBase('/' + shop) + q + '#lp-order-storefront' : withBase('/order') + q;
   }
   function shown(id) {
     var n = sec(id);
@@ -1683,20 +1700,37 @@
     }
   }
 
-  /* Links to an Order shop category (/order?cat=…): when the shop is on this page, switch it to
-     that category and scroll to it instead of leaving the page. */
+  /* Links to a shop category (/order?cat=… or <shop page>?cat=…): when the shop is on this page,
+     switch it to that category and scroll to it instead of leaving the page — also while the
+     menu is still loading (the category opens as soon as it arrives). */
   document.addEventListener('click', function (e) {
     if (e.defaultPrevented || e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     var a = e.target && e.target.closest ? e.target.closest('a[href]') : null; if (!a) return;
     var u; try { u = new URL(a.getAttribute('href'), location.href); } catch (_e) { return; }
     var cat = u.searchParams.get('cat');
-    if (!cat || u.origin !== location.origin || !/\/order\/?$/.test(u.pathname)) return;
+    if (!cat || u.origin !== location.origin) return;
+    var here = u.pathname.replace(/\/+$/, '') === location.pathname.replace(/\/+$/, '');
+    if (!here && !/\/order\/?$/.test(u.pathname)) return;
     var mount = document.getElementById('lp-order-storefront');
-    var app = mount && mount.__lpOeApp;
-    if (!app || typeof app.openCategory !== 'function' || !mount.offsetParent) return;
-    if (!app.openCategory(cat)) return;
+    if (!mount || !mount.offsetParent) return;
+    var app = mount.__lpOeApp;
+    var ready = !!(app && app.state && app.state.catalogue);
+    if (ready) {
+      if (typeof app.openCategory !== 'function' || !app.openCategory(cat)) return;
+    } else {
+      // Not loaded yet: remember the category in the address (the shop reads ?cat= when it loads).
+      try { var nu = new URL(location.href); nu.searchParams.set('cat', cat); history.replaceState(history.state, '', nu.pathname + nu.search + nu.hash); } catch (_h) { return; }
+    }
     e.preventDefault();
     var secN = mount.closest('[data-sec]') || mount;
+    try {
+      var hh = 0;
+      document.querySelectorAll('header, .hdr, .site-header, [data-sec="header"]').forEach(function (el) {
+        var cs = getComputedStyle(el), r = el.getBoundingClientRect();
+        if ((cs.position === 'fixed' || cs.position === 'sticky') && r.top <= 1 && r.bottom > hh && r.bottom < innerHeight / 2) hh = r.bottom;
+      });
+      secN.style.scrollMarginTop = Math.round(hh) + 8 + 'px';
+    } catch (_m) {}
     try { secN.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_s) { secN.scrollIntoView(); }
   });
 

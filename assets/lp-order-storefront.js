@@ -83,8 +83,42 @@
     return 'Add';
   }
 
+  /** Height of a fixed / sticky site header at the top, so landing on the form doesn't hide under it. */
+  function stickyTop() {
+    var h = 0;
+    try {
+      document.querySelectorAll('header, .hdr, .site-header, [data-sec="header"]').forEach(function (el) {
+        var cs = getComputedStyle(el);
+        if ((cs.position === 'fixed' || cs.position === 'sticky') && cs.display !== 'none') {
+          var r = el.getBoundingClientRect();
+          if (r.top <= 1 && r.bottom > h && r.bottom < window.innerHeight / 2) h = r.bottom;
+        }
+      });
+    } catch (_e) {}
+    return Math.round(h);
+  }
+
+  /** The menu request the page started in <head> (api/render.js), used once. */
+  function takePrefetch(path, opts) {
+    try {
+      var pre = window.__lpOePre;
+      if (!pre || opts.method || opts.body || pre.url !== path || !pre.p) return null;
+      window.__lpOePre = null;
+      return pre.p;
+    } catch (_e) {
+      return null;
+    }
+  }
+
   async function api(path, opts) {
     opts = opts || {};
+    var pre = takePrefetch(path, opts);
+    if (pre) {
+      var got = await pre;
+      if (got && got.ok) return got.j;
+      if (got && got.status) throw Object.assign(new Error((got.j && (got.j.message || got.j.error)) || 'request_failed'), { status: got.status, data: got.j });
+      // Network error on the early request: fall through and try again.
+    }
     var r = await fetch(path, {
       method: opts.method || 'GET',
       headers: opts.body ? { 'content-type': 'application/json' } : undefined,
@@ -878,6 +912,14 @@
       var linkedCat = this.categoryFromUrl();
       if (linkedCat) this.state.activeCategoryId = linkedCat;
       this.render();
+      // Arrived from a category link on another page (…?cat=beef#lp-order-storefront): land on the form.
+      if (linkedCat && location.hash === '#lp-order-storefront') {
+        var land = this.root;
+        try { land.style.scrollMarginTop = stickyTop() + 12 + 'px'; } catch (_sm) {}
+        try { land.scrollIntoView({ block: 'start' }); } catch (_sc) {}
+        // Images above may still be loading and push it down: settle once more.
+        setTimeout(function () { try { if (Math.abs(land.getBoundingClientRect().top) > 40) land.scrollIntoView({ block: 'start' }); } catch (_s2) {} }, 900);
+      }
       if (!this.state.cartId) {
         var warmSelf = this;
         this.ensureCart().catch(function () {});
