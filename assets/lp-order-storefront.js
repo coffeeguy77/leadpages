@@ -1165,8 +1165,11 @@
     html += '<div class="lp-oe-layout">';
     html += '<div class="lp-oe-main">';
     html += this.renderClientNav();
+    if (this.state.view === 'specials' && !this.specialProducts().length) this.state.view = 'shop';
     if (this.state.view === 'info' && this.activeInfoTab()) {
       html += this.renderInfoTab(this.activeInfoTab());
+    } else if (this.state.view === 'specials') {
+      html += this.renderSpecials();
     } else if (this.state.view === 'account') {
       html += this.renderAccountOrders();
     } else if (!this.isFastMode() && this.state.view === 'product' && this.state.selected) {
@@ -1203,12 +1206,14 @@
 
   OrderStorefront.prototype.renderClientNav = function () {
     var tabs = this.infoTabs();
-    if (!this.slug || (!this.showPortal && !tabs.length)) return '';
+    var specials = this.specialProducts().length;
+    if (!this.slug || (!this.showPortal && !tabs.length && !specials)) return '';
     var onInfo = this.state.view === 'info' && !!this.activeInfoTab();
     var onOrders = this.state.view === 'account';
-    var onShop = !onOrders && !onInfo;
+    var onSpecials = this.state.view === 'specials' && specials > 0;
+    var onShop = !onOrders && !onInfo && !onSpecials;
     var self = this;
-    var html = '<nav class="lp-oe-client-nav' + (tabs.length ? ' has-info' : '') + '" aria-label="Shop and orders">';
+    var html = '<nav class="lp-oe-client-nav' + (tabs.length || specials ? ' has-info' : '') + '" aria-label="Shop and orders">';
     html +=
       '<button type="button" class="lp-oe-client-tab' +
       (onShop ? ' on' : '') +
@@ -1225,6 +1230,12 @@
         (onInfo && self.state.infoTab === i ? ' on' : '') +
         '" data-act="info-tab" data-tab="' + i + '">' + esc(t.label) + '</button>';
     });
+    if (specials) {
+      html +=
+        '<button type="button" class="lp-oe-client-tab lp-oe-info-tab lp-oe-specials-tab' +
+        (onSpecials ? ' on' : '') +
+        '" data-act="specials-tab">Specials</button>';
+    }
     if (this.isLoggedIn()) {
       var greet = firstName(this.customerDisplayName());
       if (greet) {
@@ -1462,6 +1473,65 @@
     return String(p.category_id || '') === want;
   };
 
+  /* ---------- Specials (product.special from /api/order/storefront) ---------- */
+  OrderStorefront.prototype.priceHtml = function (p, tag) {
+    tag = tag === 'p' ? 'p' : 'div';
+    var sp = p && p.special;
+    if (!sp || !sp.price_cents) return '<' + tag + ' class="lp-oe-price">' + esc(p.display_price) + '</' + tag + '>';
+    return (
+      '<' + tag + ' class="lp-oe-price is-special">' +
+      '<span class="lp-oe-special-badge">Special</span> ' +
+      '<span class="lp-oe-special-now">' + esc(p.display_price) + '</span> ' +
+      (sp.was_display ? '<s class="lp-oe-special-was">' + esc(sp.was_display) + '</s> ' : '') +
+      (sp.saving_display ? '<span class="lp-oe-special-save">Save ' + esc(sp.saving_display) + '</span>' : '') +
+      '</' + tag + '>'
+    );
+  };
+
+  OrderStorefront.prototype.specialProducts = function () {
+    var products = (this.state.catalogue && this.state.catalogue.products) || [];
+    return products.filter(function (p) { return p && p.special && p.special.price_cents; });
+  };
+
+  function specialEnds(ymd) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(ymd || ''));
+    if (!m) return '';
+    var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return Number(m[3]) + ' ' + months[Number(m[2]) - 1];
+  }
+
+  OrderStorefront.prototype.renderSpecials = function () {
+    var self = this;
+    var list = this.specialProducts();
+    var html = '<section class="lp-oe-specials" aria-label="Specials">';
+    html += '<div class="lp-oe-cat-head"><h3>Specials</h3><p>' +
+      (list.length ? list.length + ' product' + (list.length === 1 ? '' : 's') + ' on special right now.' : 'No specials right now — check back soon.') +
+      '</p></div>';
+    if (this.isFastMode()) {
+      html += '<div class="lp-oe-fast" role="list">';
+      list.forEach(function (p) {
+        html += self.renderFastRow(p);
+        if (p.special.ends) html = html.replace(/<\/article>$/, '<p class="lp-oe-special-ends">Special ends ' + esc(specialEnds(p.special.ends)) + '</p></article>');
+      });
+      html += '</div>';
+    } else {
+      html += '<div class="lp-oe-grid">';
+      list.forEach(function (p) {
+        var hasImg = !!p.image_url;
+        html += '<article class="lp-oe-card' + (hasImg ? '' : ' no-img') + '" data-open="' + esc(p.id) + '">';
+        if (hasImg) html += '<div class="lp-oe-img" style="background-image:url(\'' + esc(p.image_url) + '\')"></div>';
+        html += '<div class="lp-oe-body"><h3>' + esc(p.name) + '</h3>';
+        if (p.short_description) html += '<p>' + esc(p.short_description) + '</p>';
+        html += self.priceHtml(p, 'div');
+        if (p.special.ends) html += '<p class="lp-oe-special-ends">Special ends ' + esc(specialEnds(p.special.ends)) + '</p>';
+        html += '<button type="button" data-open="' + esc(p.id) + '">Add</button></div></article>';
+      });
+      html += '</div>';
+    }
+    html += '</section>';
+    return html;
+  };
+
   OrderStorefront.prototype.renderFastMenu = function () {
     var self = this;
     var products = (this.state.catalogue && this.state.catalogue.products) || [];
@@ -1652,7 +1722,7 @@
     if (pack) html += '<p class="lp-oe-pack">' + esc(pack) + ' pack</p>';
     if (qtyPrompt) html += '<p class="lp-oe-qty-prompt">' + esc(qtyPrompt) + '</p>';
     if (p.short_description) html += '<p class="lp-oe-fast-desc">' + esc(p.short_description) + '</p>';
-    html += '<div class="lp-oe-price">' + esc(p.display_price) + '</div>';
+    html += this.priceHtml(p, 'div');
     html += '</div>';
     html += '<div class="lp-oe-fast-controls">';
     if (showQty) {
@@ -1754,7 +1824,7 @@
       html += '<div class="lp-oe-body"><h3>' + esc(p.name) + '</h3>';
       if (pack) html += '<p class="lp-oe-pack">' + esc(pack) + ' pack</p>';
       if (p.short_description) html += '<p>' + esc(p.short_description) + '</p>';
-      html += '<div class="lp-oe-price">' + esc(p.display_price) + '</div>';
+      html += self.priceHtml(p, 'div');
       html += '<button type="button" data-open="' + esc(p.id) + '">Add</button></div></article>';
     });
     if (!products.length) html += '<p class="lp-oe-empty">No products in this category yet.</p>';
@@ -1781,7 +1851,7 @@
     html += '<h3>' + esc(p.name) + '</h3>';
     if (pack) html += '<p class="lp-oe-pack">' + esc(pack) + ' pack</p>';
     if (qtyPrompt) html += '<p class="lp-oe-qty-prompt">' + esc(qtyPrompt) + '</p>';
-    html += '<p class="lp-oe-price">' + esc(p.display_price) + '</p>';
+    html += this.priceHtml(p, 'p');
     if (p.description || p.short_description)
       html += '<p class="lp-oe-desc">' + esc(p.description || p.short_description) + '</p>';
     html += '<div class="lp-oe-fields lp-oe-fields-app">';
@@ -2541,6 +2611,7 @@
       'close-auth': 1,
       'view-orders': 1,
       'info-tab': 1,
+      'specials-tab': 1,
       'goto-product': 1,
       'sign-out': 1,
       'auth-save-email': 1,
@@ -2870,6 +2941,18 @@
         try {
           var nav = self.root.querySelector('.lp-oe-client-nav');
           if (nav && nav.getBoundingClientRect().top < 0) nav.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } catch (_e) {}
+        return;
+      }
+      if (act === 'specials-tab') {
+        self.captureCheckoutDraft();
+        try { self.captureFastDrafts(); } catch (_e) {}
+        self.state.view = self.specialProducts().length ? 'specials' : 'shop';
+        self.state.selected = null;
+        self.render();
+        try {
+          var navS = self.root.querySelector('.lp-oe-client-nav');
+          if (navS && navS.getBoundingClientRect().top < 0) navS.scrollIntoView({ behavior: 'smooth', block: 'start' });
         } catch (_e) {}
         return;
       }
@@ -3303,6 +3386,14 @@
       '.lp-oe-body h3{margin:0 0 8px;font-size:32px;line-height:1.2;letter-spacing:-.02em;font-weight:650}',
       '.lp-oe-body p,.lp-oe-desc{margin:0;color:var(--oe-muted);font-size:15px;line-height:1.45}',
       '.lp-oe-price{margin-top:10px;font-weight:700;color:var(--oe-accent);font-size:16px}',
+      '.lp-oe-price.is-special{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px}',
+      '.lp-oe-special-badge{display:inline-block;padding:2px 8px;border-radius:999px;background:#b42318;color:#fff;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;line-height:1.5;align-self:center}',
+      '.lp-oe-special-now{color:#b42318}',
+      '.lp-oe-special-was{color:var(--oe-muted,#6b7280);font-weight:500;font-size:.88em}',
+      '.lp-oe-special-save{color:#067647;font-weight:700;font-size:.85em}',
+      '.lp-oe-special-ends{margin:4px 0 0;font-size:12px;color:var(--oe-muted,#6b7280)}',
+      '.lp-oe-fast-row>.lp-oe-special-ends{padding:0 14px 10px}',
+      '.lp-oe-client-tab.lp-oe-specials-tab:not(.on){color:#b42318}',
       '.lp-oe-card button{width:100%;margin-top:10px}',
       '.lp-oe-note{color:var(--oe-muted);font-size:13px;line-height:1.45;margin:14px 0 0}',
       '.lp-oe-empty{padding:28px 12px;text-align:center;color:var(--oe-muted)}',

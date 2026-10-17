@@ -110,3 +110,18 @@ Extra tabs beside **Browse menu** and **My orders** (e.g. store hours, a seasona
 - `/api/order/storefront` reads only `config.sections.orderStorefront` and `config.colorOverrides` (not the whole config), runs independent queries in parallel, and is CDN-cached for 15 s (`stale-while-revalidate=45`). Editor calls add `fresh=1`.
 - "Order shop category" links (trust bar, product cards) go to the site's shop page — the first published landing page with the Order Storefront app — as `/<page>?cat=<category>#lp-order-storefront`, landing on the form with that category open (below a sticky header). Without such a page they go to `/order?cat=…`.
 - Clicking a category link on the shop page before the menu has loaded stays on the page: `?cat=` is written to the address and the category opens when the menu arrives.
+
+## Specials
+
+Staff put a product on special in **Products → edit → Pricing → Put this product on special**.
+
+- **Type:** set special price, or percentage off. The editor previews the result, e.g. "10% off $50.00/kg = save $5.00/kg → $45.00/kg", and blocks saving a special that isn't lower than the normal price.
+- **How long:** ongoing, until a date, or scheduled (start + end). Whole days in the site timezone (default Australia/Sydney); the end day is included.
+- **Stored** on the product as `options.special` (`{ on, mode, price_cents | percent, timing, start, end }`) — no schema change. Turning it off keeps the settings for next time.
+- **Not for** "Price confirmed later" / quote products (no price to discount).
+
+**Pricing rule:** `lib/order/specials.js` → `priceLineAtOrder()` (`lib/order/pricing.js`) prices a line at the special when it is ordered — cart, checkout, staff orders and added lines all go through it. The price is locked in when ordered: existing lines are repriced from their stored unit price (no `options`), and weight finalisation uses the stored per-kg rate. Imported history passes `{ ignoreSpecial: true }`. Order lines record `product_snapshot.special`.
+
+**Shop:** `/api/order/storefront` sends the special price as the product price, plus `special` (`was_display`, `saving_display`, `ends`…) and `regular_price_*`; the raw settings are stripped. The storefront shows a **Specials** tab after the info tabs (only while a special is live) and a Special badge with old price + saving in categories. The staff product list shows a Special / Special soon badge.
+
+Tests: `tests/order-specials.test.js`.

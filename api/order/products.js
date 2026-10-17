@@ -406,6 +406,7 @@ module.exports = async function (req, res) {
         body.minimum_kg !== undefined ||
         body.quantity_prompt !== undefined ||
         body.additional_category_ids !== undefined ||
+        body.special !== undefined ||
         body.options !== undefined
       ) {
         const { data: cur } = await admin

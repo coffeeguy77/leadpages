@@ -137,7 +137,24 @@ module.exports = async function (req, res) {
     const { productCategoryIds, additionalCategoryIds } = require('../../lib/order/product-categories');
     const { parseGstSettings, productHasGst, gstPriceSuffix } = require('../../lib/order/gst');
     const gstSettings = parseGstSettings(system);
-    const displayProducts = (products || []).map(function (p) {
+    const { specialInfo, specialSummary } = require('../../lib/order/specials');
+    const shopTz = system.timezone || 'Australia/Sydney';
+    const displayProducts = (products || []).map(function (raw) {
+      // Live special: the shop sees the special price (as the cart/checkout will charge),
+      // plus the normal price and saving for the badge. Special settings stay private.
+      var sp = specialInfo(raw, { tz: shopTz });
+      var p = raw;
+      if (raw.options && raw.options.special) {
+        p = Object.assign({}, raw, { options: Object.assign({}, raw.options) });
+        delete p.options.special;
+      }
+      if (sp) {
+        p = Object.assign({}, p, {
+          regular_price_cents: raw.price_cents,
+          regular_price_per_kg_cents: raw.price_per_kg_cents
+        });
+        p[sp.field] = sp.price_cents;
+      }
       var qp =
         p.options && p.options.quantity_prompt ? String(p.options.quantity_prompt).trim() : '';
       var hasGst = productHasGst(p, gstSettings);
@@ -164,6 +181,12 @@ module.exports = async function (req, res) {
                     ? 'Approx. ' + formatAud(p.price_cents) + gstSuffix
                     : formatAud(p.price_cents) + gstSuffix,
         includes_gst: hasGst,
+        special: sp
+          ? Object.assign(specialSummary(sp), {
+              was_display: formatAud(sp.was_cents) + (sp.per_kg ? '/kg' : ''),
+              saving_display: formatAud(sp.saving_cents) + (sp.per_kg ? '/kg' : '')
+            })
+          : null,
         questions: questions.filter(function (q) {
           return q.product_id === p.id;
         }),
