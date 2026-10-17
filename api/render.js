@@ -866,22 +866,48 @@ function orderShopPage(cfg, page) {
   return vp;
 }
 
+const ORDER_SCRIPT = '/assets/lp-order-storefront.js?v=oe-23';
+/** Start loading the shop menu from <head>, while the rest of the page and scripts download;
+ *  lp-order-storefront.js picks up this request instead of starting its own. Also keeps the
+ *  storefront script on the current version. */
+function withOrderPrefetch(doc, slug) {
+  if (!slug || doc.indexOf('__lpOePre') >= 0) return doc;
+  const url = '/api/order/storefront?slug=' + encodeURIComponent(slug);
+  const tag =
+    '<script>(function(){try{var u=' + JSON.stringify(url).replace(/</g, '\\u003c') +
+    ';window.__lpOePre={url:u,p:fetch(u).then(function(r){return r.json().catch(function(){return {};}).then(function(j){return {ok:r.ok,status:r.status,j:j};});})};}catch(e){}})();</script>' +
+    '<link rel="preload" as="script" href="' + ORDER_SCRIPT + '">';
+  doc = doc.replace(/\/assets\/lp-order-storefront\.js(?:\?[^"']*)?/g, ORDER_SCRIPT);
+  return /<\/head>/i.test(doc) ? doc.replace(/<\/head>/i, tag + '</head>') : tag + doc;
+}
+/** A landing page that has the Order Storefront app on it (its own copy, switched on). */
+function pageHasOrderStorefront(pageRow) {
+  if (!pageRow) return false;
+  const inOrder = Array.isArray(pageRow.pageLayoutOrder) && pageRow.pageLayoutOrder.indexOf('orderStorefront') >= 0;
+  const inApps = Array.isArray(pageRow.pageApps) && pageRow.pageApps.some((a) => a && (a.key || a.section_key) === 'orderStorefront');
+  const ps = pageRow.pageSections && pageRow.pageSections.orderStorefront;
+  return (inOrder || inApps) && !(ps && ps.on === false);
+}
+
 function injectOrderStorefront(html, slug, cfg) {
   const sec = cfg && cfg.sections && cfg.sections.orderStorefront;
   if (!sec || sec.on !== true) return html;
   const safeSlug = esc(slug || (cfg && cfg.slug) || '');
-  const SCRIPT = '/assets/lp-order-storefront.js?v=oe-22';
+  const SCRIPT = ORDER_SCRIPT;
   const showPortal = sec.showPortalLink !== false;
   const portalLabel = esc(sec.portalCtaLabel || 'Sign in to your orders');
 
   function hexOk(v) {
     return typeof v === 'string' && /^#[0-9a-fA-F]{6}$/.test(v);
   }
+  function withPrefetch(doc) {
+    return withOrderPrefetch(doc, slug || (cfg && cfg.slug) || '');
+  }
   function ensureScript(doc) {
     if (doc.indexOf('/assets/lp-order-storefront.js') >= 0) {
       return doc.replace(
         /\/assets\/lp-order-storefront\.js(?:\?[^"']*)?/g,
-        '/assets/lp-order-storefront.js?v=oe-22'
+        ORDER_SCRIPT
       );
     }
     return doc.indexOf('</body>') !== -1
@@ -1020,7 +1046,7 @@ function injectOrderStorefront(html, slug, cfg) {
         '$1' + styleBlock()
       );
     }
-    return ensureScript(html);
+    return withPrefetch(ensureScript(html));
   }
 
   const block =
@@ -1037,11 +1063,11 @@ function injectOrderStorefront(html, slug, cfg) {
     '<script src="' + SCRIPT + '" defer></script>';
 
   if (html.includes('<section data-sec="quote"')) {
-    return html.replace('<section data-sec="quote"', block + '<section data-sec="quote"');
+    return withPrefetch(html.replace('<section data-sec="quote"', block + '<section data-sec="quote"'));
   }
-  return html.indexOf('</body>') !== -1
+  return withPrefetch(html.indexOf('</body>') !== -1
     ? html.replace('</body>', block + '</body>')
-    : (html + block);
+    : (html + block));
 }
 
 // ---- Font set (config.fontSet, assets/lp-fonts.js) ----
@@ -1569,6 +1595,8 @@ module.exports = async (req, res) => {
       } catch (_guardErr) { /* never break live render */ }
       html = injectOnlineQuote(html, site.slug, cfg);
       html = injectOrderStorefront(html, site.slug, cfg);
+      // Shop on a landing page (its own app copy): load the menu early there too.
+      if (pageHasOrderStorefront(_pageRow)) html = withOrderPrefetch(html, site.slug);
       html = injectBookingStorefront(html, site.slug, cfg);
       html = injectFontSet(html, cfg);
       html = injectSearchCanvas(html, cfg);

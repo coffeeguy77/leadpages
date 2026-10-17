@@ -103,3 +103,10 @@ Extra tabs beside **Browse menu** and **My orders** (e.g. store hours, a seasona
 - `item.product` is a product slug, id or exact name. Linked items show "Order →"; clicking switches to Browse menu, selects a category that contains the product (current one first), scrolls to the row and highlights it. Products with no category fall back to "All" (if enabled), a name search (editorial fast menu) or the product page (traditional mode).
 - Items whose product is inactive or missing render as plain text; the editor flags them under the Items box.
 - With the SMS portal off, the nav still shows when info tabs exist (Browse menu + info tabs, no My orders).
+
+## Loading speed and category links
+
+- Pages with the shop (homepage section or a landing page's own Order Storefront app) start the menu request in `<head>` (`window.__lpOePre`, added by `withOrderPrefetch` in `api/render.js`); `lp-order-storefront.js` uses that response instead of fetching again. The storefront script is preloaded and its version kept current (`ORDER_SCRIPT_VER`).
+- `/api/order/storefront` reads only `config.sections.orderStorefront` and `config.colorOverrides` (not the whole config), runs independent queries in parallel, and is CDN-cached for 15 s (`stale-while-revalidate=45`). Editor calls add `fresh=1`.
+- "Order shop category" links (trust bar, product cards) go to the site's shop page — the first published landing page with the Order Storefront app — as `/<page>?cat=<category>#lp-order-storefront`, landing on the form with that category open (below a sticky header). Without such a page they go to `/order?cat=…`.
+- Clicking a category link on the shop page before the menu has loaded stays on the page: `?cat=` is written to the address and the category opens when the menu arrives.
