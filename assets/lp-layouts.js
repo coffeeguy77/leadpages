@@ -398,8 +398,12 @@
       [['catIntro', 'data-cat-intro'], ['searchPlaceholder', 'data-search-ph'], ['cartTitle', 'data-cart-title']].forEach(function (a) {
         if (txt(OS[a[0]])) mount.setAttribute(a[1], OS[a[0]]); else mount.removeAttribute(a[1]);
       });
+      var tabs = (Array.isArray(OS.infoTabs) ? OS.infoTabs : []).filter(function (t) { return t && t.on !== false && txt(t.label); });
+      var tabsJson = tabs.length ? JSON.stringify(tabs) : '';
+      var tabsWas = mount.getAttribute('data-info-tabs') || '';
+      if (tabsJson) mount.setAttribute('data-info-tabs', tabsJson); else mount.removeAttribute('data-info-tabs');
       var app = mount.__lpOeApp;
-      if (app && app.state && app.state.catalogue && was !== ed && typeof app.render === 'function') {
+      if (app && app.state && app.state.catalogue && (was !== ed || tabsWas !== tabsJson) && typeof app.render === 'function') {
         try { app.render(); } catch (e) {}
       }
     }
