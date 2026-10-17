@@ -917,3 +917,14 @@ stateDiagram-v2
 ---
 
 *Last updated: July 2026 — reflects `manage.html`, `partner.html`, and `api/render.js` on branch `main`.*
+
+## Changes made elsewhere (merge on Publish)
+
+The editor holds a whole copy of `sites.config`. If the same site changes somewhere else while the editor is open (another tab, a backup restore, Claude/SQL, Website Studio), Publish no longer writes the old copy over it.
+
+- When a site is opened, the editor remembers what the server had (`site.__liveRaw`, `site.__liveAt` = `updated_at`).
+- Publish re-reads the row. If `updated_at` changed, `assets/lp-config-merge.js` does a three-way merge: fields only the editor changed keep the editor's value, fields only changed elsewhere keep that value, and arrays of objects with ids (pages, slides…) merge item by item. Fields changed in both places are listed in a dialog ("This editor" / "Saved elsewhere"); Cancel publishes nothing.
+- The write is conditional (`.eq('updated_at', seen)`), so a save that lands in between triggers another merge instead of being overwritten.
+- The "Before publish" backup now holds what was live before publishing (previously it held the version being published).
+- When the tab regains focus (and every 2 minutes) the editor checks for outside changes and shows a banner with **Load latest**, which brings them into the editor and keeps unpublished edits.
+- `lpSaveLiveDB` (SEO tools, sitemap, lead inbox) merges the same way; clashes keep the editor's value and the banner is shown.
