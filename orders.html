@@ -577,6 +577,13 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
 }
 </style>
 <link rel="stylesheet" href="/assets/lp-ui.css?v=2">
+<style>
+/* Order dialogs: on this page .modal is the dialog box itself (the backdrop is .modal-back).
+   lp-ui.css styles .modal as a see-through backdrop (38% black + blur), which made the order
+   view hard to read — keep the dialog solid. */
+[data-lp-ui] .modal-back > .modal,
+.modal-back > .modal{background:var(--surface,var(--panel,#fff)) !important;backdrop-filter:none !important;-webkit-backdrop-filter:none !important;opacity:1 !important;color:var(--ink,inherit);padding:0 !important;align-items:stretch}
+</style>
 </head>
 <body data-lp-admin-page="orders">
 <div id="gate" class="gate">
