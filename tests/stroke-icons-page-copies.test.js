@@ -67,7 +67,8 @@ test('full Lucide library in the editor, saved site icons, online search', () =>
   assert.match(m, /<script src="\/icons-more\.js" defer><\/script>/);
   assert.match(m, /function lpIconRemember\(n\)/);
   assert.match(m, /api\.iconify\.design\/search\?query=/);
-  assert.match(m, /var LP_ONLINE_SETS=\{tabler:'Tabler',iconoir:'Iconoir',mynaui:'Myna UI','lucide-lab':'Lucide Lab'\};/);
+  assert.match(m, /var LP_ONLINE_SETS=\{tabler:'Tabler',[^}]*iconoir:'Iconoir',mynaui:'Myna UI'[^}]*\};/);
+  assert.match(m, /'lucide-lab':'Lucide Lab'/);
   const h = JSON.parse(read('trade.template.json')).html;
   assert.match(h, /window\.LP_registerIcons\(C\.iconLib\)/);
   assert.ok(fs.existsSync(path.join(root, 'scripts/build-icon-library.js')));
