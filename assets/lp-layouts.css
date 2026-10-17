@@ -946,6 +946,8 @@ section[data-sec="storyRows"] .srw-photo .srw-media img{position:absolute;inset:
 section[data-sec="storyRows"] .srw-drawing .srw-media{display:flex;align-items:center;justify-content:center;padding:clamp(28px,4vw,56px) clamp(24px,5vw,72px)}
 section[data-sec="storyRows"] .srw-drawing .srw-media img{display:block;max-width:100%;max-height:clamp(220px,26vw,360px);width:auto;height:auto;object-fit:contain}
 section[data-sec="storyRows"] .srw-row.srw-tone-dark.srw-drawing .srw-media img{filter:invert(1) brightness(1.6)}
+/* Drawings on a white background blend into soft / tint rows (no white box) */
+section[data-sec="storyRows"] .srw-row:not(.srw-tone-dark).srw-drawing .srw-media img{mix-blend-mode:multiply}
 /* A photo that fades into the row colour (wider photo, soft inner edge) */
 section[data-sec="storyRows"] .srw-fade.srw-img-right{grid-template-columns:42fr 58fr}
 section[data-sec="storyRows"] .srw-fade.srw-img-left{grid-template-columns:58fr 42fr}

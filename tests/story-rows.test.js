@@ -19,7 +19,8 @@ test('template has a hidden placeholder and visibility lists include it', () => 
   assert.match(html, /<section data-sec="storyRows" class="section" id="storyRows" style="display:none"><\/section>/);
   assert.equal((html.match(/'storyTimeline','storyRows','mapHours','ctaBanner'\]/g) || []).length, 2);
   assert.match(html, /storyRows:'Story Rows'\}/);
-  assert.match(html, /lp-layouts\.css\?v=28/);
+  assert.match(html, /lp-layouts\.css\?v=(2[89]|[3-9]\d)/);
+  assert.match(css, /\.srw-row:not\(\.srw-tone-dark\)\.srw-drawing \.srw-media img\{mix-blend-mode:multiply\}/);
   const shell = JSON.parse(read('landing-shell-neutral-v1.template.json')).html;
   assert.equal((shell.match(/'storyTimeline','storyRows','mapHours','ctaBanner'\]/g) || []).length, 2);
 });
