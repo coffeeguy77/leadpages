@@ -237,3 +237,18 @@ order page on that category.
 - **Text selection in draggable rows** (list items, menu items, positions): while the mouse is down in a text box, the rows around it aren't draggable, so dragging selects text. Rows still move by their ⋮⋮ handle.
 - **CTA banner → Style → No background**: the banner has no colour of its own and sits on the section colour (Section container style). With Width → Full-width band it makes one edge-to-edge colour band. Text is dark on a light section colour, light otherwise.
 - **Width** (Hero slider, Hero banners, Trust bar → `widthMode`): Theme default / Full width (edge to edge) / Site width (the maximum width in Settings, background included). Use the same choice on the hero and trust bar so they line up.
+
+## Split hero, Numbered services, app links (Oct 2026)
+
+All opt-in; existing sites are unchanged until the layout is chosen.
+
+| App → option | What it does | Config |
+| --- | --- | --- |
+| Hero Slider → Layout **Split — text left, photo right** | Slide 1 only: eyebrow, optional small **SEO H1 line**, headline + highlight, sub-headline, the slide's own two buttons, and the badges as a short dot-separated line; slide photo beside it. Background page / soft / brand tint / dark; photo side right or left. Stacks (photo under text) on phones. | `sections.heroSlider.layout = 'split'`, `splitH1`, `splitTone`, `splitSide` |
+| Services → Style **Numbered cards** | Big brand-colour number (01, 02 …), title and text, the service's **Image** underneath; thin dividers between cards. Eyebrow + heading on the left with the intro on the right (tick-box, on by default). Optional text link under the cards. | `sections.services.mode = 'numbered'`, `numHeadSplit`, `numLinkLabel`, `numLinkHref` |
+
+- **SEO H1 line:** the slider's headline is normally an H2 (`.hsl-h`). In Split, the headline is the page's H1 unless *SEO H1 line* is filled, in which case that line is the H1 and the headline an H2 — e.g. H1 "Swiss Kitchens Canberra", headline "Beautifully considered. Precisely crafted."
+- **Split buttons** are copies of slide 1's buttons; a click is passed to the original button, so call tracking, scroll targets, quote and booking actions behave exactly as in the slider.
+- **Links to an app** — `#services`, `#textBox`, `#featuredProjects` … in the menu (External URL), footer links or any button now scroll to that app. Most app sections only carry `data-sec`, not an id, so these links used to do nothing; `lp-layouts.js` (`bindSectionLinks`) handles any `a[href^="#"]` whose name matches no id but does match an app section. Links to real ids are unchanged.
+
+First used on Oppikofer Joinery (`kitchens-canberra`). Tests: `tests/app-layouts-split-numbered.test.js`. Assets bumped to `lp-layouts.css?v=30` / `lp-layouts.js?v=32` in `trade.template.json`.

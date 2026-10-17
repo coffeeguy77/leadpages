@@ -498,6 +498,18 @@
   function services(C) {
     var node = sec('services'); if (!node) return;
     var SV = (C.sections && C.sections.services) || {};
+    var num = SV.mode === 'numbered';
+    node.classList.toggle('svcs-num', num);
+    node.classList.toggle('svn-headsplit', num && SV.numHeadSplit !== false);
+    var oldLead = node.querySelector('.section-head > .svn-lead');
+    if (oldLead) { while (oldLead.firstChild) oldLead.parentNode.insertBefore(oldLead.firstChild, oldLead); oldLead.parentNode.removeChild(oldLead); }
+    clear(node, 'svn');
+    if (num) {
+      ['svcs-story', 'svst-left', 'svcs-feature', 'svf-right', 'svcs-tick', 'svcs-tick-dark', 'svcs-iconrow', 'svcs-band-brand', 'svcs-band-dark', 'svcs-band-light', 'lpl-tone-soft', 'lpl-tone-tint', 'lpl-tone-dark'].forEach(function (k) { node.classList.remove(k); });
+      clear(node, 'svst'); clear(node, 'svf');
+      servicesNumbered(node, C, SV);
+      return;
+    }
     var feature = SV.mode === 'feature';
     node.classList.toggle('svcs-feature', feature);
     node.classList.toggle('svf-right', feature && SV.featureSide === 'right');
@@ -566,6 +578,41 @@
         (txt(s.body) ? '<p>' + esc(s.body) + '</p>' : '') +
         '<span class="svt-check">' + CHECK + '</span></div></div>';
     }).join('');
+  }
+
+  /* ---------- Services: numbered cards — big number, title, text, photo underneath ----------
+   *  sections.services.mode = 'numbered'; numHeadSplit (default on) puts the eyebrow + heading
+   *  left and the intro right; numLinkLabel / numLinkHref add a text link under the cards. */
+  function servicesNumbered(node, C, SV) {
+    var grid = node.querySelector('.svcs'); if (!grid) return;
+    var items = siteServices(C).filter(function (s) { return txt(s.title) || txt(s.body) || txt(s.image); });
+    var all = live(C && C.services);
+    grid.innerHTML = items.map(function (s, i) {
+      var img = bgUrl(s.image);
+      var idx = all.indexOf(s);
+      var n = (i + 1 < 10 ? '0' : '') + (i + 1);
+      return '<div class="svc svn"' + (idx >= 0 ? ' data-lpe="list:services:' + idx + ':title"' : '') + '>' +
+        '<span class="svn-n" aria-hidden="true">' + n + '</span>' +
+        '<div class="svn-text">' + (txt(s.title) ? '<h3>' + esc(s.title) + '</h3>' : '') +
+        (txt(s.body) ? '<p>' + esc(s.body) + '</p>' : '') + '</div>' +
+        (img ? '<div class="svn-media"><img src="' + esc(img) + '" alt="' + esc(s.title || '') + '" loading="lazy"></div>' : '') +
+        '</div>';
+    }).join('');
+    var head = node.querySelector('.section-head');
+    if (head) {
+      // Wrap eyebrow + heading so the intro can sit beside them.
+      var lead = head.querySelector('.svn-lead');
+      if (!lead) {
+        lead = document.createElement('div');
+        lead.className = 'svn-lead';
+        lead.setAttribute('data-lpl', 'svn');
+        var kids = head.querySelectorAll(':scope > .eyebrow, :scope > h2');
+        for (var k = 0; k < kids.length; k++) lead.appendChild(kids[k]);
+        head.insertBefore(lead, head.firstChild);
+      }
+    }
+    var lab = txt(SV.numLinkLabel);
+    if (lab) grid.insertAdjacentHTML('afterend', '<p class="svn-more" data-lpl="svn"><a class="lpl-link" data-lpe="numLinkLabel" ' + linkAttrs(hrefOf(SV.numLinkHref, contactHref())) + '>' + esc(lab) + ARROW + '</a></p>');
   }
 
   /* ---------- Services: big photo beside a heading, intro and icon points ---------- */
@@ -1421,6 +1468,61 @@
     hbQuote();
   }
 
+  /* ---------- Hero slider: "Split" — slide 1 text and buttons beside its photo ----------
+   *  sections.heroSlider.layout = 'split'; splitH1 (optional small H1 above the headline),
+   *  splitTone ('' | soft | tint | dark), splitSide ('' = photo right | left).
+   *  Buttons are copies of slide 1's own buttons; a click is passed to the original so
+   *  call tracking, scrolling and booking keep working. Badges show as a short dot line. */
+  function heroSplit(C) {
+    var node = sec('heroSlider'); if (!node) return;
+    var HS = (C.sections && C.sections.heroSlider) || {};
+    var on = HS.layout === 'split';
+    node.classList.toggle('hsp-on', on);
+    ['soft', 'tint', 'dark'].forEach(function (t) { node.classList.toggle('lpl-tone-' + t, on && HS.splitTone === t); });
+    node.classList.toggle('hsp-left', on && HS.splitSide === 'left');
+    var old = node.querySelector('[data-lpl="hsp"]');
+    if (old) old.parentNode.removeChild(old);
+    if (!on) return;
+    var slides = liveIdx(HS.slides);
+    var s0 = slides.length ? slides[0] : { it: {}, i: 0 };
+    var S = s0.it, si = s0.i;
+    var L = function (k) { return 'list:heroSlides:' + si + ':' + k; };
+    var img = bgUrl(S.imageUrl);
+    var h1 = txt(HS.splitH1);
+    var badges = live(HS.badges).map(function (b) { return txt(b.title) || txt(b.text); }).filter(Boolean);
+    var headTag = h1 ? 'h2' : 'h1';
+    var head = (txt(S.heading) || txt(S.highlightText)) ? '<' + headTag + ' class="hsp-h">' +
+      (txt(S.heading) ? '<span data-lpe="' + L('heading') + '">' + esc(S.heading) + '</span>' : '') +
+      (txt(S.highlightText) ? ' <span class="hl" data-lpe="' + L('highlightText') + '">' + esc(S.highlightText) + '</span>' : '') +
+      '</' + headTag + '>' : '';
+    var html = '<div class="hsp" data-lpl="hsp"><div class="wrap hsp-grid"><div class="hsp-text">' +
+      (txt(S.eyebrow) ? '<span class="eyebrow hsp-eyebrow" data-lpe="' + L('eyebrow') + '">' + esc(S.eyebrow) + '</span>' : '') +
+      (h1 ? '<h1 class="hsp-h1" data-lpe="splitH1">' + esc(h1) + '</h1>' : '') + head +
+      (txt(S.subText) ? '<p class="hsp-sub" data-lpe="' + L('subText') + '">' + esc(S.subText) + '</p>' : '') +
+      '<div class="hsp-cta"></div>' +
+      (badges.length ? '<p class="hsp-line" data-lpe="list:heroSliderBadges:0:title">' + badges.map(esc).join('<i aria-hidden="true">\u2022</i>') + '</p>' : '') +
+      '</div>' +
+      '<figure class="hsp-media" data-lpe="' + L('imageUrl') + '">' + (img ? '<img src="' + esc(img) + '" alt="' + esc(txt(S.heading) || txt(h1)) + '">' : '<span class="hsp-ph"></span>') + '</figure>' +
+      '</div></div>';
+    node.insertAdjacentHTML('afterbegin', html);
+    var box = node.querySelector('[data-lpl="hsp"] .hsp-cta');
+    var slideEls = node.querySelectorAll('.hsl-slide');
+    var src = slideEls.length ? slideEls[0].querySelector('.hsl-cta') : null;
+    if (!box) return;
+    if (!src || !src.children.length) { box.parentNode.removeChild(box); return; }
+    for (var i = 0; i < src.children.length; i++) {
+      (function (orig) {
+        var cp = orig.cloneNode(true);
+        cp.removeAttribute('id');
+        cp.addEventListener('click', function (ev) {
+          try { ev.preventDefault(); } catch (_e) {}
+          orig.click();
+        });
+        box.appendChild(cp);
+      })(src.children[i]);
+    }
+  }
+
   /* ---------- Font set (config.fontSet): render.js sets it for saved sites; this switches it
    *  live in the editor preview. Definitions: /assets/lp-fonts.js ---------- */
   var FONTS_P = null;
@@ -1665,7 +1767,7 @@
       else if (/[\ud83c-\udbff]/.test(t)) el.innerHTML = ''; // an unknown colour emoji: no icon
     }
   }
-  var STEPS = [heroSlider, heroBanners, headerCta, minimalFooter, logoTint, buttonShapes, orderLayout, featuredProjects, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, trustBar, mapHours, ctaBanner, storyTimeline, storyRows, bookingWeek, heroBooking, bookingHire, fontSet, mobileBarSpace, appWidths, headingBreaks, strokeIcons];
+  var STEPS = [heroSlider, heroBanners, headerCta, minimalFooter, logoTint, buttonShapes, orderLayout, featuredProjects, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, trustBar, mapHours, ctaBanner, storyTimeline, storyRows, bookingWeek, heroBooking, bookingHire, fontSet, mobileBarSpace, heroSplit, appWidths, headingBreaks, strokeIcons];
 
   function run(cfg) {
     // On a landing page the template builds the page's own config (homepage + the page's
@@ -1735,7 +1837,28 @@
   });
 
   window.__lpLayoutsRun = run;
-  function init() { bind(); run(); }
+  /* ---------- In-page links to an app: "#services", "#textBox" …
+   *  Most app sections have no id, only data-sec, so a menu / footer / button link to
+   *  "#<app>" did nothing. When no element has that id but an app section does, scroll to
+   *  the app (and keep the hash in the address). Links to real ids are left alone. */
+  function bindSectionLinks() {
+    if (window.__lplSecLinks) return;
+    window.__lplSecLinks = true;
+    document.addEventListener('click', function (e) {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      var a = e.target && e.target.closest ? e.target.closest('a[href^="#"]') : null;
+      if (!a) return;
+      var name = (a.getAttribute('href') || '').slice(1);
+      if (!/^[A-Za-z][\w-]*$/.test(name) || document.getElementById(name)) return;
+      var t = sec(name);
+      if (!t) return;
+      e.preventDefault();
+      try { t.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_e) { t.scrollIntoView(); }
+      try { history.replaceState(null, '', '#' + name); } catch (_h) {}
+    });
+  }
+
+  function init() { bind(); bindSectionLinks(); run(); }
   if (document.readyState !== 'loading') init();
   else document.addEventListener('DOMContentLoaded', init);
   setTimeout(bind, 0);
