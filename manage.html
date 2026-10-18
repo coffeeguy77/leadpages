@@ -783,6 +783,13 @@ body.lp-standard-mode .lp-standard-banner { display:inline-block; }
 .ll-tbl td{padding:5px 8px;border-bottom:1px solid var(--border);vertical-align:top;}
 .ll-tbl td:first-child{color:var(--muted);white-space:nowrap;width:90px;}
 .ll-actbar{margin-top:10px;display:flex;gap:8px;}
+.ll-files{margin-top:12px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;}
+.ll-files-h{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px;}
+.ll-files-list{margin:0 0 10px;padding-left:18px;font-size:14px;}
+.ll-files-sz{color:var(--ink-soft);font-size:12.5px;}
+.ll-files-links{display:flex;flex-direction:column;gap:6px;margin-top:10px;font-size:14px;}
+.ll-files-links a{color:var(--accent);font-weight:600;}
+.ll-files-note{margin:8px 0 0;font-size:12.5px;color:var(--ink-soft);}
 .ll-act{font:600 12.5px/1 system-ui;text-decoration:none;color:var(--accent-text);background:var(--accent);border-radius:8px;padding:8px 14px;}
 .ll-act:nth-child(2){background:var(--panel-raised);}
 .ll-statusbar{margin-top:11px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
@@ -7052,6 +7059,11 @@ function heroCtaCard(c){
       {t:'color',k:'lineColor',label:'Line & marker colour',ph:'Text colour (soft)'},
       {t:'sel',k:'spaceTop',label:'Space above',opts:[['','Standard'],['compact','Compact'],['small','Small'],['none','None (joins the app above)']]},
       {t:'sel',k:'spaceBottom',label:'Space below',opts:[['','Standard'],['compact','Compact'],['small','Small'],['none','None (joins the app below)']]}]},
+    quote:{title:'File uploads',lede:'Let customers attach plans or photos. Photos are shrunk before upload; files are private and only open through links in the lead email and in <b>Captured leads</b>. Kept for 90 days, then deleted automatically. Limits: 10 MB per file, photos (JPG, PNG, WEBP, HEIC) and PDFs only.',rows:[
+      {t:'chk',k:'uploadsOn',label:'Let customers attach files',def:false},
+      {t:'text',k:'uploadsLabel',label:'Label',ph:'Upload plans or photos',when:'uploadsOn=true'},
+      {t:'sel',k:'uploadsMax',label:'Files per enquiry',opts:[['','3 (default)'],['1','1'],['2','2'],['4','4'],['5','5']],when:'uploadsOn=true'},
+      {t:'text',k:'uploadsHelp',label:'Help text under the label (optional)',ph:'Photos or PDFs \u2014 up to 3 files, 10 MB each. Optional.',when:'uploadsOn=true'}]},
     ctaBanner:{title:'Banner style & buttons',lede:'Leave a button\u2019s text empty to hide it. \u201cOpen the booking calendar\u201d opens the live hire calendar when Bookings is set up, otherwise it goes to the booking bar or quote form. <b>Title + boxes</b>: the heading on the left and outlined boxes (icon, title, text) on the right \u2014 add as many as you like under <b>Boxes</b>.',lists:[['ctaBannerBoxes','Boxes','Title + boxes layout: each box has an icon (or a small image), a title and a short line. Optional link makes the whole box clickable.']],rows:[LPL_BTN_ROW,
       {t:'sel',k:'layout',label:'Layout',opts:[['','Text + buttons (default)'],['boxes','Title + boxes (icon, title, text)']]},
       {t:'chk',k:'boxesButtons',label:'Show the buttons under the title',def:false,when:'layout=boxes'},
@@ -10540,7 +10552,7 @@ function heroCtaCard(c){
         var qtxt=lpQuoteLeadText(l);
         if(qtxt) lines.push(['Quote details', qtxt]);
         Object.keys(det).forEach(function(k){
-          if(['quoteSessionId','productId','beverageId','addonIds','travelZoneId','totalCents','breakdown'].indexOf(k)>=0) return;
+          if(['quoteSessionId','productId','beverageId','addonIds','travelZoneId','totalCents','breakdown','files','filesExpireAt','filesExpired','filesNote'].indexOf(k)>=0) return;
           if(det[k]==null||det[k]==='') return;
           var val=det[k];
           if(Array.isArray(val)) val=val.join(', ');
@@ -10551,7 +10563,7 @@ function heroCtaCard(c){
         if(det.job)    lines.push(['Job',det.job]);
         if(det.suburb) lines.push(['Suburb',det.suburb]);
         if(det.detail) lines.push(['Details',det.detail]);
-        Object.keys(det).forEach(function(k){ if(['job','suburb','detail'].indexOf(k)>=0)return; if(det[k]==null||det[k]==='')return; lines.push([k,det[k]]); });
+        Object.keys(det).forEach(function(k){ if(['job','suburb','detail','files','filesExpireAt','filesExpired','filesNote'].indexOf(k)>=0)return; if(det[k]==null||det[k]==='')return; lines.push([k,det[k]]); });
       }
       var actions='';
       if(l.phone) actions+='<a class="ll-act" href="tel:'+esc(l.phone)+'">Call</a>';
@@ -10561,6 +10573,7 @@ function heroCtaCard(c){
       }).join('');
       body='<div class="ll-detail">'
         +(lines.length?'<table class="ll-tbl">'+lines.map(function(x){return '<tr><td>'+esc(x[0])+'</td><td>'+esc(String(x[1])).replace(/\n/g,'<br>')+'</td></tr>';}).join('')+'</table>':'<p class="ll-empty" style="margin:0 0 8px;">No extra details were provided.</p>')
+        +lpLeadFilesHtml(l)
         +'<div class="ll-actbar">'+actions+'</div>'
         +'<div class="ll-statusbar">'+status+'</div>'
         +'</div>';
@@ -10594,9 +10607,36 @@ function heroCtaCard(c){
       : '<p class="ll-empty">No activity recorded for this site yet in the selected period.</p>';
   }
 
+  /* Files sent with the quote form (Quote → File uploads). Private storage: links are made on
+     click by /api/lead-files/open and work for a few minutes. */
+  function lpLeadFilesHtml(l){
+    var det=(l&&l.details)||{}, files=Array.isArray(det.files)?det.files:[];
+    var note=det.filesNote?'<p class="ll-files-note">'+esc(det.filesNote)+'</p>':'';
+    if(!files.length) return note?'<div class="ll-files">'+note+'</div>':'';
+    function sz(n){ n=+n||0; return n>=1048576?(n/1048576).toFixed(1)+' MB':Math.max(1,Math.round(n/1024))+' KB'; }
+    var list=files.map(function(f){ return '<li>'+esc(f.name||'file')+' <span class="ll-files-sz">'+sz(f.size)+'</span></li>'; }).join('');
+    var body=det.filesExpired
+      ? '<p class="ll-files-note">These files were deleted after 90 days.</p>'
+      : '<button type="button" class="ll-act" data-ll="files" data-id="'+esc(l.id)+'">Open files</button><div class="ll-files-links" data-ll-files="'+esc(l.id)+'"></div>';
+    return '<div class="ll-files"><div class="ll-files-h">Files ('+files.length+')</div><ul class="ll-files-list">'+list+'</ul>'+body+note+'</div>';
+  }
+  async function lpLeadFilesOpen(id){
+    var box=document.querySelector('[data-ll-files="'+String(id).replace(/"/g,'')+'"]'); if(!box) return;
+    box.textContent='Getting links\u2026';
+    try{
+      var tok=((await sb.auth.getSession()).data.session||{}).access_token||'';
+      var r=await fetch('/api/lead-files/open',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+tok},body:JSON.stringify({leadId:id})});
+      var j=await r.json().catch(function(){ return {}; });
+      if(!r.ok||!j.ok){ box.textContent=(j&&j.message)||'Could not open the files.'; return; }
+      if(j.expired||!(j.files||[]).length){ box.textContent='These files are no longer available.'; return; }
+      box.innerHTML=j.files.map(function(f){ return f.url?'<a href="'+esc(f.url)+'" target="_blank" rel="noopener">Download '+esc(f.name||'file')+'</a>':'<span>'+esc(f.name||'file')+' \u2014 missing</span>'; }).join('')+'<p class="ll-files-note">Links work for 5 minutes.</p>';
+    }catch(err){ box.textContent='Could not open the files.'; }
+  }
+
   async function lpLeadsClick(e){
     var b=e.target.closest('[data-ll]'); if(!b) return;
     var act=b.getAttribute('data-ll');
+    if(act==='files'){ lpLeadFilesOpen(b.getAttribute('data-id')); return; }
     if(act==='refresh'){ LPLEADS.siteId=null; renderLeadsCRM(); return; }
     if(act==='timeline'){ LPLEADS.timeline=!LPLEADS.timeline; lpLeadsPaint(); return; }
     if(act==='view'){

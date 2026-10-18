@@ -28,6 +28,7 @@ const {
 const { deliverConversion } = require('../lib/google-ads/conversions');
 const { detailLines, buildLeadNotifyEmail } = require('../lib/lead-notify-email');
 const { resolveLeadNotifyStyle } = require('../lib/lead-notify-style');
+const LeadFiles = require('../lib/lead-files');
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -83,11 +84,11 @@ function contactEmailFor(siteRow) {
   return clean(cfg.email) || clean(siteRow && siteRow.owner_email) || '';
 }
 
-async function sendEmail({ to, business, lead, dets, slug, siteId, style }) {
+async function sendEmail({ to, business, lead, dets, slug, siteId, style, files }) {
   const key = process.env.RESEND_API_KEY;
   if (!key || !to) return { sent: false, reason: !key ? 'no_key' : 'no_recipient' };
 
-  const mail = buildLeadNotifyEmail({ business, lead, dets, slug, style });
+  const mail = buildLeadNotifyEmail({ business, lead, dets, slug, style, files });
 
   try {
     const r = await fetch('https://api.resend.com/emails', {
@@ -178,6 +179,17 @@ module.exports = async (req, res) => {
       };
     }
 
+    // Files uploaded with the form (Quote → File uploads): keep only files that really
+    // are in this site's upload folder. Anything not attached is removed by the cleanup cron.
+    let leadFiles = [];
+    if (siteRow && body.files && LeadFiles.uploadSettings(siteRow.config).on) {
+      try { leadFiles = await LeadFiles.verifyLeadFiles(supabase, siteRow.id, body.files); } catch (e) { leadFiles = []; }
+    }
+    if (leadFiles.length) {
+      details.files = leadFiles;
+      details.filesExpireAt = new Date(Date.now() + LeadFiles.LIMITS.keepDays * 86400000).toISOString();
+    }
+
     const trafficLabel = attr.traffic_source === 'google_ads'
       ? 'Google Ads'
       : (attr.utm_source || clean(body.site, 160) || (siteRow ? siteRow.business_name : null));
@@ -246,10 +258,11 @@ module.exports = async (req, res) => {
       dets,
       slug: (siteRow && siteRow.slug) || clean(body.slug, 80) || '',
       siteId: siteRow && siteRow.id,
-      style: notifyStyle
+      style: notifyStyle,
+      files: (stored && leadId && leadFiles.length) ? LeadFiles.emailLinks(leadId, leadFiles) : []
     });
 
-    return ok({ stored, emailed: mail.sent, mail: mail.reason, store_error: storeError });
+    return ok({ stored, emailed: mail.sent, mail: mail.reason, store_error: storeError, files: leadFiles.length });
   } catch (e) {
     console.error('leads error:', e && e.message);
     // Still 200 so the customer is thanked; we just log the failure.

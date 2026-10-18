@@ -58,6 +58,10 @@
     {
       "path": "/api/cron/bookings-hire-google-sync",
       "schedule": "*/15 * * * *"
+    },
+    {
+      "path": "/api/cron/lead-files-cleanup",
+      "schedule": "35 16 * * *"
     }
   ],
   "rewrites": [

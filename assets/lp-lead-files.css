@@ -1,0 +1,17 @@
+/* Quote form → File uploads (assets/lp-lead-files.js) */
+.lpf .lpf-help{margin:-2px 0 8px;font-size:13.5px;line-height:1.45;color:var(--muted,#5b6878)}
+.lpf .lpf-input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.lpf .lpf-add{display:inline-flex!important;align-items:center;gap:8px;margin:0!important;padding:10px 14px;border:2px dashed var(--line,#d6dde5);border-radius:9px;cursor:pointer;font-size:14.5px!important;font-weight:600!important;text-transform:none!important;letter-spacing:0!important;color:var(--ink,#1a2230)!important;background:transparent}
+.lpf .lpf-add:hover,.lpf .lpf-input:focus-visible+.lpf-add,.lpf .lpf-input:focus+.lpf-msg{border-color:var(--pipe,#1f7bb8)}
+.lpf .lpf-add[hidden]{display:none!important}
+.lpf .lp-ic{width:17px;height:17px;flex:0 0 auto}
+.lpf .lpf-list{list-style:none;margin:0 0 8px;padding:0;display:grid;gap:6px}
+.lpf .lpf-list[hidden]{display:none}
+.lpf .lpf-list li{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line,#d6dde5);border-radius:9px;font-size:14px;color:var(--ink,#1a2230);background:rgba(255,255,255,.6)}
+.lpf .lpf-ic{display:inline-flex;color:var(--muted,#5b6878)}
+.lpf .lpf-name{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lpf .lpf-size{flex:0 0 auto;font-size:12.5px;color:var(--muted,#5b6878)}
+.lpf .lpf-rm{flex:0 0 auto;width:28px;height:28px;border:0;border-radius:6px;background:transparent;color:inherit;font-size:20px;line-height:1;cursor:pointer}
+.lpf .lpf-rm:hover{background:rgba(0,0,0,.06)}
+.lpf .lpf-msg{margin:8px 0 0;font-size:13.5px;color:#b42318}
+.lpf .lpf-msg[hidden]{display:none}
