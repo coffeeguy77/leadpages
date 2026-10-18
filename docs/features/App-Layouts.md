@@ -252,3 +252,11 @@ All opt-in; existing sites are unchanged until the layout is chosen.
 - **Links to an app** — `#services`, `#textBox`, `#featuredProjects` … in the menu (External URL), footer links or any button now scroll to that app. Most app sections only carry `data-sec`, not an id, so these links used to do nothing; `lp-layouts.js` (`bindSectionLinks`) handles any `a[href^="#"]` whose name matches no id but does match an app section. Links to real ids are unchanged.
 
 First used on Oppikofer Joinery (`kitchens-canberra`). Tests: `tests/app-layouts-split-numbered.test.js`. Assets bumped to `lp-layouts.css?v=30` / `lp-layouts.js?v=32` in `trade.template.json`.
+
+
+## Services → Style **Photo cards** (Oct 2026)
+
+`sections.services.mode = 'photo'`: large photo, title, text (clamped to `photoClamp` lines, default 4, `0` = all),
+and a "Learn more" link; the whole card links where the service's button points (`services[].cta.linkAction`
+`page` / `url` / `scroll`). `photoCols` 2–4 (default 3), `photoHeadSplit`, `photoLinkLabel` / `photoLinkHref`.
+First used on Down Right Concreting (`downrightconcreting`). Assets bumped to `lp-layouts.css?v=31` / `lp-layouts.js?v=33`.

@@ -866,6 +866,24 @@ function orderShopPage(cfg, page) {
   return vp;
 }
 
+/* LeadPages Gallery engine (assets/lp-gallery.js): load it up-front when a
+ * Premium Gallery is switched on (site-wide or on this landing page), so the
+ * gallery paints without waiting for the in-page loader. The in-page shim
+ * loads it on demand anyway, so this is only a speed-up. */
+const LPG_VERSION = 'lpg-1';
+function injectGalleryEngine(doc, cfg, pageRow) {
+  try {
+    const on = (cfg && cfg.sections && cfg.sections.premiumGallery && cfg.sections.premiumGallery.on === true) ||
+      !!(pageRow && pageRow.pageSections && pageRow.pageSections.premiumGallery && pageRow.pageSections.premiumGallery.on === true);
+    if (!on || doc.indexOf('data-lpg-js') >= 0) return doc;
+    const css = '<link rel="stylesheet" href="/assets/lp-gallery.css?v=' + LPG_VERSION + '" data-lpg-css="1">';
+    const js = '<script src="/assets/lp-gallery.js?v=' + LPG_VERSION + '" defer data-lpg-js="1"></script>';
+    doc = /<\/head>/i.test(doc) ? doc.replace(/<\/head>/i, css + '</head>') : css + doc;
+    doc = doc.indexOf('</body>') !== -1 ? doc.replace('</body>', js + '\n</body>') : doc + js;
+    return doc;
+  } catch (e) { return doc; }
+}
+
 const ORDER_SCRIPT = '/assets/lp-order-storefront.js?v=oe-24';
 /** Start loading the shop menu from <head>, while the rest of the page and scripts download;
  *  lp-order-storefront.js picks up this request instead of starting its own. Also keeps the
@@ -1598,6 +1616,7 @@ module.exports = async (req, res) => {
       // Shop on a landing page (its own app copy): load the menu early there too.
       if (pageHasOrderStorefront(_pageRow)) html = withOrderPrefetch(html, site.slug);
       html = injectBookingStorefront(html, site.slug, cfg);
+      html = injectGalleryEngine(html, cfg, _pageRow);
       html = injectFontSet(html, cfg);
       html = injectSearchCanvas(html, cfg);
       // Colour overrides run again after dynamic injects so Order Storefront /
@@ -1617,5 +1636,6 @@ module.exports = async (req, res) => {
 // Test hooks (no behaviour change).
 module.exports._injectBookingStorefront = injectBookingStorefront;
 module.exports._injectFontSet = injectFontSet;
+module.exports._injectGalleryEngine = injectGalleryEngine;
 module.exports._orderShopPage = orderShopPage;
 module.exports._pageSectionOrder = pageSectionOrder;

@@ -504,6 +504,16 @@
     var oldLead = node.querySelector('.section-head > .svn-lead');
     if (oldLead) { while (oldLead.firstChild) oldLead.parentNode.insertBefore(oldLead.firstChild, oldLead); oldLead.parentNode.removeChild(oldLead); }
     clear(node, 'svn');
+    var photo = SV.mode === 'photo';
+    node.classList.toggle('svcs-photo', photo);
+    clear(node, 'svp');
+    if (photo) {
+      ['svcs-num', 'svcs-story', 'svst-left', 'svcs-feature', 'svf-right', 'svcs-tick', 'svcs-tick-dark', 'svcs-iconrow', 'svcs-band-brand', 'svcs-band-dark', 'svcs-band-light', 'lpl-tone-soft', 'lpl-tone-tint', 'lpl-tone-dark'].forEach(function (k) { node.classList.remove(k); });
+      node.classList.toggle('svn-headsplit', SV.photoHeadSplit === true);
+      clear(node, 'svst'); clear(node, 'svf');
+      servicesPhoto(node, C, SV);
+      return;
+    }
     if (num) {
       ['svcs-story', 'svst-left', 'svcs-feature', 'svf-right', 'svcs-tick', 'svcs-tick-dark', 'svcs-iconrow', 'svcs-band-brand', 'svcs-band-dark', 'svcs-band-light', 'lpl-tone-soft', 'lpl-tone-tint', 'lpl-tone-dark'].forEach(function (k) { node.classList.remove(k); });
       clear(node, 'svst'); clear(node, 'svf');
@@ -613,6 +623,52 @@
     }
     var lab = txt(SV.numLinkLabel);
     if (lab) grid.insertAdjacentHTML('afterend', '<p class="svn-more" data-lpl="svn"><a class="lpl-link" data-lpe="numLinkLabel" ' + linkAttrs(hrefOf(SV.numLinkHref, contactHref())) + '>' + esc(lab) + ARROW + '</a></p>');
+  }
+
+  /* ---------- Services: photo cards — large photo, title, short text, link to the service ----------
+   *  sections.services.mode = 'photo'. Each card links where its own button points
+   *  (services[].cta: linkAction page/url/scroll), so the whole card is clickable.
+   *  photoCols (2-4, default 3) · photoClamp (lines of text, default 4, 0 = all) ·
+   *  photoHeadSplit (heading left, intro right) · photoLinkLabel / photoLinkHref (link under the cards). */
+  function svcHref(s) {
+    var c = (s && s.cta) || {};
+    if (c.on === false) return '';
+    var a = String(c.linkAction || '');
+    if (a === 'page' && txt(c.linkPage)) return withBase('/' + txt(c.linkPage).replace(/^\/+/, ''));
+    if (a === 'url' && txt(c.linkUrl)) return hrefOf(c.linkUrl);
+    if (a === 'scroll') return '#' + (txt(c.linkTarget).replace(/^#/, '') || 'quote');
+    return '';
+  }
+  function servicesPhoto(node, C, SV) {
+    var grid = node.querySelector('.svcs'); if (!grid) return;
+    var items = siteServices(C).filter(function (s) { return txt(s.title) || txt(s.body) || txt(s.image); });
+    var all = live(C && C.services);
+    var cols = Math.max(2, Math.min(4, parseInt(SV.photoCols, 10) || 3));
+    var clamp = parseInt(SV.photoClamp, 10); if (isNaN(clamp)) clamp = 4;
+    node.style.setProperty('--svp-cols', String(cols));
+    node.style.setProperty('--svp-clamp', clamp > 0 ? String(clamp) : 'none');
+    node.classList.toggle('svp-noclamp', clamp <= 0);
+    grid.innerHTML = items.map(function (s) {
+      var img = bgUrl(s.image), idx = all.indexOf(s), href = svcHref(s);
+      var lab = txt(s.cta && s.cta.label) || 'Learn more';
+      var tag = href ? 'a' : 'div';
+      return '<' + tag + ' class="svc svp"' + (href ? ' ' + linkAttrs(href) : '') + (idx >= 0 ? ' data-lpe="list:services:' + idx + ':title"' : '') + '>' +
+        '<span class="svp-media">' + (img ? '<img src="' + esc(img) + '" alt="' + esc(s.title || '') + '" loading="lazy">' : (icon(s.icon) ? '<span class="svp-ico">' + icon(s.icon) + '</span>' : '')) + '</span>' +
+        '<span class="svp-body">' + (txt(s.title) ? '<h3>' + esc(s.title) + '</h3>' : '') +
+        (txt(s.body) ? '<p>' + esc(s.body) + '</p>' : '') +
+        (href ? '<span class="svp-more">' + esc(lab) + ARROW + '</span>' : '') + '</span></' + tag + '>';
+    }).join('');
+    var head = node.querySelector('.section-head');
+    if (head && SV.photoHeadSplit === true && !head.querySelector('.svn-lead')) {
+      var lead = document.createElement('div');
+      lead.className = 'svn-lead';
+      lead.setAttribute('data-lpl', 'svn');
+      var kids = head.querySelectorAll(':scope > .eyebrow, :scope > h2');
+      for (var k = 0; k < kids.length; k++) lead.appendChild(kids[k]);
+      head.insertBefore(lead, head.firstChild);
+    }
+    var more = txt(SV.photoLinkLabel);
+    if (more) grid.insertAdjacentHTML('afterend', '<p class="svn-more svp-after" data-lpl="svp"><a class="lpl-link" data-lpe="photoLinkLabel" ' + linkAttrs(hrefOf(SV.photoLinkHref, contactHref())) + '>' + esc(more) + ARROW + '</a></p>');
   }
 
   /* ---------- Services: big photo beside a heading, intro and icon points ---------- */

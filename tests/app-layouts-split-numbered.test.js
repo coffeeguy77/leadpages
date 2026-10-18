@@ -60,6 +60,18 @@ test('"#app" links scroll to the app section when no element has that id', () =>
 
 test('template loads the new asset versions', () => {
   const tpl = read('trade.template.json');
-  assert.match(tpl, /lp-layouts\.css\?v=30/);
-  assert.match(tpl, /lp-layouts\.js\?v=32/);
+  assert.match(tpl, /lp-layouts\.css\?v=31/);
+  assert.match(tpl, /lp-layouts\.js\?v=33/);
+});
+
+test('services photo cards layout: whole card links to the service, editor offers it', () => {
+  const fs = require('fs'), path = require('path');
+  const js = fs.readFileSync(path.join(__dirname, '..', 'assets/lp-layouts.js'), 'utf8');
+  const css = fs.readFileSync(path.join(__dirname, '..', 'assets/lp-layouts.css'), 'utf8');
+  const m = fs.readFileSync(path.join(__dirname, '..', 'manage.html'), 'utf8');
+  assert.match(js, /function servicesPhoto\(/);
+  assert.match(js, /a === 'page' && txt\(c\.linkPage\)\) return withBase\(/);
+  assert.match(css, /\.svcs-photo \.svcs\{display:grid!important/);
+  assert.ok(m.includes("<option value=\"photo\"'+(mode==='photo'?' selected':'')+'>Photo cards"));
+  assert.ok(m.includes("{title:'Photo cards',when:'mode=photo'"));
 });

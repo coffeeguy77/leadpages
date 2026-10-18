@@ -812,3 +812,26 @@ stateDiagram-v2
 ---
 
 *Last updated: July 2026 — reflects `manage.html` quote editor and `trade.template.json` public form on branch `main`.*
+
+
+## Extra field types (Oct 2026)
+
+`sections.quote.extraFields[]` items accept optional `type`, `options`, `required`:
+
+| type | renders | value sent |
+|---|---|---|
+| `text` (default) | single line | text |
+| `textarea` | long answer | text |
+| `select` | dropdown of `options` (one per line) | choice |
+| `checkboxes` | tick-box chips (pick any) | `"A, B"` |
+| `radio` | single-choice chips | choice |
+
+Photos/plans are not an extra field — use **Quote → File uploads** (`uploadsOn`, private storage;
+see `docs/features/Lead-Files.md`).
+
+Library marker `/*LPQX*/` in demo-shared.js + templates; re-apply with `node scripts/patch-quote-extra-fields.js`.
+Also fixed: answers were read by list index while the form was numbered by visible index, so a hidden field
+shifted later answers onto the wrong label.
+
+Footer social links: `sections.footer.social = [{on, network, url}]`, `socialTitle` (marker `/*LPSOC*/`,
+`scripts/patch-footer-social.js`).

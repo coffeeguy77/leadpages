@@ -5304,9 +5304,10 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     faq:{secId:'faq',key:'items',addLabel:'Add question',item:[{k:'q',label:'Question'},{k:'a',label:'Answer',type:'ta'}],defaultItem:{q:'',a:''}},
     seoText:{secId:'seoText',key:'faq',addLabel:'Add FAQ',item:[{k:'q',label:'Question'},{k:'a',label:'Answer',type:'ta'}],defaultItem:{q:'',a:''}},
     quotePoints:{secId:'quote',key:'points',addLabel:'Add point',item:[{k:'icon',label:'Icon',type:'icon',ph:'✓'},{k:'text',label:'Point'}],defaultItem:{text:''}},
-    quoteExtraFields:{secId:'quote',key:'extraFields',addLabel:'Add field',item:[{k:'label',label:'Field title'},{k:'placeholder',label:'Sample / placeholder text',ph:'e.g. Acme Pty Ltd'}],defaultItem:{on:true,label:'',placeholder:''}},
+    quoteExtraFields:{secId:'quote',key:'extraFields',addLabel:'Add field',item:[{k:'label',label:'Field title'},{k:'type',label:'Field type',type:'select',opts:[['text','Short answer'],['textarea','Long answer'],['select','Dropdown'],['checkboxes','Tick boxes (pick any)'],['radio','Single choice']]},{k:'placeholder',label:'Sample / placeholder text',ph:'e.g. Acme Pty Ltd'},{k:'options',label:'Choices — one per line (dropdown, tick boxes, single choice)',type:'ta'},{k:'required',label:'Required',type:'check'}],defaultItem:{on:true,label:'',placeholder:'',type:'text',options:'',required:false}},
     footerServices:{secId:'footer',key:'services',addLabel:'Add link',item:[{k:'label',label:'Label'},{k:'href',label:'Link',w:'170px',ph:'#quote'}],defaultItem:{label:'',href:'#quote'}},
     footerCall:{secId:'footer',key:'callItems',addLabel:'Add contact line',item:[{k:'label',label:'Label'},{k:'href',label:'Link',w:'170px',ph:'tel: or mailto:'}],defaultItem:{label:'',href:''}},
+    footerSocial:{secId:'footer',key:'social',addLabel:'Add social link',item:[{k:'network',label:'Network',type:'select',opts:[['facebook','Facebook'],['instagram','Instagram'],['linkedin','LinkedIn'],['youtube','YouTube'],['tiktok','TikTok'],['x','X (Twitter)'],['google','Google reviews'],['website','Website'],['email','Email']]},{k:'url',label:'Link',w:'1 1 260px',ph:'https://facebook.com/yourpage'}],defaultItem:{on:true,network:'facebook',url:''}},
     footerLegalLinks:{secId:'footer',key:'legalLinks',addLabel:'Add legal link',item:[{k:'label',label:'Label'},{k:'href',label:'URL',w:'1 1 220px',ph:'https://\u2026'}],defaultItem:{label:'',href:''}},
     jobOptions:{secId:'quote',key:'jobOptions',addLabel:'Add option',item:[{k:'text',label:'Option'}],defaultItem:{text:''}},
     beforeAfterItems:{secId:'beforeAfter',key:'items',addLabel:'Add before / after',item:[{k:'title',label:'Title'},{k:'caption',label:'Caption',type:'ta'},{k:'beforeImage',type:'image',label:'Before image URL',ph:'https://\u2026 (optional)'},{k:'afterImage',type:'image',label:'After image URL',ph:'https://\u2026 (optional)'}],defaultItem:{title:'New result',caption:'',beforeImage:'',afterImage:''}},
@@ -6606,7 +6607,7 @@ function wireQuoteStyle(c){
       return '<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:200px;"><label>'+label+'</label><div style="display:flex;align-items:center;gap:8px;"><input type="color" id="'+id+'-clr" value="'+(val||defv)+'" style="width:46px;height:34px;padding:0;border:1px solid var(--line);border-radius:8px;cursor:pointer;flex:0 0 auto;"><input type="text" id="'+id+'-tx" class="tin" value="'+val+'" placeholder="'+defv+' (default)" style="flex:1;min-width:0;"><button type="button" class="btn ghost" id="'+id+'-def" style="padding:6px 10px;">Default</button></div></div>';
     }
     var h='<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Layout</h2><p class="lede" style="margin:0 0 12px;">Classic grid keeps the heading above the cards. Split columns puts copy on the left. Image cards match the LeadPages homepage — photo on top, optional icon in a circle, title and text below.</p>';
-    h+='<div class="row"><div class="f"><label>Style</label><select id="svc-mode" class="tin"><option value="grid"'+(mode==='grid'?' selected':'')+'>Classic grid</option><option value="split"'+(mode==='split'?' selected':'')+'>Split columns (text left)</option><option value="cards"'+(mode==='cards'?' selected':'')+'>Image cards (homepage)</option><option value="tick"'+(mode==='tick'?' selected':'')+'>Included items (photo + tick cards)</option><option value="iconrow"'+(mode==='iconrow'?' selected':'')+'>Icon row (icon, title, short line)</option><option value="story"'+(mode==='story'?' selected':'')+'>Story (text + link beside one photo)</option><option value="feature"'+(mode==='feature'?' selected':'')+'>Feature (big photo beside heading + icon points)</option><option value="numbered"'+(mode==='numbered'?' selected':'')+'>Numbered cards (big number, title, text, photo)</option></select></div>'+lpSel('Band colour','svc-tick-theme',[['dark','Dark band'],['light','Light band'],['brand','Brand colour']],(SV.tickTheme==='light'||SV.tickTheme==='brand')?SV.tickTheme:'dark')+'</div>'
+    h+='<div class="row"><div class="f"><label>Style</label><select id="svc-mode" class="tin"><option value="grid"'+(mode==='grid'?' selected':'')+'>Classic grid</option><option value="split"'+(mode==='split'?' selected':'')+'>Split columns (text left)</option><option value="cards"'+(mode==='cards'?' selected':'')+'>Image cards (homepage)</option><option value="tick"'+(mode==='tick'?' selected':'')+'>Included items (photo + tick cards)</option><option value="iconrow"'+(mode==='iconrow'?' selected':'')+'>Icon row (icon, title, short line)</option><option value="story"'+(mode==='story'?' selected':'')+'>Story (text + link beside one photo)</option><option value="feature"'+(mode==='feature'?' selected':'')+'>Feature (big photo beside heading + icon points)</option><option value="numbered"'+(mode==='numbered'?' selected':'')+'>Numbered cards (big number, title, text, photo)</option><option value="photo"'+(mode==='photo'?' selected':'')+'>Photo cards (large photo, text, link to the service)</option></select></div>'+lpSel('Band colour','svc-tick-theme',[['dark','Dark band'],['light','Light band'],['brand','Brand colour']],(SV.tickTheme==='light'||SV.tickTheme==='brand')?SV.tickTheme:'dark')+'</div>'
       +'<div id="svc-row-opts" style="'+(mode==='iconrow'?'':'display:none;')+'margin-top:12px;">'+lpRange('Icon / image size','svc-row-sz',(SV.iconRowSize!=null?+SV.iconRowSize:40),20,160,'px')+'<p class="hint" style="margin:4px 0 0;">Each item shows its <b>Image</b> when one is set (upload it on the item below), otherwise its <b>Icon</b>.</p></div>';
     h+='<div id="svc-split-opts" style="'+(mode==='split'?'':'display:none;')+'margin-top:14px;padding-top:14px;border-top:1px solid var(--line);">';
     h+='<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 12px;"><input type="checkbox" id="svc-accent-on"'+(accentOn?' checked':'')+'> Accent line under title</label>';
@@ -6935,6 +6936,7 @@ function heroCtaCard(c){
       {t:'sel',k:'featureSide',label:'Photo side',opts:[['','Photo on the left'],['right','Photo on the right']]},
       {t:'sel',k:'featureTone',label:'Background',opts:[['','Page background'],['soft','Soft (theme light colour)'],['tint','Brand tint'],['dark','Dark']]}],
       lists:[['servicesFeatureItems','Feature points','Icon (or a small image), title and text for each point.']]},
+    {title:'Photo cards',when:'mode=photo',lede:'Each service shows its <b>Image</b> large, then its title and text. The whole card links wherever the service\u2019s <b>button</b> points (a page, a web address or a section) \u2014 set that on each service below.',rows:[{t:'sel',k:'photoCols',label:'Cards per row (desktop)',opts:[['','3'],['2','2'],['4','4']]},{t:'sel',k:'photoClamp',label:'Text length',opts:[['','Up to 4 lines'],['3','Up to 3 lines'],['6','Up to 6 lines'],['0','Show all text']]},{t:'chk',k:'photoHeadSplit',label:'Heading left, intro right',def:false},{t:'text',k:'photoLinkLabel',label:'Link under the cards',ph:'e.g. All services (empty = hidden)'},{t:'text',k:'photoLinkHref',label:'Link',ph:'/page, #section or https://\u2026'}]},
     {title:'Numbered cards',when:'mode=numbered',lede:'Each service shows a big number (01, 02\u2026), its title and text, and its <b>Image</b> underneath. The eyebrow and heading sit on the left with the intro on the right. Add an optional text link under the cards.',rows:[{t:'text',k:'numLinkLabel',label:'Link under the cards',ph:'e.g. Let\u2019s discuss your ideas (empty = hidden)'},{t:'text',k:'numLinkHref',label:'Link',ph:'#quote, /page or https://\u2026 (empty = enquiry form)'},{t:'chk',k:'numHeadSplit',label:'Heading left, intro right',def:true}]},{title:'Story layout',when:'mode=story',lede:'Uses the eyebrow, heading and intro above, with a text link under them and one photo beside them. The service cards are hidden in this style. Leave the photo empty to use the first service\u2019s image.',rows:[
       {t:'image',k:'storyImage',label:'Photo'},
       {t:'text',k:'storyLinkLabel',label:'Link text',ph:'e.g. Our story (empty = hidden)'},
@@ -7523,7 +7525,7 @@ function heroCtaCard(c){
       uj=await ur.json().catch(function(){return {};});
     }
     if(!ur.ok||!uj.secure_url) throw new Error((uj.error&&uj.error.message)||('Cloudinary rejected the upload ('+ur.status+')'));
-    return { url:uj.secure_url, publicId:uj.public_id };
+    return { url:uj.secure_url, publicId:uj.public_id, width:uj.width||null, height:uj.height||null };
   }
   /** True while the site config (homepage + landing pages) still points at this image. */
   function cwImageInUse(publicId){
@@ -7795,6 +7797,11 @@ function heroCtaCard(c){
   }
   function listEditor(host,c,sk){
     if(!host) return; var sc=LIST_SCHEMAS[sk]; var items=getList(c,sk);
+    /* Re-running listEditor on the same host (e.g. after a bulk upload) used to stack a second set of
+       listeners, so moves jumped two places and deletes ran twice. Drop the previous set first. */
+    if(host.__leAbort){ try{ host.__leAbort.abort(); }catch(_a){} }
+    var __leAc=(typeof AbortController!=='undefined')?new AbortController():null; host.__leAbort=__leAc;
+    function __leAdd(t,fn,o){ host.addEventListener(t,fn,__leAc?{signal:__leAc.signal,capture:!!(o===true||(o&&o.capture))}:o); }
     var dragIdx=null;
     function moveItem(from,to){
       if(from===to||from<0||to<0||from>=items.length||to>=items.length) return;
@@ -7830,9 +7837,9 @@ function heroCtaCard(c){
       if(sk==='trustBar') wireTrustBarLinks(host,c);
     }
     function refreshRowHeaders(){ if(!sc.rowHeader) return; host.querySelectorAll('.le-row').forEach(function(row,i){ var wrap=row.querySelector('.le-row-head'); if(wrap) wrap.innerHTML=sc.rowHeader(items[i]||{},i); }); }
-    function collect(fullRender){ var arr=[]; host.querySelectorAll('.le-row').forEach(function(row){ var it={on:row.querySelector('.le-on').checked}; row.querySelectorAll('[data-k]').forEach(function(el){ it[el.getAttribute('data-k')]=el.classList.contains('le-chk')?el.checked:el.value; }); row.querySelectorAll('.le-radio').forEach(function(rg){ var rk=rg.getAttribute('data-radiok'); var ck=rg.querySelector('input[type=radio]:checked'); it[rk]=ck?ck.value:''; }); arr.push(it); }); items=arr; setList(c,sk,arr); if(fullRender&&sc.rowHeader) render(); else refreshRowHeaders(); }
+    function collect(fullRender){ var arr=[]; host.querySelectorAll('.le-row').forEach(function(row,ri){ /* keep fields the form does not show (ids, sizes, links, upload dimensions…) — only overwrite what the row edits */ var _src=items[+row.getAttribute('data-idx')]; if(_src==null) _src=items[ri]; var it=Object.assign({}, (_src&&typeof _src==='object')?_src:{}, {on:row.querySelector('.le-on').checked}); row.querySelectorAll('[data-k]').forEach(function(el){ it[el.getAttribute('data-k')]=el.classList.contains('le-chk')?el.checked:el.value; }); row.querySelectorAll('.le-radio').forEach(function(rg){ var rk=rg.getAttribute('data-radiok'); var ck=rg.querySelector('input[type=radio]:checked'); it[rk]=ck?ck.value:''; }); arr.push(it); }); items=arr; setList(c,sk,arr); if(fullRender&&sc.rowHeader) render(); else refreshRowHeaders(); }
     render();
-    host.addEventListener('input',function(e){
+    __leAdd('input',function(e){
       if(e.target.classList.contains('le-color')){
         var _k=e.target.getAttribute('data-colorfor');
         var _tx=e.target.closest('.le-row').querySelector('input[type=text][data-k="'+_k+'"]');
@@ -7853,25 +7860,25 @@ function heroCtaCard(c){
       }
       if(e.target.matches('textarea,select')) collect(false);
     });
-    host.addEventListener('change',function(e){ if(e.target.classList.contains('le-on')||e.target.type==='radio'||e.target.classList.contains('le-chk')) collect(false); });
-    host.addEventListener('dragstart',function(e){
+    __leAdd('change',function(e){ if(e.target.classList.contains('le-on')||e.target.type==='radio'||e.target.classList.contains('le-chk')) collect(false); });
+    __leAdd('dragstart',function(e){
       var row=e.target.closest&&e.target.closest('.le-row'); if(!row||e.target.closest('input,textarea,select,button,a,label')){ e.preventDefault(); return; }
       dragIdx=+row.getAttribute('data-idx');
       try{ e.dataTransfer.effectAllowed='move'; e.dataTransfer.setData('text/plain',String(dragIdx)); }catch(_e){}
       row.classList.add('le-dragging');
     });
-    host.addEventListener('dragend',function(){
+    __leAdd('dragend',function(){
       dragIdx=null;
       host.querySelectorAll('.le-row').forEach(function(r){ r.classList.remove('le-dragging','le-drop-before','le-drop-after'); });
     });
-    host.addEventListener('dragover',function(e){
+    __leAdd('dragover',function(e){
       e.preventDefault();
       var row=e.target.closest&&e.target.closest('.le-row'); if(!row) return;
       var rc=row.getBoundingClientRect(); var after=(e.clientY-rc.top)>rc.height/2;
       host.querySelectorAll('.le-row').forEach(function(r){ r.classList.remove('le-drop-before','le-drop-after'); });
       row.classList.add(after?'le-drop-after':'le-drop-before');
     });
-    host.addEventListener('drop',function(e){
+    __leAdd('drop',function(e){
       e.preventDefault();
       var row=e.target.closest&&e.target.closest('.le-row'); if(!row||dragIdx==null) return;
       var to=+row.getAttribute('data-idx');
@@ -7881,7 +7888,7 @@ function heroCtaCard(c){
       if(to>from) to-=1;
       moveItem(from,to);
     });
-    host.addEventListener('click',function(e){
+    __leAdd('click',function(e){
       if(e.target.classList.contains('le-up')||e.target.closest('.le-up')){
         var bu=e.target.closest('.le-up')||e.target; var iu=+bu.getAttribute('data-idx');
         if(iu>0){ collect(false); moveItem(iu,iu-1); }
@@ -11024,7 +11031,8 @@ function heroCtaCard(c){
         +'<div class="row"><div class="f"><label>Smart preset</label><select id="pg-smart" class="tin"><option value="">Custom</option><option value="clean">Clean</option><option value="editorial">Editorial</option><option value="dynamic">Dynamic</option><option value="minimal">Minimal</option><option value="cinematic">Cinematic</option><option value="collage">Collage</option></select></div>'
         +'<div class="f"><label>Structure mode</label><select id="pg-mode" class="tin"><option value="simple">Simple gallery</option><option value="filtered">Filtered gallery</option><option value="categories">Categories → images</option><option value="categories-albums">Categories → albums → images</option></select></div></div>'
         +'<div class="row"><div class="f"><label>Header layout</label><select id="pg-header" class="tin"><option value="centred">Centred</option><option value="left">Left aligned</option><option value="split">Split</option><option value="titleFilters">Title with filters</option><option value="hero">Image hero</option><option value="minimal">Minimal</option></select></div><div class="f"></div></div>'
-        +'<div class="row" style="margin-top:10px;flex-wrap:wrap;gap:12px;"><label class="ck"><input type="checkbox" id="pg-show-eyebrow"> Eyebrow</label><label class="ck"><input type="checkbox" id="pg-show-title"> Title</label><label class="ck"><input type="checkbox" id="pg-show-intro"> Intro</label><label class="ck"><input type="checkbox" id="pg-show-count"> Count</label><label class="ck"><input type="checkbox" id="pg-show-crumb"> Breadcrumb</label><label class="ck"><input type="checkbox" id="pg-show-back"> Back</label></div></div>';
+        +'<div class="row" style="margin-top:10px;flex-wrap:wrap;gap:12px;"><label class="ck"><input type="checkbox" id="pg-show-eyebrow"> Eyebrow</label><label class="ck"><input type="checkbox" id="pg-show-title"> Title</label><label class="ck"><input type="checkbox" id="pg-show-intro"> Intro</label><label class="ck"><input type="checkbox" id="pg-show-count"> Count</label><label class="ck"><input type="checkbox" id="pg-show-crumb"> Breadcrumb</label><label class="ck"><input type="checkbox" id="pg-show-back"> Back</label><label class="ck"><input type="checkbox" id="pg-show-cta"> CTA button</label><label class="ck"><input type="checkbox" id="pg-show-badge"> Badge</label></div>'
+        +'<div class="row" style="margin-top:10px;"><div class="f"><label>CTA button action</label><select id="pg-cta-action" class="tin"><option value="quote">Scroll to quote form</option><option value="call">Call the business</option></select></div><div class="f"><label>Supporting line (under intro)</label><input type="text" id="pg-supporting" class="tin" placeholder="Optional"></div></div></div>';
       var _pgLay='<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Layout</h2><p class="lede" style="margin:0 0 12px;">Arrange mixed portrait and landscape images without forcing identical crops.</p>'
         +'<div class="row"><div class="f"><label>Gallery layout</label><select id="pg-layout" class="tin"><option value="smart-mosaic">Smart mosaic</option><option value="random-mosaic">Randomised mosaic</option><option value="grid">Uniform grid</option><option value="masonry">Natural masonry</option><option value="justified">Justified rows</option><option value="editorial">Editorial mosaic</option><option value="feature-grid">Feature and grid</option><option value="filmstrip">Filmstrip</option><option value="slideshow">Slideshow</option><option value="stacked">Stacked</option><option value="collage">Collage</option></select></div>'
         +'<div class="f"><label>Density</label><select id="pg-density" class="tin"><option value="airy">Airy</option><option value="balanced">Balanced</option><option value="compact">Compact</option><option value="edge">Edge-to-edge</option><option value="editorial">Editorial</option></select></div></div>'
@@ -11034,9 +11042,9 @@ function heroCtaCard(c){
         +'<div class="row"><div class="f"><label>Hover</label><select id="pg-hover" class="tin"><option value="none">None</option><option value="zoom">Gentle zoom</option><option value="lift">Lift</option><option value="caption">Reveal caption</option></select></div><div class="f"><label>Load more after</label><input type="number" id="pg-load" class="tin" min="4" max="100"></div><div class="f"><label>Virtualise after (images)</label><input type="number" id="pg-virt" class="tin" min="24" max="500"></div></div>'
         +'<div class="row"><div class="f"><label>Mosaic randomise</label><select id="pg-mosaic-rand" class="tin"><option value="locked">Generate once & lock</option><option value="once">Randomise once per session</option><option value="every-load">Randomise every load</option></select></div>'
         +'<div class="f"><label>Collage rotation (±deg)</label><input type="number" id="pg-collage-rot" class="tin" min="0" max="20"></div><div class="f"><label>Collage overlap (px)</label><input type="number" id="pg-collage-overlap" class="tin" min="0" max="40"></div></div>'
-        +'<div class="row" style="margin-top:8px;align-items:center;gap:12px;"><label class="ck"><input type="checkbox" id="pg-mosaic-lock"> Lock mosaic layout</label><button type="button" class="btn ghost sm" id="pg-mosaic-regen">Regenerate gallery layout</button><span class="hint" id="pg-mosaic-seed"></span></div></div>';
+        +'<div class="row"><div class="f"><label>Captions</label><select id="pg-overlay" class="tin"><option value="bottom-gradient">On hover (with Reveal caption)</option><option value="always">Always over the photo</option><option value="below">Below the photo</option><option value="none">Hidden</option></select></div>'+'<div class="f"><label>Photo size (justified / filmstrip / slideshow)</label><select id="pg-imgsize" class="tin"><option value="small">Small</option><option value="standard">Standard</option><option value="large">Large</option></select></div>'+'<div class="f"><label>Category / album cards</label><select id="pg-cardlay" class="tin"><option value="overlay">Text over photo</option><option value="below">Text below photo</option></select></div></div>'+'<div class="row"><div class="f"><label class="ck" style="margin-top:22px"><input type="checkbox" id="pg-autoplay"> Slideshow autoplay</label></div><div class="f"><label>Autoplay delay (ms)</label><input type="number" id="pg-autoplay-ms" class="tin" min="1500" max="30000" step="500"></div><div class="f"></div></div>'+'<div class="row" style="margin-top:8px;align-items:center;gap:12px;"><label class="ck"><input type="checkbox" id="pg-mosaic-lock"> Lock mosaic layout</label><button type="button" class="btn ghost sm" id="pg-mosaic-regen">Regenerate gallery layout</button><span class="hint" id="pg-mosaic-seed"></span></div></div>';
       var _pgBeh='<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Behaviour & SEO</h2>'
-        +'<div class="row" style="flex-wrap:wrap;gap:12px;"><label class="ck"><input type="checkbox" id="pg-filters"> Enable filters</label><label class="ck"><input type="checkbox" id="pg-all"> Show All tab</label><label class="ck"><input type="checkbox" id="pg-lb"> Lightbox zoom</label><label class="ck"><input type="checkbox" id="pg-lb-cap"> Lightbox captions</label><label class="ck"><input type="checkbox" id="pg-lb-th"> Lightbox thumbnails</label><label class="ck"><input type="checkbox" id="pg-analytics"> Analytics</label><label class="ck"><input type="checkbox" id="pg-seo-index"> Allow indexing</label></div>'
+        +'<div class="row" style="flex-wrap:wrap;gap:12px;"><label class="ck"><input type="checkbox" id="pg-filters"> Enable filters</label><label class="ck"><input type="checkbox" id="pg-all"> Show All tab</label><label class="ck"><input type="checkbox" id="pg-lb"> Open photos in a lightbox</label><label class="ck"><input type="checkbox" id="pg-lb-zoom"> Lightbox zoom (pinch / double-tap)</label><label class="ck"><input type="checkbox" id="pg-lb-dl"> Lightbox download button</label><label class="ck"><input type="checkbox" id="pg-fmulti"> Multi-select filters</label><label class="ck"><input type="checkbox" id="pg-fcounts"> Filter counts</label><label class="ck"><input type="checkbox" id="pg-autoload"> Load more automatically on scroll</label><label class="ck"><input type="checkbox" id="pg-lb-cap"> Lightbox captions</label><label class="ck"><input type="checkbox" id="pg-lb-th"> Lightbox thumbnails</label><label class="ck"><input type="checkbox" id="pg-analytics"> Analytics</label><label class="ck"><input type="checkbox" id="pg-seo-index"> Allow indexing</label></div>'
         +'<div class="row" style="margin-top:10px;"><div class="f"><label>Filter style</label><select id="pg-fstyle" class="tin"><option value="pills">Pill tabs</option><option value="underlined">Underlined tabs</option><option value="segmented">Segmented</option></select></div>'
         +'<div class="f"><label>Filter source</label><select id="pg-fsrc" class="tin"><option value="tags">Tags</option><option value="categories">Categories</option></select></div>'
         +'<div class="f"><label>Lightbox style</label><select id="pg-lbstyle" class="tin"><option value="dark">Dark</option><option value="light">Light</option></select></div></div>'
@@ -11052,14 +11060,45 @@ function heroCtaCard(c){
         +'<div class="f"><label>Badge background</label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="pg-c-badge" value="'+_pgPipe+'"><input type="text" id="pg-c-badge-t" class="tin" placeholder="theme"><button type="button" class="btn ghost sm" id="pg-c-badge-clr">Reset</button></div></div><div class="f"></div></div></div>';
       var _pgUpload='<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Bulk image upload</h2><p class="lede" style="margin:0 0 12px;">Upload many photos at once from your computer, a folder, or a ZIP. Mixed portrait and landscape images are fine.</p>'
         +'<div style="display:flex;flex-wrap:wrap;gap:8px;"><button type="button" class="btn" id="pg-up-files">Upload images</button><button type="button" class="btn ghost" id="pg-up-folder">Upload folder</button><button type="button" class="btn ghost" id="pg-up-zip">Upload ZIP</button><span class="hint" id="pg-up-status" style="align-self:center;"></span></div></div>';
-      body.innerHTML=secCard(c,'premiumGallery','Premium Gallery',true,[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro','ta'],['badge','Badge'],['ctaText','CTA label']])+_pgHead+_pgLay+_pgBeh+_pgDesign+_pgUpload
+      var _pgMgr='<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Photos, categories &amp; albums</h2><p class="lede" style="margin:0 0 12px;">Drag photos to reorder. Click a photo to edit it; tick several to move, tag, hide or delete them together. Uploads keep each photo\'s size so layouts never jump.</p><div id="pg-manager"><div class="hint">Loading gallery manager…</div></div></div>';
+      body.innerHTML=secCard(c,'premiumGallery','Premium Gallery',true,[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro','ta'],['badge','Badge'],['ctaText','CTA label']])+_pgMgr+_pgHead+_pgLay+_pgBeh+_pgDesign
+        +'<details id="pg-advanced" class="card" style="margin-bottom:22px;"><summary style="cursor:pointer;font-weight:700;">Advanced: raw lists</summary><p class="lede" style="margin:10px 0 12px;">The same photos, categories and albums as plain lists. Use the manager above for everyday editing.</p>'+_pgUpload
         +listCard('premiumGalleryCategories','Categories','Used when structure includes categories. Set cover, name, intro and slug for SEO paths.')
         +listCard('premiumGalleryAlbums','Albums / jobs','Nested under a category (use the category id). Keep copy short — photography first.')
-        +listCard('premiumGalleryImages','Images','Upload mixed portrait and landscape photos. Tags power filters; category/album ids place images in the hierarchy.');
+        +listCard('premiumGalleryImages','Images','Upload mixed portrait and landscape photos. Tags power filters; category/album ids place images in the hierarchy.')+'</details>';
       wireSec(c,'premiumGallery',true,[['eyebrow'],['heading'],['intro'],['badge'],['ctaText']]);
       listEditor($('le-premiumGalleryCategories'),c,'premiumGalleryCategories');
       listEditor($('le-premiumGalleryAlbums'),c,'premiumGalleryAlbums');
       listEditor($('le-premiumGalleryImages'),c,'premiumGalleryImages');
+      (function(){
+        var _mgrApi=null;
+        function _pgMountMgr(){
+          var mh=$('pg-manager'); if(!mh) return;
+          if(typeof window.lpGalleryManager!=='function'){ mh.innerHTML='<div class="hint">The gallery manager could not load — use Advanced: raw lists below.</div>'; return; }
+          _mgrApi=window.lpGalleryManager(mh,{
+            get:function(){ return _pgEns(); },
+            save:function(){ persist(); previewApply(); },
+            upload:function(file,onProgress){ return cwUpload(file,['premiumGallery','src'],{onProgress:onProgress}); },
+            pick:function(cb,opts){ cwPickMany(cb,opts||{}); },
+            expand:function(files){ return cwExpandImageFiles(files); },
+            toast:function(m,k){ toast(m,k); }
+          });
+        }
+        function _pgLoadMgr(){
+          if(typeof window.lpGalleryManager==='function'){ _pgMountMgr(); return; }
+          var src='/assets/lp-gallery-manager.js?v=lpg-1';
+          var ex=document.querySelector('script[data-lgm]');
+          if(!document.querySelector('script[data-lpg-js]')){ var g=document.createElement('script'); g.src='/assets/lp-gallery.js?v=lpg-1'; g.setAttribute('data-lpg-js','1'); document.head.appendChild(g); }
+          if(!ex){ ex=document.createElement('script'); ex.src=src; ex.setAttribute('data-lgm','1'); document.head.appendChild(ex); }
+          ex.addEventListener('load',_pgMountMgr); ex.addEventListener('error',function(){ var mh=$('pg-manager'); if(mh) mh.innerHTML='<div class="hint">The gallery manager could not load — use Advanced: raw lists below.</div>'; });
+        }
+        _pgLoadMgr();
+        var adv=$('pg-advanced');
+        if(adv) adv.addEventListener('toggle',function(){
+          if(adv.open){ listEditor($('le-premiumGalleryCategories'),c,'premiumGalleryCategories'); listEditor($('le-premiumGalleryAlbums'),c,'premiumGalleryAlbums'); listEditor($('le-premiumGalleryImages'),c,'premiumGalleryImages'); }
+          else if(_mgrApi&&_mgrApi.refresh) _mgrApi.refresh();
+        });
+      })();
       (function(){
         function ens(){ return _pgEns(); }
         function bindSel(id,key,fallback){ var el=$(id); if(!el) return; el.value=(_pg[key]!=null?_pg[key]:fallback); el.addEventListener('change',function(){ ens()[key]=el.value; persist(); previewApply(); }); }
@@ -11105,6 +11144,21 @@ function heroCtaCard(c){
         bindCk('pg-filters','filtersEnabled',true);
         bindCk('pg-all','showAllTab',true);
         bindCk('pg-lb','lightboxOn',true);
+        bindCk('pg-lb-zoom','lightboxZoom',true);
+        bindCk('pg-lb-dl','lightboxDownloads',false);
+        bindCk('pg-fmulti','filterMultiple',false);
+        bindCk('pg-fcounts','showFilterCounts',false);
+        bindCk('pg-autoload','autoLoad',true);
+        bindCk('pg-autoplay','autoplay',false);
+        bindCk('pg-show-cta','showCta',false);
+        bindCk('pg-show-badge','showBadge',false);
+        bindSel('pg-overlay','overlay','bottom-gradient');
+        bindSel('pg-imgsize','imageSize','standard');
+        bindSel('pg-cardlay','cardLayout','overlay');
+        bindSel('pg-cta-action','ctaAction','quote');
+        bindNum('pg-autoplay-ms','autoplayDelay',5000);
+        bindText('pg-supporting','supporting');
+        (function(){ var sp=$('pg-supporting'); if(sp) sp.addEventListener('input',function(){ _pgEns().showSupporting=!!sp.value.trim(); }); })();
         bindCk('pg-lb-cap','lightboxCaptions',true);
         bindCk('pg-lb-th','lightboxThumbnails',true);
         bindCk('pg-mosaic-lock','mosaicLocked',true);
@@ -11935,6 +11989,7 @@ function heroCtaCard(c){
         +'<div class="f"><label>Tagline (accent colour)</label><input type="text" id="ft-tagacc" class="tin" value="'+esc(_F.taglineAccent||'')+'"></div></div>'
         +'<div class="f" style="margin-top:10px;"><label>Copyright / legal line</label><textarea id="ft-legal" class="tin" rows="2">'+esc(_F.legal||'')+'</textarea></div>'
         +listCard('footerLegalLinks','Legal links','Privacy, Terms, etc.')
+        +listCard('footerSocial','Social links','Round outline icons under the footer logo (Facebook, Instagram, Google reviews…). Leave empty to hide.')+'<div class="card" style="margin:-10px 0 22px;"><div class="row"><div class="f"><label>Social heading</label><input type="text" id="ft-social-title" class="tin" placeholder="Follow us"></div></div></div>'
         +'</div>'
         +'<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 8px;">Colours</h2><div style="display:flex;flex-wrap:wrap;gap:12px;">'
         +_ftCol('ft-bg','bg','Footer background','#0b1b2a')
@@ -12141,6 +12196,8 @@ function heroCtaCard(c){
         if(addCol) addCol.addEventListener('click',function(){ var cols=ens().columns||(ens().columns=[]); if(cols.length>=4){ toast('Maximum 4 columns'); return; } cols.push({on:true,mode:'links',title:'New column',links:[{on:true,label:'Link',action:'url',href:'#'}]}); persist(); previewApply(); drawCols(); });
         listEditor($('le-footerCall'),c,'footerCall');
         listEditor($('le-footerLegalLinks'),c,'footerLegalLinks');
+        listEditor($('le-footerSocial'),c,'footerSocial');
+        (function(){ var st=$('ft-social-title'); if(!st) return; st.value=(c.sections.footer&&c.sections.footer.socialTitle)||''; st.addEventListener('input',function(){ if(!c.sections.footer) c.sections.footer={}; c.sections.footer.socialTitle=st.value; persist(); previewApply(); }); })();
       })();
     
     } else if(sub==='searchCanvas'){

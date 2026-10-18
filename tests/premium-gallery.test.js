@@ -20,7 +20,8 @@ const demoShared = fs.readFileSync(
   path.join(__dirname, '..', 'marketplace/demos/demo-shared.js'),
   'utf8'
 );
-const events = fs.readFileSync(path.join(__dirname, '..', 'api/events.js'), 'utf8');
+// The analytics allowlist moved from api/events.js into lib/tracking/events-contract.js.
+const events = fs.readFileSync(path.join(__dirname, '..', 'api/events.js'), 'utf8') + fs.readFileSync(path.join(__dirname, '..', 'lib/tracking/events-contract.js'), 'utf8');
 const catalogue = fs.readFileSync(
   path.join(__dirname, '..', 'lib/website-composer/marketplace/catalogue-data.json'),
   'utf8'
