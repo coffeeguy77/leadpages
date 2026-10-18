@@ -290,7 +290,41 @@ function resolve(ctx) {
   return { action: 'redirect', code: 301, kind: 'fallback', target: target, location: locationFor(target, ctx.base, carry), path: logPath };
 }
 
+/** Comparable key of a rule's old address: '/services/x', '/?itemid=105', '/blog*'. */
+function ruleKey(from) {
+  let f = String(from || '').trim().toLowerCase().replace(/^[a-z]+:\/\/[^/]+/, '');
+  const wild = /\*$/.test(f); if (wild) f = f.replace(/\*+$/, '');
+  const qi = f.indexOf('?');
+  let q = '';
+  if (qi >= 0) {
+    q = f.slice(qi + 1).split('&').filter(Boolean).sort().join('&');
+    f = f.slice(0, qi);
+  }
+  return normalizePath(f) + (q ? '?' + q : '') + (wild ? '*' : '');
+}
+
+/**
+ * Give every rule a stable id (from its old address) so the editor's three-way merge can combine
+ * rules added in two places (editor + daily monitor) item by item. Existing ids are kept.
+ */
+function withIds(redirects) {
+  const list = Array.isArray(redirects) ? redirects : [];
+  const used = new Set();
+  list.forEach(function (r) { if (r && r.id) used.add(String(r.id)); });
+  list.forEach(function (r) {
+    if (!r || typeof r !== 'object' || r.id) return;
+    const key = ruleKey(r.from);
+    let h = 0x811c9dc5;
+    for (let i = 0; i < key.length; i++) { h ^= key.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }
+    let id = 'ss-' + h.toString(36), n = 2;
+    while (used.has(id)) id = 'ss-' + h.toString(36) + '-' + n++;
+    r.id = id; used.add(id);
+  });
+  return list;
+}
+
 return {
+  ruleKey: ruleKey, withIds: withIds,
   normalizePath: normalizePath, queryMap: queryMap, compile: compile, matchRule: matchRule, closestPage: closestPage,
   isPageLike: isPageLike, locationFor: locationFor, carryQuery: carryQuery, resolve: resolve, isGoogle: isGoogle, tokens: tokens
 };

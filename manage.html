@@ -16900,7 +16900,7 @@ function heroCtaCard(c){
     if(typeof window.lpSeoSaverPanel==='function'&&window.LPSeoSaver){ mount(); return; }
     body.innerHTML='<p class="hint">Loading SEO Saver…</p>';
     var left=2; function done(){ if(--left===0) mount(); }
-    ['/assets/lp-seo-saver-core.js?v=1','/assets/lp-seo-saver.js?v=1'].forEach(function(src){
+    ['/assets/lp-seo-saver-core.js?v=2','/assets/lp-seo-saver.js?v=2'].forEach(function(src){
       var el=document.createElement('script'); el.src=src; el.onload=done; el.onerror=function(){ body.innerHTML='<div class="card"><p class="lede">SEO Saver could not load. Check your connection and refresh.</p></div>'; };
       document.head.appendChild(el);
     });
