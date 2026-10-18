@@ -466,6 +466,8 @@ CONFIG = {
     'visitorAppearance': {'siteTheme': 'classic-light', 'colorScheme': 'brand', 'defaultContrast': 'standard', 'defaultTextSize': 'standard',
                           'allowColorSchemes': True, 'allowVisitorControls': False, 'reducedMotionSupport': True, 'showAccessibilityButton': True,
                           'accessibilityButtonPosition': 'bottom-right'},
+    # SEO Saver: every old downrightconcreting.com.au URL → its new home (scripts/sites/downrightconcreting-redirects.json)
+    'seoSaver': json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'downrightconcreting-redirects.json'))),
     '_aiComposer': {'version': 1, 'note': 'Migrated by Claude from downrightconcreting.com.au (18 Oct 2026); copy verbatim from the old site.', 'gaps': [],
                     'createdAt': '2026-10-18T11:00:00.000Z'},
 }

@@ -16632,6 +16632,7 @@ function heroCtaCard(c){
     summary:{ title:'Summary', blurb:'Plain-language scorecard for partners and owners — what improved, what to do next, without SEO jargon.' },
     portfolio:{ title:'Portfolio', blurb:'Compare every site you manage in one view. Best for agencies and multi-location operators.' },
     actions:{ title:'Next Best Actions', blurb:'Prioritised to-dos ranked by impact. Optional “Re-check homepage” crawls your live site once; everyday browsing uses the last saved check.' },
+    saver:{ title:'SEO Saver', blurb:'Keep the rankings an old website earned: every old address 301-redirects to its new page, and addresses nobody mapped yet are caught and listed here.' },
     connect:{ title:'Connections', blurb:'Link Google Search Console and Analytics, and see when data was last synced. Sync pulls Google’s history into LeadPages — it is not an AI call.' }
   };
   function _siCacheResetIfSiteChanged(){
@@ -16751,7 +16752,7 @@ function heroCtaCard(c){
       return;
     }
     _siCacheResetIfSiteChanged();
-    var tabs=[['home','Home'],['pages','Pages'],['keywords','Keywords'],['clusters','Clusters'],['local','Local'],['authority','Authority'],['competition','Competition'],['summary','Summary'],['portfolio','Portfolio'],['actions','Next Best Actions'],['connect','Connections']];
+    var tabs=[['home','Home'],['pages','Pages'],['keywords','Keywords'],['clusters','Clusters'],['local','Local'],['authority','Authority'],['competition','Competition'],['summary','Summary'],['portfolio','Portfolio'],['actions','Next Best Actions'],['connect','Connections'],['saver','SEO Saver']];
     box.innerHTML=
       '<div class="card" style="margin-bottom:14px">'
       +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">'
@@ -16784,6 +16785,7 @@ function heroCtaCard(c){
     var tabCached=!needsOverview && _siCache.tabs[tab] && _siCache.siteId===currentSiteId && !opts.force;
     if(!canInstant && !tabCached) body.innerHTML='<p class="hint">Loading…</p>';
     try{
+      if(tab==='saver'){ _siPaintSeoSaver(body); return; }
       if(tab==='clusters'){ if(!tabCached) body.innerHTML=_siTabIntroHTML('clusters')+'<p class="hint">Loading topic groups…</p>'; await _siLoadClusters(opts); return; }
       if(tab==='local'){ if(!tabCached) body.innerHTML=_siTabIntroHTML('local')+'<p class="hint">Loading local visibility…</p>'; await _siLoadLocal(opts); return; }
       if(tab==='authority'){ if(!tabCached) body.innerHTML=_siTabIntroHTML('authority')+'<p class="hint">Loading brand mentions…</p>'; await _siLoadAuthority(opts); return; }
@@ -16881,6 +16883,27 @@ function heroCtaCard(c){
       +_siActionsList(open)
       +'<p class="hint" style="margin-top:12px"><button type="button" class="btn ghost sm" id="si-goto-actions">View all actions</button></p></div>';
     return h;
+  }
+  /* SEO Saver (assets/lp-seo-saver.js + lp-seo-saver-core.js): edits data.seoSaver, saves via lpSaveLiveDB. */
+  function _siPaintSeoSaver(body){
+    function mount(){
+      if(typeof window.lpSeoSaverPanel!=='function'||!window.LPSeoSaver){ body.innerHTML='<div class="card"><p class="lede">SEO Saver could not load. Refresh the page.</p></div>'; return; }
+      var s=(typeof allSites!=='undefined'&&allSites)?allSites.find(function(x){return x.id===currentSiteId;}):null;
+      window.lpSeoSaverPanel(body,{
+        getConfig:function(){ return (typeof data!=='undefined'&&data)?data:{}; },
+        save:async function(){ var r=await lpSaveLiveDB(); if(r&&r.ok!==false){ try{ lpPurgeLiveCache(); }catch(_p){} } return r; },
+        token:_siToken, siteId:currentSiteId, siteSlug:currentSiteSlug,
+        domain:(typeof currentCustomDomain!=='undefined'&&currentCustomDomain)||(s&&s.custom_domain)||'',
+        toast:function(m,k){ toast(m,k); }
+      });
+    }
+    if(typeof window.lpSeoSaverPanel==='function'&&window.LPSeoSaver){ mount(); return; }
+    body.innerHTML='<p class="hint">Loading SEO Saver…</p>';
+    var left=2; function done(){ if(--left===0) mount(); }
+    ['/assets/lp-seo-saver-core.js?v=1','/assets/lp-seo-saver.js?v=1'].forEach(function(src){
+      var el=document.createElement('script'); el.src=src; el.onload=done; el.onerror=function(){ body.innerHTML='<div class="card"><p class="lede">SEO Saver could not load. Check your connection and refresh.</p></div>'; };
+      document.head.appendChild(el);
+    });
   }
   function _siSiteConfig(){
     try{

@@ -561,7 +561,11 @@
 
     if (!this.hydrated) {
       var fromUrl = readUrl(cfg);
-      if (fromUrl) { this.st.view = fromUrl.view; this.st.categoryId = fromUrl.categoryId || null; this.st.albumId = fromUrl.albumId || null; }
+      var catModes = cfg.structureMode === 'categories' || cfg.structureMode === 'categories-albums';
+      if (fromUrl && !catModes && fromUrl.view === 'category' && fromUrl.categoryId) {
+        // Filtered gallery: "#/gallery/<category>" (e.g. from an old album URL) opens with that category's filter on.
+        this.st.view = 'root'; this.st.filters = ['cat:' + fromUrl.categoryId];
+      } else if (fromUrl) { this.st.view = fromUrl.view; this.st.categoryId = fromUrl.categoryId || null; this.st.albumId = fromUrl.albumId || null; }
       this.hydrated = true;
     }
     // Drop state pointing at things that no longer exist

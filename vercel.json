@@ -384,6 +384,11 @@
     {
       "source": "/:slug",
       "destination": "/api/render?slug=:slug"
+    },
+    {
+      "source": "/((?!api/).*)",
+      "missing": [{ "type": "host", "value": "^(.+\\.)?leadpages\\.(com\\.au|webculture\\.au)$" }],
+      "destination": "/api/render?lpPath=/$1"
     }
   ],
   "headers": [

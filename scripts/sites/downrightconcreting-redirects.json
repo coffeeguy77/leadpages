@@ -1,0 +1,728 @@
+{
+ "on": true,
+ "notFound": "smart",
+ "oldDomain": "downrightconcreting.com.au",
+ "importedAt": "2026-10-18",
+ "redirects": [
+  {
+   "on": true,
+   "from": "/about-down-right-concrete",
+   "to": "/about",
+   "code": 301,
+   "source": "migration",
+   "note": "Old About page"
+  },
+  {
+   "on": true,
+   "from": "/services/residential-concrete",
+   "to": "/residential-concrete",
+   "code": 301,
+   "source": "migration",
+   "note": "Old service page"
+  },
+  {
+   "on": true,
+   "from": "/services/commercial-concrete",
+   "to": "/commercial-concrete",
+   "code": 301,
+   "source": "migration",
+   "note": "Old service page"
+  },
+  {
+   "on": true,
+   "from": "/services/grey-concrete",
+   "to": "/grey-concrete",
+   "code": 301,
+   "source": "migration",
+   "note": "Old service page"
+  },
+  {
+   "on": true,
+   "from": "/services/exposed-aggregate-concrete",
+   "to": "/exposed-aggregate-concrete",
+   "code": 301,
+   "source": "migration",
+   "note": "Old service page"
+  },
+  {
+   "on": true,
+   "from": "/services/stencil-pattern-concrete",
+   "to": "/stencil-pattern-concrete",
+   "code": 301,
+   "source": "migration",
+   "note": "Old service page"
+  },
+  {
+   "on": true,
+   "from": "/services/coloured-concrete",
+   "to": "/coloured-concrete",
+   "code": 301,
+   "source": "migration",
+   "note": "Old service page"
+  },
+  {
+   "on": true,
+   "from": "/services/excavation",
+   "to": "/excavation",
+   "code": 301,
+   "source": "migration",
+   "note": "Old service page"
+  },
+  {
+   "on": true,
+   "from": "/services/concrete-driveways-canberra",
+   "to": "/concrete-driveways",
+   "code": 301,
+   "source": "migration",
+   "note": "Old service page"
+  },
+  {
+   "on": true,
+   "from": "/services/polished-concrete-canberra",
+   "to": "/polished-concrete",
+   "code": 301,
+   "source": "migration",
+   "note": "Old service page"
+  },
+  {
+   "on": true,
+   "from": "/gallery/exposed-aggregate",
+   "to": "/gallery#/gallery/exposed-aggregate",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery album → gallery filtered to it"
+  },
+  {
+   "on": true,
+   "from": "/gallery/decorative-concrete",
+   "to": "/gallery#/gallery/decorative",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery album → gallery filtered to it"
+  },
+  {
+   "on": true,
+   "from": "/gallery/plain-coloured-concrete",
+   "to": "/gallery#/gallery/plain-coloured",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery album → gallery filtered to it"
+  },
+  {
+   "on": true,
+   "from": "/gallery/commercial",
+   "to": "/gallery#/gallery/commercial",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery album → gallery filtered to it"
+  },
+  {
+   "on": true,
+   "from": "/gallery/polished-concrete",
+   "to": "/gallery#/gallery/polished",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery album → gallery filtered to it"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/comm1-24-*",
+   "to": "/assets/sites/downrightconcreting/gallery/commercial/01.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/comm2-25-*",
+   "to": "/assets/sites/downrightconcreting/gallery/commercial/02.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/img_0460-32-*",
+   "to": "/assets/sites/downrightconcreting/gallery/commercial/03.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/img_0510-33-*",
+   "to": "/assets/sites/downrightconcreting/gallery/commercial/04.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/img_0512-34-*",
+   "to": "/assets/sites/downrightconcreting/gallery/commercial/05.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/img_0479-35-*",
+   "to": "/assets/sites/downrightconcreting/gallery/commercial/06.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/img_0478-36-*",
+   "to": "/assets/sites/downrightconcreting/gallery/commercial/07.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/img_0374-51-*",
+   "to": "/assets/sites/downrightconcreting/gallery/decorative/01.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/20131220_154401-27-*",
+   "to": "/assets/sites/downrightconcreting/gallery/decorative/02.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/deco3-19-*",
+   "to": "/assets/sites/downrightconcreting/gallery/decorative/03.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/deco1-17-*",
+   "to": "/assets/sites/downrightconcreting/gallery/decorative/04.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/deco2-18-*",
+   "to": "/assets/sites/downrightconcreting/gallery/decorative/05.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/expo3-15-*",
+   "to": "/assets/sites/downrightconcreting/gallery/decorative/06.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/expo4-16-*",
+   "to": "/assets/sites/downrightconcreting/gallery/decorative/07.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/img_0061-46-*",
+   "to": "/assets/sites/downrightconcreting/gallery/decorative/08.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/img_0087-47-*",
+   "to": "/assets/sites/downrightconcreting/gallery/decorative/09.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/img_0166-48-*",
+   "to": "/assets/sites/downrightconcreting/gallery/decorative/10.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/img_0339-49-*",
+   "to": "/assets/sites/downrightconcreting/gallery/decorative/11.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/img_0372-50-*",
+   "to": "/assets/sites/downrightconcreting/gallery/decorative/12.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/img_0220-52-*",
+   "to": "/assets/sites/downrightconcreting/gallery/decorative/13.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/img_0221-53-*",
+   "to": "/assets/sites/downrightconcreting/gallery/decorative/14.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/img_0231-54-*",
+   "to": "/assets/sites/downrightconcreting/gallery/decorative/15.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/img_0698-55-*",
+   "to": "/assets/sites/downrightconcreting/gallery/decorative/16.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/img_0699-56-*",
+   "to": "/assets/sites/downrightconcreting/gallery/decorative/17.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/img_0700-57-*",
+   "to": "/assets/sites/downrightconcreting/gallery/decorative/18.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/img_0701-58-*",
+   "to": "/assets/sites/downrightconcreting/gallery/decorative/19.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/20131222_190053-59-*",
+   "to": "/assets/sites/downrightconcreting/gallery/decorative/20.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/20150228_081907-62-*",
+   "to": "/assets/sites/downrightconcreting/gallery/decorative/21.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/20141219_085539-61-*",
+   "to": "/assets/sites/downrightconcreting/gallery/decorative/22.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/20150228_105850-63-*",
+   "to": "/assets/sites/downrightconcreting/gallery/decorative/23.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/20141011_085308-37-*",
+   "to": "/assets/sites/downrightconcreting/gallery/exposed-aggregate/01.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/20141011_084932-38-*",
+   "to": "/assets/sites/downrightconcreting/gallery/exposed-aggregate/02.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/aggregate-13-*",
+   "to": "/assets/sites/downrightconcreting/gallery/exposed-aggregate/03.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/expo2-14-*",
+   "to": "/assets/sites/downrightconcreting/gallery/exposed-aggregate/04.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/20141017_083524-39-*",
+   "to": "/assets/sites/downrightconcreting/gallery/exposed-aggregate/05.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/20131116_110253-40-*",
+   "to": "/assets/sites/downrightconcreting/gallery/plain-coloured/01.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/plain1-22-*",
+   "to": "/assets/sites/downrightconcreting/gallery/plain-coloured/02.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/plain2-23-*",
+   "to": "/assets/sites/downrightconcreting/gallery/plain-coloured/03.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/20131116_110328-41-*",
+   "to": "/assets/sites/downrightconcreting/gallery/plain-coloured/04.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/20131116_110352-42-*",
+   "to": "/assets/sites/downrightconcreting/gallery/plain-coloured/05.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/20131116_110428-43-*",
+   "to": "/assets/sites/downrightconcreting/gallery/plain-coloured/06.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/20131116_110448-44-*",
+   "to": "/assets/sites/downrightconcreting/gallery/plain-coloured/07.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/img_0139-45-*",
+   "to": "/assets/sites/downrightconcreting/gallery/plain-coloured/08.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/full_exposure_polished_concrete-70-*",
+   "to": "/assets/sites/downrightconcreting/gallery/polished/01.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/minimal_polished_concrete-71-*",
+   "to": "/assets/sites/downrightconcreting/gallery/polished/02.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/polished_concrete_black_and_white_rock-72-*",
+   "to": "/assets/sites/downrightconcreting/gallery/polished/03.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/polished_concrete_full_exposure_aggregate-73-*",
+   "to": "/assets/sites/downrightconcreting/gallery/polished/04.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/polished_concrete-74-*",
+   "to": "/assets/sites/downrightconcreting/gallery/polished/05.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/igallery/resized/1-100/rustic_polished_concrete-75-*",
+   "to": "/assets/sites/downrightconcreting/gallery/polished/06.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old gallery photo (all sizes)"
+  },
+  {
+   "on": true,
+   "from": "/images/resi.jpg",
+   "to": "/assets/sites/downrightconcreting/service-residential.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old image / file"
+  },
+  {
+   "on": true,
+   "from": "/images/comm.jpg",
+   "to": "/assets/sites/downrightconcreting/service-commercial.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old image / file"
+  },
+  {
+   "on": true,
+   "from": "/images/polished-concrete.jpg",
+   "to": "/assets/sites/downrightconcreting/service-polished.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old image / file"
+  },
+  {
+   "on": true,
+   "from": "/images/decorative-pattern.jpg",
+   "to": "/assets/sites/downrightconcreting/service-decorative.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old image / file"
+  },
+  {
+   "on": true,
+   "from": "/images/service-exposed-aggregate.jpg",
+   "to": "/assets/sites/downrightconcreting/service-exposed-aggregate.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old image / file"
+  },
+  {
+   "on": true,
+   "from": "/images/plain-grey.jpg",
+   "to": "/assets/sites/downrightconcreting/service-plain-grey.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old image / file"
+  },
+  {
+   "on": true,
+   "from": "/images/residential.jpg",
+   "to": "/assets/sites/downrightconcreting/page-residential.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old image / file"
+  },
+  {
+   "on": true,
+   "from": "/images/commercial.jpg",
+   "to": "/assets/sites/downrightconcreting/page-commercial.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old image / file"
+  },
+  {
+   "on": true,
+   "from": "/images/grey.jpg",
+   "to": "/assets/sites/downrightconcreting/page-grey.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old image / file"
+  },
+  {
+   "on": true,
+   "from": "/images/exposed-aggregate.jpg",
+   "to": "/assets/sites/downrightconcreting/page-exposed-aggregate.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old image / file"
+  },
+  {
+   "on": true,
+   "from": "/images/stencil-concrete.jpg",
+   "to": "/assets/sites/downrightconcreting/page-stencil.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old image / file"
+  },
+  {
+   "on": true,
+   "from": "/images/color.jpg",
+   "to": "/assets/sites/downrightconcreting/page-coloured.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old image / file"
+  },
+  {
+   "on": true,
+   "from": "/images/0003.jpg",
+   "to": "/assets/sites/downrightconcreting/page-excavation.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old image / file"
+  },
+  {
+   "on": true,
+   "from": "/images/Minimal-Polished-Concrete.jpg",
+   "to": "/assets/sites/downrightconcreting/polished-minimal.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old image / file"
+  },
+  {
+   "on": true,
+   "from": "/images/Rustic-polished-concrete.jpg",
+   "to": "/assets/sites/downrightconcreting/polished-rustic.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old image / file"
+  },
+  {
+   "on": true,
+   "from": "/images/Full-exposure-polished-concrete.jpg",
+   "to": "/assets/sites/downrightconcreting/polished-full-exposure.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old image / file"
+  },
+  {
+   "on": true,
+   "from": "/images/logo_01.png",
+   "to": "/assets/sites/downrightconcreting/logo.png",
+   "code": 301,
+   "source": "migration",
+   "note": "Old image / file"
+  },
+  {
+   "on": true,
+   "from": "/images/most_popular_2016big-1.png",
+   "to": "/assets/sites/downrightconcreting/award-2016.png",
+   "code": 301,
+   "source": "migration",
+   "note": "Old image / file"
+  },
+  {
+   "on": true,
+   "from": "/images/most_popular_2017big.png",
+   "to": "/assets/sites/downrightconcreting/award-2017.png",
+   "code": 301,
+   "source": "migration",
+   "note": "Old image / file"
+  },
+  {
+   "on": true,
+   "from": "/images/stencilpatterns.pdf",
+   "to": "/assets/sites/downrightconcreting/stencilpatterns.pdf",
+   "code": 301,
+   "source": "migration",
+   "note": "Old image / file"
+  },
+  {
+   "on": true,
+   "from": "/images/colour_chart.pdf",
+   "to": "/assets/sites/downrightconcreting/colour-chart.pdf",
+   "code": 301,
+   "source": "migration",
+   "note": "Old image / file"
+  },
+  {
+   "on": true,
+   "from": "/images/banners/1.jpg",
+   "to": "/assets/sites/downrightconcreting/banner-1-full.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old image / file"
+  },
+  {
+   "on": true,
+   "from": "/images/banners/2.jpg",
+   "to": "/assets/sites/downrightconcreting/banner-2-full.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old image / file"
+  },
+  {
+   "on": true,
+   "from": "/images/banners/3.jpg",
+   "to": "/assets/sites/downrightconcreting/banner-3-full.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old image / file"
+  },
+  {
+   "on": true,
+   "from": "/images/banners/4.jpg",
+   "to": "/assets/sites/downrightconcreting/banner-4-full.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old image / file"
+  },
+  {
+   "on": true,
+   "from": "/images/0005.jpg",
+   "to": "/assets/sites/downrightconcreting/page-excavation-2.jpg",
+   "code": 301,
+   "source": "migration",
+   "note": "Old image / file"
+  }
+ ]
+}

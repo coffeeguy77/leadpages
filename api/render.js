@@ -134,6 +134,46 @@ function notFound(res, msg) {
     '<body style="font-family:system-ui;text-align:center;padding:80px;color:#444">' + body + '</body>');
 }
 
+// ---- SEO Saver (lib/seo-saver.js): redirects for old URLs after a site moves to LeadPages ----
+const SEO_SAVER_INTERNAL_QUERY = { slug: 1, page: 1, lppath: 1, preview: 1 };
+/** Record the hit (best effort — never slows or breaks the response by more than ~0.8s). */
+async function seoSaverLog(siteId, decision, req) {
+  try {
+    const ua = String((req.headers && req.headers['user-agent']) || '');
+    const ref = String((req.headers && (req.headers.referer || req.headers.referrer)) || '').slice(0, 500);
+    const { isGoogle } = require('../lib/seo-saver');
+    const call = supabase.rpc('seo_saver_log', {
+      p_site: siteId, p_path: decision.path, p_kind: decision.kind,
+      p_target: decision.target || null, p_referrer: ref || null, p_google: isGoogle(ua)
+    });
+    await Promise.race([call, new Promise(function (r) { setTimeout(r, 800); })]);
+  } catch (_e) { /* table may not exist yet */ }
+}
+/** Send a SEO Saver decision. Cached like the site's pages, so Publish purges it. */
+async function seoSaverSend(res, decision, site, req) {
+  await seoSaverLog(site.id, decision, req);
+  const tags = ['lp-site-' + String(site.slug || '').toLowerCase().replace(/[^a-z0-9_-]+/g, '-'), 'lp-siteid-' + String(site.id || '').toLowerCase()];
+  res.setHeader('Vercel-Cache-Tag', tags.join(','));
+  res.setHeader('X-LP-SEO-Saver', decision.kind);
+  if (decision.action === 'redirect') {
+    const cc = decision.kind === 'fallback' ? 'public, s-maxage=600, stale-while-revalidate=3600' : 'public, s-maxage=3600, stale-while-revalidate=86400';
+    res.setHeader('cache-control', cc);
+    res.setHeader('CDN-Cache-Control', cc);
+    res.statusCode = decision.code || 301;
+    res.setHeader('Location', decision.location);
+    res.setHeader('content-type', 'text/html; charset=utf-8');
+    const href = String(decision.location).replace(/[<>"&]/g, function (c) { return ({ '<': '&lt;', '>': '&gt;', '"': '&quot;', '&': '&amp;' })[c]; });
+    return res.end('<!doctype html><meta charset="utf-8"><title>Moved</title><a href="' + href + '">This page has moved</a>');
+  }
+  res.setHeader('cache-control', 'public, s-maxage=600, stale-while-revalidate=3600');
+  if (decision.action === 'gone') {
+    res.statusCode = 410;
+    res.setHeader('content-type', 'text/html; charset=utf-8');
+    return res.end('<!doctype html><meta charset="utf-8"><title>Gone</title><body style="font-family:system-ui;text-align:center;padding:80px;color:#444">This page has been removed.</body>');
+  }
+  return notFound(res);
+}
+
 function suspendedPage(res, site, tpl) {
   const biz = (site && site.business_name) ? String(site.business_name) : 'This website';
   const esc = (s) => String(s == null ? '' : s).replace(/[<>&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
@@ -1381,6 +1421,10 @@ module.exports = async (req, res) => {
         .from('sites').select('*').eq('custom_domain', host).maybeSingle());
     }
 
+    // Deep / trailing-slash paths on custom domains arrive via the catch-all rewrite
+    // (?lpPath=…). They are only ever old URLs — never a showcase or a homepage.
+    const lpPath = (req.query && typeof req.query.lpPath === 'string') ? req.query.lpPath : '';
+    if (lpPath && (error || !site || !isCustom)) return notFound(res);
     if (error || !site) {
       // Partner's own domain (e.g. yourstudio.com.au) -> their studio page.
       if (isCustom) return renderShowcaseByDomain(req, res, host);
@@ -1492,6 +1536,35 @@ module.exports = async (req, res) => {
         cfg.sectionOrder = resolveSectionOrder(cfg);
       } catch (_ordErr) { /* keep existing sectionOrder */ }
     }
+
+    // ---- SEO Saver: old URLs from the site's previous home (cfg.seoSaver) ----
+    // Runs before page routing so "/services/excavation" (two segments on a custom
+    // domain) 301s to its new page instead of quietly rendering a duplicate of it.
+    if (cfg.seoSaver && cfg.seoSaver.on !== false && !isPreview) {
+      try {
+        const saver = require('../lib/seo-saver');
+        const _pubPages = (Array.isArray(cfg.pages) ? cfg.pages : []).filter(function (p) { return p && p.slug && p.status === 'published'; });
+        const _liveSet = new Set(_pubPages.map(function (p) { return '/' + String(p.slug).toLowerCase(); }));
+        const _isLivePath = function (pth) { return pth === '/' || _liveSet.has(pth) || !!orderShopPage(cfg, String(pth).replace(/^\//, '')); };
+        let _reqPath = '';
+        if (lpPath) _reqPath = lpPath;
+        else if (isCustom) _reqPath = '/' + [slug, page].filter(function (x, i, a) { return x && a.indexOf(x) === i; }).join('/');
+        else if (page) _reqPath = '/' + page;
+        // A request that is exactly a live page (same spelling) is served as normal.
+        const _exactLive = _reqPath && !lpPath && (_reqPath === '/' ? true : (_liveSet.has(_reqPath) || (!!orderShopPage(cfg, _reqPath.slice(1)) && _reqPath.split('/').length === 2)));
+        if (_reqPath && _reqPath !== '/' && !_exactLive) {
+          const _dec = saver.resolve({
+            cfg: cfg, reqPath: _reqPath, query: req.query, omitQuery: SEO_SAVER_INTERNAL_QUERY,
+            base: isCustom ? '' : '/' + site.slug,
+            pages: _pubPages.map(function (p) { return { slug: p.slug, title: p.title || '' }; }),
+            isLivePath: _isLivePath
+          });
+          if (_dec && isLive) return seoSaverSend(res, _dec, site, req);
+        }
+      } catch (_ssErr) { console.error('seo saver:', _ssErr && _ssErr.message); }
+    }
+    // Deep paths never render the homepage, whether or not SEO Saver is on.
+    if (lpPath) return notFound(res);
 
     // Sub-page routing: /:site/:page (or /:page on a custom domain) must resolve to a
     // published landing page in the config; draft pages work in ?preview= only.
