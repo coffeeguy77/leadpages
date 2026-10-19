@@ -33,6 +33,10 @@ module.exports = async function aiComposerFromUrl(req, res) {
   try {
     const shot = await snapshot.capture(url.href, { external: true, extract: true, waitMs: 1200 });
     if (shot.height < 300) return sendJson(res, 422, { ok: false, error: 'That page came back almost empty — check the address, or upload a screenshot instead.' });
+    // Error and challenge pages that answer 200.
+    if (/^(403|404|500|502|503)\b|forbidden|access denied|not found|just a moment|attention required|captcha/i.test(String(shot.title || ''))) {
+      return sendJson(res, 422, { ok: false, error: 'That website did not show its normal page to AI Composer ("' + String(shot.title).slice(0, 60) + '"). Take a full-page screenshot in your browser and upload it instead.' });
+    }
     const up = await snapshot.uploadSnapshot(shot.buffer, url.hostname);
     const page = shot.page || { blocks: [], links: [], description: '' };
     return sendJson(res, 200, {
@@ -47,6 +51,7 @@ module.exports = async function aiComposerFromUrl(req, res) {
       }
     });
   } catch (e) {
-    return sendJson(res, 502, { ok: false, error: 'Could not load that website: ' + String((e && e.message) || e).slice(0, 200) });
+    const blocked = e && /^SITE_STATUS_/.test(String(e.code || ''));
+    return sendJson(res, blocked ? 422 : 502, { ok: false, error: (blocked ? '' : 'Could not load that website: ') + String((e && e.message) || e).slice(0, 200) + (blocked ? ' Take a full-page screenshot in your browser and upload it instead.' : '') });
   }
 };
