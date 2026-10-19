@@ -114,7 +114,7 @@ Live runs used every app's default look, because the composer could only set a h
 | Partner with `composer_access = 'off'` | — | No access |
 
 Flags: `AI_COMPOSER` (on/off for everyone), `AI_COMPOSER_PARTNERS` (partners at all).
-Monthly limit on design analyses (`composer.design_plan` + `composer.url_plan` in `ai_requests`, from the 1st, UTC): 15 standard / 60 trusted by default; env `AI_COMPOSER_MONTHLY_LIMIT` / `AI_COMPOSER_TRUSTED_MONTHLY_LIMIT`; per partner `partners.composer_monthly_limit`.
+Monthly limit on design analyses (`composer.design_plan` + `composer.url_plan` in `ai_requests`, from the 1st, UTC): 15 standard / 60 trusted by default; env `AI_COMPOSER_PARTNER_MONTHLY` / `AI_COMPOSER_TRUSTED_MONTHLY`; per partner `partners.composer_monthly_limit`.
 Make a partner trusted: `update partners set composer_access = 'trusted' where id = '…';`
 Migration: `db/ai_composer_partner_access.sql`.
 
