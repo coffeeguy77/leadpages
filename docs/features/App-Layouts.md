@@ -99,6 +99,8 @@ Tests: `tests/app-layouts-v4.test.js`.
 
 ## AI Composer
 
+**New layouts must also be added to `lib/ai-composer/layouts.js`** (what it looks like, when to use it, tone / photo-side fields, extra fields) so AI Composer can choose them — `tests/ai-composer-layout-catalogue.test.js` fails until you do. See `docs/features/AI-Composer.md` → Round 3.
+
 `lib/ai-composer/catalogue.js` `LAYOUT_FIELDS` exposes these keys (choices limited to listed values, icons validated against `icons.js`). Bookings is placed only as the hire bar (`build-config` forces `layout: 'hire'`). Lists added only by a layout never cause an app to be dropped.
 
 ## Files

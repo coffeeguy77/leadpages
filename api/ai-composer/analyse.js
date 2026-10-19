@@ -21,7 +21,7 @@ const { getCatalogue } = require('../../lib/ai-composer/catalogue');
 function appChoices() {
   const cat = getCatalogue();
   return Object.keys(cat).map(function (k) {
-    return { key: k, label: cat[k].label, hero: cat[k].hero, purpose: cat[k].purpose };
+    return { key: k, label: cat[k].label, hero: cat[k].hero, purpose: cat[k].purpose, layouts: cat[k].layouts };
   });
 }
 

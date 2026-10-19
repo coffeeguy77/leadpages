@@ -54,7 +54,7 @@ test.describe('AI Composer — extra layouts', () => {
     assert.deepEqual(sheet.lists.map((l) => l.path).sort(), ['sections.bookingStorefront.points', 'sections.bookingStorefront.rates']);
   });
 
-  test('layout choices accept listed values only; icons must be LeadPages icon names', () => {
+  test('icons must be LeadPages icon names; the layout itself is chosen in the plan, not the fill', () => {
     assert.ok(catalogue.isIconName('truck'));
     assert.ok(!catalogue.isIconName('🚚'));
     const plan = onePlan([{ id: 's1', appKey: 'activityCounter', rows: { y0: 0, y1: 300 } }]);
@@ -65,13 +65,13 @@ test.describe('AI Composer — extra layouts', () => {
       { icon: 'not-an-icon', value: '850kg', label: 'Payload' },
       { icon: 'box' }
     ] } }] }, plan.sections, plan);
-    assert.equal(fill.scalars['sections.activityCounter.style'], 'strip');
+    assert.ok(!('sections.activityCounter.style' in fill.scalars), 'layout comes from the plan (layouts.js)');
     const stats = fill.lists['sections.activityCounter.stats'];
     assert.equal(stats.length, 2, 'an icon alone does not make an item');
     assert.equal(stats[0].icon, 'truck');
     assert.ok(!('icon' in stats[1]), 'unknown icon dropped');
-    const [bad] = normalizeFill({ apps: [{ appKey: 'activityCounter', fields: { 'sections.activityCounter.style': 'giant' }, lists: {} }] }, plan.sections, plan);
-    assert.ok(!('sections.activityCounter.style' in bad.scalars));
+    const [bad] = normalizeFill({ apps: [{ appKey: 'faq', fields: { 'sections.faq.columns': '7' }, lists: {} }] }, [{ id: 's1', appKey: 'faq' }], plan);
+    assert.ok(!('sections.faq.columns' in bad.scalars), 'a styling choice must be one of its listed options');
   });
 
   test('a chosen Bookings app is always the hire layout; layout-only lists never remove an app', () => {
@@ -97,6 +97,6 @@ test.describe('AI Composer — extra layouts', () => {
   test('prompts describe the booking bar and the extra layouts', () => {
     assert.match(planSystemPrompt(), /bookingStorefront/);
     const fill = fillSystemPrompt();
-    ['services.mode "tick"', 'aboutUs.layout "location"', 'reviews.theme "dark"', 'kind "icon"'].forEach((s) => assert.ok(fill.includes(s), s));
+    ['services.tickTheme "dark"', 'LAYOUT already chosen', 'reviews.badge "google"', 'kind "icon"'].forEach((s) => assert.ok(fill.includes(s), s));
   });
 });

@@ -48,7 +48,8 @@ module.exports = async function aiComposerFill(req, res) {
       sectionId: s.id,
       appKey: s.appKey,
       label: s.label,
-      sheet: appFieldSheet(s.appKey),
+      layout: s.layout,
+      sheet: appFieldSheet(s.appKey, s.layout),
       photos: plan.photos
         .filter(function (p) { return p.sectionId === s.id; })
         .map(function (p) { return { id: p.id, description: p.description }; }),

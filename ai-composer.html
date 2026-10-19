@@ -82,6 +82,9 @@ main{padding:20px 24px 48px}
 .sec .n{font:700 12px/28px var(--font-ui);text-align:center;border-radius:8px;background:var(--bg-soft,transparent);color:var(--ink-soft)}
 .sec .what{font-size:13px;font-weight:600;margin:0 0 4px}
 .sec .why{font-size:12px;color:var(--ink-soft);margin:4px 0 0}
+.sec .lay{display:flex;gap:6px;margin-top:6px}
+.sec .lay select:first-child{flex:2}.sec .lay select{flex:1}
+.sec .look{font-size:12px;color:var(--ink-soft);margin:4px 0 0;font-style:italic}
 .sec select{width:100%;padding:7px 9px;border-radius:8px;border:1px solid var(--line-strong);background:var(--input-bg,transparent);color:var(--ink);font:inherit;font-size:13px}
 .sec .acts{display:flex;gap:4px}
 .sec.hot{background:color-mix(in srgb,var(--accent) 6%,transparent)}
@@ -436,6 +439,24 @@ main{padding:20px 24px 48px}
     }).join('');
   }
 
+  var TONE_LABEL = { page:'Page background', soft:'Soft panel', tint:'Brand tint', dark:'Dark band', brand:'Brand band' };
+  function layoutOf(s){
+    var a = S.appsByKey[s.appKey]; var ls = (a && a.layouts) || [];
+    return { list: ls, cur: ls.find(function(l){ return l.id === s.layout; }) || ls[0] || null };
+  }
+  function layoutControls(s, i){
+    var L = layoutOf(s); if(!L.cur) return '';
+    var opts = L.list.map(function(l){
+      return '<option value="'+esc(l.id)+'"'+(l.id===L.cur.id?' selected':'')+' title="'+esc(l.looks)+'">'+esc(l.id)+' — '+esc(l.looks)+'</option>';
+    }).join('');
+    var tones = L.cur.tones || [];
+    var toneSel = tones.length ? '<select data-act="tone" data-i="'+i+'" aria-label="Background for section '+(i+1)+'"><option value="">Default background</option>' +
+      tones.map(function(t){ return '<option value="'+esc(t)+'"'+(t===s.tone?' selected':'')+'>'+esc(TONE_LABEL[t]||t)+'</option>'; }).join('') + '</select>' : '';
+    var sideSel = L.cur.side ? '<select data-act="side" data-i="'+i+'" aria-label="Photo side for section '+(i+1)+'"><option value="">Photo side: default</option>' +
+      ['left','right'].map(function(d){ return '<option value="'+d+'"'+(d===s.photoSide?' selected':'')+'>Photo '+d+'</option>'; }).join('') + '</select>' : '';
+    return '<div class="lay"><select data-act="layout" data-i="'+i+'" aria-label="Layout for section '+(i+1)+'">'+opts+'</select>'+toneSel+sideSel+'</div>';
+  }
+
   function renderSections(){
     var secs = S.plan.sections;
     var hasFaq = secs.some(function(s){ return s.appKey === 'faq'; });
@@ -446,6 +467,8 @@ main{padding:20px 24px 48px}
         '<span class="n">'+(i+1)+'</span>' +
         '<div><p class="what">'+esc(s.label)+'</p>' +
         '<select data-act="app" data-i="'+i+'" aria-label="App for section '+(i+1)+'">'+appOptions(s.appKey, i)+'</select>' +
+        layoutControls(s, i) +
+        (s.look ? '<p class="look">'+esc(s.look)+'</p>' : '') +
         (s.reason ? '<p class="why">'+esc(s.reason)+'</p>' : '') + '</div>' +
         '<div class="acts">' +
           '<button class="btn ghost small" data-act="up" data-i="'+i+'" type="button" aria-label="Move up"'+(i===0?' disabled':'')+'>↑</button>' +
@@ -515,9 +538,20 @@ main{padding:20px 24px 48px}
   });
 
   $('secs').addEventListener('change', function(e){
+    var lsel = e.target.closest('select[data-act="layout"],select[data-act="tone"],select[data-act="side"]');
+    if(lsel){
+      var li = Number(lsel.getAttribute('data-i')), sec = S.plan.sections[li], act = lsel.getAttribute('data-act');
+      if(act === 'layout'){
+        sec.layout = lsel.value; sec.tone = ''; sec.photoSide = '';
+        delete S.fills[sec.id]; // a different layout reads different fields
+      } else if(act === 'tone'){ sec.tone = lsel.value; }
+      else { sec.photoSide = lsel.value; }
+      renderSections(); return;
+    }
     var sel = e.target.closest('select[data-act="app"]'); if(!sel) return;
     var i = Number(sel.getAttribute('data-i'));
     S.plan.sections[i].appKey = sel.value;
+    S.plan.sections[i].layout = ''; S.plan.sections[i].tone = ''; S.plan.sections[i].photoSide = '';
     delete S.fills[S.plan.sections[i].id];
     renderSections(); renderStage();
   });

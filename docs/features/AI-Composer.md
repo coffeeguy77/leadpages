@@ -89,6 +89,19 @@ Tested end to end with the ACT Truck Hire design through the real code, the AI s
 - **FAQ answers (optional).** A tick-box on the review screen lets the AI draft missing FAQ answers using only facts visible in the design; drafted answers are flagged on the finish screen. Off by default.
 - **Upload warning** below 1200px wide (photos cropped from small designs look soft at full width).
 
+## Round 3 (2026-10-19) — the plan chooses each app's layout
+
+Live runs used every app's default look, because the composer could only set a handful of layout fields (Split hero, Numbered/Photo/Feature/Story services, stacked Trust Bar, Split text box, Quotes reviews, Split FAQ, Journey/Milestone steps and all background tones were missing).
+
+- **Layout catalogue.** `lib/ai-composer/layouts.js` lists every editor layout for the apps the composer places: what it looks like, when to use it, its background tones, photo side and the extra fields only it reads. The plan prompt shows them under each app ("LAYOUTS (first = default)").
+- **Design-led planning.** For each section the model first writes `look` (columns, photo position, numbering, background), then picks the app **and** `layout`, plus `tone` (page / soft / tint / dark / brand) and `photoSide`, with a `reason`. Unknown values fall back to the app default (`cleanLayout` in `plan.js`); a tone or side the layout doesn't support is dropped.
+- **Missing looks are reported.** When no layout can produce a section's look, the closest is used and a gap starting "Layout:" describes what is missing.
+- **Fill step follows the layout.** `appFieldSheet(app, layout)` only offers fields that layout reads (e.g. `featureImage` + `featureItems` for services "feature", `splitH1` for the split hero). Layout keys (`services.mode`, `aboutUs.layout`, `specialOffer.layout`, `activityCounter.style`, `reviews.theme`) were removed from the fill-step `CHOICE_FIELDS` — the plan decides them.
+- **Build.** `build-config` writes the layout, tone and side after the fill (the plan saw the whole page); a toned band doesn't also get the design's background colour. `_aiComposer.version` is 2 and each section records its `layout` / `tone`.
+- **Review screen.** Each section shows the model's description of the look, and has Layout, Background and Photo-side pickers.
+- **Trust Bar** badges now take a stroke icon name per badge.
+- **Drift test.** `tests/ai-composer-layout-catalogue.test.js` fails when the editor offers a layout value that is not in `layouts.js` (`LAYOUTS` or `NOT_OFFERED`), and when a layout field isn't read by `lp-layouts.js` / the template. **Adding a layout to the editor now means adding it to `layouts.js` too.**
+
 ### Template bug found (not fixed — needs approval)
 
 `trade.template.json` has an unscoped `.tb-row{display:flex;flex-wrap:wrap;…}` rule meant for the Trust Bar. The Text Box app uses the same class, so its **"beside"** image layout wraps and drops the photo under the text on desktop — for every site, not just AI Composer. AI Composer works around it by using the Text Box **"wrap"** layout. A one-line scoped fix (e.g. `.tb-section .tb-row{flex-wrap:nowrap}` for desktop) would change how existing sites with "beside" render, so it is left for a decision.
