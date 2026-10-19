@@ -154,12 +154,20 @@ main{padding:20px 24px 48px}
         <input type="file" id="file" accept="image/png,image/jpeg,image/webp" class="hidden">
         <img id="up-preview" class="preview-small hidden" alt="Selected design">
         <p class="msg muted hidden" id="up-info"></p>
+        <div class="hidden" id="url-box" style="margin-top:14px">
+          <div class="field">
+            <label for="src-url">…or copy an existing website <span class="muted">(full mode)</span></label>
+            <input id="src-url" type="url" placeholder="https://www.example.com.au" autocomplete="off">
+          </div>
+          <p class="muted" style="font-size:12.5px;margin:4px 0 0">AI Composer screenshots the page, copies its words exactly and rebuilds it from LeadPages apps. Use it for your client's own site.</p>
+        </div>
         <div class="field" style="margin-top:14px">
           <label for="notes">Notes for the AI (optional)</label>
           <textarea id="notes" placeholder="e.g. This is a café in Canberra. Ignore the cookie banner."></textarea>
         </div>
         <div class="bar">
           <button class="btn solid" id="analyse-btn" type="button" disabled>Analyse design</button>
+          <button class="btn ghost hidden" id="url-btn" type="button">Copy this website</button>
           <span class="msg bad hidden" id="up-msg"></span>
         </div>
       </div>
@@ -323,6 +331,7 @@ main{padding:20px 24px 48px}
     $('ac-mode').textContent = mode;
     var partner = j.role === 'partner';
     show('demo-note', partner);
+    show('url-box', !!j.full); show('url-btn', !!j.full);
     show('draft-opt', !partner);
     $('editor-link').href = partner ? '/partner' : '/manage';
     $('editor-link').textContent = partner ? 'Partner dashboard' : 'Editor';
@@ -396,11 +405,38 @@ main{padding:20px 24px 48px}
   $('analyse-btn').onclick = async function(){
     if(!S.file) return;
     msg('up-msg', '');
+    S.source = null;
     try{
       working('Uploading the design…');
       if(!S.upload) S.upload = await uploadDesign(S.file);
+      await analyseUpload($('notes').value.trim());
+    }catch(e){
+      view('upload'); msg('up-msg', e.message || String(e));
+    }
+  };
+
+  // Copy an existing website: the server screenshots it and returns the page text.
+  $('url-btn').onclick = async function(){
+    var u = $('src-url').value.trim();
+    msg('up-msg', '');
+    if(!/^https?:\/\/[^\s]+\.[^\s]+/i.test(u)) return msg('up-msg', 'Enter the full web address, starting with https://');
+    try{
+      working('Loading the website…', 'Taking a full-page screenshot and reading its text. Usually 15–30 seconds.');
+      var w = await api('/api/ai-composer/from-url', { url: u });
+      S.upload = { url: w.design.imageUrl, width: w.design.width, height: w.design.height };
+      S.source = w.source;
+      var note = 'This design is a full-page screenshot of the existing website ' + w.source.url + '. Copy its words exactly. The website\'s own header and navigation are at the top.' +
+        (w.source.description ? ' Its description: ' + w.source.description : '');
+      await analyseUpload((note + ' ' + $('notes').value.trim()).trim());
+    }catch(e){
+      view('upload'); msg('up-msg', e.message || String(e));
+    }
+  };
+
+  async function analyseUpload(notes){
+    try{
       working('Reading the design…', 'The AI is looking at every section and matching it to LeadPages apps. Usually 20–50 seconds.');
-      var j = await api('/api/ai-composer/analyse', { imageUrl: S.upload.url, width: S.upload.width, height: S.upload.height, notes: $('notes').value.trim() });
+      var j = await api('/api/ai-composer/analyse', { imageUrl: S.upload.url, width: S.upload.width, height: S.upload.height, notes: notes });
       S.plan = j.plan; S.apps = j.apps || []; S.appsByKey = {};
       S.apps.forEach(function(a){ S.appsByKey[a.key] = a; });
       S.fills = {}; S.status = {}; S.draftFaq = false;
@@ -408,12 +444,16 @@ main{padding:20px 24px 48px}
         working('Tidying the photo crops…', 'Trimming text, buttons and borders off each photo. Usually 10–30 seconds.');
         await refinePhotos();
       }
+      // Other pages of a copied website are listed so they can be added as landing pages.
+      if(S.source && S.source.links && S.source.links.length){
+        S.plan.gaps.push({ what: 'Other pages on ' + S.source.url, suggestion: 'Not copied yet — add them as landing pages: ' + S.source.links.slice(0, 12).map(function(l){ return l.label || l.path; }).join(', ') });
+      }
       renderReview();
       view('review');
     }catch(e){
       view('upload'); msg('up-msg', e.message || String(e));
     }
-  };
+  }
 
   // Re-check every photo crop (10 per call, 3 calls at once). A failed batch keeps
   // its original crops so the review can still go ahead.
@@ -632,7 +672,7 @@ main{padding:20px 24px 48px}
   async function fillBatch(plan, ids){
     ids.forEach(function(id){ S.status[id] = 'run'; }); renderProg();
     try{
-      var j = await api('/api/ai-composer/fill', { plan: plan, sectionIds: ids, options: { draftFaq: !!S.draftFaq } });
+      var j = await api('/api/ai-composer/fill', { plan: plan, sectionIds: ids, options: { draftFaq: !!S.draftFaq }, sourceBlocks: S.source ? S.source.blocks : undefined });
       (j.fills || []).forEach(function(f){ S.fills[f.sectionId] = f; S.status[f.sectionId] = f.filled ? 'ok' : 'empty'; });
       ids.forEach(function(id){ if(S.status[id] === 'run') S.status[id] = 'bad'; });
     }catch(e){

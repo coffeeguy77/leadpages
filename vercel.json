@@ -467,6 +467,10 @@
     },
     "api/ai-composer/review.js": {
       "maxDuration": 60
+    },
+    "api/ai-composer/from-url.js": {
+      "maxDuration": 60,
+      "includeFiles": "node_modules/@sparticuz/chromium/bin/**"
     }
   }
 }

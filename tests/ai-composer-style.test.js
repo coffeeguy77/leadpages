@@ -43,7 +43,7 @@ test.describe('AI Composer — site style', () => {
     const fills = normalizeFill({ apps: [
       { appKey: 'heroSlider', fields: {}, lists: { 'sections.heroSlider.slides': [{ heading: 'Kitchens', imageUrl: 'p1', primaryCtaText: 'Start your project', secondaryCtaText: 'Explore our work' }] } },
       { appKey: 'specialOffer', fields: { 'sections.specialOffer.heading': 'Red Hill Residence' }, lists: {} },
-      { appKey: 'featuredProjects', fields: { 'sections.featuredProjects.heading': 'Recent work' }, lists: { 'sections.featuredProjects.projects': [{ title: 'Oak', location: 'Contemporary' }] } },
+      { appKey: 'featuredProjects', fields: { 'sections.featuredProjects.heading': 'Recent work' }, lists: { 'sections.featuredProjects.projects': [{ title: 'Oak', description: 'Contemporary' }] } },
       { appKey: 'quote', fields: { 'sections.quote.heading': 'Talk to us' }, lists: {} },
       { appKey: 'footer', fields: { 'sections.footer.blurb': 'Made locally.' }, lists: {} }
     ] }, plan.sections, plan);
@@ -70,7 +70,7 @@ test.describe('AI Composer — site style', () => {
     assert.equal(cfg.sections.quote.appearance.containerBg, '#FFFFFF');
     assert.equal(cfg.sections.footer.bg, '#FFFFFF');
     assert.deepEqual(cfg.sections.specialOffer.points, [{ on: false, text: '' }], 'no sample offer points');
-    assert.equal(cfg.sections.featuredProjects.projects[0].location, 'Contemporary');
+    assert.equal(cfg.sections.featuredProjects.projects[0].description, 'Contemporary', 'cards layout shows the description');
   });
 
   test('without a style the site keeps the template look (no font, header or nav changes)', () => {
@@ -149,6 +149,25 @@ test.describe('AI Composer — photo clean-up and logo', () => {
     }, { url: DESIGN_URL, width: 1440, height: 1200 });
     assert.equal(plan.photos.length, 2, JSON.stringify(plan.photos.map((p) => [p.description, p.px])));
     assert.ok(plan.photos.some((p) => p.px.w > 500 && p.px.h > 500), 'the big portrait is kept');
+  });
+
+  test('the only photo of a section is checked against the whole section; a strip result keeps the first crop', () => {
+    const plan = sanitizeClientPlan({ design: DESIGN, businessName: 'Co',
+      sections: [{ id: 's1', appKey: 'textBox', rows: { y0: 900, y1: 1400 } }, { id: 's2', appKey: 'services', rows: { y0: 1400, y1: 2000 } }],
+      photos: [
+        { id: 'p1', sectionId: 's1', role: 'team', px: { x: 700, y: 905, w: 700, h: 150 } },
+        { id: 'p2', sectionId: 's2', role: 'card', px: { x: 0, y: 1500, w: 400, h: 300 } },
+        { id: 'p3', sectionId: 's2', role: 'card', px: { x: 500, y: 1500, w: 400, h: 300 } }
+      ] });
+    const items = photoCheckItems(plan, ['p1', 'p2']);
+    const a = items.find((i) => i.id === 'p1'); const b = items.find((i) => i.id === 'p2');
+    assert.deepEqual(a.ctx, { x: 0, y: 900, w: 1440, h: 500 }, 'single photo → whole section');
+    assert.equal(a.whole, true);
+    assert.ok(b.ctx.w < 600, 'several photos → just around the photo');
+    const fixed = applyPhotoCheck(plan, items, { photos: [{ id: 'p1', keep: true, x: 50, y: 0, w: 50, h: 100 }, { id: 'p2', keep: true, x: 0, y: 0, w: 100, h: 10 }] });
+    const p1 = fixed.photos.find((p) => p.id === 'p1');
+    assert.deepEqual(p1.px, { x: 720, y: 900, w: 720, h: 500 }, 'the real portrait found in the section');
+    assert.deepEqual(fixed.photos.find((p) => p.id === 'p2').px, plan.photos.find((p) => p.id === 'p2').px, 'strip result ignored');
   });
 
   test('the logo is checked with a wide window and its new box replaces the old one', () => {

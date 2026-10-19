@@ -43,8 +43,22 @@ module.exports = async function aiComposerFill(req, res) {
     return sendJson(res, 400, { ok: false, error: 'Fill at most ' + MAX_PER_CALL + ' sections per call.' });
   }
 
+  // Copy from a URL: the live page's text with positions. Each section gets the text
+  // inside its (padded) rows so wording is copied exactly.
+  const blocks = (Array.isArray(body.sourceBlocks) ? body.sourceBlocks : []).slice(0, 600).map(function (b) {
+    return { y: Math.round(Number(b && b.y) || 0), h: Math.round(Number(b && b.h) || 0), text: String((b && b.text) || '').replace(/\s+/g, ' ').trim().slice(0, 600) };
+  }).filter(function (b) { return b.text; });
+  function sectionText(rows) {
+    if (!blocks.length) return '';
+    const r = tiles.paddedRows(rows, plan.design.height);
+    const lines = [];
+    blocks.forEach(function (b) { if (b.y + b.h > r.y0 && b.y < r.y1 && lines.indexOf(b.text) < 0) lines.push(b.text); });
+    return lines.join('\n').slice(0, 6000);
+  }
+
   const items = batch.map(function (s) {
     return {
+      sourceText: sectionText(s.rows),
       sectionId: s.id,
       appKey: s.appKey,
       label: s.label,

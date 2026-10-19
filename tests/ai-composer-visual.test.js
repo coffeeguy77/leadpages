@@ -58,6 +58,9 @@ test.describe('AI Composer — visual check', () => {
     assert.deepEqual(applied.refill.sort(), ['s1', 's2']);
     assert.equal(applied.plan.sections.find((s) => s.id === 's3').layout, 'standard', '"good" sections are never changed');
     assert.equal(p.sections[0].layout, 'slider', 'the original plan is not mutated');
+    // A photo layout is refused for a section without a photo.
+    const noPhoto = normalizeVerdicts({ sections: [{ id: 's2', verdict: 'wrong', layout: 'feature' }] }, p);
+    assert.deepEqual(noPhoto[0].fix, {}, 'feature needs a photo and s2 has none');
   });
 });
 
