@@ -18,6 +18,10 @@ test.describe('AI Composer — site style', () => {
     const secs = [{ id: 's1' }, { id: 's2' }];
     const st = cleanStyle({ fontSet: 'Montserrat', buttonShape: 'SQUARE', headerTone: 'light', headerButton: 'Book a consultation', quoteTone: 'grey', footerTone: 'dark',
       nav: [{ label: 'Kitchens', sectionId: 's2' }, { label: 'Blog', sectionId: 's9' }, { label: '' }] }, secs);
+    // The model names target apps; that wins over its (often miscounted) section ids.
+    const byKey = cleanStyle({ nav: [{ label: 'Services', target: 'services', sectionId: 's1' }, { label: 'Nope', target: 'gallery' }] },
+      [{ id: 's1', appKey: 'heroSlider' }, { id: 's2', appKey: 'services' }]);
+    assert.deepEqual(byKey.nav, [{ label: 'Services', sectionId: 's2' }, { label: 'Nope', sectionId: '' }]);
     assert.deepEqual(st, { fontSet: 'montserrat', buttonShape: 'square', headerTone: 'light', headerButton: 'Book a consultation', quoteTone: '', footerTone: 'dark',
       nav: [{ label: 'Kitchens', sectionId: 's2' }, { label: 'Blog', sectionId: '' }] });
     assert.equal(cleanStyle({ fontSet: 'comic-sans', buttonShape: 'blob' }, []).fontSet, '');
@@ -83,6 +87,51 @@ test.describe('AI Composer — site style', () => {
     assert.equal(dark.sections.navMenu.fg, '#FFFFFF');
     const one = build({ nav: [{ label: 'Projects', sectionId: 's3' }] });
     assert.ok(!one.sections.navMenu || one.sections.navMenu.on !== true);
+  });
+});
+
+test.describe('AI Composer — more layouts and section crops', () => {
+  test('a brand header gets the brand background, white text and a white button', () => {
+    const plan = sanitizeClientPlan({ design: DESIGN, businessName: 'Hire Co', theme: { pipe: '#d4111b', hivis: '#d4111b' }, style: { headerTone: 'brand', headerButton: 'Call to book' },
+      sections: [{ id: 's1', appKey: 'faq', rows: { y0: 0, y1: 500 } }] });
+    const fills = normalizeFill({ apps: [{ appKey: 'faq', fields: {}, lists: { 'sections.faq.items': [{ q: 'Q?', a: 'A.' }] } }] }, plan.sections, plan);
+    const cfg = buildSiteConfig(plan, fills, {});
+    assert.equal(cfg.logo.headerBg, '#d4111b');
+    assert.equal(cfg.sections.header.btnBg, '#FFFFFF');
+    assert.equal(cfg.sections.header.btnFg, '#d4111b');
+  });
+
+  test('bookings can be the price week; minimal footer; 4 photo cards sit on one row', () => {
+    const plan = sanitizeClientPlan({ design: DESIGN, businessName: 'Hire Co',
+      sections: [
+        { id: 's1', appKey: 'bookingStorefront', layout: 'priceweek', rows: { y0: 0, y1: 500 } },
+        { id: 's2', appKey: 'services', layout: 'photo', rows: { y0: 500, y1: 1000 } },
+        { id: 's3', appKey: 'footer', layout: 'minimal', rows: { y0: 2800, y1: 3000 } }
+      ] });
+    const fills = normalizeFill({ apps: [
+      { appKey: 'bookingStorefront', fields: { 'sections.bookingStorefront.weekHeading': 'The price depends on the day.' },
+        lists: { 'sections.bookingStorefront.rates': [{ label: 'Monday', price: '$150', unit: 'per 24 hours' }, { label: 'Sunday', price: '$250' }] } },
+      { appKey: 'services', fields: { 'sections.services.heading': 'People' }, lists: { services: [{ title: 'A', body: 'a' }, { title: 'B', body: 'b' }, { title: 'C', body: 'c' }, { title: 'D', body: 'd' }] } },
+      { appKey: 'footer', fields: { 'sections.footer.minimalText': 'From farm to plate.' }, lists: {} }
+    ] }, plan.sections, plan);
+    const cfg = buildSiteConfig(plan, fills, {});
+    assert.equal(cfg.sections.bookingStorefront.layout, 'priceweek');
+    assert.equal(cfg.sections.bookingStorefront.weekHeading, 'The price depends on the day.');
+    assert.equal(cfg.sections.services.photoCols, '4');
+    assert.equal(cfg.sections.footer.layout, 'minimal');
+    assert.equal(cfg.sections.footer.minimalText, 'From farm to plate.');
+  });
+
+  test('a section crop runs on to the start of the next section', () => {
+    const plan = normalizePlan({ businessName: 'Co', theme: {}, photos: [], gaps: [],
+      sections: [
+        { id: 's1', appKey: 'heroSlider', startTile: 1, startPct: 0, endTile: 1, endPct: 30 },
+        { id: 's2', appKey: 'services', startTile: 1, startPct: 40, endTile: 1, endPct: 60 },
+        { id: 's3', appKey: 'faq', startTile: 1, startPct: 75, endTile: 1, endPct: 95 }
+      ] }, { url: DESIGN_URL, width: 1440, height: 1200 });
+    const [a, b, c] = plan.sections;
+    assert.equal(a.rows.y1, b.rows.y0);
+    assert.equal(b.rows.y1, c.rows.y0, 'services crop now includes the card text above the FAQ');
   });
 });
 

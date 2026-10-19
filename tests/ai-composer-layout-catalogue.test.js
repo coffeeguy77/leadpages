@@ -218,6 +218,6 @@ test.describe('AI Composer — layout choice in the plan and the site', () => {
     const fills = normalizeFill({ apps: [{ appKey: 'faq', fields: {}, lists: { 'sections.faq.items': [{ q: 'Q?', a: 'A.' }] } }] }, plan.sections, plan);
     const cfg = buildSiteConfig(plan, fills, {});
     assert.equal(cfg.sections.faq.layout, '');
-    assert.ok(!('layout' in cfg.sections.footer));
+    assert.equal(cfg.sections.footer.layout || '', '', 'footer keeps the standard layout');
   });
 });
