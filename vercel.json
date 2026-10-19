@@ -460,6 +460,13 @@
     },
     "api/ai-composer/refine-photos.js": {
       "maxDuration": 60
+    },
+    "api/ai-composer/snapshot.js": {
+      "maxDuration": 60,
+      "includeFiles": "node_modules/@sparticuz/chromium/bin/**"
+    },
+    "api/ai-composer/review.js": {
+      "maxDuration": 60
     }
   }
 }

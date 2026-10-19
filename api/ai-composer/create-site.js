@@ -127,6 +127,7 @@ module.exports = async function aiComposerCreateSite(req, res) {
       site: ins.data,
       demo: access.role === 'partner',
       previewUrl: '/' + encodeURIComponent(ins.data.slug) + '?preview=1',
+      createdAt: config._aiComposer.createdAt,
       manageUrl: '/manage?site=' + encodeURIComponent(ins.data.slug),
       sections: config.sectionOrder,
       gaps: config._aiComposer.gaps

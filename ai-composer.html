@@ -193,6 +193,10 @@ main{padding:20px 24px 48px}
             <p class="lede">Top to bottom. Change the app, move sections or remove them. Each app can be used once; there is one hero and the footer stays last.</p>
             <ul class="sec-list" id="secs"></ul>
             <p class="muted hidden" id="demo-note" style="margin-top:12px;font-size:13px">The site is created as a <strong>demo</strong> in your partner dashboard: share its preview link with your client — it shows the “Get this website” bar and goes live when they buy it.</p>
+            <label style="display:flex;gap:8px;align-items:flex-start;margin-top:12px;font-size:13px">
+              <input type="checkbox" id="vcheck" checked style="margin-top:2px">
+              <span>Check the built site against the design and fix what it can <span class="muted">— screenshots each section, compares it with the design, switches layouts or re-fills where they differ (about a minute)</span></span>
+            </label>
             <label style="display:flex;gap:8px;align-items:flex-start;margin-top:12px;font-size:13px" id="draft-opt">
               <input type="checkbox" id="as-draft" style="margin-top:2px">
               <span>Create as a draft — only visible on its preview link until published in the editor</span>
@@ -245,6 +249,12 @@ main{padding:20px 24px 48px}
         <div class="bar">
           <a class="btn solid" id="open-editor" href="#">Open in the editor</a>
           <a class="btn ghost hidden" id="open-preview" href="#" target="_blank" rel="noopener">Open the preview link</a>
+        </div>
+        <div id="vc-report" class="hidden" style="margin-top:14px">
+          <h3 style="font-size:15px;margin:0 0 6px">Checked against the design</h3>
+          <ul class="gaps" id="vc-list" style="margin:0"></ul>
+        </div>
+        <div class="bar" style="margin-top:12px">
           <button class="btn ghost" id="another-btn" type="button">Compose another</button>
         </div>
       </div>
@@ -671,7 +681,65 @@ main{padding:20px 24px 48px}
       return '<li><strong>'+esc(x.what)+'</strong>'+(x.suggestion?' — <span class="muted">'+esc(x.suggestion)+'</span>':'')+'</li>';
     }).join('');
     show('done-gaps', gapList.length > 0);
+    S.site = { slug: j.site.slug, createdAt: j.createdAt };
+    if($('vcheck') && $('vcheck').checked && j.createdAt){
+      try{ await visualCheck(); }
+      catch(e){ msg('build-msg', 'The visual check could not finish: ' + (e.message || e) + ' — the site is built; open it to check it yourself.'); }
+    }
     show('done', true);
+  }
+
+  // ---------- visual check: screenshot → compare → fix → rebuild (max 2 rounds) ----------
+  var VC_ROUNDS = 2;
+  async function visualCheck(){
+    var changes = [], last = [];
+    for(var round = 1; round <= VC_ROUNDS; round++){
+      $('build-title').textContent = 'Checking the result against the design' + (round > 1 ? ' (again)' : '') + '…';
+      var snap = await api('/api/ai-composer/snapshot', { slug: S.site.slug });
+      var plan = planForServer();
+      var ids = plan.sections.filter(function(s){ return !s.synthetic; }).map(function(s){ return s.id; });
+      var batches = []; for(var i = 0; i < ids.length; i += 3) batches.push(ids.slice(i, i + 3));
+      var verdicts = [], next = 0;
+      async function worker(){ while(next < batches.length){ var b = batches[next++];
+        try{ var j = await api('/api/ai-composer/review', { plan: plan, snapshot: snap, sectionIds: b }); verdicts = verdicts.concat(j.verdicts || []); }catch(_e){} } }
+      var ws = []; for(var w = 0; w < Math.min(3, batches.length); w++) ws.push(worker());
+      await Promise.all(ws);
+      last = verdicts;
+      // Apply the allowed fixes; sections judged good are left alone.
+      var redo = [];
+      verdicts.forEach(function(v){
+        if(v.verdict === 'good') return;
+        var s = S.plan.sections.find(function(x){ return x.id === v.sectionId; }); if(!s) return;
+        var before = [s.layout, s.tone, s.photoSide].join('/');
+        if(v.fix && v.fix.layout){ s.layout = v.fix.layout; s.tone = ''; s.photoSide = ''; }
+        if(v.fix && v.fix.tone != null) s.tone = v.fix.tone;
+        if(v.fix && v.fix.photoSide) s.photoSide = v.fix.photoSide;
+        var after = [s.layout, s.tone, s.photoSide].join('/');
+        if(after !== before) changes.push({ sectionId: s.id, appKey: s.appKey, from: before, to: after });
+        if(v.refill || after !== before){ delete S.fills[s.id]; redo.push(s.id); }
+      });
+      if(!redo.length) break;
+      $('build-title').textContent = 'Fixing ' + redo.length + ' section' + (redo.length === 1 ? '' : 's') + '…';
+      redo.forEach(function(id){ S.status[id] = 'queued'; }); renderProg();
+      await runFills();
+      var p2 = planForServer();
+      var fills = p2.sections.map(function(s){ return S.fills[s.id]; }).filter(Boolean);
+      await api('/api/ai-composer/update-site', { slug: S.site.slug, plan: p2, fills: fills, createdAt: S.site.createdAt, visualCheck: { rounds: round, changes: changes } });
+    }
+    renderVcReport(last, changes);
+    $('build-title').textContent = 'Built and checked';
+  }
+  function renderVcReport(verdicts, changes){
+    var label = { good:'Matches the design', close:'Close to the design', wrong:'Different from the design' };
+    $('vc-list').innerHTML = S.plan.sections.map(function(s, i){
+      var v = verdicts.find(function(x){ return x.sectionId === s.id; }); if(!v) return '';
+      var app = S.appsByKey[s.appKey];
+      var ch = changes.filter(function(c){ return c.sectionId === s.id; }).map(function(c){ return 'changed ' + c.from + ' → ' + c.to; });
+      return '<li><strong>' + (i+1) + '. ' + esc(app ? app.label : s.appKey) + '</strong> — ' + esc(label[v.verdict] || v.verdict) +
+        (v.issues && v.issues.length && v.verdict !== 'good' ? '<br><span class="muted">' + esc(v.issues.join('; ')) + '</span>' : '') +
+        (ch.length ? '<br><span class="faint">' + esc(ch.join('; ')) + '</span>' : '') + '</li>';
+    }).join('');
+    show('vc-report', true);
   }
 
   async function buildAll(){
