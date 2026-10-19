@@ -102,6 +102,40 @@ Live runs used every app's default look, because the composer could only set a h
 - **Trust Bar** badges now take a stroke icon name per badge.
 - **Drift test.** `tests/ai-composer-layout-catalogue.test.js` fails when the editor offers a layout value that is not in `layouts.js` (`LAYOUTS` or `NOT_OFFERED`), and when a layout field isn't read by `lp-layouts.js` / the template. **Adding a layout to the editor now means adding it to `layouts.js` too.**
 
+## Round 4 (2026-10-19/20) — partners, full mode, visual check, copy a website, custom layouts
+
+### Who gets what (`lib/ai-composer/access.js`)
+
+| Account | Mode | What they get |
+|---|---|---|
+| Super admin | full | Everything below; sites are live or draft; no monthly limit |
+| Partner with `partners.composer_access = 'trusted'` | full | Everything below; sites are **partner demo sites** (draft, `is_mockup`, buy bar) |
+| Partner (`composer_access` null / `'standard'`) | standard | Upload a design → plan → build → visual check; demo sites only |
+| Partner with `composer_access = 'off'` | — | No access |
+
+Flags: `AI_COMPOSER` (on/off for everyone), `AI_COMPOSER_PARTNERS` (partners at all).
+Monthly limit on design analyses (`composer.design_plan` + `composer.url_plan` in `ai_requests`, from the 1st, UTC): 15 standard / 60 trusted by default; env `AI_COMPOSER_MONTHLY_LIMIT` / `AI_COMPOSER_TRUSTED_MONTHLY_LIMIT`; per partner `partners.composer_monthly_limit`.
+Make a partner trusted: `update partners set composer_access = 'trusted' where id = '…';`
+Migration: `db/ai_composer_partner_access.sql`.
+
+### Visual check (all modes)
+
+After the site is created: `api/ai-composer/snapshot.js` screenshots the built page (headless Chromium, `@sparticuz/chromium` + `puppeteer-core`, uploaded to Cloudinary), `api/ai-composer/review.js` (Brain `composer.visual_check`) compares each section with the design and may switch to another listed layout, tone or photo side, or re-fill; `api/ai-composer/update-site.js` rebuilds the site (only the same AI Composer site, within 120 minutes of creation). Two rounds at most. The finish screen lists each section's verdict.
+
+### Copy a website (full mode)
+
+`api/ai-composer/from-url.js` screenshots a public URL (SSRF-guarded: public IPs, ports 80/443, every sub-request checked), extracts its text, and the normal flow continues with the screenshot as the design; the fill copies the site's own words. Sites that block automatic visits (e.g. HTTP 403) or show an error page get a clear message to upload a screenshot instead.
+
+### Custom layouts — "design blocks" (full mode)
+
+When the visual check says a section's **arrangement** matches no layout of its app (`newLayout: true`), `api/ai-composer/new-layout.js` (Brain `composer.block_design`) designs a new layout for that app: an HTML template with placeholders for the app's own fields plus CSS. At most 2 per site; each is kept only if a re-check rates the section better, otherwise the site goes back to the standard layout.
+
+- Safety (`lib/ai-composer/blocks.js`): allowed tags/attributes only (no scripts, iframes, forms, inline styles or event handlers); `src`/`href` only from a placeholder or `#…`; placeholders must be the app's fields; CSS has no `url()`, `@import` or escapes, only `@media`, and every selector is scoped to `.lpb-<id>`. Values are escaped when rendered and URLs limited to http(s), relative, `#`, `tel:`, `mailto:`.
+- Rendering: `assets/lp-blocks.js` (loaded by `api/render.js` only for sites with `config.blockLayouts`). It hides the app's own markup in that section and draws the block from the same fields, so text and photos stay editable in the editor, and live preview updates.
+- Config: `config.blockLayouts[id] = { app, name, template, css, fields }`, `config.sections[app].blockLayout = id`. Each site keeps its own copy.
+- Editor: the app's panel shows "Use the custom layout …"; untick to use the app's standard layouts (stored as `blockLayoutPrev`, nothing deleted).
+- Library: table `composer_layouts` (`db/ai_composer_layouts.sql`, RLS on, service role only). Super admins' layouts are **approved** at once; trusted partners' stay **this site only** until a super admin approves them. Approved layouts are offered to the planner for every new design (as `custom-xxxxxxxx` layouts). Super admins approve / restrict / hide them in the "Custom layouts" card on `/ai-composer` (`api/ai-composer/layouts.js`). Hiding never changes sites already using one.
+
 ### Template bug found (not fixed — needs approval)
 
 `trade.template.json` has an unscoped `.tb-row{display:flex;flex-wrap:wrap;…}` rule meant for the Trust Bar. The Text Box app uses the same class, so its **"beside"** image layout wraps and drops the photo under the text on desktop — for every site, not just AI Composer. AI Composer works around it by using the Text Box **"wrap"** layout. A one-line scoped fix (e.g. `.tb-section .tb-row{flex-wrap:nowrap}` for desktop) would change how existing sites with "beside" render, so it is left for a decision.
@@ -125,14 +159,14 @@ Live runs used every app's default look, because the composer could only set a h
 | Area | Paths |
 |------|-------|
 | Page | `ai-composer.html`, rewrite `/ai-composer` in `vercel.json` |
-| APIs | `api/ai-composer/analyse.js`, `refine-photos.js`, `fill.js`, `create-site.js` |
-| Libraries | `lib/ai-composer/catalogue.js`, `tiles.js`, `prompts.js`, `plan.js`, `build-config.js`, `access.js` |
-| Tests | `tests/ai-composer.test.js`, `tests/ai-composer-layouts.test.js` |
+| APIs | `api/ai-composer/analyse.js`, `refine-photos.js`, `fill.js`, `create-site.js`, `access.js`, `snapshot.js`, `review.js`, `update-site.js`, `from-url.js`, `new-layout.js`, `layouts.js` |
+| Libraries | `lib/ai-composer/catalogue.js`, `layouts.js`, `tiles.js`, `prompts.js`, `plan.js`, `build-config.js`, `access.js`, `snapshot.js`, `visual.js`, `blocks.js`, `block-store.js`; `assets/lp-blocks.js` |
+| Tests | `tests/ai-composer*.test.js` (layouts, catalogue drift, style, access, create-site, visual, blocks) |
 | Extra layouts | See [App-Layouts.md](App-Layouts.md) — the composer can set the extra app layouts and the Bookings hire bar |
 
 ## Test checklist
 
-- Sign in as super admin at `/ai-composer`; a non-admin gets "limited to platform admins".
+- Sign in as super admin at `/ai-composer` (badge "Admin · full mode"); a partner sees "Partner · n of 15 designs this month"; a trusted partner sees full mode and the URL box.
 - Upload a short design and a long full-page screenshot; review screen shows bands over the right sections and photo crops load.
 - Change an app, reorder, remove a section; build; the editor opens the new site.
 - New site shows only the chosen sections; no plumbing/trade copy anywhere.
