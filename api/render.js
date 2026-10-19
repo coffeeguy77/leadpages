@@ -924,6 +924,18 @@ function injectGalleryEngine(doc, cfg, pageRow) {
   } catch (e) { return doc; }
 }
 
+/** AI Composer design blocks (new layouts stored in config.blockLayouts): load the
+ *  renderer only on sites that use one. */
+const LPB_VERSION = '1';
+function injectBlocks(doc, cfg) {
+  try {
+    const defs = cfg && cfg.blockLayouts;
+    if (!defs || typeof defs !== 'object' || !Object.keys(defs).length || doc.indexOf('data-lpb-js') >= 0) return doc;
+    const js = '<script src="/assets/lp-blocks.js?v=' + LPB_VERSION + '" defer data-lpb-js="1"></script>';
+    return doc.indexOf('</body>') !== -1 ? doc.replace('</body>', js + '\n</body>') : doc + js;
+  } catch (e) { return doc; }
+}
+
 const ORDER_SCRIPT = '/assets/lp-order-storefront.js?v=oe-24';
 /** Start loading the shop menu from <head>, while the rest of the page and scripts download;
  *  lp-order-storefront.js picks up this request instead of starting its own. Also keeps the
@@ -1690,6 +1702,7 @@ module.exports = async (req, res) => {
       if (pageHasOrderStorefront(_pageRow)) html = withOrderPrefetch(html, site.slug);
       html = injectBookingStorefront(html, site.slug, cfg);
       html = injectGalleryEngine(html, cfg, _pageRow);
+      html = injectBlocks(html, cfg);
       html = injectFontSet(html, cfg);
       html = injectSearchCanvas(html, cfg);
       // Colour overrides run again after dynamic injects so Order Storefront /
@@ -1710,5 +1723,6 @@ module.exports = async (req, res) => {
 module.exports._injectBookingStorefront = injectBookingStorefront;
 module.exports._injectFontSet = injectFontSet;
 module.exports._injectGalleryEngine = injectGalleryEngine;
+module.exports._injectBlocks = injectBlocks;
 module.exports._orderShopPage = orderShopPage;
 module.exports._pageSectionOrder = pageSectionOrder;

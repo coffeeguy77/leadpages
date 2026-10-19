@@ -12,6 +12,7 @@ const { sendJson, readBody, admin } = require('../../lib/layout-composer/http');
 const { requireComposerAccess, canComposeSite } = require('../../lib/ai-composer/access');
 const { sanitizeClientPlan } = require('../../lib/ai-composer/plan');
 const { buildSiteConfig } = require('../../lib/ai-composer/build-config');
+const { blocksForPlan } = require('../../lib/ai-composer/block-store');
 
 /** Minutes after creation during which the visual check may rebuild a site. */
 const REBUILD_WINDOW_MIN = 120;
@@ -39,7 +40,8 @@ module.exports = async function aiComposerUpdateSite(req, res) {
   let plan;
   try { plan = sanitizeClientPlan(body.plan); } catch (e) { return sendJson(res, 400, { ok: false, error: e.message }); }
   try {
-    const config = buildSiteConfig(plan, Array.isArray(body.fills) ? body.fills : [], { businessName: site.business_name, now: prev.createdAt });
+    const blocks = await blocksForPlan(access, plan);
+    const config = buildSiteConfig(plan, Array.isArray(body.fills) ? body.fills : [], { businessName: site.business_name, now: prev.createdAt, blocks: blocks });
     // Keep what the first build recorded (demo info, FAQ flag) and note the check.
     if (site.config._mockup) config._mockup = site.config._mockup;
     config._aiComposer.createdBy = prev.createdBy;

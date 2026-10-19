@@ -171,6 +171,12 @@ main{padding:20px 24px 48px}
           <span class="msg bad hidden" id="up-msg"></span>
         </div>
       </div>
+      <div class="card hidden" id="cl-card" style="margin-top:18px">
+        <h2>Custom layouts</h2>
+        <p class="lede">Layouts AI Composer designed when no app layout matched a design. <strong>Approved</strong> layouts can be used on any site and are offered for new designs; <strong>this site only</strong> stays on the site it was made for; <strong>hidden</strong> is never offered again. Sites already using a layout keep their own copy.</p>
+        <ul class="gaps" id="cl-list" style="margin:0"></ul>
+        <span class="msg bad hidden" id="cl-msg"></span>
+      </div>
     </section>
 
     <!-- working -->
@@ -204,6 +210,10 @@ main{padding:20px 24px 48px}
             <label style="display:flex;gap:8px;align-items:flex-start;margin-top:12px;font-size:13px">
               <input type="checkbox" id="vcheck" checked style="margin-top:2px">
               <span>Check the built site against the design and fix what it can <span class="muted">— screenshots each section, compares it with the design, switches layouts or re-fills where they differ (about a minute)</span></span>
+            </label>
+            <label class="hidden" style="display:flex;gap:8px;align-items:flex-start;margin-top:12px;font-size:13px" id="newlayout-opt">
+              <input type="checkbox" id="newlayout" checked style="margin-top:2px">
+              <span>Design new layouts where no app layout matches <span class="muted">— full mode: after the check, up to 2 sections that still differ get a layout designed for them (kept only if it matches better; about a minute more)</span></span>
             </label>
             <label style="display:flex;gap:8px;align-items:flex-start;margin-top:12px;font-size:13px" id="draft-opt">
               <input type="checkbox" id="as-draft" style="margin-top:2px">
@@ -299,7 +309,7 @@ main{padding:20px 24px 48px}
     }catch(_e){ throw new Error('Network error — check your connection and try again.'); }
     var j = await res.json().catch(function(){ return {}; });
     if(res.status === 504) throw new Error('The AI took longer than the 60-second limit. Try again, or use a shorter design.');
-    if(!res.ok || !j.ok) throw new Error(j.error || ('Request failed ('+res.status+')'));
+    if(!res.ok || !j.ok){ var err = new Error(j.error || ('Request failed ('+res.status+')')); if(Array.isArray(j.errors)) err.errors = j.errors; throw err; }
     return j;
   }
 
@@ -332,12 +342,47 @@ main{padding:20px 24px 48px}
     var partner = j.role === 'partner';
     show('demo-note', partner);
     show('url-box', !!j.full); show('url-btn', !!j.full);
+    show('newlayout-opt', !!j.full); if(!j.full && $('newlayout')) $('newlayout').checked = false;
     show('draft-opt', !partner);
     $('editor-link').href = partner ? '/partner' : '/manage';
     $('editor-link').textContent = partner ? 'Partner dashboard' : 'Editor';
+    if(j.role === 'super') loadCustomLayouts();
     if(j.limitReached){ msg('up-msg', 'You have used all your AI Composer designs for this month. It resets on the 1st — or ask LeadPages for a higher limit.'); $('analyse-btn').disabled = true; }
     return j;
   }
+  // ---------- super admin: custom layouts ----------
+  var CL_STATUS = { approved:'Approved', site:'This site only', hidden:'Hidden' };
+  async function loadCustomLayouts(){
+    try{
+      var t = await token();
+      var r = await fetch('/api/ai-composer/layouts', { headers: { Authorization: 'Bearer ' + t } });
+      var j = await r.json().catch(function(){ return {}; });
+      if(!r.ok || !j.ok) return;
+      var ls = j.layouts || [];
+      show('cl-card', ls.length > 0);
+      $('cl-list').innerHTML = ls.map(function(l){
+        var app = S.appsByKey && S.appsByKey[l.app_key];
+        return '<li><strong>' + esc(l.name) + '</strong> <span class="muted">— ' + esc(app ? app.label : l.app_key) + ' · ' + esc(CL_STATUS[l.status] || l.status) +
+          (l.site_slug ? ' · <a href="/' + encodeURIComponent(l.site_slug) + '?preview=1" target="_blank" rel="noopener">made for /' + esc(l.site_slug) + '</a>' : '') + '</span>' +
+          (l.looks ? '<br><span class="faint">' + esc(l.looks) + '</span>' : '') + '<br>' +
+          ['approved','site','hidden'].filter(function(st){ return st !== l.status; }).map(function(st){
+            return '<button class="btn ghost small" type="button" data-cl="' + esc(l.id) + '" data-st="' + st + '">' + (st === 'approved' ? 'Approve' : st === 'site' ? 'This site only' : 'Hide') + '</button>';
+          }).join(' ') + '</li>';
+      }).join('');
+    }catch(_e){}
+  }
+  $('cl-list').addEventListener('click', async function(e){
+    var b = e.target.closest('button[data-cl]'); if(!b) return;
+    b.disabled = true; msg('cl-msg', '');
+    try{
+      var t = await token();
+      var r = await fetch('/api/ai-composer/layouts', { method:'POST', headers:{'content-type':'application/json', Authorization:'Bearer '+t}, body: JSON.stringify({ id: b.getAttribute('data-cl'), status: b.getAttribute('data-st') }) });
+      var j = await r.json().catch(function(){ return {}; });
+      if(!r.ok || !j.ok) throw new Error(j.error || 'Could not change it');
+      loadCustomLayouts();
+    }catch(err){ msg('cl-msg', err.message); b.disabled = false; }
+  });
+
   function showApp(){ show('gate', false); show('app', true); loadAccess(); }
   function showGate(text){ show('app', false); show('gate', true); msg('gate-msg', text); }
   $('login-btn').onclick = async function(){
@@ -437,7 +482,7 @@ main{padding:20px 24px 48px}
     try{
       working('Reading the design…', 'The AI is looking at every section and matching it to LeadPages apps. Usually 20–50 seconds.');
       var j = await api('/api/ai-composer/analyse', { imageUrl: S.upload.url, width: S.upload.width, height: S.upload.height, notes: notes });
-      S.plan = j.plan; S.apps = j.apps || []; S.appsByKey = {};
+      S.plan = j.plan; S.blockNames = j.blockNames || {}; S.apps = j.apps || []; S.appsByKey = {};
       S.apps.forEach(function(a){ S.appsByKey[a.key] = a; });
       S.fills = {}; S.status = {}; S.draftFaq = false;
       if(S.plan.photos.length){
@@ -523,8 +568,9 @@ main{padding:20px 24px 48px}
   }
   function layoutControls(s, i){
     var L = layoutOf(s); if(!L.cur) return '';
-    var opts = L.list.map(function(l){
-      return '<option value="'+esc(l.id)+'"'+(l.id===L.cur.id?' selected':'')+' title="'+esc(l.looks)+'">'+esc(l.id)+' — '+esc(l.looks)+'</option>';
+    var bk = s.block ? ((S.blockNames && S.blockNames[s.block]) || { name: 'Custom layout' }) : null;
+    var opts = (bk ? '<option value="__block" selected title="'+esc(bk.looks||'')+'">★ '+esc(bk.name)+' — custom layout made by AI Composer</option>' : '') + L.list.map(function(l){
+      return '<option value="'+esc(l.id)+'"'+(!bk&&l.id===L.cur.id?' selected':'')+' title="'+esc(l.looks)+'">'+esc(l.id)+' — '+esc(l.looks)+'</option>';
     }).join('');
     var tones = L.cur.tones || [];
     var toneSel = tones.length ? '<select data-act="tone" data-i="'+i+'" aria-label="Background for section '+(i+1)+'"><option value="">Default background</option>' +
@@ -619,6 +665,8 @@ main{padding:20px 24px 48px}
     if(lsel){
       var li = Number(lsel.getAttribute('data-i')), sec = S.plan.sections[li], act = lsel.getAttribute('data-act');
       if(act === 'layout'){
+        if(lsel.value === '__block') return;
+        delete sec.block;
         sec.layout = lsel.value; sec.tone = ''; sec.photoSide = '';
         delete S.fills[sec.id]; // a different layout reads different fields
       } else if(act === 'tone'){ sec.tone = lsel.value; }
@@ -629,6 +677,7 @@ main{padding:20px 24px 48px}
     var i = Number(sel.getAttribute('data-i'));
     S.plan.sections[i].appKey = sel.value;
     S.plan.sections[i].layout = ''; S.plan.sections[i].tone = ''; S.plan.sections[i].photoSide = '';
+    delete S.plan.sections[i].block;
     delete S.fills[S.plan.sections[i].id];
     renderSections(); renderStage();
   });
@@ -766,8 +815,62 @@ main{padding:20px 24px 48px}
       var fills = p2.sections.map(function(s){ return S.fills[s.id]; }).filter(Boolean);
       await api('/api/ai-composer/update-site', { slug: S.site.slug, plan: p2, fills: fills, createdAt: S.site.createdAt, visualCheck: { rounds: round, changes: changes } });
     }
+    var made = [];
+    if(S.access && S.access.full && $('newlayout') && $('newlayout').checked){
+      try{ made = await newLayouts(last); }
+      catch(e){ msg('build-msg', 'New layouts could not be made: ' + (e.message || e)); }
+      made.forEach(function(m){
+        last = last.filter(function(v){ return v.sectionId !== m.sectionId; }).concat([m.verdict]);
+        changes.push({ sectionId: m.sectionId, appKey: m.appKey, from: m.before, to: m.kept ? 'new layout “' + m.name + '”' : 'new layout tried, not kept (' + m.why + ')' });
+      });
+    }
     renderVcReport(last, changes);
     $('build-title').textContent = 'Built and checked';
+  }
+
+  // ---------- full mode: design a new layout for sections no app layout matches ----------
+  var NEW_LAYOUT_MAX = 2;
+  var RANK = { good: 2, close: 1, wrong: 0 };
+  async function newLayouts(verdicts){
+    var cands = verdicts.filter(function(v){
+      var s = S.plan.sections.find(function(x){ return x.id === v.sectionId; });
+      return s && !s.block && s.appKey !== 'footer' && v.verdict !== 'good';
+    }).sort(function(a, b){ return RANK[a.verdict] - RANK[b.verdict]; }).slice(0, NEW_LAYOUT_MAX);
+    if(!cands.length) return [];
+    $('build-title').textContent = 'Designing ' + cands.length + ' new layout' + (cands.length === 1 ? '' : 's') + '…';
+    var plan = planForServer();
+    var made = await Promise.all(cands.map(async function(v){
+      var s = S.plan.sections.find(function(x){ return x.id === v.sectionId; });
+      var body = { plan: plan, sectionId: s.id, fill: S.fills[s.id] || {}, issues: v.issues || [], slug: S.site.slug };
+      for(var attempt = 0; attempt < 2; attempt++){
+        try{ var j = await api('/api/ai-composer/new-layout', body); return { s: s, v: v, block: j.block }; }
+        catch(e){ if(e.errors && attempt === 0){ body.previousErrors = e.errors; continue; } return { s: s, v: v, error: e.message || String(e) }; }
+      }
+    }));
+    var tried = made.filter(function(m){ return m.block; });
+    var out = made.filter(function(m){ return !m.block; }).map(function(m){ return { sectionId: m.s.id, appKey: m.s.appKey, before: [m.s.layout, m.s.tone, m.s.photoSide].join('/'), kept: false, why: m.error, verdict: m.v }; });
+    if(!tried.length) return out;
+    tried.forEach(function(m){ m.s.block = m.block.id; S.blockNames = S.blockNames || {}; S.blockNames[m.block.id] = { name: m.block.name, looks: m.block.looks }; });
+    await saveSite();
+    // Check the sections again and keep a new layout only if it matches better.
+    $('build-title').textContent = 'Checking the new layout' + (tried.length === 1 ? '' : 's') + '…';
+    var snap = await api('/api/ai-composer/snapshot', { slug: S.site.slug });
+    var j2 = await api('/api/ai-composer/review', { plan: planForServer(), snapshot: snap, sectionIds: tried.map(function(m){ return m.s.id; }) });
+    var revert = false;
+    tried.forEach(function(m){
+      var nv = (j2.verdicts || []).find(function(x){ return x.sectionId === m.s.id; });
+      var better = nv && RANK[nv.verdict] > RANK[m.v.verdict];
+      out.push({ sectionId: m.s.id, appKey: m.s.appKey, before: [m.s.layout, m.s.tone, m.s.photoSide].join('/'), kept: !!better, name: m.block.name,
+        why: nv ? 'checked as ' + nv.verdict : 'not checked', verdict: better ? nv : m.v });
+      if(!better){ delete m.s.block; revert = true; }
+    });
+    if(revert) await saveSite();
+    return out;
+  }
+  async function saveSite(){
+    var p = planForServer();
+    var fills = p.sections.map(function(s){ return S.fills[s.id]; }).filter(Boolean);
+    await api('/api/ai-composer/update-site', { slug: S.site.slug, plan: p, fills: fills, createdAt: S.site.createdAt });
   }
   function renderVcReport(verdicts, changes){
     var label = { good:'Matches the design', close:'Close to the design', wrong:'Different from the design' };

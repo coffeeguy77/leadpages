@@ -19,6 +19,7 @@ const { requireComposerAccess } = require('../../lib/ai-composer/access');
 const { sanitizeClientPlan } = require('../../lib/ai-composer/plan');
 const { buildSiteConfig } = require('../../lib/ai-composer/build-config');
 const { DEFAULT_DEMO_SALE_PRICE_CENTS } = require('../../lib/partner-demo-pricing');
+const { blocksForPlan } = require('../../lib/ai-composer/block-store');
 
 function slugify(s, max) {
   return String(s || '')
@@ -64,7 +65,8 @@ module.exports = async function aiComposerCreateSite(req, res) {
   }
 
   try {
-    const config = buildSiteConfig(plan, Array.isArray(body.fills) ? body.fills : [], { businessName: businessName });
+    const blocks = await blocksForPlan(access, plan);
+    const config = buildSiteConfig(plan, Array.isArray(body.fills) ? body.fills : [], { businessName: businessName, blocks: blocks });
     if (options.draftFaq && config.sections.faq && config.sections.faq.on === true) {
       config._aiComposer.gaps.push({
         what: 'FAQ answers',

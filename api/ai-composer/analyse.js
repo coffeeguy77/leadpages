@@ -17,6 +17,7 @@ const tiles = require('../../lib/ai-composer/tiles');
 const { planMessages, PLAN_SCHEMA } = require('../../lib/ai-composer/prompts');
 const { normalizePlan } = require('../../lib/ai-composer/plan');
 const { getCatalogue } = require('../../lib/ai-composer/catalogue');
+const { approvedBlocks, resolvePlanAliases } = require('../../lib/ai-composer/block-store');
 
 function appChoices() {
   const cat = getCatalogue();
@@ -52,6 +53,10 @@ module.exports = async function aiComposerAnalyse(req, res) {
   const tileList = tiles.planTiles(width, height);
   const tileUrls = tileList.map(function (t) { return tiles.tileUrl(parsed, width, t); });
 
+  // Approved custom layouts (made earlier by AI Composer) are offered with each app's own.
+  let approved = { byApp: {}, byAlias: {} };
+  try { approved = await approvedBlocks(); } catch (_e) { /* offer the built-in layouts only */ }
+
   const brain = getPlatformBrain();
   const result = await brain.generateStructured({
     taskId: 'composer.design_plan',
@@ -62,7 +67,8 @@ module.exports = async function aiComposerAnalyse(req, res) {
       tileUrls: tileUrls,
       width: width,
       height: height,
-      notes: body.notes
+      notes: body.notes,
+      customLayouts: approved.byApp
     }),
     temperature: 0.2,
     responseSchema: PLAN_SCHEMA
@@ -79,14 +85,23 @@ module.exports = async function aiComposerAnalyse(req, res) {
 
   let plan;
   try {
-    plan = normalizePlan(result.output, { url: body.imageUrl, width: width, height: height });
+    plan = normalizePlan(resolvePlanAliases(result.output, approved), { url: body.imageUrl, width: width, height: height });
   } catch (e) {
     return sendJson(res, 502, { ok: false, error: 'Could not use the analysis: ' + e.message, correlationId: result.correlationId });
   }
 
+  const blockNames = {};
+  plan.sections.forEach(function (s) {
+    if (!s.block) return;
+    Object.keys(approved.byApp).forEach(function (k) {
+      approved.byApp[k].forEach(function (b) { if (b.id === s.block) blockNames[b.id] = { name: b.name, looks: b.looks }; });
+    });
+  });
+
   return sendJson(res, 200, {
     ok: true,
     plan: plan,
+    blockNames: blockNames,
     apps: appChoices(),
     tiles: tileUrls,
     access: { role: access.role, full: access.full, used: quota.used + 1, limit: quota.limit },

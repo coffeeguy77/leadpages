@@ -5972,6 +5972,18 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
       +'<label style="display:inline-flex;gap:7px;align-items:center;font-weight:600;font-size:13px;cursor:pointer;"><input type="checkbox" id="sec-showm-'+id+'"'+(s.hideOnMobile===true?'':' checked')+'> Show on phones</label>'
       +'<label style="display:inline-flex;gap:7px;align-items:center;font-weight:600;font-size:13px;cursor:pointer;"><input type="checkbox" id="sec-showt-'+id+'"'+(s.hideOnTablet===true?'':' checked')+'> Show on tablets</label>'
       +'<span class="hint" style="margin:0;flex:1 1 100%;">Phones and tablets cover portrait and landscape. Breakpoint widths are in Site settings.</span>'
+      +'</div>'+blockLayoutRowHtml(c,id);
+  }
+  /** AI Composer design block on this app: switch between it and the app's standard layouts (the block is kept either way). */
+  function blockLayoutRowHtml(c,id){
+    var s=(c&&c.sections&&c.sections[id])||{}, defs=(c&&c.blockLayouts)||{};
+    var bid=s.blockLayout||s.blockLayoutPrev||''; var b=bid&&defs[bid];
+    if(!b||b.app!==id) return '';
+    var nm=String(b.name||'AI layout').replace(/[&<>"]/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch];});
+    return '<div class="lp-block-row" style="display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin:4px 0 4px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;">'
+      +'<span style="font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);">Layout</span>'
+      +'<label style="display:inline-flex;gap:7px;align-items:center;font-weight:600;font-size:13px;cursor:pointer;"><input type="checkbox" id="sec-blk-'+id+'"'+(s.blockLayout===bid?' checked':'')+'> Use the custom layout \u201c'+nm+'\u201d</label>'
+      +'<span class="hint" style="margin:0;flex:1 1 100%;">Designed by AI Composer from your design. It shows the content below; untick to use this app\u2019s standard layouts and options instead.</span>'
       +'</div>';
   }
   function wireDeviceVis(c,id){
@@ -5979,6 +5991,7 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
     function ensure(){ if(!c.sections) c.sections={}; if(!c.sections[id]) c.sections[id]={}; return c.sections[id]; }
     var sm=$('sec-showm-'+id); if(sm) sm.addEventListener('change',function(){ ensure().hideOnMobile=!sm.checked; persist(); previewApply(); });
     var st=$('sec-showt-'+id); if(st) st.addEventListener('change',function(){ ensure().hideOnTablet=!st.checked; persist(); previewApply(); });
+    var bk=$('sec-blk-'+id); if(bk) bk.addEventListener('change',function(){ var o=ensure(); var bid=o.blockLayout||o.blockLayoutPrev||''; if(!bid) return; if(bk.checked){ o.blockLayout=bid; delete o.blockLayoutPrev; } else { o.blockLayoutPrev=bid; o.blockLayout=''; } persist(); previewApply(); });
   }
   function ensureDeviceVisInBody(body,c,id){
     if(!body||!id) return;
