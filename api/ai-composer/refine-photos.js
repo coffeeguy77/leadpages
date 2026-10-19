@@ -7,11 +7,11 @@
  * Re-checks each photo crop with a little margin around it and returns a
  * tighter box that leaves out text, buttons, overlay panels and card borders.
  * Photos that turn out to be icons/text are dropped. Nothing is saved.
- * Super admin only. Brain task: composer.photo_check (Anthropic vision).
+ * Super admins and partners (lib/ai-composer/access.js). Brain task: composer.photo_check (Anthropic vision).
  */
 
 const { sendJson, readBody } = require('../../lib/layout-composer/http');
-const { requireSuperAdmin } = require('../../lib/ai-composer/access');
+const { requireComposerAccess } = require('../../lib/ai-composer/access');
 const { getPlatformBrain } = require('../../lib/brain/platform');
 const { photoCheckMessages, PHOTO_CHECK_SCHEMA } = require('../../lib/ai-composer/prompts');
 const { sanitizeClientPlan, photoCheckItems, applyPhotoCheck } = require('../../lib/ai-composer/plan');
@@ -21,7 +21,7 @@ const MAX_PER_CALL = 10;
 module.exports = async function aiComposerRefinePhotos(req, res) {
   if (req.method !== 'POST') return sendJson(res, 405, { ok: false, error: 'POST only' });
 
-  const access = await requireSuperAdmin(req);
+  const access = await requireComposerAccess(req);
   if (!access.ok) return sendJson(res, access.code, { ok: false, error: access.error });
 
   const body = await readBody(req);
@@ -39,7 +39,7 @@ module.exports = async function aiComposerRefinePhotos(req, res) {
   const result = await brain.generateStructured({
     taskId: 'composer.photo_check',
     promptId: 'composer.photo_check',
-    actor: { userId: access.user.id, role: 'super' },
+    actor: access.actor,
     messages: photoCheckMessages({ items: items }),
     temperature: 0,
     responseSchema: PHOTO_CHECK_SCHEMA

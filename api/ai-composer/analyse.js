@@ -7,11 +7,11 @@
  * Reads a design image (already uploaded to Cloudinary under leadpages/) and
  * returns a plan: which LeadPages apps recreate each section, colours, business
  * details, photo crops and gaps. Nothing is saved.
- * Super admin only. Brain task: composer.design_plan (Anthropic vision).
+ * Super admins and partners (lib/ai-composer/access.js). Brain task: composer.design_plan (Anthropic vision).
  */
 
 const { sendJson, readBody } = require('../../lib/layout-composer/http');
-const { requireSuperAdmin } = require('../../lib/ai-composer/access');
+const { requireComposerAccess, checkMonthlyLimit } = require('../../lib/ai-composer/access');
 const { getPlatformBrain } = require('../../lib/brain/platform');
 const tiles = require('../../lib/ai-composer/tiles');
 const { planMessages, PLAN_SCHEMA } = require('../../lib/ai-composer/prompts');
@@ -28,8 +28,12 @@ function appChoices() {
 module.exports = async function aiComposerAnalyse(req, res) {
   if (req.method !== 'POST') return sendJson(res, 405, { ok: false, error: 'POST only' });
 
-  const access = await requireSuperAdmin(req);
+  const access = await requireComposerAccess(req);
   if (!access.ok) return sendJson(res, access.code, { ok: false, error: access.error });
+
+  // Partners have a monthly number of design analyses (super admins are not limited).
+  const quota = await checkMonthlyLimit(access);
+  if (!quota.ok) return sendJson(res, quota.code, { ok: false, error: quota.error, used: quota.used, limit: quota.limit });
 
   const body = await readBody(req);
   const width = Math.round(Number(body.width));
@@ -52,7 +56,7 @@ module.exports = async function aiComposerAnalyse(req, res) {
   const result = await brain.generateStructured({
     taskId: 'composer.design_plan',
     promptId: 'composer.design_plan',
-    actor: { userId: access.user.id, role: 'super' },
+    actor: access.actor,
     messages: planMessages({
       tiles: tileList,
       tileUrls: tileUrls,
@@ -85,6 +89,7 @@ module.exports = async function aiComposerAnalyse(req, res) {
     plan: plan,
     apps: appChoices(),
     tiles: tileUrls,
+    access: { role: access.role, full: access.full, used: quota.used + 1, limit: quota.limit },
     model: result.model,
     usage: result.usage,
     correlationId: result.correlationId

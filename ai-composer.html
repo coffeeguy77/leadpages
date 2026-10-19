@@ -135,7 +135,8 @@ main{padding:20px 24px 48px}
         <span class="ac-step" data-step="review">2 · Review</span>
         <span class="ac-step" data-step="build">3 · Build</span>
       </div>
-      <a class="btn ghost small" href="/manage">Editor</a>
+      <span class="ac-mode muted" id="ac-mode" style="font-size:12px"></span>
+      <a class="btn ghost small" href="/manage" id="editor-link">Editor</a>
       <button class="btn ghost small" id="signout" type="button">Sign out</button>
     </div>
   </header>
@@ -191,7 +192,8 @@ main{padding:20px 24px 48px}
             <h2>Page sections</h2>
             <p class="lede">Top to bottom. Change the app, move sections or remove them. Each app can be used once; there is one hero and the footer stays last.</p>
             <ul class="sec-list" id="secs"></ul>
-            <label style="display:flex;gap:8px;align-items:flex-start;margin-top:12px;font-size:13px">
+            <p class="muted hidden" id="demo-note" style="margin-top:12px;font-size:13px">The site is created as a <strong>demo</strong> in your partner dashboard: share its preview link with your client — it shows the “Get this website” bar and goes live when they buy it.</p>
+            <label style="display:flex;gap:8px;align-items:flex-start;margin-top:12px;font-size:13px" id="draft-opt">
               <input type="checkbox" id="as-draft" style="margin-top:2px">
               <span>Create as a draft — only visible on its preview link until published in the editor</span>
             </label>
@@ -242,6 +244,7 @@ main{padding:20px 24px 48px}
         <ul class="gaps hidden" id="done-gaps" style="margin:0 0 14px"></ul>
         <div class="bar">
           <a class="btn solid" id="open-editor" href="#">Open in the editor</a>
+          <a class="btn ghost hidden" id="open-preview" href="#" target="_blank" rel="noopener">Open the preview link</a>
           <button class="btn ghost" id="another-btn" type="button">Compose another</button>
         </div>
       </div>
@@ -298,7 +301,25 @@ main{padding:20px 24px 48px}
   function working(title, sub){ $('work-title').textContent = title; $('work-sub').textContent = sub || ''; view('working'); }
 
   // ---------- auth ----------
-  function showApp(){ show('gate', false); show('app', true); }
+  // What this account may do (super admin / trusted partner = full; partner = standard).
+  async function loadAccess(){
+    var t = await token(); if(!t) return null;
+    var r = await fetch('/api/ai-composer/access', { headers: { Authorization: 'Bearer ' + t } });
+    var j = await r.json().catch(function(){ return {}; });
+    if(!r.ok || !j.ok){ showGate(j.error || 'You don’t have access to AI Composer.'); return null; }
+    S.access = j;
+    var mode = j.role === 'super' ? 'Admin · full mode' : (j.full ? 'Trusted partner · full mode' : 'Partner');
+    if(j.role === 'partner' && j.limit != null) mode += ' · ' + j.used + ' of ' + j.limit + ' designs this month';
+    $('ac-mode').textContent = mode;
+    var partner = j.role === 'partner';
+    show('demo-note', partner);
+    show('draft-opt', !partner);
+    $('editor-link').href = partner ? '/partner' : '/manage';
+    $('editor-link').textContent = partner ? 'Partner dashboard' : 'Editor';
+    if(j.limitReached){ msg('up-msg', 'You have used all your AI Composer designs for this month. It resets on the 1st — or ask LeadPages for a higher limit.'); $('analyse-btn').disabled = true; }
+    return j;
+  }
+  function showApp(){ show('gate', false); show('app', true); loadAccess(); }
   function showGate(text){ show('app', false); show('gate', true); msg('gate-msg', text); }
   $('login-btn').onclick = async function(){
     msg('gate-msg', '');
@@ -640,7 +661,10 @@ main{padding:20px 24px 48px}
     $('build-lede').textContent = 'Every section was filled from the design.';
     $('open-editor').href = j.manageUrl;
     var gapList = j.gaps || [];
-    var where = j.site.status === 'live' ? 'is live at /' + j.site.slug : 'is a draft — preview at /' + j.site.slug + '?preview=1';
+    var where = j.demo ? 'is ready as a demo — share the preview link with your client' :
+      (j.site.status === 'live' ? 'is live at /' + j.site.slug : 'is a draft — preview at /' + j.site.slug + '?preview=1');
+    $('open-preview').href = j.previewUrl || ('/' + j.site.slug + '?preview=1');
+    show('open-preview', j.site.status !== 'live');
     $('done-lede').textContent = '“' + j.site.business_name + '” ' + where + ' with ' + (j.sections || []).length + ' sections. ' +
       (gapList.length ? 'These parts of the design were not built — add them by hand if you need them:' : 'Open it in the editor to adjust text, images and colours.');
     $('done-gaps').innerHTML = gapList.map(function(x){

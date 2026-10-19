@@ -6,11 +6,11 @@
  *
  * Sends each section's slice of the design to the model with the exact fields
  * of the app chosen for it, and returns validated field values. Nothing is saved.
- * Super admin only. Brain task: composer.app_fill (Anthropic vision).
+ * Super admins and partners (lib/ai-composer/access.js). Brain task: composer.app_fill (Anthropic vision).
  */
 
 const { sendJson, readBody } = require('../../lib/layout-composer/http');
-const { requireSuperAdmin } = require('../../lib/ai-composer/access');
+const { requireComposerAccess } = require('../../lib/ai-composer/access');
 const { getPlatformBrain } = require('../../lib/brain/platform');
 const tiles = require('../../lib/ai-composer/tiles');
 const { appFieldSheet } = require('../../lib/ai-composer/catalogue');
@@ -23,7 +23,7 @@ const MAX_PER_CALL = 3;
 module.exports = async function aiComposerFill(req, res) {
   if (req.method !== 'POST') return sendJson(res, 405, { ok: false, error: 'POST only' });
 
-  const access = await requireSuperAdmin(req);
+  const access = await requireComposerAccess(req);
   if (!access.ok) return sendJson(res, access.code, { ok: false, error: access.error });
 
   const body = await readBody(req);
@@ -69,7 +69,7 @@ module.exports = async function aiComposerFill(req, res) {
   const result = await brain.generateStructured({
     taskId: 'composer.app_fill',
     promptId: 'composer.app_fill',
-    actor: { userId: access.user.id, role: 'super' },
+    actor: access.actor,
     messages: fillMessages({ businessName: plan.businessName, items: items, draftFaq: draftFaq, overviewUrls: overviewUrls }),
     temperature: 0.1,
     responseSchema: FILL_SCHEMA
