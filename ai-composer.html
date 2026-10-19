@@ -191,6 +191,10 @@ main{padding:20px 24px 48px}
             <h2>Page sections</h2>
             <p class="lede">Top to bottom. Change the app, move sections or remove them. Each app can be used once; there is one hero and the footer stays last.</p>
             <ul class="sec-list" id="secs"></ul>
+            <label style="display:flex;gap:8px;align-items:flex-start;margin-top:12px;font-size:13px">
+              <input type="checkbox" id="as-draft" style="margin-top:2px">
+              <span>Create as a draft — only visible on its preview link until published in the editor</span>
+            </label>
             <label class="faq-opt hidden" id="faq-opt" style="display:flex;gap:8px;align-items:flex-start;margin-top:12px;font-size:13px">
               <input type="checkbox" id="draft-faq" style="margin-top:2px">
               <span>Draft answers for FAQ questions the design doesn't answer <span class="muted">— uses only facts in the design; listed for checking on the finish screen.</span></span>
@@ -629,12 +633,13 @@ main{padding:20px 24px 48px}
     $('build-title').textContent = 'Creating the site…';
     var plan = planForServer();
     var fills = plan.sections.map(function(s){ return S.fills[s.id]; }).filter(Boolean);
-    var j = await api('/api/ai-composer/create-site', { plan: plan, fills: fills, businessName: plan.businessName, slug: $('slug').value.trim(), options: { draftFaq: !!S.draftFaq } });
+    var j = await api('/api/ai-composer/create-site', { plan: plan, fills: fills, businessName: plan.businessName, slug: $('slug').value.trim(), options: { draftFaq: !!S.draftFaq, draft: !!($('as-draft') && $('as-draft').checked) } });
     $('build-title').textContent = 'Built';
     $('build-lede').textContent = 'Every section was filled from the design.';
     $('open-editor').href = j.manageUrl;
     var gapList = j.gaps || [];
-    $('done-lede').textContent = '“' + j.site.business_name + '” is live at /' + j.site.slug + ' with ' + (j.sections || []).length + ' sections. ' +
+    var where = j.site.status === 'live' ? 'is live at /' + j.site.slug : 'is a draft — preview at /' + j.site.slug + '?preview=1';
+    $('done-lede').textContent = '“' + j.site.business_name + '” ' + where + ' with ' + (j.sections || []).length + ' sections. ' +
       (gapList.length ? 'These parts of the design were not built — add them by hand if you need them:' : 'Open it in the editor to adjust text, images and colours.');
     $('done-gaps').innerHTML = gapList.map(function(x){
       return '<li><strong>'+esc(x.what)+'</strong>'+(x.suggestion?' — <span class="muted">'+esc(x.suggestion)+'</span>':'')+'</li>';

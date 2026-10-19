@@ -185,6 +185,29 @@ test.describe('AI Composer — layout choice in the plan and the site', () => {
     assert.equal(cfg._aiComposer.version, 2);
   });
 
+  test('a dark Trust Bar band keeps its colour and gets white text; other dark backgrounds are still dropped', () => {
+    const plan = sanitizeClientPlan({
+      design: DESIGN, businessName: 'Co',
+      sections: [
+        { id: 's1', appKey: 'trustBar', background: '#7a7a7a', rows: { y0: 0, y1: 100 } },
+        { id: 's2', appKey: 'faq', background: '#111111', rows: { y0: 100, y1: 600 } }
+      ]
+    });
+    const fills = normalizeFill({ apps: [
+      { appKey: 'trustBar', fields: {}, lists: { 'sections.trustBar.badges': [{ label: 'Swiss heritage', icon: 'plus' }, { label: 'Canberra made', icon: 'map-pin' }] } },
+      { appKey: 'faq', fields: {}, lists: { 'sections.faq.items': [{ q: 'Q?', a: 'A.' }] } }
+    ] }, plan.sections, plan);
+    const cfg = buildSiteConfig(plan, fills, {});
+    assert.equal(cfg.sections.trustBar.bg, '#7a7a7a');
+    assert.equal(cfg.sections.trustBar.fg, '#ffffff');
+    assert.equal(cfg.sections.trustBar.badges[0].icon, 'plus', 'stroke icon names are kept');
+    assert.ok(!cfg.sections.faq.bg, 'apps without a text colour still drop dark backgrounds');
+  });
+
+  test('a text block beside one photo is steered to textBox, not aboutUs', () => {
+    assert.match(planSystemPrompt(), /a block of text beside ONE photo[^']*textBox \(layout "bleed"/);
+  });
+
   test('a section with no layout gets its app default; footer is untouched', () => {
     const plan = sanitizeClientPlan({
       design: DESIGN, businessName: 'Co',

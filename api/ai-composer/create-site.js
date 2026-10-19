@@ -74,7 +74,8 @@ module.exports = async function aiComposerCreateSite(req, res) {
         template: 'trade',
         vertical: 'trade',
         config: config,
-        status: 'live'
+        // Drafts are only visible on their ?preview=1 link until published.
+        status: body.options && body.options.draft ? 'draft' : 'live'
       })
       .select('id,slug,business_name,status')
       .single();
