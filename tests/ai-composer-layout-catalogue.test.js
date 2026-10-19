@@ -103,7 +103,7 @@ test.describe('AI Composer — layout catalogue', () => {
     const msgs = planMessages({ tiles: [{ index: 0, y: 0, h: 1000 }], tileUrls: ['https://res.cloudinary.com/x.png'], width: 1440, height: 1000 });
     const cat = msgs[1].content.find((b) => b.type === 'text' && /APP CATALOGUE/.test(b.text)).text;
     assert.match(cat, /· split — looks: headline, text and buttons on one side/);
-    assert.match(cat, /· numbered — looks: cards with a big number/);
+    assert.match(cat, /· numbered — looks: eyebrow \+ heading on the left and intro text on the right/);
     ['look', 'layout', 'tone', 'photoSide'].forEach((k) => assert.ok(PLAN_SCHEMA.properties.sections.items.properties[k], k));
   });
 
@@ -124,9 +124,11 @@ test.describe('AI Composer — layout catalogue', () => {
     assert.ok(!grid.fields.some((f) => f.path === 'sections.services.featureImage'));
     assert.ok(!grid.lists.some((l) => l.path === 'sections.services.featureItems'));
     assert.equal(catalogue.appFieldSheet('services', 'nonsense').layout, 'grid', 'unknown layout → default');
-    const split = catalogue.appFieldSheet('heroSlider', 'split');
-    assert.ok(split.fields.some((f) => f.path === 'sections.heroSlider.splitH1'));
-    assert.ok(!catalogue.appFieldSheet('heroSlider').fields.some((f) => f.path === 'sections.heroSlider.splitH1'));
+    const story = catalogue.appFieldSheet('services', 'story');
+    assert.ok(story.fields.some((f) => f.path === 'sections.services.storyImage'));
+    assert.ok(!catalogue.appFieldSheet('heroSlider', 'split').fields.some((f) => f.path === 'sections.heroSlider.splitH1'), 'the SEO H1 line is left to the editor');
+    const slides = catalogue.appFieldSheet('heroSlider', 'split').lists.find((l) => l.path === 'sections.heroSlider.slides');
+    assert.ok(slides.itemFields.some((f) => f.name === 'secondaryCtaText'), 'second hero button text');
   });
 });
 
@@ -163,7 +165,7 @@ test.describe('AI Composer — layout choice in the plan and the site', () => {
       ]
     });
     const fills = normalizeFill({ apps: [
-      { appKey: 'heroSlider', fields: { 'sections.heroSlider.splitH1': 'Kitchens Canberra' }, lists: { 'sections.heroSlider.slides': [{ heading: 'Designed around you', imageUrl: 'p1' }] } },
+      { appKey: 'heroSlider', fields: {}, lists: { 'sections.heroSlider.slides': [{ heading: 'Designed around you', imageUrl: 'p1', primaryCtaText: 'Start', secondaryCtaText: 'See our work' }] } },
       { appKey: 'services', fields: { 'sections.services.heading': 'What we make', 'sections.services.numLinkLabel': 'Let’s talk' }, lists: { services: [{ title: 'Kitchens', body: 'Made to measure.' }, { title: 'Joinery', body: 'Built in.' }] } },
       { appKey: 'textBox', fields: { 'sections.textBox.heading': 'Meet Beat', 'sections.textBox.image': 'p2', 'sections.textBox.imageSide': 'right' }, lists: {} },
       { appKey: 'faq', fields: { 'sections.faq.heading': 'Questions' }, lists: { 'sections.faq.items': [{ q: 'How long?', a: 'About six weeks.' }] } }
@@ -173,7 +175,7 @@ test.describe('AI Composer — layout choice in the plan and the site', () => {
     assert.equal(S.heroSlider.layout, 'split');
     assert.equal(S.heroSlider.splitTone, 'soft');
     assert.equal(S.heroSlider.splitSide, '', 'photo on the right is the split default');
-    assert.equal(S.heroSlider.splitH1, 'Kitchens Canberra');
+    assert.equal(S.heroSlider.slides[0].secondaryCtaText, 'See our work');
     assert.equal(S.services.mode, 'numbered');
     assert.equal(S.services.numLinkLabel, 'Let’s talk');
     assert.equal(S.textBox.layout, 'bleed');

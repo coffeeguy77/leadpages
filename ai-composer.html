@@ -387,7 +387,8 @@ main{padding:20px 24px 48px}
   // Re-check every photo crop (10 per call, 3 calls at once). A failed batch keeps
   // its original crops so the review can still go ahead.
   async function refinePhotos(){
-    var ids = S.plan.photos.map(function(p){ return p.id; });
+    // The logo is re-checked too (with a wider window) so its crop includes the whole wordmark.
+    var ids = (S.plan.logo ? ['logo'] : []).concat(S.plan.photos.map(function(p){ return p.id; }));
     var batches = [];
     for(var i = 0; i < ids.length; i += 10) batches.push(ids.slice(i, i + 10));
     var removed = {}, updated = {}, failed = 0, next = 0;
@@ -397,6 +398,7 @@ main{padding:20px 24px 48px}
         try{
           var j = await api('/api/ai-composer/refine-photos', { plan: S.plan, photoIds: b });
           (j.photos || []).forEach(function(p){ updated[p.id] = p; });
+          if(j.logo) S.plan.logo = j.logo;
           (j.removed || []).forEach(function(id){ removed[id] = true; });
         }catch(_e){ failed++; }
       }

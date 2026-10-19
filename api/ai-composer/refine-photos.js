@@ -60,6 +60,7 @@ module.exports = async function aiComposerRefinePhotos(req, res) {
     ok: true,
     // Only the photos this call checked; the page merges them into its plan.
     photos: applied.photos.filter(function (p) { return checked[p.id]; }),
+    logo: checked.logo ? applied.logo : undefined,
     removed: applied.removed,
     tightened: applied.tightened,
     usage: result.usage,
