@@ -53,7 +53,7 @@ module.exports = async function aiComposerFill(req, res) {
       photos: plan.photos
         .filter(function (p) { return p.sectionId === s.id; })
         .map(function (p) { return { id: p.id, description: p.description }; }),
-      imageUrls: tiles.sectionImageUrls(parsed, plan.design.width, s.rows),
+      imageUrls: tiles.sectionImageUrls(parsed, plan.design.width, tiles.paddedRows(s.rows, plan.design.height)),
       neighbours: overlappingSections(plan, s)
     };
   });
