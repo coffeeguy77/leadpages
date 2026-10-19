@@ -834,7 +834,7 @@ main{padding:20px 24px 48px}
   async function newLayouts(verdicts){
     var cands = verdicts.filter(function(v){
       var s = S.plan.sections.find(function(x){ return x.id === v.sectionId; });
-      return s && !s.block && s.appKey !== 'footer' && v.verdict !== 'good';
+      return s && !s.block && s.appKey !== 'footer' && v.verdict !== 'good' && v.newLayout === true;
     }).sort(function(a, b){ return RANK[a.verdict] - RANK[b.verdict]; }).slice(0, NEW_LAYOUT_MAX);
     if(!cands.length) return [];
     $('build-title').textContent = 'Designing ' + cands.length + ' new layout' + (cands.length === 1 ? '' : 's') + '…';

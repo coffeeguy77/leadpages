@@ -75,3 +75,18 @@ test.describe('AI Composer — screenshot address guard', () => {
     assert.equal(checkSiteUrl('https://www.leadpages.com.au/abc?preview=1').hostname, 'www.leadpages.com.au');
   });
 });
+
+test('newLayout flag only for sections that are not good and get no listed-layout fix', () => {
+  const { normalizeVerdicts } = require('../lib/ai-composer/visual');
+  const plan = { photos: [], sections: [
+    { id: 's1', appKey: 'faq', layout: 'standard' },
+    { id: 's2', appKey: 'faq2', layout: '' },
+    { id: 's3', appKey: 'reviews', layout: 'cards' }
+  ] };
+  const out = normalizeVerdicts({ sections: [
+    { id: 's1', verdict: 'close', newLayout: true },
+    { id: 's3', verdict: 'good', newLayout: true }
+  ] }, plan);
+  assert.equal(out.find((v) => v.sectionId === 's1').newLayout, true);
+  assert.equal(out.find((v) => v.sectionId === 's3').newLayout, false);
+});
