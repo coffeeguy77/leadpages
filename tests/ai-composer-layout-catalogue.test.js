@@ -107,6 +107,14 @@ test.describe('AI Composer — layout catalogue', () => {
     ['look', 'layout', 'tone', 'photoSide'].forEach((k) => assert.ok(PLAN_SCHEMA.properties.sections.items.properties[k], k));
   });
 
+  test('every app in the catalogue gives a field sheet (with or without layouts)', () => {
+    catalogue.listAppKeys().forEach((k) => {
+      const sheet = catalogue.appFieldSheet(k, '');
+      assert.ok(sheet && Array.isArray(sheet.fields), k);
+      assert.ok(Array.isArray(catalogue.getApp(k).layouts), k + ' has a layouts array');
+    });
+  });
+
   test('field sheets only offer the fields of the chosen layout', () => {
     const feature = catalogue.appFieldSheet('services', 'feature');
     assert.equal(feature.layout, 'feature');
