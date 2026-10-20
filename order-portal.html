@@ -241,6 +241,7 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
   .history li{padding:10px 0;font-size:14px;}
   button,.btn{touch-action:manipulation;}
 }
+.pay-later-note{display:inline-flex;align-items:center;padding:8px 12px;border-radius:10px;border:1px dashed currentColor;font-size:13px;opacity:.85}
 </style>
 </head>
 <body>
@@ -425,7 +426,11 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
     var html = '';
     html += '<button type="button" class="ghost js-print">Print / Save PDF</button>';
     if((o.deposit_paid_cents||0) < (o.deposit_required_cents||0)){
-      html += '<button type="button" class="js-pay">Pay '+esc(d.deposit_required||money(o.deposit_required_cents))+' deposit &amp; confirm</button>';
+      if(window.__portalOnlinePay === false){
+        html += '<span class="pay-later-note">Deposit of '+esc(d.deposit_required||money(o.deposit_required_cents))+' is payable to the shop — they\'ll be in touch.</span>';
+      } else {
+        html += '<button type="button" class="js-pay">Pay '+esc(d.deposit_required||money(o.deposit_required_cents))+' deposit &amp; confirm</button>';
+      }
     }
     if(canEdit) html += '<button type="button" class="js-save">Save changes</button>';
     return html;
@@ -515,6 +520,7 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
   }
 
   function render(data){
+    window.__portalOnlinePay = data && data.online_payment === false ? false : true;
     $('gate').style.display='none';
     $('view').style.display='';
     var o = data.order, d = data.display || {}, items = data.items || [];

@@ -14,6 +14,7 @@
 const { createClient } = require('@supabase/supabase-js');
 const { parseDepositReminderSettings } = require('../../lib/order/deposit-reminder-settings');
 const { processOrderDepositReminder } = require('../../lib/order/deposit-reminder');
+const { syncPendingPayments } = require('../../lib/order/stripe-pay');
 
 const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
@@ -31,6 +32,8 @@ module.exports = async function (req, res) {
   }
 
   try {
+    // Record Stripe-paid deposits first so paid customers are never reminded to pay.
+    try { await syncPendingPayments({ limit: 200 }); } catch (e) { console.error('cron/order-deposit-reminder sync', e); }
     const { data: systems, error } = await admin
       .from('order_systems')
       .select('*')

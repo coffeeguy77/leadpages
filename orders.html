@@ -313,6 +313,13 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
   display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,38%);gap:20px;align-items:start;
 }
 .no-products-col{min-width:0;max-width:100%;overflow:visible;padding-right:0}
+.stripe-connect-card{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:14px 16px;border:1px solid var(--line);border-radius:12px;margin:10px 0 4px}
+.stripe-connect-main{display:flex;gap:12px;align-items:flex-start;min-width:0;flex:1 1 260px}
+.stripe-connect-dot{width:12px;height:12px;border-radius:50%;margin-top:5px;flex:0 0 auto;background:#9ca3af}
+.stripe-connect-dot.ok{background:#12b76a}.stripe-connect-dot.warn{background:#f79009}.stripe-connect-dot.off{background:#d92d20}
+.stripe-connect-actions{display:flex;gap:8px;flex-wrap:wrap}
+.stripe-connect-actions [hidden]{display:none !important}
+.stripe-advanced{margin:4px 0 10px}.stripe-advanced>summary{cursor:pointer;font-weight:600;font-size:13px}
 .lpe-special{margin-top:14px;padding:12px 14px;border:1px solid var(--line);border-radius:10px}
 .lpe-special-toggle{display:flex;gap:8px;align-items:center;cursor:pointer}
 .lpe-special-body{margin-top:10px}
@@ -1728,7 +1735,22 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
 
             <h4 class="section-title">Customer payments (your account)</h4>
             <p class="notice">Connect the business Stripe account so deposit money goes to them — not the LeadPages platform account.</p>
-            <div class="grid2">
+            <div class="stripe-connect-card" id="set-stripe-connect">
+              <div class="stripe-connect-main">
+                <span class="stripe-connect-dot" id="set-stripe-dot" aria-hidden="true"></span>
+                <div>
+                  <strong id="set-stripe-title">Checking Stripe…</strong>
+                  <p class="sub" id="set-stripe-detail" style="margin:2px 0 0"></p>
+                </div>
+              </div>
+              <div class="stripe-connect-actions">
+                <button type="button" class="btn solid" id="set-stripe-connect-btn" hidden>Connect Stripe</button>
+                <button type="button" class="btn ghost" id="set-stripe-refresh" hidden>Refresh status</button>
+              </div>
+            </div>
+            <p class="muted" style="font-size:12px;margin:6px 0 14px">Online deposits only work once the shop's own Stripe account is connected and can take payments. Money, Stripe fees and refunds then belong to the shop. Until then customers can still order and staff record deposits in-house.</p>
+            <details class="stripe-advanced"><summary>Advanced payment settings</summary>
+            <div class="grid2" style="margin-top:10px">
               <div class="field"><label for="set-pay-provider">Payment provider</label>
                 <select id="set-pay-provider">
                   <option value="stripe">Stripe</option>
@@ -1754,6 +1776,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
                 <input id="set-paypal-email" type="email" placeholder="orders@business.com.au">
               </div>
             </div>
+            </details>
             </div>
 
             <div id="settings-panel-general" class="hide">
@@ -2537,7 +2560,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     try { j = await r.json(); } catch (_e) { j = null; }
     if (!r.ok) {
       if (r.status === 401) throw new Error('Your sign-in has expired — please sign in again.');
-      var err = (j && (j.error || j.message)) || ('HTTP ' + r.status);
+      var err = (j && (j.message || j.error)) || ('HTTP ' + r.status);
       throw new Error(typeof err === 'string' ? err : JSON.stringify(err));
     }
     return j || {};
@@ -7852,6 +7875,93 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     sel.innerHTML = html;
   }
 
+  /* ---------- Stripe Connect (shop's own Stripe account) ---------- */
+  function paintStripeConnect(st, err){
+    var dot = $('set-stripe-dot'), title = $('set-stripe-title'), detail = $('set-stripe-detail');
+    var btn = $('set-stripe-connect-btn'), ref = $('set-stripe-refresh');
+    if (!dot) return;
+    state.stripeConnect = st || null;
+    btn.hidden = false;
+    ref.hidden = true;
+    if (err) {
+      dot.className = 'stripe-connect-dot off';
+      title.textContent = 'Couldn’t check Stripe';
+      detail.textContent = err;
+      ref.hidden = false;
+      btn.hidden = true;
+      return;
+    }
+    if (!st || !st.connected) {
+      dot.className = 'stripe-connect-dot off';
+      title.textContent = 'Stripe not connected — online deposits are off';
+      detail.textContent = st && st.account_id ? 'The saved account (' + st.account_id + ') isn’t available: ' + (st.error || 'not found') + '.' : 'Connect the shop’s Stripe account so deposits are paid straight to the shop.';
+      btn.textContent = 'Connect Stripe';
+      return;
+    }
+    ref.hidden = false;
+    var who = st.business_name || st.email || st.account_id;
+    if (st.charges_enabled) {
+      dot.className = 'stripe-connect-dot ok';
+      title.textContent = 'Stripe connected — taking online deposits';
+      detail.textContent = who + ' · ' + st.account_id + (st.payouts_enabled ? '' : ' · payouts not set up yet (finish in Stripe)');
+      btn.textContent = 'Update Stripe details';
+    } else {
+      dot.className = 'stripe-connect-dot warn';
+      title.textContent = 'Finish Stripe setup — online deposits are off until Stripe approves the account';
+      detail.textContent = who + ' · ' + st.account_id + (st.requirements_due ? ' · ' + st.requirements_due + ' item(s) still needed by Stripe' : '');
+      btn.textContent = 'Finish Stripe setup';
+    }
+  }
+
+  async function loadStripeConnectStatus(){
+    if (!$('set-stripe-connect') || !state.siteId) return;
+    try {
+      var out = await api('/api/order/stripe-connect?' + siteQuery());
+      paintStripeConnect(out.status || null);
+    } catch (e) {
+      paintStripeConnect(null, (e && e.message) || String(e));
+    }
+  }
+
+  async function startStripeConnect(){
+    var btn = $('set-stripe-connect-btn');
+    if (!btn || btn.disabled) return;
+    var st = state.stripeConnect;
+    var email = '';
+    if (!st || !st.connected) {
+      email = window.prompt('Email for the shop’s Stripe account (the owner will log in to Stripe with this):', (state.session && state.session.user && state.session.user.email) || '');
+      if (email === null) return;
+      email = String(email || '').trim();
+    }
+    // Stripe can't open inside the embedded editor — use a new tab (opened now so it isn't blocked).
+    var win = null;
+    try { win = window.open('', '_blank'); } catch (_e) { win = null; }
+    btn.disabled = true;
+    var label = btn.textContent;
+    btn.textContent = 'Opening Stripe…';
+    try {
+      var out = await api('/api/order/stripe-connect', { method: 'POST', body: { site_id: state.siteId, action: 'start', email: email } });
+      if (!out.url) throw new Error('Stripe did not return a link.');
+      if (win) win.location.href = out.url; else window.location.href = out.url;
+      toast('Finish the Stripe steps in the new tab, then come back and press Refresh status.', 'ok');
+      await loadStripeConnectStatus();
+    } catch (e) {
+      try { if (win) win.close(); } catch (_e) {}
+      toast((e && e.message) || String(e), 'err');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = label;
+    }
+  }
+
+  if ($('set-stripe-connect-btn')) $('set-stripe-connect-btn').addEventListener('click', startStripeConnect);
+  if ($('set-stripe-refresh')) $('set-stripe-refresh').addEventListener('click', loadStripeConnectStatus);
+  (function(){
+    var flag = urlParams.get('stripe_connect');
+    if (flag === 'return') setTimeout(function(){ toast('Back from Stripe — checking your account status…', 'ok'); }, 800);
+    if (flag === 'refresh') setTimeout(function(){ toast('The Stripe link expired — press the Stripe button again to continue.', 'err'); }, 800);
+  })();
+
   async function loadSettings(){
     if (!requireSite()) return;
     var msg = $('settings-msg');
@@ -7904,6 +8014,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       if ($('set-stmt')) $('set-stmt').value = pay.statement_suffix || '';
       if ($('set-paypal-client')) $('set-paypal-client').value = pay.paypal_client_id || '';
       if ($('set-paypal-email')) $('set-paypal-email').value = pay.paypal_merchant_email || '';
+      loadStripeConnectStatus();
       var sf = (s.settings && s.settings.storefront) || {};
       if ($('set-sf-shop-mode')) $('set-sf-shop-mode').value = sf.shop_mode === 'traditional' ? 'traditional' : 'fast';
       if ($('set-sf-show-all')) $('set-sf-show-all').value = sf.show_all_categories ? '1' : '0';

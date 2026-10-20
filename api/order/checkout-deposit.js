@@ -5,46 +5,12 @@ const { getAdmin } = require('../../lib/order/supabase');
 const { resolveAccessToken } = require('../../lib/order/tokens');
 const { requireUser, assertSiteAccess, getOrderSystemForSite } = require('../../lib/order/auth');
 const { writeAudit } = require('../../lib/order/audit');
+const { stripeApi, paymentSettings, connectStatus, syncPendingPayments } = require('../../lib/order/stripe-pay');
 
 const PUBLIC_BASE = (process.env.PUBLIC_BASE_URL || 'https://leadpages.com.au').replace(/\/+$/, '');
 
 async function stripe(path, params, opts) {
-  opts = opts || {};
-  const body = new URLSearchParams();
-  for (const [k, v] of Object.entries(params)) {
-    if (v === undefined || v === null || v === '') continue;
-    body.append(k, String(v));
-  }
-  const headers = {
-    Authorization: 'Bearer ' + (process.env.STRIPE_SECRET_KEY || ''),
-    'Content-Type': 'application/x-www-form-urlencoded'
-  };
-  // Direct charges on a connected account (optional Stripe Connect).
-  if (opts.stripeAccount) headers['Stripe-Account'] = opts.stripeAccount;
-  const r = await fetch('https://api.stripe.com/v1/' + path, {
-    method: 'POST',
-    headers: headers,
-    body: body
-  });
-  let j = null;
-  try {
-    j = await r.json();
-  } catch (_e) {
-    j = null;
-  }
-  return { ok: r.ok, status: r.status, data: j };
-}
-
-function paymentSettings(system) {
-  const s = (system && system.settings && system.settings.payments) || {};
-  return {
-    provider: s.provider || 'stripe',
-    stripe_connect_account_id: String(s.stripe_connect_account_id || '').trim(),
-    stripe_charge_mode: s.stripe_charge_mode === 'direct' ? 'direct' : 'destination',
-    paypal_client_id: String(s.paypal_client_id || '').trim(),
-    paypal_merchant_email: String(s.paypal_merchant_email || '').trim(),
-    statement_suffix: String(s.statement_suffix || '').trim().slice(0, 22)
-  };
+  return stripeApi('POST', path, params, (opts && opts.stripeAccount) || null);
 }
 
 module.exports = async function (req, res) {
@@ -79,6 +45,16 @@ module.exports = async function (req, res) {
     }
 
     if (!order) return json(res, 404, { error: 'order_not_found' });
+    // An earlier checkout may already be paid but not yet recorded — check Stripe first so a
+    // customer is never charged twice for the same deposit.
+    try {
+      const synced = await syncPendingPayments({ orderId: order.id });
+      if (synced.recorded) {
+        order = (await admin.from('order_orders').select('*').eq('id', order.id).single()).data || order;
+      }
+    } catch (e) {
+      console.error('order/checkout-deposit sync', e);
+    }
     const amount = Number(order.deposit_required_cents) || 0;
     if (amount <= 0) return json(res, 400, { error: 'no_deposit_required' });
     if ((Number(order.deposit_paid_cents) || 0) >= amount) {
@@ -91,6 +67,27 @@ module.exports = async function (req, res) {
       return json(res, 501, {
         error: 'paypal_not_enabled',
         message: 'PayPal checkout is not enabled yet. Connect Stripe or switch provider to Stripe in Order Settings.'
+      });
+    }
+
+    // Never take a shop's money on the platform account: the shop must have its own
+    // connected Stripe account that can accept charges.
+    const connectId = pay.stripe_connect_account_id;
+    const acct = connectId ? await connectStatus(connectId) : { connected: false, charges_enabled: false };
+    if (!connectId || !acct.connected || !acct.charges_enabled) {
+      await writeAudit({
+        order_system_id: order.order_system_id,
+        site_id: order.site_id,
+        order_id: order.id,
+        event_type: 'deposit_checkout_blocked',
+        source: actorSource,
+        payload: { reason: !connectId ? 'stripe_not_connected' : !acct.connected ? 'stripe_account_unavailable' : 'stripe_charges_disabled', stripe_connect_account_id: connectId || null }
+      });
+      return json(res, 409, {
+        error: 'payments_not_connected',
+        message: actorSource === 'admin'
+          ? 'Online payment is off: connect this shop\'s Stripe account in Order Settings → Payments, or record the payment in-house.'
+          : 'Online payment isn\'t available for this shop yet. Your order is saved — the shop will contact you about the deposit.'
       });
     }
 
@@ -154,17 +151,15 @@ module.exports = async function (req, res) {
     }
 
     let stripeOpts = {};
-    const connectId = pay.stripe_connect_account_id;
-    if (connectId) {
-      sessionParams['metadata[stripe_connect_account_id]'] = connectId;
-      if (pay.stripe_charge_mode === 'direct') {
-        // Charge the connected account directly (shows their branding on Checkout).
-        stripeOpts = { stripeAccount: connectId };
-      } else {
-        // Destination charge on the platform → funds transfer to the connected account.
-        sessionParams['payment_intent_data[transfer_data][destination]'] = connectId;
-        sessionParams['payment_intent_data[on_behalf_of]'] = connectId;
-      }
+    // Standard accounts (Connect button) take direct charges: money, fees and refunds are the shop's.
+    const direct = pay.stripe_charge_mode === 'direct' || acct.type === 'standard';
+    sessionParams['metadata[stripe_connect_account_id]'] = connectId;
+    if (direct) {
+      stripeOpts = { stripeAccount: connectId };
+    } else {
+      // Destination charge on the platform → funds transfer to the connected account.
+      sessionParams['payment_intent_data[transfer_data][destination]'] = connectId;
+      sessionParams['payment_intent_data[on_behalf_of]'] = connectId;
     }
 
     const session = await stripe('checkout/sessions', sessionParams, stripeOpts);
@@ -179,6 +174,8 @@ module.exports = async function (req, res) {
       .update({
         stripe_session_id: session.data.id,
         payment_link_url: session.data.url,
+        // Where the session lives, so it can be looked up again (null = platform).
+        meta: { stripe_account: direct ? connectId : null, charge_mode: direct ? 'direct' : 'destination' },
         updated_at: new Date().toISOString()
       })
       .eq('id', payment.id);
@@ -192,8 +189,8 @@ module.exports = async function (req, res) {
       payload: {
         payment_id: payment.id,
         amount_cents: amount,
-        stripe_connect_account_id: connectId || null,
-        charge_mode: connectId ? pay.stripe_charge_mode : 'platform'
+        stripe_connect_account_id: connectId,
+        charge_mode: direct ? 'direct' : 'destination'
       }
     });
 
@@ -201,7 +198,7 @@ module.exports = async function (req, res) {
       url: session.data.url,
       payment_id: payment.id,
       business_name: businessName,
-      connected: !!connectId
+      connected: true
     });
   } catch (e) {
     console.error('order/checkout-deposit', e);

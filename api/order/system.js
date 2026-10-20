@@ -171,6 +171,24 @@ module.exports = async function (req, res) {
       if (body.settings.storefront && typeof body.settings.storefront === 'object') {
         next.storefront = mergeStorefront(prev.storefront, body.settings.storefront);
       }
+      if (body.settings.payments && typeof body.settings.payments === 'object') {
+        // Keep fields the form doesn't send (connection details), and never let a stale form
+        // drop a Stripe account connected with the Connect button — clearing it needs
+        // payments.disconnect_stripe = true.
+        const prevPay = (prev.payments && typeof prev.payments === 'object') ? prev.payments : {};
+        const nextPay = Object.assign({}, prevPay, body.settings.payments);
+        const keepConnected = prevPay.stripe_connected_via === 'leadpages_connect' && prevPay.stripe_connect_account_id;
+        if (nextPay.disconnect_stripe) {
+          nextPay.stripe_connect_account_id = '';
+          delete nextPay.stripe_connected_via;
+          delete nextPay.stripe_connected_at;
+        } else if (keepConnected && String(nextPay.stripe_connect_account_id || '').trim() !== prevPay.stripe_connect_account_id) {
+          nextPay.stripe_connect_account_id = prevPay.stripe_connect_account_id;
+          nextPay.stripe_charge_mode = 'direct';
+        }
+        delete nextPay.disconnect_stripe;
+        next.payments = nextPay;
+      }
       patch.settings = next;
     }
     const admin = getAdmin();

@@ -3,6 +3,7 @@
 const { readBody, json, methodOk } = require('../../lib/order/http');
 const { getAdmin } = require('../../lib/order/supabase');
 const { resolveAccessToken } = require('../../lib/order/tokens');
+const { syncPendingPayments } = require('../../lib/order/stripe-pay');
 const { formatAud } = require('../../lib/order/money');
 const { orderGstSummary } = require('../../lib/order/gst');
 const { editingStateFor } = require('../../lib/order/cutoff');
@@ -20,6 +21,8 @@ async function portalContext(raw) {
   const tokenRow = await resolveAccessToken(raw);
   if (!tokenRow) return null;
   const admin = getAdmin();
+  // Record a deposit paid on Stripe that the webhook hasn't delivered yet (e.g. back from Checkout).
+  try { await syncPendingPayments({ orderId: tokenRow.order_id }); } catch (e) { console.error('order/portal sync', e); }
   const { data: order } = await admin.from('order_orders').select('*').eq('id', tokenRow.order_id).single();
   if (!order) return null;
   const { data: items } = await admin
@@ -162,7 +165,11 @@ module.exports = async function (req, res) {
         (Number(order.deposit_required_cents) || 0) > 0 &&
         (Number(order.deposit_paid_cents) || 0) >= (Number(order.deposit_required_cents) || 0);
 
+      // Online deposit only when the shop has its own Stripe account (see checkout-deposit).
+      const sysPay = (system && system.settings && system.settings.payments) || {};
+      const onlinePayment = !!String(sysPay.stripe_connect_account_id || '').trim();
       return json(res, 200, {
+        online_payment: onlinePayment,
         order: {
           id: order.id,
           order_number: order.order_number,

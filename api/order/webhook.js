@@ -1,104 +1,86 @@
 'use strict';
 
 /**
- * Stripe webhook for Order Engine deposits.
- * Prefer dedicating STRIPE_ORDER_WEBHOOK_SECRET; falls back to verifying metadata kind.
+ * Stripe webhook for Order Engine deposits (platform + Connect events).
+ *
+ * The signature is checked against the raw body when we have it. Vercel may hand us an
+ * already-parsed body, and re-serialising it never matches Stripe's signature — so when the
+ * signature can't be verified, the event is fetched back from Stripe by id (with the
+ * connected account header for Connect events) and only that copy is trusted.
+ * Recording is idempotent (lib/order/stripe-pay.recordStripeSession).
  */
 
-const { createClient } = require('@supabase/supabase-js');
 const crypto = require('crypto');
-
-const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+const { stripeApi, recordStripeSession } = require('../../lib/order/stripe-pay');
 
 function verifyStripeSig(rawBody, sigHeader, secret) {
-  if (!secret || !sigHeader) return false;
-  const parts = String(sigHeader).split(',').reduce(function (a, p) {
-    const kv = p.split('=');
-    a[kv[0]] = kv[1];
-    return a;
-  }, {});
-  const t = parts.t;
-  const v1 = parts.v1;
-  if (!t || !v1) return false;
-  const payload = t + '.' + rawBody;
-  const expected = crypto.createHmac('sha256', secret).update(payload, 'utf8').digest('hex');
-  try {
-    return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(v1));
-  } catch (_e) {
-    return false;
-  }
+  if (!secret || !sigHeader || !rawBody) return false;
+  const parts = {};
+  String(sigHeader).split(',').forEach(function (kv) {
+    const i = kv.indexOf('=');
+    if (i > 0) {
+      const k = kv.slice(0, i);
+      if (!parts[k]) parts[k] = [];
+      parts[k].push(kv.slice(i + 1));
+    }
+  });
+  const t = parts.t && parts.t[0];
+  if (!t || !parts.v1) return false;
+  if (Math.abs(Math.floor(Date.now() / 1000) - parseInt(t, 10)) > 300) return false;
+  const expected = crypto.createHmac('sha256', secret).update(t + '.' + rawBody, 'utf8').digest('hex');
+  return parts.v1.some(function (v1) {
+    try {
+      const a = Buffer.from(expected);
+      const b = Buffer.from(v1);
+      return a.length === b.length && crypto.timingSafeEqual(a, b);
+    } catch (_e) {
+      return false;
+    }
+  });
+}
+
+function secrets() {
+  return [
+    process.env.STRIPE_ORDER_WEBHOOK_SECRET,
+    process.env.STRIPE_ORDER_CONNECT_WEBHOOK_SECRET,
+    process.env.STRIPE_WEBHOOK_SECRET
+  ].filter(Boolean);
 }
 
 module.exports = async function (req, res) {
   try {
     if (req.method !== 'POST') return res.status(405).end('Method not allowed');
-    let raw = '';
+    let raw = null;
     if (typeof req.body === 'string') raw = req.body;
     else if (Buffer.isBuffer(req.body)) raw = req.body.toString('utf8');
-    else raw = JSON.stringify(req.body || {});
-
-    const secret = process.env.STRIPE_ORDER_WEBHOOK_SECRET || process.env.STRIPE_WEBHOOK_SECRET || '';
-    const sig = req.headers['stripe-signature'];
-    if (secret && !verifyStripeSig(raw, sig, secret)) {
-      return res.status(400).json({ error: 'invalid_signature' });
-    }
 
     let evt;
     try {
-      evt = typeof req.body === 'object' && req.body && req.body.type ? req.body : JSON.parse(raw);
+      evt = req.body && typeof req.body === 'object' && !Buffer.isBuffer(req.body) && req.body.type ? req.body : JSON.parse(raw || '{}');
     } catch (_e) {
       return res.status(400).json({ error: 'bad_json' });
     }
+    if (!evt || !evt.id || !evt.type) return res.status(400).json({ error: 'bad_event' });
 
-    if (evt.type === 'checkout.session.completed') {
-      const session = evt.data && evt.data.object;
-      if (!session) return res.status(200).json({ ok: true });
-      const meta = session.metadata || {};
-      if (meta.kind !== 'order_deposit') return res.status(200).json({ ok: true, ignored: true });
-
-      const paymentId = meta.payment_id || session.client_reference_id;
-      const orderId = meta.order_id;
-      if (!paymentId || !orderId) return res.status(200).json({ ok: true });
-
-      const { data: payment } = await sb.from('order_payments').select('*').eq('id', paymentId).maybeSingle();
-      if (!payment || payment.status === 'paid') return res.status(200).json({ ok: true });
-
-      const amount = Number(session.amount_total) || payment.amount_cents;
-      await sb
-        .from('order_payments')
-        .update({
-          status: 'paid',
-          amount_cents: amount,
-          stripe_payment_intent_id: session.payment_intent || null,
-          paid_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', paymentId);
-
-      const { data: order } = await sb.from('order_orders').select('*').eq('id', orderId).single();
-      if (order) {
-        const paid = (Number(order.deposit_paid_cents) || 0) + amount;
-        const patch = {
-          deposit_paid_cents: paid,
-          updated_at: new Date().toISOString()
-        };
-        if (order.status === 'awaiting_deposit') {
-          patch.status = 'confirmed';
-          patch.confirmed_at = patch.updated_at;
-        }
-        await sb.from('order_orders').update(patch).eq('id', orderId);
-        await sb.from('order_audit_events').insert({
-          order_system_id: order.order_system_id,
-          site_id: order.site_id,
-          order_id: order.id,
-          event_type: 'deposit_paid',
-          source: 'system',
-          payload: { payment_id: paymentId, amount_cents: amount }
-        });
+    const sig = req.headers['stripe-signature'];
+    const verified = raw != null && secrets().some(function (s) { return verifyStripeSig(raw, sig, s); });
+    if (!verified) {
+      // Trust only Stripe's own copy of the event.
+      const r = await stripeApi('GET', 'events/' + encodeURIComponent(evt.id), null, evt.account || null);
+      if (!r.ok || !r.data || r.data.id !== evt.id) {
+        console.error('order/webhook unverifiable event', evt.id, r.status);
+        return res.status(400).json({ error: 'unverified_event' });
       }
+      evt = Object.assign({}, r.data, { account: evt.account || r.data.account || null });
     }
 
-    return res.status(200).json({ ok: true });
+    if (evt.type === 'checkout.session.completed' || evt.type === 'checkout.session.async_payment_succeeded') {
+      const session = evt.data && evt.data.object;
+      const out = await recordStripeSession(session, evt.account || null);
+      if (out.recorded) console.log('order/webhook recorded', session && session.id, out.order_id);
+      return res.status(200).json({ ok: true, recorded: !!out.recorded, reason: out.reason || null });
+    }
+    return res.status(200).json({ ok: true, ignored: true });
   } catch (e) {
     console.error('order/webhook', e);
     return res.status(500).json({ error: String((e && e.message) || e) });

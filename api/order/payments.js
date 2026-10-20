@@ -1,6 +1,7 @@
 'use strict';
 
 const { json, methodOk } = require('../../lib/order/http');
+const { syncPendingPayments } = require('../../lib/order/stripe-pay');
 const { requireUser, assertSiteAccess, ensureOrderSystem } = require('../../lib/order/auth');
 const { getAdmin } = require('../../lib/order/supabase');
 const { formatAud } = require('../../lib/order/money');
@@ -18,6 +19,7 @@ module.exports = async function (req, res) {
     if (!access.ok) return json(res, access.code, { error: access.error });
     await ensureOrderSystem(siteId);
     const admin = getAdmin();
+    try { await syncPendingPayments({ siteId: siteId }); } catch (e) { console.error('order/payments sync', e); }
 
     let q = admin
       .from('order_payments')

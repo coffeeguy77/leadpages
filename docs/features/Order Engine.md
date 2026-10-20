@@ -125,3 +125,18 @@ Staff put a product on special in **Products → edit → Pricing → Put this p
 **Shop:** `/api/order/storefront` sends the special price as the product price, plus `special` (`was_display`, `saving_display`, `ends`…) and `regular_price_*`; the raw settings are stripped. The storefront shows a **Specials** tab after the info tabs (only while a special is live) and a Special badge with old price + saving in categories. The staff product list shows a Special / Special soon badge.
 
 Tests: `tests/order-specials.test.js`.
+
+## Deposits and Stripe (money rules)
+
+**Online deposits go only to the shop's own Stripe account.** `api/order/checkout-deposit.js` refuses (409 `payments_not_connected`) unless `settings.payments.stripe_connect_account_id` is a connected account with `charges_enabled`. A shop's deposit is never charged on the platform (LeadPages / Web Culture) account. Customers then see "Deposit … is payable to the shop" instead of the Pay button (`online_payment` in `/api/order/portal`), and staff record deposits in-house.
+
+**Connect Stripe** (Order Settings → Tax & Payments): `api/order/stripe-connect.js` creates a **Standard** Stripe account for the shop (country AU) and returns a Stripe onboarding link (new tab). Direct charges: money, Stripe fees, refunds and disputes belong to the shop. Requires Connect to be enabled on the platform Stripe account. The manual "acct_…" field is under Advanced. A stale settings form can't drop a Connect-button account (`api/order/system.js`; clearing needs `payments.disconnect_stripe`).
+
+**Recording payments** — `lib/order/stripe-pay.js` `recordStripeSession()` records a deposit only from Stripe's own Checkout Session (`payment_status: paid`), once (conditional pending→paid update). It runs from:
+- `api/order/webhook.js` — verifies the signature on the raw body; if it can't (Vercel parsed the body), fetches the event back from Stripe by id and trusts only that. Handles Connect events (`account`).
+- `api/order/portal.js` (customer returns from Stripe), `api/order/orders.js` (staff open an order), `api/order/payments.js` (payments list), `checkout-deposit` (before creating a new session — no double charges).
+- `api/cron/order-payments-sync.js` every 10 minutes, and before deposit reminders.
+
+`order_payments.meta.stripe_account` records where the session lives. `meta.refund_due` (duplicate charge) and `meta.no_count` (already counted) record the payment without adding it to the deposit again.
+
+Tests: `tests/order-stripe-payments.test.js`.
