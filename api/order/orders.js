@@ -1,6 +1,7 @@
 'use strict';
 
 const { readBody, json, methodOk } = require('../../lib/order/http');
+const { syncPendingPayments } = require('../../lib/order/stripe-pay');
 const { requireUser, assertSiteAccess, ensureOrderSystem } = require('../../lib/order/auth');
 const { getAdmin } = require('../../lib/order/supabase');
 const {
@@ -31,6 +32,8 @@ module.exports = async function (req, res) {
     if (req.method === 'GET') {
       const id = req.query && req.query.id;
       if (id) {
+        // Staff see a Stripe-paid deposit even if the webhook hasn't arrived.
+        try { await syncPendingPayments({ orderId: id }); } catch (e) { console.error('order/orders sync', e); }
         const { data: order, error } = await admin
           .from('order_orders')
           .select('*')
