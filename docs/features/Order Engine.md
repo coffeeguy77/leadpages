@@ -140,3 +140,13 @@ Tests: `tests/order-specials.test.js`.
 `order_payments.meta.stripe_account` records where the session lives. `meta.refund_due` (duplicate charge) and `meta.no_count` (already counted) record the payment without adding it to the deposit again.
 
 Tests: `tests/order-stripe-payments.test.js`.
+
+## Customer order page (invoice view)
+
+`order-portal.html` opens every order as an invoice: business, order number, order date, customer, pickup, items table (qty / weight, amount), totals (subtotal, GST, deposit, balance), notes, Print / Pay deposit. No edit fields or "changes open" badges.
+
+Editing is still there but not promoted: a quiet **Make changes** button at the very bottom, shown only while `can_edit` (before the order's lockout and the season lock). It opens the existing edit view (with **← Back to order**); saving reloads into the invoice.
+
+Checkout asks **First name** and **Last name** (both required) and sends `customer_name` as "First Last"; SMS `{{first_name}}` greets by the first word.
+
+Message templates: money placeholders (`{{deposit_amount}}`, `{{cart_total}}`, `{{known_cart_total}}`) already include "$" — a "$" typed in front is dropped so texts never say "$$50.00".

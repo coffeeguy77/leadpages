@@ -241,6 +241,30 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
   .history li{padding:10px 0;font-size:14px;}
   button,.btn{touch-action:manipulation;}
 }
+.inv{padding:22px 22px 18px}
+.inv-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:12px}
+@media (max-width:560px){.inv{padding:18px 16px 14px}.inv-head{flex-direction:column-reverse;gap:8px}.inv-title{font-size:26px}}
+.inv-biz{margin:0 0 4px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:11px;color:var(--accent)}
+.inv-title{margin:0}
+.inv-status{white-space:nowrap;font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent)}
+.inv-status.st-awaiting_deposit{background:color-mix(in srgb,var(--warn) 14%,transparent);color:var(--warn)}
+.inv-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px 16px;margin:0 0 14px}
+.inv-meta dt{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.inv-meta dd{margin:2px 0 0;font-weight:600}
+.inv-items{width:100%;border-collapse:collapse;font-size:14px;margin:6px 0 12px}
+.inv-items th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:1px solid var(--line);padding:6px 4px}
+.inv-items td{border-bottom:1px solid var(--line);padding:9px 4px;vertical-align:top}
+.inv-items .num{text-align:right;white-space:nowrap}
+.inv-note{font-size:12px;color:var(--muted);margin-top:2px}
+.inv-est{font-size:11px;color:var(--muted)}
+.inv-totals{border-top:2px solid var(--ink);padding-top:8px}
+.inv-notes{margin-top:14px}
+.inv-notes p{margin:4px 0 0}
+.inv-change{margin:22px 0 8px;text-align:center;font-size:13px;color:var(--muted)}
+.inv-change p{margin:0 0 8px}
+.inv-change .js-edit{font-size:13px;padding:8px 14px}
+.inv-locked{text-align:center}
+@media print{.inv-change,.portal-bar,.actions{display:none !important}}
 .pay-later-note{display:inline-flex;align-items:center;padding:8px 12px;border-radius:10px;border:1px dashed currentColor;font-size:13px;opacity:.85}
 </style>
 </head>
@@ -519,8 +543,112 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
     });
   }
 
+  /* ---------- Invoice view (default) — editing sits behind "Make changes" ---------- */
+  var STATUS_LABELS = {
+    draft: 'Draft', awaiting_deposit: 'Awaiting deposit', confirmed: 'Confirmed', changes_open: 'Confirmed',
+    locked: 'Confirmed — being prepared', in_preparation: 'Being prepared', ready: 'Ready for pickup',
+    collected: 'Collected', completed: 'Completed', cancelled: 'Cancelled', refunded: 'Refunded'
+  };
+  function invDate(iso){
+    if(!iso) return '';
+    var dt = new Date(iso);
+    if(isNaN(dt.getTime())) return '';
+    return dt.toLocaleDateString('en-AU', { day:'numeric', month:'short', year:'numeric' });
+  }
+  /** "Wed 23 Dec 2026 · 12:00–17:00" (pickup date is a calendar date, no timezone shift). */
+  function invPickup(o){
+    var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(o.pickup_date||''));
+    if(!m) return pickupLabel(o);
+    var dt = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+    var day = dt.toLocaleDateString('en-AU', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+    var t = '';
+    if(o.pickup_window_start && o.pickup_window_end) t = String(o.pickup_window_start).slice(0,5) + '–' + String(o.pickup_window_end).slice(0,5);
+    else if(o.pickup_time) t = String(o.pickup_time).slice(0,5);
+    return esc(day) + (t ? ' · ' + esc(t) : '');
+  }
+  function itemPrice(it){
+    if(it.line_final_cents!=null) return money(it.line_final_cents);
+    if(it.price_status==='tbc'||it.price_status==='quote_required') return 'Price TBC';
+    return it.line_known_cents!=null ? money(it.line_known_cents) : '—';
+  }
+
+  function renderInvoice(data){
+    var o = data.order, d = data.display || {}, items = data.items || [];
+    var biz = (data.business && data.business.business_name) || 'Your order';
+    var owing = (o.deposit_required_cents||0) > (o.deposit_paid_cents||0);
+    var html = '<div class="portal-view inv-view">';
+    html += '<main class="portal-scroll">';
+    if(paid) html += '<div class="banner ok"><strong>Deposit received.</strong> Thank you — your order is confirmed.</div>';
+    if(cancelled && owing) html += '<div class="banner warn"><strong>Payment cancelled.</strong> Your order is still saved.</div>';
+    if(data.pending_change_request) html += '<div class="banner warn"><strong>Change request pending.</strong> We received your request and will confirm shortly.</div>';
+
+    html += '<article class="card inv">';
+    html += '<header class="inv-head"><div><p class="inv-biz">'+esc(biz)+'</p><h1 class="brand inv-title">Order '+esc(o.order_number)+'</h1></div>';
+    html += '<span class="inv-status st-'+esc(o.status||'')+'">'+esc(STATUS_LABELS[o.status]||String(o.status||'').replace(/_/g,' '))+'</span></header>';
+    html += '<dl class="inv-meta">';
+    if(o.created_at) html += '<div><dt>Order date</dt><dd>'+esc(invDate(o.created_at))+'</dd></div>';
+    html += '<div><dt>Customer</dt><dd>'+esc(o.customer_name||'')+'</dd></div>';
+    html += '<div><dt>'+(o.fulfilment_type==='delivery'?'Delivery':'Pickup')+'</dt><dd>'+invPickup(o)+'</dd></div>';
+    html += '</dl>';
+
+    html += '<table class="inv-items"><thead><tr><th>Item</th><th class="num">Qty / weight</th><th class="num">Amount</th></tr></thead><tbody>';
+    items.forEach(function(it){
+      var qty = it.actual_weight_kg!=null ? (esc(it.actual_weight_kg)+' kg')
+        : it.requested_weight_kg!=null ? ('approx '+esc(it.requested_weight_kg)+' kg' + (Number(it.quantity)>1 ? ' × '+esc(it.quantity) : ''))
+        : esc(it.quantity);
+      html += '<tr><td><strong>'+esc(it.product_name)+'</strong>'+renderOptionsDisplay(it)+(it.notes?'<div class="inv-note">'+esc(it.notes)+'</div>':'')+'</td>';
+      html += '<td class="num">'+qty+'</td>';
+      html += '<td class="num">'+itemPrice(it)+(it.price_status==='estimated'?' <span class="inv-est">est.</span>':'')+'</td></tr>';
+    });
+    html += '</tbody></table>';
+
+    html += '<div class="inv-totals totals">';
+    html += '<div class="row"><span>Subtotal'+(o.has_unknown_prices?' (known items)':'')+'</span><span>'+esc(d.known_subtotal||money(o.known_subtotal_cents))+'</span></div>';
+    if(o.has_unknown_prices) html += '<div class="row"><span>Weighed / priced items</span><span>Confirmed after preparation</span></div>';
+    if(d.gst_included) html += '<div class="row"><span>Includes GST</span><span>'+esc(d.gst_included)+'</span></div>';
+    if((o.deposit_required_cents||0) > 0){
+      html += '<div class="row"><span>Deposit '+(owing?'due':'paid')+'</span><span>'+esc(owing ? (d.deposit_required||money(o.deposit_required_cents)) : (d.deposit_paid||money(o.deposit_paid_cents)))+'</span></div>';
+    }
+    html += '<div class="row emph"><span>Balance at pickup</span><span>'+esc(d.balance||'TBC')+'</span></div>';
+    html += '</div>';
+    if(o.has_unknown_prices) html += '<p class="note">Final price is confirmed once your items are weighed and prepared.</p>';
+    if(o.customer_notes) html += '<div class="inv-notes"><h2 class="section-title-sm">Notes</h2><p>'+esc(o.customer_notes)+'</p></div>';
+    html += '<div class="actions portal-bar-desktop">'+renderActionButtons(o, d, false)+'</div>';
+    html += '</article>';
+
+    // Changes are possible but not promoted: a quiet link-style button at the very bottom.
+    if(data.can_edit){
+      html += '<div class="inv-change"><p>Need to change something? You can update this order until <strong>'+esc(o.effective_cutoff_at?new Date(o.effective_cutoff_at).toLocaleString('en-AU',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'}):'the cutoff')+'</strong>.</p>';
+      html += '<button type="button" class="ghost js-edit">Make changes</button></div>';
+    } else if(d.locked_message){
+      html += '<p class="note inv-locked">'+esc(d.locked_message)+'</p>';
+    }
+    html += '</main>';
+    // Mobile bar hides Print, so only show it when there's a deposit button or note in it.
+    var barHtml = renderActionButtons(o, d, false);
+    if(/js-pay|pay-later-note/.test(barHtml)) html += '<footer class="portal-bar portal-bar-mobile-host"><div class="portal-bar-inner">'+barHtml+'</div></footer>';
+    html += '</div>';
+    $('view').innerHTML = html;
+    var editBtn = document.querySelector('.js-edit');
+    if(editBtn) editBtn.onclick = function(){
+      window.__portalEdit = true;
+      render(data);
+      try{ window.scrollTo(0, 0); }catch(_e){}
+    };
+    wirePortalActions();
+  }
+
   function render(data){
     window.__portalOnlinePay = data && data.online_payment === false ? false : true;
+    window.__portalData = data;
+    if(!window.__portalEdit || !data.can_edit){
+      window.__portalEdit = false;
+      $('gate').style.display='none';
+      $('view').style.display='';
+      if(data.business && data.business.slug) rememberSlug(data.business.slug);
+      renderInvoice(data);
+      return;
+    }
     $('gate').style.display='none';
     $('view').style.display='';
     var o = data.order, d = data.display || {}, items = data.items || [];
@@ -529,6 +657,7 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
     var html = '<div class="portal-view">';
 
     html += '<header class="portal-top">';
+    html += '<button type="button" class="ghost js-back" style="margin:0 0 10px">← Back to order</button>';
     html += '<p class="sub biz-label" style="margin:0 0 6px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:11px;color:var(--accent)">'+esc(biz)+'</p>';
     html += '<h1 class="brand">Order '+esc(o.order_number)+'</h1>';
     html += '<p class="sub">Review your order'+( (o.deposit_required_cents||0)>(o.deposit_paid_cents||0) ? ', then pay when ready.' : '.' )+'</p>';
@@ -712,6 +841,15 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
     }
 
     wirePortalActions();
+    var backBtn = document.querySelector('.js-back');
+    if(backBtn) backBtn.onclick = function(){
+      if((window.__portalRemoveIds||[]).length || (window.__portalPendingAdds||[]).length){
+        if(!confirm('Discard your unsaved changes?')) return;
+      }
+      window.__portalEdit = false;
+      render(data);
+      try{ window.scrollTo(0, 0); }catch(_e){}
+    };
   }
 
   function renderHistory(data, sessionToken, slug){

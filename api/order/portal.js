@@ -174,6 +174,7 @@ module.exports = async function (req, res) {
           id: order.id,
           order_number: order.order_number,
           status: order.status,
+          created_at: order.created_at,
           customer_name: order.customer_name,
           fulfilment_type: order.fulfilment_type,
           pickup_date: order.pickup_date,

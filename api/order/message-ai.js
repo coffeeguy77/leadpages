@@ -21,7 +21,7 @@ const FALLBACK = {
       '{{first_name}}, last call before we release your cart. Finish here: {{checkout_link}}'
     ],
     deposit_required: [
-      'Hi {{first_name}}, pay your ${{deposit_amount}} deposit for order {{order_number}}: {{deposit_link}}'
+      'Hi {{first_name}}, pay your {{deposit_amount}} deposit for order {{order_number}}: {{deposit_link}}'
     ],
     order_locked: [
       'Order {{order_number}} is locked and being prepared. Pickup {{pickup_date}}. Call us if you need a hand.'

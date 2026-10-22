@@ -936,7 +936,7 @@ function injectBlocks(doc, cfg) {
   } catch (e) { return doc; }
 }
 
-const ORDER_SCRIPT = '/assets/lp-order-storefront.js?v=oe-24';
+const ORDER_SCRIPT = '/assets/lp-order-storefront.js?v=oe-25';
 /** Start loading the shop menu from <head>, while the rest of the page and scripts download;
  *  lp-order-storefront.js picks up this request instead of starting its own. Also keeps the
  *  storefront script on the current version. */
