@@ -308,6 +308,9 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
 .inv-change .js-edit{font-size:13px;padding:8px 14px}
 .inv-locked{text-align:center}
 @media print{.inv-change,.portal-bar,.actions{display:none !important}}
+.otp-resend{text-align:center;margin:12px 0 0;font-size:13px}
+.otp-resend-btn{background:none;border:0;padding:4px;color:var(--accent);text-decoration:underline;font-size:13px;cursor:pointer;min-height:0;width:auto}
+.otp-resend-btn:disabled{opacity:.55;text-decoration:none;cursor:default}
 .pay-later-note{display:inline-flex;align-items:center;padding:8px 12px;border-radius:10px;border:1px dashed currentColor;font-size:13px;opacity:.85}
 </style>
 </head>
@@ -345,7 +348,7 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
       body: opts.body ? JSON.stringify(opts.body) : undefined
     });
     var j = null; try{ j = await r.json(); }catch(e){ j = {}; }
-    if(!r.ok) throw new Error((j && (j.message || j.error)) || ('HTTP '+r.status));
+    if(!r.ok) throw Object.assign(new Error((j && (j.message || j.error)) || ('HTTP '+r.status)), { data: j, status: r.status });
     return j;
   }
 
@@ -1013,8 +1016,9 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
       '</div>'+
       '<div class="actions" style="justify-content:center;margin-top:14px">'+
       '<button type="button" id="otp-send"'+(slug?'':' disabled')+'>Send code</button>'+
-      '<button type="button" class="ghost" id="otp-verify" style="display:none">Verify &amp; view history</button>'+
+      '<button type="button" id="otp-verify" style="display:none">Verify &amp; sign in</button>'+
       '</div>'+
+      '<p class="otp-resend" id="otp-resend-wrap" style="display:none"><button type="button" class="otp-resend-btn" id="otp-resend" disabled>Resend code in 60s</button></p>'+
       (slug?'':'<p class="actions" style="justify-content:center"><a class="btn ghost" href="/order-shop">Find a shop</a></p>')+
       '<p class="err" id="otp-err"></p>';
     var send = document.getElementById('otp-send');
@@ -1024,17 +1028,57 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
     if(phoneEl && slug){
       try{ phoneEl.focus(); }catch(e){}
     }
+    // After a code is sent: Verify is the action, the code signs in by itself at 6 digits,
+    // and Resend is a quiet link locked for 60 s (the server enforces the same limit).
+    var resendBtn = document.getElementById('otp-resend');
+    var resendWrap = document.getElementById('otp-resend-wrap');
+    var codeEl = document.getElementById('otp-code');
+    var sentAt = 0, resendTimer = null, autoTried = '';
+    function resendWait(){ return sentAt ? Math.max(0, Math.ceil(60 - (Date.now() - sentAt) / 1000)) : 0; }
+    function paintResend(){
+      var w = resendWait();
+      resendBtn.disabled = w > 0;
+      resendBtn.textContent = w > 0 ? ('Resend code in ' + w + 's') : 'Didn’t get it? Resend code';
+      if(w <= 0 && resendTimer){ clearInterval(resendTimer); resendTimer = null; }
+    }
+    function showCodeStep(startedAt){
+      sentAt = startedAt || Date.now();
+      document.getElementById('otp-step2').style.display='';
+      verify.style.display='inline-flex';
+      verify.style.justifyContent='center';
+      verify.style.alignItems='center';
+      send.style.display='none';
+      resendWrap.style.display='';
+      paintResend();
+      if(resendTimer) clearInterval(resendTimer);
+      resendTimer = setInterval(paintResend, 1000);
+      try{ codeEl.focus(); }catch(e){}
+    }
+    resendBtn.onclick = function(){ if(resendWait() <= 0) send.onclick(); };
+    if(codeEl) codeEl.addEventListener('input', function(){
+      var digits = String(codeEl.value || '').replace(/\D/g, '');
+      if(digits.length === 6 && digits !== autoTried && !verify.disabled){
+        autoTried = digits;
+        codeEl.value = digits;
+        verify.onclick();
+      }
+    });
     send.onclick = async function(){
+      if(resendWait() > 0) return;
       err.textContent='';
       send.disabled=true;
+      resendBtn.disabled=true;
       try{
         await api('/api/order/portal-auth', { method:'POST', body:{ action:'send_code', slug:slug, phone: document.getElementById('otp-phone').value } });
-        document.getElementById('otp-step2').style.display='';
-        verify.style.display='inline-flex';
-        send.textContent='Resend code';
         err.textContent='';
-        try{ document.getElementById('otp-code').focus(); }catch(e){}
+        showCodeStep();
       }catch(e){
+        if(e && e.data && e.data.error === 'resend_too_soon'){
+          showCodeStep(Date.now() - (60 - (Number(e.data.retry_after) || 60)) * 1000);
+          err.textContent = 'A code was just sent — check your texts.';
+          send.disabled=false;
+          return;
+        }
         var msg = (e && e.message) || String(e);
         if(msg === 'bad_phone') msg = 'Enter a valid Australian mobile number.';
         else if(msg === 'sms_not_configured') msg = 'SMS is not set up for this shop yet. Use the link from your order confirmation SMS, or ask the shop for help.';
