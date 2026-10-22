@@ -110,3 +110,12 @@ test('phone sign-in buttons stay visible in portrait (only the desktop bar hides
   assert.doesNotMatch(mobile, /^\s*\.actions\{display:none;\}/m);
   assert.match(mobile, /\.portal-bar-desktop\{display:none!important;\}/);
 });
+
+test('My orders: every order has View order (opens the docket) and readable dates', () => {
+  const js = read('assets/lp-order-storefront.js');
+  const start = js.indexOf('OrderStorefront.prototype.renderAccountOrders = function');
+  const fn = js.slice(start, js.indexOf('OrderStorefront.prototype.', start + 50));
+  assert.match(fn, /data-act="edit-order"[\s\S]*>View order<\/button>/);
+  assert.doesNotMatch(fn, /if \(o\.can_edit\) \{\s*html \+=\s*'<button type="button" class="lp-oe-account-btn ghost" data-act="edit-order"/);
+  assert.match(fn, /niceOrderDate\(o\.pickup_date\)/);
+});
