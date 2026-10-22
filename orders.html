@@ -2530,6 +2530,56 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     return state.session && state.session.access_token ? state.session : null;
   }
 
+  /* ---------- First / last name (staff) ----------
+   * Turns a single "name" input into First name + Last name boxes. The original input stays
+   * (hidden) and its .value reads/writes "First Last", so all existing code keeps working.
+   * Surname = last word: "Andrew & Belinda Chamberlain" → "Andrew & Belinda" + "Chamberlain". */
+  function lpSplitNameParts(full){
+    var parts = String(full || '').trim().split(/\s+/).filter(Boolean);
+    if (parts.length < 2) return { first: parts[0] || '', last: '' };
+    return { first: parts.slice(0, -1).join(' '), last: parts[parts.length - 1] };
+  }
+  function lpSplitName(el, opts){
+    if (!el || el._lpSplit) return el;
+    opts = opts || {};
+    var field = el.closest('.field') || el.parentNode;
+    var req = !!(opts.required || el.required);
+    var start = lpSplitNameParts(el.value);
+    var wrapF = document.createElement('div');
+    wrapF.className = 'field';
+    wrapF.innerHTML = '<label for="' + el.id + '-first">First name' + (req ? ' *' : '') + '</label><input id="' + el.id + '-first" autocomplete="off"' + (req ? ' required' : '') + '>';
+    var wrapL = document.createElement('div');
+    wrapL.className = 'field';
+    wrapL.innerHTML = '<label for="' + el.id + '-last">Last name' + (req ? ' *' : '') + '</label><input id="' + el.id + '-last" autocomplete="off"' + (req ? ' required' : '') + '>';
+    field.parentNode.insertBefore(wrapF, field);
+    field.parentNode.insertBefore(wrapL, field);
+    field.style.display = 'none';
+    el.required = false;
+    var first = wrapF.querySelector('input'), last = wrapL.querySelector('input');
+    first.value = start.first;
+    last.value = start.last;
+    var proto = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
+    Object.defineProperty(el, 'value', {
+      configurable: true,
+      get: function(){ return [first.value.trim(), last.value.trim()].filter(Boolean).join(' '); },
+      set: function(v){ var sp = lpSplitNameParts(v); first.value = sp.first; last.value = sp.last; proto.set.call(el, String(v == null ? '' : v)); }
+    });
+    el.focus = function(){ first.focus(); };
+    ['input', 'change'].forEach(function(type){
+      [first, last].forEach(function(inp){
+        inp.addEventListener(type, function(){ el.dispatchEvent(new Event(type, { bubbles: true })); });
+      });
+    });
+    el._lpSplit = { first: first, last: last };
+    return el;
+  }
+  /** Both parts filled in (or plain text for an unsplit input). */
+  function lpNameComplete(el){
+    if (!el) return false;
+    if (el._lpSplit) return !!(el._lpSplit.first.value.trim() && el._lpSplit.last.value.trim());
+    return !!String(el.value || '').trim();
+  }
+
   async function api(path, opts){
     opts = opts || {};
     var session = await currentSession();
@@ -3760,6 +3810,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     html += '</div></div>';
 
     $('om-body').innerHTML = html;
+    if ($('om-cust-name')) lpSplitName($('om-cust-name'));
     wireNotesGrow($('om-body'));
 
     $('om-body').querySelectorAll('[data-om-tab]').forEach(function(btn){
@@ -4982,7 +5033,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     } else {
       hasLines = $('no-lines') && $('no-lines').querySelectorAll('.line-row').length > 0;
     }
-    var hasName = $('no-name') && $('no-name').value.trim();
+    var hasName = lpNameComplete($('no-name'));
     var hasPhone = $('no-phone') && String($('no-phone').value || '').trim();
     btn.disabled = !(okPay && hasLines && hasName && hasPhone);
   }
@@ -5022,7 +5073,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     });
     var meth = $('no-inhouse-method');
     if (meth) meth.addEventListener('change', updateNoSubmitEnabled);
-    if ($('no-name')) $('no-name').addEventListener('input', updateNoSubmitEnabled);
+    if ($('no-name')) { lpSplitName($('no-name'), { required: true }); $('no-name').addEventListener('input', updateNoSubmitEnabled); }
     if ($('no-phone')) $('no-phone').addEventListener('input', updateNoSubmitEnabled);
   }
 
@@ -9027,6 +9078,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
         });
       }
       body.innerHTML = html;
+      if ($('cd-name')) lpSplitName($('cd-name'));
       body.querySelectorAll('[data-open-order]').forEach(function(tr){
         tr.addEventListener('click', function(ev){
           if (ev.target && ev.target.closest && ev.target.closest('[data-copy-order]')) return;

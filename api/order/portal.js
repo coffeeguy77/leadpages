@@ -41,7 +41,7 @@ async function portalContext(raw) {
   const { data: system } = await admin.from('order_systems').select('*').eq('id', order.order_system_id).single();
   const { data: site } = await admin
     .from('sites')
-    .select('id,slug,business_name')
+    .select('id,slug,business_name,cfg_logo:config->logo,cfg_phone:config->phoneText,cfg_phone2:config->phone,cfg_email:config->email')
     .eq('id', order.site_id)
     .single();
   const liveEdit = editingStateFor(order.effective_cutoff_at);
@@ -176,6 +176,8 @@ module.exports = async function (req, res) {
           status: order.status,
           created_at: order.created_at,
           customer_name: order.customer_name,
+          customer_phone: order.customer_phone,
+          customer_email: order.customer_email,
           fulfilment_type: order.fulfilment_type,
           pickup_date: order.pickup_date,
           pickup_time: order.pickup_time,
@@ -183,6 +185,7 @@ module.exports = async function (req, res) {
           pickup_window_end: order.pickup_window_end,
           customer_notes: order.customer_notes,
           known_subtotal_cents: order.known_subtotal_cents,
+          final_subtotal_cents: order.final_subtotal_cents,
           deposit_required_cents: order.deposit_required_cents,
           deposit_paid_cents: order.deposit_paid_cents,
           balance_cents: order.balance_cents,
@@ -205,6 +208,7 @@ module.exports = async function (req, res) {
             requested_weight_kg: it.requested_weight_kg,
             actual_weight_kg: it.actual_weight_kg,
             unit_label: it.unit_label,
+            unit_price_cents: it.unit_price_cents,
             price_status: it.price_status,
             line_known_cents: it.line_known_cents,
             line_final_cents: it.line_final_cents,
@@ -218,7 +222,15 @@ module.exports = async function (req, res) {
         change_history: (changes || []).map(summariseChangeRow),
         pending_change_request: pendingReq || null,
         catalog: catalog,
-        business: site,
+        // Docket header: the shop's own logo and contact details (from its site settings).
+        business: {
+          id: site && site.id,
+          slug: site && site.slug,
+          business_name: site && site.business_name,
+          logo_url: (site && site.cfg_logo && typeof site.cfg_logo === 'object' && site.cfg_logo.imageUrl) || null,
+          phone: (site && (site.cfg_phone || site.cfg_phone2)) || null,
+          email: (site && site.cfg_email) || null
+        },
         display: {
           known_subtotal: formatAud(order.known_subtotal_cents),
           deposit_required: formatAud(order.deposit_required_cents),
