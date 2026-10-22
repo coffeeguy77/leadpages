@@ -6,6 +6,7 @@
  */
 
 const { json, methodOk, readBody } = require('../../lib/order/http');
+const { shopUrlFor, requestHost } = require('../../lib/order/shop-page');
 const { getAdmin } = require('../../lib/order/supabase');
 const { normaliseAuPhone, phonesMatch, customerPhoneE164 } = require('../../lib/order/phone');
 const {
@@ -55,9 +56,13 @@ async function siteBySlug(slug) {
   const admin = getAdmin();
   const { data } = await admin
     .from('sites')
-    .select('id, slug, business_name')
+    .select('id, slug, business_name, cfg_pages:config->pages')
     .eq('slug', slug)
     .maybeSingle();
+  if (data) {
+    data.pages = Array.isArray(data.cfg_pages) ? data.cfg_pages : [];
+    delete data.cfg_pages;
+  }
   return data;
 }
 
@@ -262,6 +267,12 @@ module.exports = async function (req, res) {
     const system = await systemForSite(site.id);
     if (!system || !system.enabled) return json(res, 404, { error: 'ordering_disabled' });
 
+    // The site's own (designed) shop page for this host — used after sign-in / for My orders.
+    const reqHost = requestHost(req);
+    if (action === 'shop_url') {
+      return json(res, 200, { ok: true, shop_url: shopUrlFor(site, reqHost, { account: body.account ? 1 : null }) });
+    }
+
     if (action === 'send_code') {
       const phone = normaliseAuPhone(body.phone);
       if (!phone || phone.length < 11) return json(res, 400, { error: 'bad_phone' });
@@ -396,7 +407,8 @@ module.exports = async function (req, res) {
         expires_at: session.record.expires_at,
         customer_id: customerId,
         customer: packCustomerPublic(custRow),
-        needs_email: customerNeedsEmail(custRow)
+        needs_email: customerNeedsEmail(custRow),
+        shop_url: shopUrlFor(site, reqHost, { account: 1 })
       });
     }
 
@@ -543,7 +555,7 @@ module.exports = async function (req, res) {
         cart_id: cart.id,
         added: added,
         skipped: skipped,
-        shop_url: '/order-shop?slug=' + encodeURIComponent(site.slug) + '&cart_id=' + encodeURIComponent(cart.id)
+        shop_url: shopUrlFor(site, reqHost, { cart_id: cart.id })
       }, clientCart));
     }
 
