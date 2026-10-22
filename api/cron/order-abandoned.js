@@ -11,6 +11,7 @@
  */
 
 const { createClient } = require('@supabase/supabase-js');
+const { orderLinkBase } = require('../../lib/order/public-base');
 const { notifyEvent, shopUrl } = require('../../lib/order/notify');
 const { parseAbandonedCartSettings, secondDelayMs, templateCategoryForStage } = require('../../lib/order/abandoned-cart-settings');
 const {
@@ -48,7 +49,7 @@ async function processCartReminder(opts) {
   }
 
   var channels = settings.channels.length ? settings.channels : ['email'];
-  var checkout = shopUrl(site.slug, cart.id);
+  var checkout = shopUrl(site.slug, cart.id, await orderLinkBase(site));
   var channelStr = Array.isArray(channels) ? channels.join(',') : String(channels);
   var channelPref =
     channels.indexOf('sms') >= 0 && channels.indexOf('email') >= 0

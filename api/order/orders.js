@@ -1,6 +1,7 @@
 'use strict';
 
 const { readBody, json, methodOk } = require('../../lib/order/http');
+const { orderLinkBase } = require('../../lib/order/public-base');
 const { syncPendingPayments } = require('../../lib/order/stripe-pay');
 const { requireUser, assertSiteAccess, ensureOrderSystem } = require('../../lib/order/auth');
 const { getAdmin } = require('../../lib/order/supabase');
@@ -133,12 +134,13 @@ module.exports = async function (req, res) {
           actor: actor,
           body: body
         });
+        const linkBase = await orderLinkBase(access.site);
         return json(res, 200, {
           order: result.order,
           items: result.items,
-          portal_url: PUBLIC_BASE + '/order-portal?t=' + encodeURIComponent(result.portal_token),
+          portal_url: linkBase + '/order-portal?t=' + encodeURIComponent(result.portal_token),
           deposit_url: result.deposit_token
-            ? PUBLIC_BASE + '/order-portal?t=' + encodeURIComponent(result.deposit_token)
+            ? linkBase + '/order-portal?t=' + encodeURIComponent(result.deposit_token)
             : null,
           after_create: result.after_create || {}
         });

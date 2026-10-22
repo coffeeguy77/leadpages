@@ -218,6 +218,17 @@ async function countProjectDomains(opts) {
   return { count: domains.length, domains: domains };
 }
 
+/**
+ * GET /v6/domains/{domain}/config — is the domain's DNS pointing at Vercel? ({ misconfigured, ... })
+ */
+async function getDomainConfig(domain) {
+  const proj = projectId();
+  const host = String(domain || '').trim().toLowerCase();
+  return vercelFetch(
+    '/v6/domains/' + encodeURIComponent(host) + '/config' + (proj ? '?projectIdOrName=' + encodeURIComponent(proj) : '')
+  );
+}
+
 module.exports = {
   isConfigured: () => !!authToken(),
   projectConfigured: () => !!(authToken() && projectId()),
@@ -233,6 +244,7 @@ module.exports = {
   invalidateByTags,
   addProjectDomain,
   getProjectDomain,
+  getDomainConfig,
   listProjectDomains,
   countProjectDomains,
 };

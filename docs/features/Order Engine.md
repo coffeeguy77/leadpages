@@ -156,3 +156,9 @@ Message templates: money placeholders (`{{deposit_amount}}`, `{{cart_total}}`, `
 **Quantity-only per-kg items** ("Individual item", or a pack with no pack weight) get no assumed weight: the line is qty × $/kg, priced when weighed (`isCountOnlySize` in `lib/order/product-options.js`). Weighed items still default to their minimum / 1 kg estimate.
 
 **Staff names:** new order, order edit and customer edit show First name / Last name (`lpSplitName` in `orders.html`); the original input keeps "First Last" so saving is unchanged.
+
+## Order links on the shop's own domain
+
+Customer links (order SMS/email, deposit links and reminders, staff "send link", printed QR codes, Stripe return, abandoned-cart links) use the shop's own domain — e.g. `https://www.griffithbutchery.com.au/order-portal?t=…` — via `lib/order/public-base.js` `orderLinkBase(site)`.
+
+It uses `sites.custom_domain` only when that domain is attached to the LeadPages Vercel project, verified, and its DNS points here (`getProjectDomain` + `getDomainConfig` in `api/vercel/_client.js`); an apex that redirects to www uses www. Otherwise — or if Vercel is slow (2.5 s) or errors — links stay on leadpages.com.au, so a link is never broken. Cached 10 minutes per server instance. Links already sent keep working (tokens work on either host).

@@ -1,6 +1,7 @@
 'use strict';
 
 const { readBody, json, methodOk } = require('../../lib/order/http');
+const { orderLinkBase } = require('../../lib/order/public-base');
 const { getAdmin } = require('../../lib/order/supabase');
 const { resolveAccessToken } = require('../../lib/order/tokens');
 const { requireUser, assertSiteAccess, getOrderSystemForSite } = require('../../lib/order/auth');
@@ -119,8 +120,9 @@ module.exports = async function (req, res) {
     if (slug) q.push('slug=' + encodeURIComponent(slug));
     q.push('order=' + encodeURIComponent(order.order_number));
     const baseQ = q.join('&');
-    const success = PUBLIC_BASE + '/order-portal?paid=1&' + baseQ;
-    const cancel = PUBLIC_BASE + '/order-portal?cancelled=1&' + baseQ;
+    const linkBase = await orderLinkBase(order.site_id);
+    const success = linkBase + '/order-portal?paid=1&' + baseQ;
+    const cancel = linkBase + '/order-portal?cancelled=1&' + baseQ;
 
     const productName = businessName + ' — Deposit — ' + order.order_number;
     const productDesc =
