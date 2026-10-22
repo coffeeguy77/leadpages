@@ -954,7 +954,7 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
     $('view').style.display='';
     var customer = data.customer || {};
     var orders = data.orders || [];
-    var shopUrl = slug ? ('/order-shop?slug='+encodeURIComponent(slug)+'&account=1') : '/order-shop';
+    var shopUrl = data.shop_url || (slug ? ('/order-shop?slug='+encodeURIComponent(slug)+'&account=1') : '/order-shop');
     var html = '';
     html += '<h1 class="brand">Welcome'+(customer.name?(', '+esc(String(customer.name).split(/\s+/)[0])):'')+'</h1>';
     html += '<p class="sub">Your order history. Prefer the shop? <a href="'+esc(shopUrl)+'">Open your account in the storefront</a> — sign-in stays on that page.</p>';
@@ -1053,8 +1053,8 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
           body:{ action:'verify_code', slug:slug, phone: document.getElementById('otp-phone').value, code: document.getElementById('otp-code').value }
         });
         try{ localStorage.setItem('lp.order.portal.'+slug, out.token); }catch(e){}
-        // Prefer the shop account experience (SMS modal lives there too).
-        location.href = '/order-shop?slug='+encodeURIComponent(slug)+'&account=1';
+        // Land on the shop's own (designed) shop page, My orders open.
+        location.href = out.shop_url || ('/order-shop?slug='+encodeURIComponent(slug)+'&account=1');
         return;
       }catch(e){
         var msg = (e && e.message) || String(e);
@@ -1071,8 +1071,10 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
     var saved = '';
     try{ saved = slug ? (localStorage.getItem('lp.order.portal.'+slug) || '') : ''; }catch(e){}
     if(saved && slug){
-      // Session already on this device — land in the storefront account view.
-      location.replace('/order-shop?slug='+encodeURIComponent(slug)+'&account=1');
+      // Session already on this device — land in the shop's own page, My orders open.
+      api('/api/order/portal-auth', { method:'POST', body:{ action:'shop_url', slug: slug, account: 1 } })
+        .then(function(out){ location.replace((out && out.shop_url) || ('/order-shop?slug='+encodeURIComponent(slug)+'&account=1')); })
+        .catch(function(){ location.replace('/order-shop?slug='+encodeURIComponent(slug)+'&account=1'); });
       return;
     } else {
       showPhoneLogin();
