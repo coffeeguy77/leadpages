@@ -1982,6 +1982,18 @@
     return html;
   };
 
+  /** "2025-12-23" → "Tue 23 Dec 2025" (calendar date, no timezone shift). */
+  function niceOrderDate(ymd) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(ymd || ''));
+    if (!m) return ymd || '';
+    var dt = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+    try {
+      return dt.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+    } catch (_e) {
+      return ymd;
+    }
+  }
+
   OrderStorefront.prototype.renderAccountOrders = function () {
     var self = this;
     var html = '';
@@ -2031,25 +2043,26 @@
       html += '<h3>Order ' + esc(o.order_number || '') + '</h3>';
       html +=
         '<p class="lp-oe-order-meta">Pickup ' +
-        esc(o.pickup_date || '—') +
+        esc(niceOrderDate(o.pickup_date) || '—') +
         ' · ' +
         esc(statusLabel(o.status)) +
         '</p>';
       html += '</div>';
+      // Every order opens the docket view; "Make changes" shows there only while changes are allowed.
+      html += '<div class="lp-oe-order-btns">';
       html +=
-        '<button type="button" class="lp-oe-primary lp-oe-reorder" data-act="reorder" data-order-id="' +
+        '<button type="button" class="lp-oe-primary" data-act="edit-order" data-order-id="' +
+        esc(o.id) +
+        '"' +
+        (self.state.busy ? ' disabled' : '') +
+        '>View order</button>';
+      html +=
+        '<button type="button" class="lp-oe-account-btn ghost lp-oe-reorder" data-act="reorder" data-order-id="' +
         esc(o.id) +
         '"' +
         (self.state.busy ? ' disabled' : '') +
         '>Order again</button>';
-      if (o.can_edit) {
-        html +=
-          '<button type="button" class="lp-oe-account-btn ghost" data-act="edit-order" data-order-id="' +
-          esc(o.id) +
-          '"' +
-          (self.state.busy ? ' disabled' : '') +
-          '>View &amp; edit</button>';
-      }
+      html += '</div>';
       html += '</div>';
       html += '<ul class="lp-oe-order-lines">';
       (o.items || []).forEach(function (it) {
@@ -3421,6 +3434,8 @@
       '.lp-oe-price{margin-top:10px;font-weight:700;color:var(--oe-accent);font-size:16px}',
       '.lp-oe-price.is-special{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px}',
       '.lp-oe-name-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}',
+      '.lp-oe-order-btns{display:flex;flex-direction:column;gap:8px;align-items:stretch;flex:0 0 auto}',
+      '.lp-oe-order-btns button{white-space:nowrap}',
       '@media (max-width:420px){.lp-oe-name-row{grid-template-columns:1fr}}',
       '.lp-oe-special-badge{display:inline-block;padding:2px 8px;border-radius:999px;background:#b42318;color:#fff;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;line-height:1.5;align-self:center}',
       '.lp-oe-special-now{color:#b42318}',
