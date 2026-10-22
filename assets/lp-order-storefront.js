@@ -147,6 +147,13 @@
     return displayFullNameClient(name).split(/\s+/)[0] || '';
   }
 
+  /** "Mary Anne Smith" → { first: 'Mary Anne', last: 'Smith' } (last word is the surname). */
+  function splitNameClient(name) {
+    var parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+    if (parts.length < 2) return { first: parts[0] || '', last: '' };
+    return { first: parts.slice(0, -1).join(' '), last: parts[parts.length - 1] };
+  }
+
   function displayFullNameClient(name) {
     var raw = String(name || '').trim();
     if (!raw) return '';
@@ -481,6 +488,11 @@
     var d = this.state.checkoutDraft || (this.state.checkoutDraft = {});
     if (!d.name && c.name) d.name = displayFullNameClient(c.name);
     else if (d.name) d.name = displayFullNameClient(d.name);
+    if (!String(d.firstName || '').trim() && !String(d.lastName || '').trim() && d.name) {
+      var sp = splitNameClient(d.name);
+      d.firstName = sp.first;
+      d.lastName = sp.last;
+    }
     if (!d.phone && (c.phone || c.phone_e164)) d.phone = c.phone || c.phone_e164;
     if (!d.email && c.email) d.email = c.email;
   };
@@ -971,13 +983,18 @@
 
   OrderStorefront.prototype.captureCheckoutDraft = function () {
     var d = this.state.checkoutDraft || (this.state.checkoutDraft = {});
-    var name = $('#oe-name', this.root);
+    var fname = $('#oe-fname', this.root);
+    var lname = $('#oe-lname', this.root);
     var phone = $('#oe-phone', this.root);
     var email = $('#oe-email', this.root);
     var date = $('#oe-date', this.root);
     var slot = $('#oe-slot', this.root);
     var notes = $('#oe-cnotes', this.root);
-    if (name) d.name = name.value;
+    if (fname || lname) {
+      d.firstName = fname ? fname.value : d.firstName || '';
+      d.lastName = lname ? lname.value : d.lastName || '';
+      d.name = [String(d.firstName || '').trim(), String(d.lastName || '').trim()].filter(Boolean).join(' ');
+    }
     if (phone) d.phone = phone.value;
     if (email) d.email = email.value;
     if (date) d.date = date.value;
@@ -2234,10 +2251,14 @@
 
     var slots = this.state.pickupSlots || [];
     html += '<div class="lp-oe-fields">';
+    var nm = d.firstName != null || d.lastName != null
+      ? { first: d.firstName || '', last: d.lastName || '' }
+      : splitNameClient(displayFullNameClient(d.name || '') || d.name || '');
     html +=
-      '<label>Your name<input id="oe-name" required value="' +
-      esc(displayFullNameClient(d.name || '') || d.name || '') +
-      '"></label>';
+      '<div class="lp-oe-name-row">' +
+      '<label>First name<input id="oe-fname" required autocomplete="given-name" value="' + esc(nm.first) + '"></label>' +
+      '<label>Last name<input id="oe-lname" required autocomplete="family-name" value="' + esc(nm.last) + '"></label>' +
+      '</div>';
     html +=
       '<label>Mobile<input id="oe-phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="04xx xxx xxx" value="' +
       esc(d.phone || '') +
@@ -2481,7 +2502,7 @@
     this.updateFastAddButtons();
     this.updateProductAddButton();
     // Preserve checkout fields while typing
-    ['oe-name', 'oe-phone', 'oe-email', 'oe-date', 'oe-pickup-date', 'oe-slot', 'oe-cnotes'].forEach(function (id) {
+    ['oe-fname', 'oe-lname', 'oe-phone', 'oe-email', 'oe-date', 'oe-pickup-date', 'oe-slot', 'oe-cnotes'].forEach(function (id) {
       var el = document.getElementById(id);
       if (!el) return;
       el.addEventListener('input', function () {
@@ -3195,7 +3216,19 @@
       if (act === 'confirm') {
         self.captureCheckoutDraft();
         var draft = self.state.checkoutDraft || {};
-        var name = displayFullNameClient(draft.name) || draft.name;
+        var firstName = displayFullNameClient(String(draft.firstName || '').trim());
+        var lastName = displayFullNameClient(String(draft.lastName || '').trim());
+        if (draft.firstName == null && draft.lastName == null) {
+          var sp = splitNameClient(displayFullNameClient(draft.name) || draft.name);
+          firstName = sp.first;
+          lastName = sp.last;
+        }
+        if (!firstName || !lastName) {
+          self.state.msg = 'Please enter your first and last name.';
+          self.render();
+          return;
+        }
+        var name = firstName + ' ' + lastName;
         draft.name = name;
         var phone = draft.phone;
         var email = draft.email;
@@ -3387,6 +3420,8 @@
       '.lp-oe-body p,.lp-oe-desc{margin:0;color:var(--oe-muted);font-size:15px;line-height:1.45}',
       '.lp-oe-price{margin-top:10px;font-weight:700;color:var(--oe-accent);font-size:16px}',
       '.lp-oe-price.is-special{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px}',
+      '.lp-oe-name-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}',
+      '@media (max-width:420px){.lp-oe-name-row{grid-template-columns:1fr}}',
       '.lp-oe-special-badge{display:inline-block;padding:2px 8px;border-radius:999px;background:#b42318;color:#fff;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;line-height:1.5;align-self:center}',
       '.lp-oe-special-now{color:#b42318}',
       '.lp-oe-special-was{color:var(--oe-muted,#6b7280);font-weight:500;font-size:.88em}',
