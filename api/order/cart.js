@@ -1,6 +1,7 @@
 'use strict';
 
 const { readBody, json, methodOk } = require('../../lib/order/http');
+const { orderLinkBase } = require('../../lib/order/public-base');
 const { getAdmin } = require('../../lib/order/supabase');
 const { getOrderSystemForSite } = require('../../lib/order/auth');
 const {
@@ -223,9 +224,11 @@ module.exports = async function (req, res) {
           created.order.cutoff_reason = cutoff.cutoff_reason;
         }
 
+        // Link on the shop's own domain when it is live (customers trust it), else the platform.
+        const linkBase = await orderLinkBase(site);
         const portal = created.portal_token
-          ? portalUrl(created.portal_token)
-          : PUBLIC_BASE + '/order-portal';
+          ? portalUrl(created.portal_token, linkBase)
+          : linkBase + '/order-portal';
         // Keep slug on portal URL so SMS sign-in still works if the token is lost.
         var portalWithSlug = portal;
         if (site.slug && portalWithSlug.indexOf('slug=') < 0) {

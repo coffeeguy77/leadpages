@@ -1,6 +1,7 @@
 'use strict';
 
 const { json, methodOk } = require('../../lib/order/http');
+const { orderLinkBase } = require('../../lib/order/public-base');
 const { requireUser, assertSiteAccess, ensureOrderSystem } = require('../../lib/order/auth');
 const { getAdmin } = require('../../lib/order/supabase');
 const { normaliseAuPhone, displayAuPhone } = require('../../lib/order/phone');
@@ -135,13 +136,14 @@ module.exports = async function (req, res) {
       });
 
       const results = { sent: 0, failed: 0, skipped: 0, audience: 0, errors: [] };
+      const linkBase = await orderLinkBase(access.site && access.site.id);
       const phones = Object.keys(byPhone);
       results.audience = phones.length;
 
       for (var j = 0; j < phones.length; j++) {
         var phoneKey = phones[j];
         var cartRow = byPhone[phoneKey];
-        var checkout = shopUrl(access.site && access.site.slug, cartRow.id);
+        var checkout = shopUrl(access.site && access.site.slug, cartRow.id, linkBase);
         var first = displayGivenName(cartRow.guest_name) || 'there';
         var rendered = renderTemplate(template, {
           first_name: first,
