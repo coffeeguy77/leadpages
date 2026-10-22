@@ -150,3 +150,9 @@ Editing is still there but not promoted: a quiet **Make changes** button at the 
 Checkout asks **First name** and **Last name** (both required) and sends `customer_name` as "First Last"; SMS `{{first_name}}` greets by the first word.
 
 Message templates: money placeholders (`{{deposit_amount}}`, `{{cart_total}}`, `{{known_cart_total}}`) already include "$" — a "$" typed in front is dropped so texts never say "$$50.00".
+
+**Docket layout (Oct 2026):** the invoice view is laid out like the shop's paper order docket — the shop's logo (`config.logo.imageUrl`) and phone/email, a boxed order number with the order date, **PICK UP DATE** day / date / time, **Surname / First Name** (surname = last word), email and phone, a Quantity | Order | $/kg | $ table (item notes and order notes underneath), Deposit, a **TOTAL PAYABLE INCLUDING GST** box (filled once prices are final) and "For and on behalf of …". On phones the $/kg moves under each item.
+
+**Quantity-only per-kg items** ("Individual item", or a pack with no pack weight) get no assumed weight: the line is qty × $/kg, priced when weighed (`isCountOnlySize` in `lib/order/product-options.js`). Weighed items still default to their minimum / 1 kg estimate.
+
+**Staff names:** new order, order edit and customer edit show First name / Last name (`lpSplitName` in `orders.html`); the original input keeps "First Last" so saving is unchanged.

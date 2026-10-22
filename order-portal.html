@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Your order — LeadPages</title>
 <meta name="robots" content="noindex">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=DM+Sans:wght@400;500;600;700&family=Patrick+Hand&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#f6f3ee; --ink:#1a1f1c; --muted:#5c675f; --line:#ddd6cb;
@@ -241,6 +241,49 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
   .history li{padding:10px 0;font-size:14px;}
   button,.btn{touch-action:manipulation;}
 }
+.docket{padding:22px 22px 18px;background:#fff;border:1px solid var(--line)}
+.dk-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:16px}
+.dk-brand{min-width:0}
+.dk-logo{display:block;max-width:240px;max-height:90px;width:auto;height:auto;object-fit:contain}
+.dk-bizname{margin:0;font-family:var(--font-display);font-size:26px;font-weight:700}
+.dk-contact{margin:6px 0 0;font-size:12px;color:var(--muted)}
+.dk-numbox{border:2px solid var(--ink);padding:8px 12px;min-width:170px;text-align:center;flex:0 0 auto}
+.dk-num{font-family:var(--font-display);font-size:24px;font-weight:700;color:#b42318;letter-spacing:.02em;line-height:1.1}
+.dk-date{margin-top:6px;font-size:13px}
+.dk-date span{font-weight:700;letter-spacing:.06em;font-size:11px}
+.dk-state{margin-top:6px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent)}
+.dk-state.st-awaiting_deposit{color:var(--warn)}
+.dk-fields{margin:0 0 14px}
+.dk-line{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 8px;padding:8px 0;border-bottom:1px solid #9b9b9b}
+.dk-tag{border:1.5px solid var(--ink);padding:2px 6px;font-weight:700;font-size:12px;letter-spacing:.04em}
+.dk-lbl{font-size:13px;color:#3b3b3b}
+.dk-val{font-family:'Patrick Hand','Segoe Print','Bradley Hand',cursive;font-size:20px;color:#1d2a55;min-width:60px;margin-right:12px}
+.dk-grow{flex:1 1 120px}
+.dk-hand{font-family:'Patrick Hand','Segoe Print','Bradley Hand',cursive;color:#1d2a55;font-size:17px}
+.dk-table{width:100%;border-collapse:collapse;font-size:14px;border:1.5px solid var(--ink)}
+.dk-table th{background:#2f2f2f;color:#fff;font-weight:600;font-size:13px;padding:7px 8px;text-align:left;border-left:1px solid #555}
+.dk-table td{border-top:1px solid #9b9b9b;border-left:1px solid #9b9b9b;padding:9px 8px;vertical-align:top}
+.dk-table .dk-q{width:92px;white-space:nowrap}
+.dk-table .dk-r{text-align:right;white-space:nowrap;width:96px}
+.dk-item{font-family:'Patrick Hand','Segoe Print','Bradley Hand',cursive;font-size:19px;color:#1d2a55;display:block}
+.dk-table td.dk-q{font-family:'Patrick Hand','Segoe Print','Bradley Hand',cursive;font-size:19px;color:#1d2a55}
+.dk-sub{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.dk-sub.dk-hand{font-size:15px;color:#1d2a55}
+.dk-tbc{font-size:12px;color:var(--muted)}
+.dk-blank td{height:30px}
+.dk-pair{display:inline-flex;align-items:baseline;gap:6px;white-space:nowrap}
+.dk-rate-m{display:none}
+.dk-foot{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-top:14px}
+.dk-dep .dk-lbl{font-weight:700;color:var(--ink)}
+.dk-gst{font-size:12px;color:var(--muted);margin-top:4px}
+.dk-total{display:flex;flex-direction:column;align-items:flex-end}
+.dk-total-box{display:flex;align-items:center;gap:10px;border:2px solid var(--ink);min-width:150px;min-height:46px;padding:4px 10px}
+.dk-total-box span{font-weight:700;font-size:18px}
+.dk-total-box strong{font-family:'Patrick Hand','Segoe Print','Bradley Hand',cursive;font-size:22px;color:#1d2a55;margin-left:auto}
+.dk-total-lbl{margin-top:4px;font-size:11px;font-weight:800;letter-spacing:.04em;text-align:right;line-height:1.3}
+.dk-note{margin-top:10px}
+.dk-sign{margin-top:22px;padding-top:6px;border-top:1px solid var(--ink);font-size:13px;text-align:center;color:#3b3b3b}
+@media (max-width:560px){.dk-table .dk-rate{display:none}.dk-rate-m{display:block}.dk-table .dk-q{width:52px}.dk-val{font-size:18px;margin-right:6px}.dk-item{font-size:17px}.docket{padding:16px 14px 14px}.dk-head{flex-direction:column}.dk-numbox{align-self:stretch}.dk-logo{max-width:200px}.dk-table .dk-q{width:58px}.dk-table .dk-r{width:auto}.dk-foot{flex-direction:column;align-items:stretch}.dk-total{align-items:stretch}.dk-total-lbl{text-align:left}}
 .inv{padding:22px 22px 18px}
 .inv-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:12px}
 @media (max-width:560px){.inv{padding:18px 16px 14px}.inv-head{flex-direction:column-reverse;gap:8px}.inv-title{font-size:26px}}
@@ -572,6 +615,26 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
     return it.line_known_cents!=null ? money(it.line_known_cents) : '—';
   }
 
+  /** Surname = last word ("Andrew & Belinda Chamberlain" → Chamberlain / Andrew & Belinda). */
+  function splitCustomerName(full){
+    var parts = String(full||'').trim().split(/\s+/).filter(Boolean);
+    if(parts.length < 2) return { first: parts[0] || '', last: '' };
+    return { first: parts.slice(0,-1).join(' '), last: parts[parts.length-1] };
+  }
+  /** Pickup as on the paper docket: Day "Thursday", Date "24 Dec 2026", Time window. */
+  function pickupParts(o){
+    var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(o.pickup_date||''));
+    var out = { day: '', date: o.pickup_date || '—', time: '' };
+    if(m){
+      var dt = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+      out.day = dt.toLocaleDateString('en-AU', { weekday:'long' });
+      out.date = dt.toLocaleDateString('en-AU', { day:'numeric', month:'short', year:'numeric' });
+    }
+    if(o.pickup_window_start && o.pickup_window_end) out.time = String(o.pickup_window_start).slice(0,5) + '–' + String(o.pickup_window_end).slice(0,5);
+    else if(o.pickup_time) out.time = String(o.pickup_time).slice(0,5);
+    return out;
+  }
+
   function renderInvoice(data){
     var o = data.order, d = data.display || {}, items = data.items || [];
     var biz = (data.business && data.business.business_name) || 'Your order';
@@ -582,37 +645,70 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
     if(cancelled && owing) html += '<div class="banner warn"><strong>Payment cancelled.</strong> Your order is still saved.</div>';
     if(data.pending_change_request) html += '<div class="banner warn"><strong>Change request pending.</strong> We received your request and will confirm shortly.</div>';
 
-    html += '<article class="card inv">';
-    html += '<header class="inv-head"><div><p class="inv-biz">'+esc(biz)+'</p><h1 class="brand inv-title">Order '+esc(o.order_number)+'</h1></div>';
-    html += '<span class="inv-status st-'+esc(o.status||'')+'">'+esc(STATUS_LABELS[o.status]||String(o.status||'').replace(/_/g,' '))+'</span></header>';
-    html += '<dl class="inv-meta">';
-    if(o.created_at) html += '<div><dt>Order date</dt><dd>'+esc(invDate(o.created_at))+'</dd></div>';
-    html += '<div><dt>Customer</dt><dd>'+esc(o.customer_name||'')+'</dd></div>';
-    html += '<div><dt>'+(o.fulfilment_type==='delivery'?'Delivery':'Pickup')+'</dt><dd>'+invPickup(o)+'</dd></div>';
-    html += '</dl>';
+    var bz = data.business || {};
+    var nm = splitCustomerName(o.customer_name);
+    html += '<article class="card docket">';
+    html += '<header class="dk-head">';
+    html += '<div class="dk-brand">' + (bz.logo_url ? '<img class="dk-logo" src="'+esc(bz.logo_url)+'" alt="'+esc(biz)+'">' : '<p class="dk-bizname">'+esc(biz)+'</p>');
+    var contact = [bz.phone, bz.email].filter(Boolean).map(esc).join(' · ');
+    if(contact) html += '<p class="dk-contact">'+contact+'</p>';
+    html += '</div>';
+    html += '<div class="dk-numbox"><div class="dk-num">'+esc(o.order_number)+'</div>';
+    html += '<div class="dk-date"><span>DATE:</span> '+esc(invDate(o.created_at)||'')+'</div>';
+    html += '<div class="dk-state st-'+esc(o.status||'')+'">'+esc(STATUS_LABELS[o.status]||String(o.status||'').replace(/_/g,' '))+'</div></div>';
+    html += '</header>';
 
-    html += '<table class="inv-items"><thead><tr><th>Item</th><th class="num">Qty / weight</th><th class="num">Amount</th></tr></thead><tbody>';
+    var pk = pickupParts(o);
+    html += '<div class="dk-fields">';
+    html += '<div class="dk-line"><span class="dk-tag">'+(o.fulfilment_type==='delivery'?'DELIVERY DATE:':'PICK UP DATE:')+'</span>'
+      + '<span class="dk-pair"><span class="dk-lbl">Day:</span><span class="dk-val">'+esc(pk.day)+'</span></span>'
+      + '<span class="dk-pair"><span class="dk-lbl">Date:</span><span class="dk-val">'+esc(pk.date)+'</span></span>'
+      + (pk.time ? '<span class="dk-pair"><span class="dk-lbl">Time:</span><span class="dk-val">'+esc(pk.time)+'</span></span>' : '') + '</div>';
+    html += '<div class="dk-line"><span class="dk-pair dk-grow"><span class="dk-lbl">Surname:</span><span class="dk-val">'+esc(nm.last)+'</span></span>'
+      + '<span class="dk-pair dk-grow"><span class="dk-lbl">First Name:</span><span class="dk-val">'+esc(nm.first)+'</span></span></div>';
+    if(o.customer_email) html += '<div class="dk-line"><span class="dk-lbl">Email:</span><span class="dk-val dk-grow">'+esc(o.customer_email)+'</span></div>';
+    if(o.customer_phone) html += '<div class="dk-line"><span class="dk-lbl">Phone:</span><span class="dk-val dk-grow">'+esc(o.customer_phone)+'</span></div>';
+    html += '</div>';
+
+    html += '<table class="dk-table"><thead><tr><th class="dk-q">Quantity</th><th>Order</th><th class="dk-r dk-rate">$/kg</th><th class="dk-r">$</th></tr></thead><tbody>';
     items.forEach(function(it){
-      var qty = it.actual_weight_kg!=null ? (esc(it.actual_weight_kg)+' kg')
-        : it.requested_weight_kg!=null ? ('approx '+esc(it.requested_weight_kg)+' kg' + (Number(it.quantity)>1 ? ' × '+esc(it.quantity) : ''))
-        : esc(it.quantity);
-      html += '<tr><td><strong>'+esc(it.product_name)+'</strong>'+renderOptionsDisplay(it)+(it.notes?'<div class="inv-note">'+esc(it.notes)+'</div>':'')+'</td>';
-      html += '<td class="num">'+qty+'</td>';
-      html += '<td class="num">'+itemPrice(it)+(it.price_status==='estimated'?' <span class="inv-est">est.</span>':'')+'</td></tr>';
+      var perKg = it.pricing_method === 'per_weight' || it.pricing_method === 'price_tbc';
+      var q = Number(it.quantity) || 1;
+      var qty = (it.actual_weight_kg != null) ? (esc(it.actual_weight_kg)+' kg')
+        : (it.requested_weight_kg != null && perKg && !(q > 1)) ? ('~'+esc(it.requested_weight_kg)+' kg')
+        : (esc(String(q).replace(/\.0+$/, ''))+'x');
+      var rate = it.unit_price_cents != null && it.unit_price_cents > 0 ? money(it.unit_price_cents) + (perKg ? '' : ' ea') : '';
+      var amt = it.line_final_cents != null ? money(it.line_final_cents)
+        : (it.price_status==='tbc'||it.price_status==='quote_required') ? '<span class="dk-tbc" title="Priced once weighed">TBC</span>'
+        : it.line_known_cents != null ? money(it.line_known_cents)+(it.price_status==='estimated'?' <span class="dk-tbc">est.</span>':'')
+        : '';
+      html += '<tr><td class="dk-q">'+qty+'</td><td><span class="dk-item">'+esc(it.product_name)+'</span>'
+        + (rate ? '<span class="dk-sub dk-rate-m">'+rate+(perKg?'/kg':'')+'</span>' : '')
+        + ((it.selected_options||[]).length ? '<span class="dk-sub">'+(it.selected_options||[]).map(esc).join(' · ')+'</span>' : '')
+        + (it.notes ? '<span class="dk-sub dk-hand">'+esc(it.notes)+'</span>' : '')
+        + '</td><td class="dk-r dk-rate">'+rate+'</td><td class="dk-r">'+amt+'</td></tr>';
     });
+    if(o.customer_notes) html += '<tr class="dk-notes"><td></td><td colspan="3"><span class="dk-hand">'+esc(o.customer_notes)+'</span></td></tr>';
+    html += '<tr class="dk-blank"><td></td><td></td><td class="dk-rate"></td><td></td></tr>';
     html += '</tbody></table>';
 
-    html += '<div class="inv-totals totals">';
-    html += '<div class="row"><span>Subtotal'+(o.has_unknown_prices?' (known items)':'')+'</span><span>'+esc(d.known_subtotal||money(o.known_subtotal_cents))+'</span></div>';
-    if(o.has_unknown_prices) html += '<div class="row"><span>Weighed / priced items</span><span>Confirmed after preparation</span></div>';
-    if(d.gst_included) html += '<div class="row"><span>Includes GST</span><span>'+esc(d.gst_included)+'</span></div>';
-    if((o.deposit_required_cents||0) > 0){
-      html += '<div class="row"><span>Deposit '+(owing?'due':'paid')+'</span><span>'+esc(owing ? (d.deposit_required||money(o.deposit_required_cents)) : (d.deposit_paid||money(o.deposit_paid_cents)))+'</span></div>';
-    }
-    html += '<div class="row emph"><span>Balance at pickup</span><span>'+esc(d.balance||'TBC')+'</span></div>';
+    var depPaid = (o.deposit_paid_cents||0) > 0;
+    var total = o.final_subtotal_cents != null ? money(o.final_subtotal_cents)
+      : (!o.has_unknown_prices && o.known_subtotal_cents != null) ? money(o.known_subtotal_cents) : '';
+    html += '<div class="dk-foot">';
+    html += '<div class="dk-dep"><span class="dk-lbl">Deposit:</span> <span class="dk-val">'
+      + ((o.deposit_required_cents||0) > 0
+          ? (depPaid ? esc(d.deposit_paid||money(o.deposit_paid_cents))+' paid' : esc(d.deposit_required||money(o.deposit_required_cents))+' due')
+          : 'none')
+      + '</span>';
+    if(d.gst_included) html += '<div class="dk-gst">Includes GST '+esc(d.gst_included)+'</div>';
     html += '</div>';
-    if(o.has_unknown_prices) html += '<p class="note">Final price is confirmed once your items are weighed and prepared.</p>';
-    if(o.customer_notes) html += '<div class="inv-notes"><h2 class="section-title-sm">Notes</h2><p>'+esc(o.customer_notes)+'</p></div>';
+    html += '<div class="dk-total"><div class="dk-total-box"><span>$</span><strong>'+(total ? esc(total.replace(/^\$/,'')) : '')+'</strong></div>'
+      + '<div class="dk-total-lbl">TOTAL PAYABLE<br>INCLUDING GST</div></div>';
+    html += '</div>';
+    if(!total) html += '<p class="note dk-note">Weighed items are priced once they’re prepared — your total is confirmed at pickup'+(depPaid?' (less your deposit)':'')+'.</p>';
+    else if(depPaid) html += '<p class="note dk-note">Balance at pickup: <strong>'+esc(d.balance||'')+'</strong></p>';
+    html += '<div class="dk-sign">For and on behalf of '+esc(biz)+'</div>';
     html += '<div class="actions portal-bar-desktop">'+renderActionButtons(o, d, false)+'</div>';
     html += '</article>';
 
