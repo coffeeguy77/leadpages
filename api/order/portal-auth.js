@@ -270,7 +270,13 @@ module.exports = async function (req, res) {
     // The site's own (designed) shop page for this host — used after sign-in / for My orders.
     const reqHost = requestHost(req);
     if (action === 'shop_url') {
-      return json(res, 200, { ok: true, shop_url: shopUrlFor(site, reqHost, { account: body.account ? 1 : null }) });
+      // Pass through only the storefront's own params (My orders, a cart to restore, a category).
+      const q = {
+        account: body.account ? 1 : null,
+        cart_id: body.cart_id ? String(body.cart_id).slice(0, 64) : null,
+        cat: body.cat ? String(body.cat).slice(0, 80) : null
+      };
+      return json(res, 200, { ok: true, shop_url: shopUrlFor(site, reqHost, q) });
     }
 
     if (action === 'send_code') {
@@ -290,6 +296,27 @@ module.exports = async function (req, res) {
           ok: true,
           sent: true,
           message: 'If we have orders for that number, a code is on its way.'
+        });
+      }
+
+      // One code per number per 60 seconds — protects SMS credits from repeat taps / reloads.
+      const RESEND_SECONDS = 60;
+      const { data: recent } = await admin
+        .from('order_access_tokens')
+        .select('created_at')
+        .eq('site_id', site.id)
+        .eq('purpose', 'sms_otp')
+        .filter('meta->>phone_e164', 'eq', phone)
+        .gte('created_at', new Date(Date.now() - RESEND_SECONDS * 1000).toISOString())
+        .order('created_at', { ascending: false })
+        .limit(1);
+      if (recent && recent.length) {
+        const waited = Math.floor((Date.now() - new Date(recent[0].created_at).getTime()) / 1000);
+        const retryAfter = Math.max(1, RESEND_SECONDS - waited);
+        return json(res, 429, {
+          error: 'resend_too_soon',
+          retry_after: retryAfter,
+          message: 'A code was just sent — check your texts. You can request another in ' + retryAfter + ' seconds.'
         });
       }
 

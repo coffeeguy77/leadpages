@@ -127,11 +127,27 @@ body{margin:0;min-height:100vh;font-family:var(--font-ui);color:var(--ink);backg
   var slug = params.get('slug') || '';
   var el = document.getElementById('lp-order-storefront');
   if (el) el.setAttribute('data-slug', slug);
+  // The shop's own designed page (slim layout) replaces this generic one whenever it exists.
+  // Old links (texts, abandoned-cart reminders, bookmarks) land there with the cart / My orders kept.
+  if (slug && el && !params.get('generic')) {
+    el.style.visibility = 'hidden';
+    var reveal = function(){ el.style.visibility = ''; };
+    var hold = setTimeout(reveal, 2500);
+    fetch('/api/order/portal-auth', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ action: 'shop_url', slug: slug, account: params.get('account') === '1' ? 1 : 0, cart_id: params.get('cart_id') || params.get('cart') || '', cat: params.get('cat') || '' })
+    }).then(function(r){ return r.ok ? r.json() : null; }).then(function(out){
+      var url = out && out.shop_url;
+      if (url && url.indexOf('/order-shop') !== 0) { location.replace(url); return; }
+      clearTimeout(hold); reveal();
+    }).catch(function(){ clearTimeout(hold); reveal(); });
+  }
   if (!slug) {
     el.innerHTML = '<div class="lp-oe-empty"><p>Missing site slug. Open /order-shop?slug=your-site-slug</p></div>';
   }
 })();
 </script>
-<script src="/assets/lp-order-storefront.js?v=oe-26" defer></script>
+<script src="/assets/lp-order-storefront.js?v=oe-27" defer></script>
 </body>
 </html>

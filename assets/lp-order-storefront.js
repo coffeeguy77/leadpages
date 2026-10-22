@@ -529,6 +529,28 @@
     this.render();
   };
 
+  var RESEND_SECONDS = 60;
+  /** Seconds until another code may be requested (0 = allowed). */
+  OrderStorefront.prototype.resendWait = function () {
+    var m = this.state.authModal || {};
+    if (!m.sentAt) return 0;
+    return Math.max(0, Math.ceil(RESEND_SECONDS - (Date.now() - m.sentAt) / 1000));
+  };
+  /** Keep the "Resend code in Ns" link counting down without re-rendering the modal. */
+  OrderStorefront.prototype.tickResend = function () {
+    var self = this;
+    if (this._resendTimer) clearInterval(this._resendTimer);
+    this._resendTimer = setInterval(function () {
+      var m = self.state.authModal;
+      var btn = self.root && self.root.querySelector('[data-resend="1"]');
+      if (!m || !m.open || m.step !== 'code' || !btn) { clearInterval(self._resendTimer); self._resendTimer = null; return; }
+      var w = self.resendWait();
+      btn.disabled = w > 0 || !!m.busy;
+      btn.textContent = w > 0 ? 'Resend code in ' + w + 's' : 'Didn’t get it? Resend code';
+      if (w <= 0) { clearInterval(self._resendTimer); self._resendTimer = null; }
+    }, 1000);
+  };
+
   OrderStorefront.prototype.friendlyAuthError = function (msg) {
     var m = String(msg || '');
     if (m === 'bad_phone') return 'Enter a valid Australian mobile number.';
@@ -539,6 +561,7 @@
     if (m === 'invalid_code') return 'That code is incorrect or expired. Request a new one.';
     if (m === 'bad_input') return 'Enter your mobile and the 6-digit code.';
     if (m === 'customer_not_found') return 'We could not find orders for that number.';
+    if (m === 'resend_too_soon') return 'A code was just sent — check your texts. You can request another in a minute.';
     if (/duplicate key|token_hash/i.test(m)) return 'Please try sending the code again.';
     return m || 'Something went wrong. Please try again.';
   };
@@ -2153,19 +2176,29 @@
     if (m.info) html += '<p class="lp-oe-auth-info">' + esc(m.info) + '</p>';
     if (m.err) html += '<p class="lp-oe-auth-err">' + esc(m.err) + '</p>';
     html += '<div class="lp-oe-modal-actions">';
-    html +=
-      '<button type="button" class="lp-oe-primary" data-act="auth-send"' +
-      (m.busy ? ' disabled' : '') +
-      '>' +
-      (m.step === 'code' ? 'Resend code' : 'Send code') +
-      '</button>';
     if (m.step === 'code') {
+      // Verify is the action; the code also submits itself once all 6 digits are in.
       html +=
         '<button type="button" class="lp-oe-primary" data-act="auth-verify"' +
         (m.busy ? ' disabled' : '') +
         '>Verify &amp; view orders</button>';
+    } else {
+      html +=
+        '<button type="button" class="lp-oe-primary" data-act="auth-send"' +
+        (m.busy ? ' disabled' : '') +
+        '>Send code</button>';
     }
     html += '</div>';
+    if (m.step === 'code') {
+      // Resend is a quiet link, locked for 60 s after each send (the server enforces it too).
+      var wait = this.resendWait();
+      html +=
+        '<p class="lp-oe-resend"><button type="button" class="lp-oe-text-link" data-act="auth-send" data-resend="1"' +
+        (m.busy || wait > 0 ? ' disabled' : '') +
+        '>' +
+        (wait > 0 ? 'Resend code in ' + wait + 's' : 'Didn’t get it? Resend code') +
+        '</button></p>';
+    }
     html += '</div></div>';
     return html;
   };
@@ -2474,6 +2507,15 @@
       if (!el) return;
       el.addEventListener('input', function () {
         self.captureAuthDraft();
+        if (id === 'oe-auth-code') {
+          var digits = String(el.value || '').replace(/\D/g, '');
+          var am = self.state.authModal;
+          if (digits.length === 6 && am && !am.busy && am.autoTried !== digits) {
+            am.autoTried = digits; // try each full code once automatically
+            am.code = digits;
+            self.onAct('auth-verify', el);
+          }
+        }
       });
       el.addEventListener('keydown', function (ev) {
         if (ev.key !== 'Enter') return;
@@ -2711,6 +2753,7 @@
       }
       if (act === 'auth-send') {
         if (self.state.authModal && self.state.authModal.busy) return;
+        if (self.resendWait() > 0) return; // one code per 60 s
         self.captureAuthDraft();
         var am = self.state.authModal;
         am.err = '';
@@ -2723,13 +2766,23 @@
             body: { action: 'send_code', slug: self.slug, phone: am.phone }
           });
           am.step = 'code';
-          am.info = 'Code sent. Check your texts.';
+          am.code = '';
+          am.sentAt = Date.now();
+          am.info = 'Code sent — enter it below and you’ll be signed in.';
         } catch (e) {
-          am.err = self.friendlyAuthError((e && e.message) || e);
+          var ra = e && e.data && e.data.retry_after;
+          if (e && e.data && e.data.error === 'resend_too_soon') {
+            am.step = 'code';
+            am.sentAt = Date.now() - (RESEND_SECONDS - (Number(ra) || RESEND_SECONDS)) * 1000;
+            am.info = 'A code was just sent — check your texts.';
+          } else {
+            am.err = self.friendlyAuthError((e && e.message) || e);
+          }
         } finally {
           am.busy = false;
         }
         self.render();
+        self.tickResend();
         return;
       }
       if (act === 'auth-verify') {
@@ -3434,6 +3487,8 @@
       '.lp-oe-price{margin-top:10px;font-weight:700;color:var(--oe-accent);font-size:16px}',
       '.lp-oe-price.is-special{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px}',
       '.lp-oe-name-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}',
+      '.lp-oe-resend{margin:12px 0 0;text-align:center;font-size:13px}',
+      '.lp-oe-resend .lp-oe-text-link:disabled{opacity:.55;cursor:default;text-decoration:none}',
       '.lp-oe-order-btns{display:flex;flex-direction:column;gap:8px;align-items:stretch;flex:0 0 auto}',
       '.lp-oe-order-btns button{white-space:nowrap}',
       '@media (max-width:420px){.lp-oe-name-row{grid-template-columns:1fr}}',
