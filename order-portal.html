@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#1f5c3a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>Your order — LeadPages</title>
+<title>Your order</title>
 <meta name="robots" content="noindex">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=DM+Sans:wght@400;500;600;700&family=Patrick+Hand&display=swap" rel="stylesheet">
 <style>
@@ -638,6 +638,7 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
   function renderInvoice(data){
     var o = data.order, d = data.display || {}, items = data.items || [];
     var biz = (data.business && data.business.business_name) || 'Your order';
+    try{ document.title = 'Order ' + (o.order_number || '') + ' — ' + biz; }catch(_e){}
     var owing = (o.deposit_required_cents||0) > (o.deposit_paid_cents||0);
     var html = '<div class="portal-view inv-view">';
     html += '<main class="portal-scroll">';
