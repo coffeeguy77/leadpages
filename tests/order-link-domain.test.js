@@ -52,3 +52,9 @@ test('every customer link builder goes through orderLinkBase', () => {
   // the portal page itself is served on any host that points here
   assert.match(read('vercel.json'), /"source": "\/order-portal",\s*"destination": "\/order-portal\.html"/);
 });
+
+test('order page tab shows the shop name, not LeadPages', () => {
+  const html = read('order-portal.html');
+  assert.match(html, /<title>Your order<\/title>/);
+  assert.match(html, /document\.title = 'Order ' \+ \(o\.order_number \|\| ''\) \+ ' — ' \+ biz;/);
+});
