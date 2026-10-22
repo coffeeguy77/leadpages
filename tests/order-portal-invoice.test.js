@@ -103,3 +103,10 @@ test('staff screens split names into First / Last', () => {
   assert.deepEqual(split('Andrew & Belinda Chamberlain'), { first: 'Andrew & Belinda', last: 'Chamberlain' });
   assert.deepEqual(split('Richard'), { first: 'Richard', last: '' });
 });
+
+test('phone sign-in buttons stay visible in portrait (only the desktop bar hides on phones)', () => {
+  const html = read('order-portal.html');
+  const mobile = html.slice(html.indexOf('@media(max-width:720px){'), html.indexOf('.portal-bar{', html.indexOf('@media(max-width:720px){')));
+  assert.doesNotMatch(mobile, /^\s*\.actions\{display:none;\}/m);
+  assert.match(mobile, /\.portal-bar-desktop\{display:none!important;\}/);
+});
