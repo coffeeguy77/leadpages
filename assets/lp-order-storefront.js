@@ -256,19 +256,20 @@
     var sec = this.root.closest && this.root.closest('[data-sec="orderStorefront"]');
     return !!(sec && sec.classList.contains('os-editorial'));
   };
-  /** Editorial rows sit under a category heading, so "SAUSAGES - Spicy Beef" reads "Spicy Beef". */
+  /**
+   * Editorial rows listed under their own category heading drop the repeated prefix
+   * ("SAUSAGES - Spicy Beef" under "Sausages" reads "Spicy Beef"). Everywhere else — order
+   * summary, search results, Specials, All products — the full name is kept, so
+   * "TURKEY - Whole 4-4.8 kg" never becomes just "Whole 4-4.8 kg".
+   */
   OrderStorefront.prototype.displayName = function (p) {
     var name = String((p && p.name) || '');
-    if (!this.isEditorial()) return name;
+    if (!this.isEditorial() || !this._headingCat) return name;
     var m = /^\s*([^-–—:|]{2,40}?)\s*[-–—:|]\s+(.+)$/.exec(name);
     if (!m) return name;
     var head = m[1].trim().toLowerCase().replace(/s$/, '');
-    var cats = (this.state.catalogue && this.state.catalogue.categories) || [];
-    var hit = cats.some(function (c) {
-      var n = String(c.name || '').trim().toLowerCase().replace(/s$/, '');
-      return n && n === head;
-    });
-    return hit ? m[2].trim() : name;
+    var n = String(this._headingCat).trim().toLowerCase().replace(/s$/, '');
+    return n && n === head ? m[2].trim() : name;
   };
 
   OrderStorefront.prototype.isFastMode = function () {
@@ -1593,15 +1594,21 @@
         var cat = (this.visibleCategories() || []).find(function (c) { return c.id === active; });
         var intro = (cat && cat.description) || this.root.getAttribute('data-cat-intro') || 'Choose your quantity and add any preparation notes.';
         html += '<div class="lp-oe-cat-head"><h3>' + esc(cat ? cat.name : 'All products') + '</h3>' + (intro ? '<p>' + esc(intro) + '</p>' : '') + '</div>';
+        // Only rows under their own category heading may drop the repeated prefix.
+        if (cat) this._headingCat = cat.name;
       }
     }
     html += '<div class="lp-oe-fast" role="list">';
-    if (!products.length) {
-      html += '<p class="lp-oe-empty">No products in this category yet.</p>';
-    } else {
-      products.forEach(function (p) {
-        html += self.renderFastRow(p);
-      });
+    try {
+      if (!products.length) {
+        html += '<p class="lp-oe-empty">No products in this category yet.</p>';
+      } else {
+        products.forEach(function (p) {
+          html += self.renderFastRow(p);
+        });
+      }
+    } finally {
+      this._headingCat = null;
     }
     html += '</div>';
     var dep = this.state.catalogue && this.state.catalogue.deposit;
@@ -2228,7 +2235,7 @@
       var snap = it.product_snapshot || {};
       var q = Number(it.quantity) || 1;
       html += '<div class="lp-oe-line" data-line="' + esc(it.id) + '">';
-      html += '<div class="lp-oe-line-main"><strong>' + esc(ed ? self.displayName({ name: snap.name || 'Item' }) : (snap.name || 'Item')) + '</strong>';
+      html += '<div class="lp-oe-line-main"><strong>' + esc(snap.name || 'Item') + '</strong>';
       if (snap.pack_label) {
         html += '<p class="lp-oe-line-meta">' + esc(snap.pack_label) + ' pack</p>';
       } else if (it.requested_weight_kg != null) {
