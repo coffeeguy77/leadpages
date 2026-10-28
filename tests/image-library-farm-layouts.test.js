@@ -73,7 +73,7 @@ test('order shop reads ?cat= to open a category', () => {
   const sf = read('assets/lp-order-storefront.js');
   assert.match(sf, /categoryFromUrl = function/);
   assert.match(sf, /var linkedCat = this\.categoryFromUrl\(\);/);
-  assert.match(read('api/render.js'), /lp-order-storefront\.js\?v=oe-29/);
+  assert.match(read('api/render.js'), /lp-order-storefront\.js\?v=oe-30/);
 });
 
 test('trust bar stacked: items per row (default one line), phone rows, spacing', () => {

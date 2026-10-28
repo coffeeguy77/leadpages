@@ -82,7 +82,10 @@ module.exports = async function (req, res) {
         }
         return json(res, 200, {
           order: order,
-          items: items || [],
+          items: (items || []).map(function (it) {
+            const P = require('../../lib/order/pricing');
+            return Object.assign({}, it, { est_range: P.lineEstimateRange(it), cooking_cents: P.lineCookingCents(it) });
+          }),
           payments: payments || [],
           changes: changes || [],
           messages: messages || [],

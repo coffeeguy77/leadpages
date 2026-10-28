@@ -122,8 +122,9 @@ module.exports = async function (req, res) {
           .select('*')
           .in('product_id', ids)
           .order('sort_order');
-        payload.questions = questions || [];
+        payload.questions = require('../../lib/order/product-options').withCookingRate(questions || [], system);
       }
+      payload.cooking_rate_cents = require('../../lib/order/product-options').cookingRateCents(system);
       return json(res, 200, payload);
     }
 

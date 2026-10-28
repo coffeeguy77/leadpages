@@ -216,3 +216,18 @@ order line (`order_items.id`) it is allocated to. Rules live in `lib/order/stock
   safe Markdown renderer with search. Build history pages included.
 - **Data fix** ORD-2026-00012: payment $50 → $150 direct deposit received 14 Oct, pickup 2026-12-07, lock
   2026-12-04 17:00 AEDT (backup + audit `payment_corrected`).
+
+## Cooking rate (per-kg option charge) — 2026-10-28
+
+- Setting `order_systems.settings.cooking.rate_cents_per_kg` (Settings → Tax & Payments → Cooking rate). GST-inclusive.
+- Option choice flag `cooking: true` (product editor tick "Charge cooking rate"); `normaliseChoice` keeps it and zeroes its flat price.
+- `optionExtrasPerUnitCents(questions, answers, { cooking_rate_cents })` → `{ extra_cents, per_kg_cents, selected }`; the selected
+  entry stores `per_kg_cents` (rate locked on the line), `cooking`, `gst_inclusive`.
+- `priceLineAtOrder(..., extras)` accepts a number (flat per unit) or `{ flat, per_kg }`; per_weight lines with a weight add
+  `weight × per_kg`. `finaliseWeightLine` now keeps flat option extras × qty (previously dropped) and adds `weight × per_kg`.
+  Stock piece pricing does the same.
+- Ranges: `nameWeightRangeKg` parses "3.5-4" / "4-4.8 kg" from the product name; `estimateRange` / `lineEstimateRange` give
+  low/high cents (incl. cooking). Returned as `est_range` on storefront products (meat only), cart items, portal items and
+  staff order items; `cooking_cents` on portal/staff items. Shown on shop rows, cart, customer docket and staff docket.
+- GST: `lineCookingGstCents` adds the GST inside the cooking part when the product itself isn't GST.
+- Choices are decorated for display with the live rate (`withCookingRate`) in storefront, order page and staff APIs.

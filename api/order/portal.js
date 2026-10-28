@@ -95,7 +95,7 @@ async function loadPortalCatalog(admin, system) {
       .in('product_id', ids)
       .eq('staff_only', false)
       .order('sort_order');
-    questions = qs || [];
+    questions = require('../../lib/order/product-options').withCookingRate(qs || [], system);
   }
   const byProduct = {};
   questions.forEach(function (q) {
@@ -237,6 +237,8 @@ module.exports = async function (req, res) {
             selected_options: formatOptionsForPortal(it, answerRows),
             answers: answersMapFromItem(it, answerRows),
             pricing_method: it.pricing_method,
+            est_range: require('../../lib/order/pricing').lineEstimateRange(it),
+            cooking_cents: require('../../lib/order/pricing').lineCookingCents(it),
             // Holds a received ham / turkey: weight is exact, set from the piece.
             stock_held: !!(it.options_snapshot && it.options_snapshot.stock && it.options_snapshot.stock.pieces)
           };

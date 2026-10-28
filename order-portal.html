@@ -378,14 +378,15 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
     if (!c) return '';
     if (typeof c === 'string') return c;
     var lab = c.label || c.value || '';
-    if (c.price_cents > 0) lab += ' (+$'+(Number(c.price_cents)/100).toFixed(2)+')';
+    if (c.cooking && c.per_kg_cents) lab += ' (+$'+(Number(c.per_kg_cents)/100).toFixed(2)+'/kg)';
+    else if (c.price_cents > 0) lab += ' (+$'+(Number(c.price_cents)/100).toFixed(2)+')';
     return lab;
   }
 
   function parseChoices(q){
     return (q && Array.isArray(q.options) ? q.options : []).map(function(c){
       if (typeof c === 'string') return { label: c, value: c, price_cents: 0 };
-      return { label: c.label || c.value, value: c.value != null ? c.value : c.label, price_cents: c.price_cents || 0 };
+      return { label: c.label || c.value, value: c.value != null ? c.value : c.label, price_cents: c.price_cents || 0, cooking: !!c.cooking, per_kg_cents: c.per_kg_cents || 0 };
     });
   }
 
@@ -691,7 +692,9 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
         : (it.requested_weight_kg != null && perKg && !(q > 1)) ? ('~'+esc(it.requested_weight_kg)+' kg')
         : (esc(String(q).replace(/\.0+$/, ''))+'x');
       var rate = it.unit_price_cents != null && it.unit_price_cents > 0 ? money(it.unit_price_cents) + (perKg ? '' : ' ea') : '';
+      var er = it.est_range;
       var amt = it.line_final_cents != null ? money(it.line_final_cents)
+        : er ? '<span class="dk-tbc">est.</span> '+money(er.low_cents)+'–'+money(er.high_cents)
         : (it.price_status==='tbc'||it.price_status==='quote_required') ? '<span class="dk-tbc" title="Priced once weighed">TBC</span>'
         : it.line_known_cents != null ? money(it.line_known_cents)+(it.price_status==='estimated'?' <span class="dk-tbc">est.</span>':'')
         : '';
@@ -699,6 +702,9 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
         + (rate ? '<span class="dk-sub dk-rate-m">'+rate+(perKg?'/kg':'')+'</span>' : '')
         + ((it.selected_options||[]).length ? '<span class="dk-sub">'+(it.selected_options||[]).map(esc).join(' · ')+'</span>' : '')
         + (it.notes ? '<span class="dk-sub dk-hand">'+esc(it.notes)+'</span>' : '')
+        + (it.cooking_cents ? '<span class="dk-sub">Includes cooking '+money(it.cooking_cents)+(it.actual_weight_kg==null?' (est.)':'')+'</span>'
+          : (er && er.per_kg_extra_high_cents) ? '<span class="dk-sub">Includes cooking est. '+money(er.per_kg_extra_low_cents)+'–'+money(er.per_kg_extra_high_cents)+'</span>' : '')
+        + (er ? '<span class="dk-sub">Final price when weighed ('+er.low_kg+'–'+er.high_kg+' kg)</span>' : '')
         + '</td><td class="dk-r dk-rate">'+rate+'</td><td class="dk-r">'+amt+'</td></tr>';
     });
     if(o.customer_notes) html += '<tr class="dk-notes"><td></td><td colspan="3"><span class="dk-hand">'+esc(o.customer_notes)+'</span></td></tr>';

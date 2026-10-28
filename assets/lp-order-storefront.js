@@ -1515,17 +1515,31 @@
   };
 
   /* ---------- Specials (product.special from /api/order/storefront) ---------- */
+  /** "Est. $107.80–$123.20 each · cooked +$33.25–$38.00" for sized weight items not yet weighed. */
+  OrderStorefront.prototype.rangeHtml = function (p) {
+    var r = p && p.est_range;
+    if (!r) return '';
+    var cookKg = 0;
+    (p.questions || []).forEach(function (q) {
+      (q.options || []).forEach(function (o) { if (o && o.cooking && o.per_kg_cents > cookKg) cookKg = Number(o.per_kg_cents) || 0; });
+    });
+    var txt = 'Est. ' + money(r.low_cents) + '–' + money(r.high_cents) + ' each (final when weighed)';
+    if (cookKg) txt += ' · cooked +' + money(Math.round(r.low_kg * cookKg)) + '–' + money(Math.round(r.high_kg * cookKg));
+    return '<p class="lp-oe-range">' + esc(txt) + '</p>';
+  };
+
   OrderStorefront.prototype.priceHtml = function (p, tag) {
     tag = tag === 'p' ? 'p' : 'div';
     var sp = p && p.special;
-    if (!sp || !sp.price_cents) return '<' + tag + ' class="lp-oe-price">' + esc(p.display_price) + '</' + tag + '>';
+    if (!sp || !sp.price_cents) return '<' + tag + ' class="lp-oe-price">' + esc(p.display_price) + '</' + tag + '>' + this.rangeHtml(p);
     return (
       '<' + tag + ' class="lp-oe-price is-special">' +
       '<span class="lp-oe-special-badge">Special</span> ' +
       '<span class="lp-oe-special-now">' + esc(p.display_price) + '</span> ' +
       (sp.was_display ? '<s class="lp-oe-special-was">' + esc(sp.was_display) + '</s> ' : '') +
       (sp.saving_display ? '<span class="lp-oe-special-save">Save ' + esc(sp.saving_display) + '</span>' : '') +
-      '</' + tag + '>'
+      '</' + tag + '>' +
+      this.rangeHtml(p)
     );
   };
 
@@ -1624,6 +1638,7 @@
   OrderStorefront.prototype.choiceLabel = function (o) {
     if (typeof o === 'string') return o;
     var label = o.label || o.value || '';
+    if (o.cooking) return label + (o.per_kg_cents ? ' (+' + money(o.per_kg_cents) + '/kg)' : '');
     var price = Number(o.price_cents) || 0;
     if (price > 0) return label + ' (+' + money(price) + ')';
     if (price === 0 && (o.price_cents === 0 || o.price_cents === '0')) return label;
@@ -2030,6 +2045,8 @@
   };
 
   OrderStorefront.prototype.linePriceLabel = function (it) {
+    // Not weighed yet but the size is known (e.g. 3.5–4 kg): show the range, incl. cooking.
+    if (it.est_range) return 'Est. ' + money(it.est_range.low_cents) + '–' + money(it.est_range.high_cents);
     if (it.price_status === 'tbc' || it.price_status === 'quote_required') return 'Price TBC';
     if (it.line_known_cents != null) {
       return money(it.line_known_cents) + (it.price_status === 'estimated' ? ' est.' : '');
@@ -2312,7 +2329,7 @@
           esc(
             snap.selected_options
               .map(function (o) {
-                return o.label + (o.price_cents ? ' (+' + money(o.price_cents) + ')' : '');
+                return o.label + (o.per_kg_cents ? ' (+' + money(o.per_kg_cents) + '/kg)' : o.price_cents ? ' (+' + money(o.price_cents) + ')' : '');
               })
               .join(', ')
           ) +
@@ -3754,6 +3771,7 @@
       '.lp-oe-piece-p{font-size:13px;color:var(--oe-muted);font-variant-numeric:tabular-nums}',
       '.lp-oe-soldout{display:inline-block;width:max-content;max-width:100%;justify-self:start;align-self:flex-start;margin:8px 0 0;padding:4px 10px;border:1px solid var(--oe-line);border-radius:999px;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--oe-muted)}',
       '.lp-oe-line-warn{margin:4px 0 0;font-size:13px;color:#b91c1c}',
+      '.lp-oe-range{margin:2px 0 0;font-size:12.5px;color:var(--oe-muted)}',
       '.lp-oe-fast-add.needs-options{background:transparent;color:var(--oe-accent);border-color:color-mix(in srgb,var(--oe-accent) 45%,var(--oe-line))}',
       '.lp-oe-primary.needs-options{background:transparent;color:var(--oe-accent);border-color:color-mix(in srgb,var(--oe-accent) 45%,var(--oe-line))}',
       '.lp-oe-fast-add:disabled{opacity:.55;cursor:not-allowed}',

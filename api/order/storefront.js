@@ -200,7 +200,15 @@ module.exports = async function (req, res) {
               saving_display: formatAud(sp.saving_cents) + (sp.per_kg ? '/kg' : '')
             })
           : null,
-        questions: questions.filter(function (q) {
+        // Price range until weighed (e.g. "3.5-4" in the name → $107.80–$123.20).
+        est_range: require('../../lib/order/pricing').estimateRange({
+          name: p.name,
+          pricing_method: p.pricing_method,
+          rate_cents: p.price_per_kg_cents,
+          quantity: 1,
+          extras: { flat: 0, per_kg: 0 }
+        }),
+        questions: require('../../lib/order/product-options').withCookingRate(questions, system).filter(function (q) {
           return q.product_id === p.id;
         }),
         related: relationships.filter(function (r) {
@@ -253,6 +261,7 @@ module.exports = async function (req, res) {
       site: { id: site.id, slug: site.slug, business_name: site.business_name },
       system: {
         id: system.id,
+        cooking_rate_cents: require('../../lib/order/product-options').cookingRateCents(system),
         enabled: system.enabled,
         industry_preset: system.industry_preset,
         currency: system.currency,
