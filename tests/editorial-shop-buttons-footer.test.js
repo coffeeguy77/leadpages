@@ -36,10 +36,21 @@ test('editorial shop drops a "Category - " prefix only when it matches a categor
   const OS = win.__OS; assert.ok(OS);
   const self = { root: { getAttribute: (k) => (k === 'data-layout' ? 'editorial' : null) }, state: { catalogue: { categories: [{ name: 'Sausages' }, { name: 'Beef' }] } } };
   self.isEditorial = OS.prototype.isEditorial;
-  const name = (n) => OS.prototype.displayName.call(self, { name: n });
-  assert.equal(name('SAUSAGES - Spicy Beef'), 'Spicy Beef');
-  assert.equal(name('SAUSAGE - thin English style pork'), 'thin English style pork');
-  assert.equal(name('Rib Eye - Grain fed'), 'Rib Eye - Grain fed');
+  const name = (n, heading) => { self._headingCat = heading || null; return OS.prototype.displayName.call(self, { name: n }); };
+  // under its own category heading the repeated prefix is dropped
+  assert.equal(name('SAUSAGES - Spicy Beef', 'Sausages'), 'Spicy Beef');
+  assert.equal(name('SAUSAGE - thin English style pork', 'Sausages'), 'thin English style pork');
+  assert.equal(name('Rib Eye - Grain fed', 'Beef'), 'Rib Eye - Grain fed');
+  // no heading (order summary, search, Specials, All products) or another heading → full name
+  assert.equal(name('TURKEY - Whole 4-4.8 kg'), 'TURKEY - Whole 4-4.8 kg');
+  assert.equal(name('LAMB - Loin Chops', 'Pork'), 'LAMB - Loin Chops');
+});
+
+test('order summary always shows the full product name', () => {
+  assert.match(oe, /esc\(snap\.name \|\| 'Item'\)/);
+  assert.doesNotMatch(oe, /self\.displayName\(\{ name: snap\.name/);
+  assert.match(oe, /if \(cat\) this\._headingCat = cat\.name;/);
+  assert.match(oe, /\} finally \{\s*this\._headingCat = null;/);
 });
 
 test('button corners: Branding default + per-app override + header', () => {
