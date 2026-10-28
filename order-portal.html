@@ -72,6 +72,8 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
 .history li{padding:8px 0;border-top:1px solid var(--line);}
 .history li:first-child{border-top:0;}
 .add-box{margin-top:14px;padding-top:14px;border-top:1px dashed var(--line);}
+.piece-list{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 6px}
+.piece{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;font-variant-numeric:tabular-nums;cursor:pointer}
 .cat-chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px;}
 .cat-chip{appearance:none;border:1px solid var(--line);background:#fff;color:var(--ink);font:600 13px/1 var(--font-ui);padding:10px 14px;border-radius:999px;cursor:pointer;}
 .cat-chip.on{border-color:var(--accent);background:#eef6f0;color:var(--accent);}
@@ -556,7 +558,7 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
           changes: changes,
           remove_item_ids: window.__portalRemoveIds || [],
           add_items: (window.__portalPendingAdds || []).map(function(a){
-            return { product_id: a.product_id, quantity: a.quantity, requested_weight_kg: a.requested_weight_kg, answers: a.answers };
+            return { product_id: a.product_id, quantity: a.quantity, requested_weight_kg: a.requested_weight_kg, answers: a.answers, stock_piece_id: a.stock_piece_id || undefined };
           })
         };
         var nd = document.getElementById('ed-date');
@@ -573,7 +575,14 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
           location.reload();
         }catch(e){
           document.querySelectorAll('.js-save').forEach(function(b){ b.disabled = false; });
-          alert(e.message||e);
+          var em = (e && e.message) || String(e);
+          if (em === 'piece_taken' || em === 'choose_piece') {
+            em = 'Sorry — ' + ((e.data && e.data.product_name) || 'one of the items you chose') + ' has just been taken by someone else. Nothing was changed; please choose another.';
+            alert(em);
+            location.reload();
+            return;
+          }
+          alert(em);
         }
       };
     });
@@ -788,10 +797,15 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
       html += '<p style="margin-top:4px"><strong>'+price+'</strong>'+(it.price_status==='estimated'?' <span class="badge b-tbc">Est.</span>':'')+(it.includes_gst?' <span class="badge b-open">inc. GST</span>':'')+'</p>';
       if(data.can_edit){
         html += renderOptionEditors(it, data.catalog);
+        if(it.stock_held){
+          // A received ham / turkey: exact weight, chosen piece — remove it to choose another.
+          html += '<p class="note" style="margin:8px 0 0">Exact weight '+esc(it.actual_weight_kg!=null?it.actual_weight_kg:it.requested_weight_kg)+' kg. To swap it, remove this item and add the one you want.</p>';
+        } else {
         html += '<div class="edit-row">';
         html += '<div><label class="f">Quantity</label><input type="number" min="0" step="0.01" class="ed-qty" data-id="'+esc(it.id)+'" value="'+esc(it.quantity)+'"></div>';
         html += '<div><label class="f">Approx. weight (kg)</label><input type="number" min="0.1" step="0.1" class="ed-w" data-id="'+esc(it.id)+'" value="'+(it.requested_weight_kg!=null?esc(it.requested_weight_kg):'')+'"></div>';
         html += '</div>';
+        }
         html += '<div class="item-actions"><button type="button" class="ghost ed-remove" data-id="'+esc(it.id)+'">Remove item</button></div>';
       }
       html += '</div>';
@@ -898,8 +912,24 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
       if (!p) { addFields.innerHTML = ''; return; }
       var needsW = p.pricing_method === 'per_weight' || p.pricing_method === 'price_tbc' || p.weight_required;
       var html = '';
+      if (p.stock && p.stock.tracked) {
+        // Received hams / turkeys: pick the actual one (exact weight and price).
+        var queued = {};
+        pendingAdds.forEach(function(a){ if (a.stock_piece_id) queued[a.stock_piece_id] = true; });
+        var left = p.stock.sold_out ? [] : (p.stock.pieces || []).filter(function(x){ return !queued[x.id]; });
+        if (!left.length) {
+          html += '<p class="note"><strong>Sold out.</strong></p>';
+        } else {
+          html += '<label class="f">Choose yours — exact weight and price</label><div class="piece-list">';
+          left.forEach(function(x, i){
+            html += '<label class="piece"><input type="radio" name="add-piece" value="'+esc(x.id)+'" data-w="'+esc(x.weight_kg)+'"'+(i===0?' checked':'')+'> '+esc(x.weight_kg)+' kg'+(x.price_display?' · '+esc(x.price_display):'')+'</label>';
+          });
+          html += '</div>';
+        }
+      } else {
       if (!needsW) html += '<label class="f">Quantity</label><input type="number" id="add-qty" min="1" step="1" value="1">';
       if (needsW) html += '<label class="f">Approx. weight (kg)</label><input type="number" id="add-kg" min="0.1" step="0.1" value="1">';
+      }
       html += '<div id="add-opt"></div>';
       addFields.innerHTML = html;
       var optHost = document.getElementById('add-opt');
@@ -920,7 +950,13 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
         var p = productFromCatalog(data.catalog, pid);
         var needsW = p && (p.pricing_method === 'per_weight' || p.pricing_method === 'price_tbc' || p.weight_required);
         var line = { product_id: pid, _temp: true };
-        if (needsW) {
+        if (p && p.stock && p.stock.tracked) {
+          var picked = addFields && addFields.querySelector('input[name="add-piece"]:checked');
+          if (!picked) { alert('Sorry — that one is sold out.'); return; }
+          line.stock_piece_id = picked.value;
+          line.quantity = 1;
+          line.requested_weight_kg = parseFloat(picked.getAttribute('data-w'));
+        } else if (needsW) {
           var kg = document.getElementById('add-kg');
           line.requested_weight_kg = kg && kg.value !== '' ? parseFloat(kg.value) : 1;
           line.quantity = 1;

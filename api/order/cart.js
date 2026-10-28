@@ -109,7 +109,8 @@ module.exports = async function (req, res) {
           system: system,
           gst_settings: parseGstSettings(system),
           questions: questions,
-          existing_items: packed.items
+          existing_items: packed.items,
+          stock_piece_id: body.stock_piece_id || null
         });
         if (body.guest_name || body.guest_phone || body.guest_email) {
           await touchCart(packed.cart.id, {
@@ -285,7 +286,7 @@ module.exports = async function (req, res) {
     }
   } catch (e) {
     console.error('order/cart', e);
-    const code = e && e.code === 400 ? 400 : e && e.code === 404 ? 404 : 500;
-    return json(res, code, { error: String((e && e.message) || e) });
+    const code = e && e.code === 400 ? 400 : e && e.code === 404 ? 404 : e && e.code === 409 ? 409 : 500;
+    return json(res, code, { error: String((e && e.message) || e), product_name: (e && e.product_name) || undefined });
   }
 };

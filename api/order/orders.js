@@ -198,6 +198,10 @@ module.exports = async function (req, res) {
           .select('*')
           .single();
         if (error) throw error;
+        if (body.status === 'cancelled' || body.status === 'refunded') {
+          // Hams / turkeys given to this order go back into stock.
+          await require('../../lib/order/stock').releaseForOrder(system, data.id, actor, 'admin');
+        }
         await writeAudit({
           order_system_id: system.id,
           site_id: siteId,
@@ -382,7 +386,16 @@ module.exports = async function (req, res) {
     }
   } catch (e) {
     console.error('order/orders', e);
-    const code = e && e.code === 400 ? 400 : e && e.code === 404 ? 404 : 500;
-    return json(res, code, { error: String((e && e.message) || e) });
+    const code = e && e.code === 400 ? 400 : e && e.code === 404 ? 404 : e && e.code === 409 ? 409 : 500;
+    const STOCK_MSG = {
+      piece_taken: 'That piece has just been taken — choose another.',
+      choose_piece: 'Choose the actual piece from what is in stock.',
+      piece_twice: 'The same piece is in the order twice.'
+    };
+    const key = String((e && e.message) || e);
+    return json(res, code, {
+      error: key,
+      message: STOCK_MSG[key] ? STOCK_MSG[key] + (e.product_name ? ' (' + e.product_name + ')' : '') : undefined
+    });
   }
 };

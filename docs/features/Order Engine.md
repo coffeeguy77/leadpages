@@ -162,3 +162,31 @@ Message templates: money placeholders (`{{deposit_amount}}`, `{{cart_total}}`, `
 Customer links (order SMS/email, deposit links and reminders, staff "send link", printed QR codes, Stripe return, abandoned-cart links) use the shop's own domain — e.g. `https://www.griffithbutchery.com.au/order-portal?t=…` — via `lib/order/public-base.js` `orderLinkBase(site)`.
 
 It uses `sites.custom_domain` only when that domain is attached to the LeadPages Vercel project, verified, and its DNS points here (`getProjectDomain` + `getDomainConfig` in `api/vercel/_client.js`); an apex that redirects to www uses www. Otherwise — or if Vercel is slow (2.5 s) or errors — links stay on leadpages.com.au, so a link is never broken. Cached 10 minutes per server instance. Links already sent keep working (tokens work on either host).
+
+## Stock pieces (hams, turkeys…) — received stock allocated to orders
+
+Table `order_stock_pieces` (migration `db/migrations/20261028_order_stock_pieces.sql`): one row per
+received piece with its real weight, optional tag, status `available | allocated | written_off`, and the
+order line (`order_items.id`) it is allocated to. Rules live in `lib/order/stock.js`; staff API
+`api/order/stock.js`; staff screen **Order Operations → Stock** (`orders.html#stock`).
+
+- **Per category switch** — `order_systems.settings.stock_control.category_ids` (product's primary
+  category). Off = ordering unchanged. Stock can be received and allocated while off.
+- **Allocate = weigh.** A line needs one piece per unit (`quantity`). When it has them all, its
+  `actual_weight_kg` = total and `line_final_cents` = total × the line's $/kg (+ option extras),
+  `price_status = finalised`. Releasing puts the line back to its estimate / TBC (only if stock had
+  finalised it; hand-weighed lines are untouched). `options_snapshot.stock` records the pieces.
+- **Protect pre-orders.** A product is only offered in the shop once every open order
+  (`awaiting_deposit, confirmed, changes_open, locked, in_preparation, ready`) for it has its pieces;
+  otherwise it shows Sold out. Staff see the pieces with a "still waiting" note.
+- **Picking a piece.** Shop (`add_item` with `stock_piece_id`), staff New order, and Make changes
+  offer the real pieces (weight + price). One piece per line, quantity 1, never merged. Cart lines
+  are priced `known` (exact weight). Pieces are only locked when the order is created
+  (`createStaffOrder` → `allocatePiece`, a conditional update so one piece can never go to two
+  orders); if one was taken meanwhile the new order is deleted and the customer gets `piece_taken`.
+  The full cart response flags `stock_unavailable` lines.
+- **Release** on order cancel / refund / void, line removal (DB trigger `order_items_release_stock`
+  frees pieces of any deleted line), and Make changes removal. Restored orders do not re-take pieces.
+- **Order again** skips stock-controlled products (`reason: 'choose_piece'`) — the customer picks again.
+- Staff "add item" in order detail and imports create lines without pieces: they show as waiting on
+  the Stock screen.

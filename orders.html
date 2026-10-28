@@ -253,6 +253,34 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
 .badge.info{background:color-mix(in srgb,#2563eb 16%,transparent);color:#1d4ed8}
 .badge.purple{background:color-mix(in srgb,#7c3aed 16%,transparent);color:#6d28d9}
 .empty{padding:28px 12px;text-align:center;color:var(--ink-faint);font-size:var(--fs-base)}
+/* Stock (order_stock_pieces) */
+.stk-switch{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;margin:0 0 14px}
+.stk-switch.on{border-color:color-mix(in srgb,var(--accent) 45%,var(--line));background:color-mix(in srgb,var(--accent) 6%,transparent)}
+.stk-switch p{margin:0;flex:1;min-width:220px;font-size:var(--fs-sm);color:var(--ink-soft);line-height:1.45}
+.stk-prod{border:1px solid var(--line);border-radius:12px;margin:0 0 10px;background:var(--surface)}
+.stk-prod>summary{list-style:none;cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:12px 14px}
+.stk-prod>summary::-webkit-details-marker{display:none}
+.stk-prod>summary strong{flex:1;min-width:180px}
+.stk-tag{display:inline-block;width:max-content;max-width:100%;justify-self:start;font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px;border:1px solid var(--line);color:var(--ink-soft);white-space:nowrap}
+.stk-tag.good{border-color:#15803d;color:#15803d}
+.stk-tag.warn{border-color:#b45309;color:#b45309}
+.stk-tag.bad{border-color:#b91c1c;color:#b91c1c}
+.stk-body{padding:0 14px 14px;border-top:1px solid var(--line)}
+.stk-body h4{margin:14px 0 8px;font-size:var(--fs-sm)}
+.stk-recv{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
+.stk-recv textarea{flex:1;min-width:220px;min-height:40px;padding:8px 10px;border:1px solid var(--line-strong);border-radius:10px;font:inherit}
+.stk-recv input{width:170px;padding:8px 10px;border:1px solid var(--line-strong);border-radius:10px;font:inherit}
+.stk-chips{display:flex;flex-wrap:wrap;gap:6px}
+.stk-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 6px 5px 10px;border:1px solid var(--line-strong);border-radius:999px;font-size:var(--fs-sm);font-variant-numeric:tabular-nums}
+.stk-chip button{border:0;background:none;color:var(--ink-faint);cursor:pointer;font-size:12px;padding:2px 4px;border-radius:6px}
+.stk-chip button:hover{color:var(--ink);background:color-mix(in srgb,var(--accent) 10%,transparent)}
+.stk-chip.off{opacity:.6;text-decoration:line-through}
+.stk-table{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
+.stk-table th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-faint);padding:6px 6px;border-bottom:1px solid var(--line)}
+.stk-table td{padding:7px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
+.stk-table select{max-width:220px;padding:6px 8px;border:1px solid var(--line-strong);border-radius:8px;font:inherit}
+.stk-scroll{overflow-x:auto}
+
 .notice{font-size:var(--fs-sm);color:var(--ink-soft);line-height:1.45;margin:0 0 12px}
 .line-row{
   display:grid;grid-template-columns:minmax(180px,2.2fr) 70px 90px 1fr auto;gap:8px;align-items:end;
@@ -1331,6 +1359,25 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
           <div class="kpis" id="alloc-kpis"></div>
           <div id="alloc-groups"></div>
           <p class="empty hide" id="alloc-empty">No allocation lines for this date.</p>
+        </div>
+      </section>
+
+      <section class="view" id="view-stock" data-view="stock">
+        <div class="card">
+          <div class="toolbar" style="flex-wrap:wrap;gap:10px">
+            <h3 style="margin:0;flex:1">Stock</h3>
+            <select id="stk-cat" aria-label="Category"></select>
+            <button class="btn ghost" type="button" id="stk-refresh">Refresh</button>
+          </div>
+          <p class="sub">Receive one-off pieces (hams, turkeys…) with their real weight and give each one to an order. Giving a piece to an order sets that line's weight and final price.</p>
+          <div id="stk-switch" class="stk-switch"></div>
+          <div class="kpis" id="stk-kpis"></div>
+          <div class="toolbar" style="gap:10px">
+            <button class="btn" type="button" id="stk-suggest">Suggest matches</button>
+            <span class="notice" style="margin:0">Pairs every waiting order with the closest-weight piece, oldest pickup first. You review before anything is saved.</span>
+          </div>
+          <div id="stk-suggest-box" class="hide"></div>
+          <div id="stk-products"><p class="notice">Loading…</p></div>
         </div>
       </section>
 
@@ -3783,6 +3830,10 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
         detail = 'Removed ' + chg.previous_value.product_name;
       } else if (chg.field_path === 'item.added' && chg.new_value && chg.new_value.product_name) {
         detail = 'Added ' + chg.new_value.product_name;
+      } else if (chg.field_path === 'item.stock_allocated' && chg.new_value) {
+        detail = 'Stock piece given: ' + Number(chg.new_value.weight_kg) + ' kg' + (chg.new_value.tag ? ' (#' + chg.new_value.tag + ')' : '');
+      } else if (chg.field_path === 'item.stock_released' && chg.previous_value) {
+        detail = 'Stock piece put back: ' + Number(chg.previous_value.weight_kg) + ' kg' + (chg.previous_value.tag ? ' (#' + chg.previous_value.tag + ')' : '');
       } else if (chg.field_path === 'item.options') detail = 'Customer updated options';
       else if (chg.field_path === 'item') detail = 'Line updated';
       else if (chg.field_path === 'pickup') detail = 'Pickup changed';
@@ -4439,10 +4490,58 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     return parts.join(' · ') || (product && product.pack_label ? product.pack_label : '');
   }
 
+  /* Stock-controlled products (hams, turkeys…): staff pick the actual pieces (see lib/order/stock.js). */
+  async function loadNoStock(){
+    state.noStock = {};
+    try {
+      var d = await api('/api/order/stock?' + siteQuery());
+      var avail = {};
+      (d.pieces || []).forEach(function(x){
+        if (x.status === 'available') (avail[x.product_id] = avail[x.product_id] || []).push(x);
+      });
+      (d.products || []).forEach(function(p){
+        state.noStock[p.id] = {
+          pieces: (avail[p.id] || []).sort(function(a, b){ return a.weight_kg - b.weight_kg; }),
+          waiting: (p.stock && p.stock.waiting_pieces) || 0
+        };
+      });
+    } catch (_e) { state.noStock = {}; }
+    var sel = state.noPieces || (state.noPieces = {});
+    Object.keys(sel).forEach(function(pid){
+      var info = state.noStock[pid];
+      sel[pid] = (sel[pid] || []).filter(function(id){ return info && info.pieces.some(function(x){ return x.id === id; }); });
+    });
+    // A stock item counts as added only while it has chosen pieces (drafts don't keep pieces).
+    Object.keys(state.noFastAdded || {}).forEach(function(pid){
+      if (state.noStock[pid] && !(sel[pid] || []).length) delete state.noFastAdded[pid];
+    });
+  }
+  function noStockFor(product_id){
+    return (state.noStock && state.noStock[product_id]) || null;
+  }
+
   function lineFromFastDraft(product_id, draft, row){
     var product = (state.products || []).find(function(x){ return x.id === product_id; });
     if (!product) return null;
     draft = draft || {};
+    var stockInfo = noStockFor(product_id);
+    if (stockInfo) {
+      var picked = ((state.noPieces || {})[product_id] || []).map(function(id){
+        return stockInfo.pieces.find(function(x){ return x.id === id; });
+      }).filter(Boolean);
+      var sNotesEl = row && row.querySelector('[data-fast-notes]');
+      var sLine = {
+        product_id: product_id,
+        quantity: picked.length,
+        answers: row ? collectLineAnswers(row) : (draft.answers || {}),
+        stock_pieces: picked.map(function(x){ return { id: x.id, weight_kg: Number(x.weight_kg) }; })
+      };
+      var sw = picked.reduce(function(t, x){ return t + Number(x.weight_kg); }, 0);
+      if (picked.length) sLine.requested_weight_kg = Math.round(sw * 1000) / 1000;
+      var sNotes = row ? (sNotesEl && sNotesEl.value.trim()) : (draft.notes && String(draft.notes).trim());
+      if (sNotes) sLine.notes = sNotes;
+      return { product: product, line: sLine, needsW: false, showQty: true, qty: picked.length, wRaw: '' };
+    }
     var needsW = productNeedsWeight(product);
     var showQty = productShowsQuantity(product);
     var qty = 1;
@@ -4508,6 +4607,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     if (key.indexOf('fast:') === 0) {
       var pid = key.slice(5);
       if (state.noFastAdded) delete state.noFastAdded[pid];
+      if (state.noPieces) delete state.noPieces[pid];
       if (state.noFastDrafts) delete state.noFastDrafts[pid];
       if (isNoFastMode()) renderNoFastList();
     } else if (key.indexOf('trad:') === 0) {
@@ -5192,6 +5292,8 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       var minK = minimumKgForProduct(p);
       var defaultKg = formatKgDefault(p);
       var draft = drafts[p.id] || {};
+      var stockInfo = noStockFor(p.id);
+      if (stockInfo) { needsW = false; showQty = false; }
       var price = p.pricing_method === 'per_weight'
         ? formatAud(p.price_per_kg_cents) + '/kg'
         : p.pricing_method === 'price_tbc' ? 'TBC' : formatAud(p.price_cents);
@@ -5234,11 +5336,29 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
         html += '<button type="button" class="btn ghost no-fast-toggle-btn' + (optionsOpen ? ' on' : '') + '" data-fast-options-toggle>Options</button>';
       }
       html += '<button type="button" class="btn ghost no-fast-toggle-btn' + (notesOpen ? ' on' : '') + '" data-fast-notes-toggle>Notes</button>';
-      html += '<button type="button" class="btn solid no-fast-add-btn' +
-        (isAdded ? ' on' : '') +
-        (addLabel === 'Choose Options' ? ' needs-options' : '') +
-        '" data-fast-add>' + esc(addLabel) + '</button>';
+      if (!stockInfo) {
+        html += '<button type="button" class="btn solid no-fast-add-btn' +
+          (isAdded ? ' on' : '') +
+          (addLabel === 'Choose Options' ? ' needs-options' : '') +
+          '" data-fast-add>' + esc(addLabel) + '</button>';
+      }
       html += '</div>';
+      if (stockInfo) {
+        var chosen = (state.noPieces || {})[p.id] || [];
+        html += '<div class="no-fast-panel no-fast-pieces">';
+        if (!stockInfo.pieces.length) {
+          html += '<span class="stk-tag bad">Sold out</span>';
+        } else {
+          html += '<div class="stk-chips">' + stockInfo.pieces.map(function(x){
+            var on = chosen.indexOf(x.id) >= 0;
+            var cents = p.pricing_method === 'per_weight' && p.price_per_kg_cents != null ? Math.round(Number(x.weight_kg) * p.price_per_kg_cents) : null;
+            return '<button type="button" class="btn ' + (on ? 'solid' : 'ghost') + ' no-piece" data-fast-piece="' + esc(x.id) + '" aria-pressed="' + (on ? 'true' : 'false') + '">' +
+              esc(stkKg(x.weight_kg)) + (x.tag ? ' #' + esc(x.tag) : '') + (cents != null ? ' · ' + esc(formatAud(cents)) : '') + '</button>';
+          }).join('') + '</div>';
+          if (stockInfo.waiting) html += '<p class="notice" style="margin:0">' + stockInfo.waiting + ' existing order' + (stockInfo.waiting === 1 ? ' is' : 's are') + ' still waiting for this size (Stock screen). The shop is holding these for them.</p>';
+        }
+        html += '</div>';
+      }
       if (optionsOpen && hasQs) {
         html += '<div class="no-fast-panel no-fast-options-panel"><div class="line-opt" data-fast-opt></div></div>';
       }
@@ -5279,6 +5399,35 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
           renderNoFastList();
         });
       }
+      row.querySelectorAll('[data-fast-piece]').forEach(function(chip){
+        chip.addEventListener('click', function(){
+          captureNoFastDrafts();
+          var pieceId = chip.getAttribute('data-fast-piece');
+          if (!state.noPieces) state.noPieces = {};
+          var cur = (state.noPieces[pid] || []).slice();
+          var at = cur.indexOf(pieceId);
+          if (at >= 0) cur.splice(at, 1);
+          else {
+            if (missingRequiredForProduct(pid, row).length) {
+              if (!state.noFastPanelOpen) state.noFastPanelOpen = {};
+              var curP = state.noFastPanelOpen[pid] || {};
+              state.noFastPanelOpen[pid] = { notes: !!curP.notes, options: true };
+              toast('Choose required options for ' + ((product && product.name) || 'this product'), 'err');
+              renderNoFastList();
+              return;
+            }
+            cur.push(pieceId);
+          }
+          state.noPieces[pid] = cur;
+          if (!state.noFastAdded) state.noFastAdded = {};
+          if (cur.length) state.noFastAdded[pid] = true;
+          else delete state.noFastAdded[pid];
+          renderNoFastList();
+          renderNoStaffCart();
+          updateNoSubmitEnabled();
+          if (at < 0) announceNoCartAdd(product && product.name, collectStaffCartEntries().length);
+        });
+      });
       var addBtn = row.querySelector('[data-fast-add]');
       if (addBtn) {
         addBtn.addEventListener('click', function(){
@@ -5370,6 +5519,15 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       if (!hasQty && !hasKg && !opts.partialOk) return;
       if (needsW && !hasKg && !opts.partialOk) return;
       if (showQty && !hasQty && !needsW && !opts.partialOk) return;
+      if (line.stock_pieces) {
+        // One order line per chosen piece (exact weight).
+        line.stock_pieces.forEach(function(pc){
+          var one = Object.assign({}, line, { quantity: 1, requested_weight_kg: pc.weight_kg, stock_piece_id: pc.id });
+          delete one.stock_pieces;
+          items.push(one);
+        });
+        return;
+      }
       items.push(line);
     });
     return items;
@@ -6621,6 +6779,8 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       state.noFastDrafts = {};
       state.noFastPanelOpen = {};
       state.noFastAdded = {};
+      state.noPieces = {};
+      loadNoStock().catch(function(){});
       state.noSelectedCustomerId = null;
       state.noCustomerMode = 'new';
       state.noCurrentStep = 'products';
@@ -6638,6 +6798,10 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     } catch (e) {
       msg.textContent = (e && e.message) || String(e);
       toast(msg.textContent, 'err');
+      if (/piece|stock/i.test(msg.textContent)) {
+        await loadNoStock();
+        if (isNoFastMode()) renderNoFastList();
+      }
     }
     updateNoSubmitEnabled();
   }
@@ -7448,6 +7612,291 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       toast((e && e.message) || String(e), 'err');
     }
   }
+
+  /* ---------- Stock (received pieces → orders; see lib/order/stock.js) ---------- */
+  var stk = { data: null, catId: '', open: {}, suggestions: null };
+
+  function stkKg(w){ return (Math.round(Number(w) * 1000) / 1000).toFixed(2).replace(/0$/, '') + ' kg'; }
+  function stkDay(iso){
+    if (!iso) return 'No date';
+    var d = new Date(String(iso).slice(0, 10) + 'T00:00:00');
+    if (isNaN(d)) return esc(iso);
+    return d.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' });
+  }
+  function stkTracked(){
+    return !!(stk.data && (stk.data.category_ids || []).indexOf(stk.catId) >= 0);
+  }
+
+  async function loadStock(){
+    if (!requireSite()) return;
+    var box = $('stk-products');
+    if (stk.siteId !== state.siteId) { stk = { data: null, catId: '', open: {}, suggestions: null, siteId: state.siteId }; $('stk-suggest-box').classList.add('hide'); }
+    try {
+      if (!stk.data || !stk.catId) {
+        // first load: categories + which are on
+        var first = await api('/api/order/stock?' + siteQuery());
+        var cats = first.categories || [];
+        var on = first.category_ids || [];
+        if (!stk.catId || !cats.some(function(c){ return c.id === stk.catId; })) {
+          stk.catId = on[0] || (cats.find(function(c){ return /ham|turkey/i.test(c.name); }) || cats[0] || {}).id || '';
+        }
+      }
+      box.innerHTML = '<p class="notice">Loading…</p>';
+      stk.data = await api('/api/order/stock?' + siteQuery(stk.catId ? 'category_id=' + encodeURIComponent(stk.catId) : ''));
+      renderStock();
+    } catch (e) {
+      box.innerHTML = '<p class="notice">' + esc(e.message || 'Could not load stock') + '</p>';
+    }
+  }
+
+  function renderStock(){
+    var d = stk.data || {};
+    var cats = d.categories || [];
+    var on = d.category_ids || [];
+    var sel = $('stk-cat');
+    sel.innerHTML = cats.map(function(c){
+      return '<option value="' + esc(c.id) + '"' + (c.id === stk.catId ? ' selected' : '') + '>' + esc(c.name) + (on.indexOf(c.id) >= 0 ? ' — stock control on' : '') + '</option>';
+    }).join('');
+    var cat = cats.find(function(c){ return c.id === stk.catId; }) || {};
+    var tracked = stkTracked();
+    var sw = $('stk-switch');
+    sw.classList.toggle('on', tracked);
+    sw.innerHTML =
+      '<strong>' + esc(cat.name || 'Category') + ': stock control ' + (tracked ? 'ON' : 'OFF') + '</strong>' +
+      '<p>' + (tracked
+        ? 'The shop and New order only offer the ' + esc(cat.name || '') + ' pieces you have received. A size opens for sale once every existing order for it has its piece; sizes with nothing left show Sold out.'
+        : 'Ordering for ' + esc(cat.name || 'this category') + ' is not limited yet. You can receive stock and give pieces to orders now, then switch on when you are ready for the shop to sell only what is left.') + '</p>' +
+      '<button class="btn ' + (tracked ? 'ghost' : 'solid') + '" type="button" id="stk-toggle">' + (tracked ? 'Switch off' : 'Switch on') + '</button>';
+
+    var products = (d.products || []).slice().sort(function(a, b){ return (a.sort_order || 0) - (b.sort_order || 0) || String(a.name).localeCompare(String(b.name)); });
+    var pieces = d.pieces || [];
+    var lines = d.lines || [];
+    var tot = { received: 0, allocated: 0, available: 0, waiting: 0 };
+    products.forEach(function(p){
+      var s = p.stock || {};
+      tot.received += s.received || 0; tot.allocated += s.allocated || 0;
+      tot.available += s.available || 0; tot.waiting += s.waiting_pieces || 0;
+    });
+    $('stk-kpis').innerHTML = [
+      ['Received', tot.received], ['Given to orders', tot.allocated], ['In stock', tot.available], ['Orders waiting', tot.waiting]
+    ].map(function(k){ return '<div class="kpi"><p class="l">' + k[0] + '</p><p class="v">' + k[1] + '</p></div>'; }).join('');
+
+    if (!products.length) {
+      $('stk-products').innerHTML = '<p class="empty">No products in this category.</p>';
+      return;
+    }
+    // Available pieces by product (for "other sizes" in the picker)
+    var availBy = {};
+    pieces.forEach(function(x){ if (x.status === 'available') (availBy[x.product_id] = availBy[x.product_id] || []).push(x); });
+    var nameBy = {};
+    products.forEach(function(p){ nameBy[p.id] = p.name; });
+
+    $('stk-products').innerHTML = products.map(function(p){
+      var s = p.stock || {};
+      var mine = pieces.filter(function(x){ return x.product_id === p.id; });
+      var waiting = lines.filter(function(l){ return l.product_id === p.id && l.pieces.length < l.pieces_needed; })
+        .sort(function(a, b){ return String(a.pickup_date || '9999').localeCompare(String(b.pickup_date || '9999')) || String(a.order_created_at || '').localeCompare(String(b.order_created_at || '')); });
+      var shop;
+      if (!tracked) shop = '<span class="stk-tag">Shop not limited</span>';
+      else if (s.waiting_pieces > 0) shop = '<span class="stk-tag warn">Shop: held for ' + s.waiting_pieces + ' waiting</span>';
+      else if (s.available > 0) shop = '<span class="stk-tag good">Shop: ' + s.available + ' for sale</span>';
+      else shop = '<span class="stk-tag bad">Shop: sold out</span>';
+      var h = '<details class="stk-prod" data-stk-prod="' + esc(p.id) + '"' + (stk.open[p.id] ? ' open' : '') + '>';
+      h += '<summary><strong>' + esc(p.name) + (p.active === false ? ' <span class="stk-tag">hidden</span>' : '') + '</strong>' +
+        '<span class="stk-tag">' + (s.received || 0) + ' received</span>' +
+        '<span class="stk-tag">' + (s.allocated || 0) + ' given</span>' +
+        '<span class="stk-tag">' + (s.available || 0) + ' in stock</span>' +
+        (s.waiting_orders ? '<span class="stk-tag warn">' + s.waiting_pieces + ' waiting</span>' : '') + shop + '</summary>';
+      h += '<div class="stk-body">';
+      // Receive
+      h += '<h4>Receive stock</h4><div class="stk-recv">' +
+        '<textarea data-stk-weights="' + esc(p.id) + '" rows="1" placeholder="Weights in kg, e.g. 3.82, 3.65, 3.91"></textarea>' +
+        '<input data-stk-tag="' + esc(p.id) + '" inputmode="numeric" placeholder="First tag # (optional)">' +
+        '<button class="btn solid" type="button" data-stk-act="receive" data-id="' + esc(p.id) + '">Add to stock</button></div>';
+      // Waiting orders
+      h += '<h4>Orders waiting (' + waiting.length + ')</h4>';
+      if (!waiting.length) {
+        h += '<p class="notice">Every open order for this size has its piece.</p>';
+      } else {
+        h += '<div class="stk-scroll"><table class="stk-table"><thead><tr><th>Order</th><th>Customer</th><th>Pickup</th><th>Needs</th><th>Piece</th><th></th></tr></thead><tbody>';
+        waiting.forEach(function(l){
+          var own = (availBy[p.id] || []).slice().sort(function(a, b){ return a.weight_kg - b.weight_kg; });
+          var opts = own.map(function(x){ return '<option value="' + esc(x.id) + '">' + stkKg(x.weight_kg) + (x.tag ? ' · #' + esc(x.tag) : '') + '</option>'; }).join('');
+          var other = '';
+          Object.keys(availBy).forEach(function(pid){
+            if (pid === p.id || !availBy[pid].length) return;
+            other += '<optgroup label="' + esc(nameBy[pid] || 'Other size') + '">' + availBy[pid].map(function(x){
+              return '<option value="' + esc(x.id) + '" data-other="1">' + stkKg(x.weight_kg) + (x.tag ? ' · #' + esc(x.tag) : '') + '</option>';
+            }).join('') + '</optgroup>';
+          });
+          var need = l.pieces_needed - l.pieces.length;
+          h += '<tr><td><a href="#orders" data-stk-order="' + esc(l.order_id) + '">' + esc(l.order_number || '') + '</a></td>' +
+            '<td>' + esc(l.customer_name || '') + '</td><td>' + stkDay(l.pickup_date) + '</td>' +
+            '<td>' + need + (l.pieces.length ? ' more (has ' + l.pieces.map(function(x){ return stkKg(x.weight_kg); }).join(', ') + ')' : '') +
+            (l.requested_weight_kg ? '<br><span class="muted" style="font-size:11px">wants ~' + stkKg(l.requested_weight_kg / l.pieces_needed) + '</span>' : '') + '</td>' +
+            '<td>' + (opts || other ? '<select data-stk-pick="' + esc(l.id) + '"><option value="">Choose…</option>' + opts + other + '</select>' : '<span class="muted">None in stock</span>') + '</td>' +
+            '<td>' + (opts || other ? '<button class="btn" type="button" data-stk-act="allocate" data-item="' + esc(l.id) + '">Give</button>' : '') + '</td></tr>';
+        });
+        h += '</tbody></table></div>';
+      }
+      // In stock
+      var avail = mine.filter(function(x){ return x.status === 'available'; });
+      h += '<h4>In stock (' + avail.length + ')</h4>';
+      h += avail.length ? '<div class="stk-chips">' + avail.map(function(x){
+        return '<span class="stk-chip">' + stkKg(x.weight_kg) + (x.tag ? ' · #' + esc(x.tag) : '') +
+          '<button type="button" data-stk-act="edit" data-id="' + esc(x.id) + '" data-w="' + esc(x.weight_kg) + '" title="Change weight">Edit</button>' +
+          '<button type="button" data-stk-act="writeoff" data-id="' + esc(x.id) + '" title="Damaged / entered twice">Write off</button></span>';
+      }).join('') + '</div>' : '<p class="notice">Nothing in stock.</p>';
+      // Given to orders
+      var given = mine.filter(function(x){ return x.status === 'allocated'; });
+      if (given.length) {
+        h += '<h4>Given to orders (' + given.length + ')</h4><div class="stk-scroll"><table class="stk-table"><tbody>';
+        given.forEach(function(x){
+          h += '<tr><td>' + stkKg(x.weight_kg) + (x.tag ? ' · #' + esc(x.tag) : '') + '</td><td>' + esc(x.order_number || '') + '</td><td>' + esc(x.customer_name || '') + '</td>' +
+            '<td style="text-align:right"><button class="btn ghost" type="button" data-stk-act="edit" data-id="' + esc(x.id) + '" data-w="' + esc(x.weight_kg) + '">Edit weight</button> ' +
+            '<button class="btn ghost" type="button" data-stk-act="release" data-id="' + esc(x.id) + '">Release</button></td></tr>';
+        });
+        h += '</tbody></table></div>';
+      }
+      var off = mine.filter(function(x){ return x.status === 'written_off'; });
+      if (off.length) {
+        h += '<h4>Written off (' + off.length + ')</h4><div class="stk-chips">' + off.map(function(x){
+          return '<span class="stk-chip off">' + stkKg(x.weight_kg) + (x.tag ? ' · #' + esc(x.tag) : '') + '</span><button class="btn ghost" type="button" data-stk-act="undo-writeoff" data-id="' + esc(x.id) + '">Undo</button>';
+        }).join(' ') + '</div>';
+      }
+      h += '</div></details>';
+      return h;
+    }).join('');
+  }
+
+  function renderStockSuggestions(){
+    var box = $('stk-suggest-box');
+    var pairs = stk.suggestions || [];
+    box.classList.remove('hide');
+    if (!pairs.length) {
+      box.innerHTML = '<p class="notice">Nothing to match — either every open order already has its piece, or there is no stock left for the sizes still waiting.</p>';
+      return;
+    }
+    var h = '<div class="card" style="margin:0 0 14px"><div class="toolbar"><h3 style="margin:0;flex:1">Suggested matches (' + pairs.length + ')</h3>' +
+      '<button class="btn solid" type="button" data-stk-act="confirm-suggest">Give selected pieces</button>' +
+      '<button class="btn ghost" type="button" data-stk-act="close-suggest">Cancel</button></div>' +
+      '<div class="stk-scroll"><table class="stk-table"><thead><tr><th><input type="checkbox" checked data-stk-all></th><th>Order</th><th>Customer</th><th>Pickup</th><th>Product</th><th>Piece</th></tr></thead><tbody>';
+    pairs.forEach(function(p, i){
+      h += '<tr><td><input type="checkbox" checked data-stk-pair="' + i + '"></td><td>' + esc(p.order_number || '') + '</td><td>' + esc(p.customer_name || '') + '</td>' +
+        '<td>' + stkDay(p.pickup_date) + '</td><td>' + esc(p.product_name || '') + '</td><td><strong>' + stkKg(p.weight_kg) + '</strong></td></tr>';
+    });
+    h += '</tbody></table></div><p class="notice" style="margin:10px 0 0">Each order line gets its weight and final price from the piece.</p></div>';
+    box.innerHTML = h;
+  }
+
+  async function stockPost(body, okMsg){
+    var out = await api('/api/order/stock', { method: 'POST', body: Object.assign({ site_id: state.siteId }, body) });
+    if (okMsg) toast(okMsg, 'ok');
+    return out;
+  }
+
+  function wireStock(){
+    var view = $('view-stock');
+    if (!view || view.__stkWired) return;
+    view.__stkWired = true;
+    $('stk-cat').addEventListener('change', function(){
+      stk.catId = this.value; stk.suggestions = null; $('stk-suggest-box').classList.add('hide'); loadStock();
+    });
+    $('stk-refresh').addEventListener('click', function(){ loadStock(); });
+    $('stk-suggest').addEventListener('click', async function(){
+      try {
+        var out = await stockPost({ action: 'suggest', category_id: stk.catId });
+        stk.suggestions = out.pairs || [];
+        renderStockSuggestions();
+      } catch (e) { toast(e.message, 'err'); }
+    });
+    view.addEventListener('toggle', function(e){
+      var d = e.target.closest && e.target.closest('[data-stk-prod]');
+      if (d) stk.open[d.getAttribute('data-stk-prod')] = d.open;
+    }, true);
+    view.addEventListener('change', function(e){
+      if (e.target.matches('[data-stk-all]')) {
+        view.querySelectorAll('[data-stk-pair]').forEach(function(c){ c.checked = e.target.checked; });
+      }
+    });
+    view.addEventListener('click', async function(e){
+      var ord = e.target.closest('[data-stk-order]');
+      if (ord && typeof openOrderDetail === 'function') {
+        e.preventDefault();
+        openOrderDetail(ord.getAttribute('data-stk-order'));
+        return;
+      }
+      if (e.target.id === 'stk-toggle') {
+        var on = (stk.data.category_ids || []).slice();
+        var i = on.indexOf(stk.catId);
+        if (i >= 0) on.splice(i, 1);
+        else {
+          if (!window.confirm('Switch on stock control for this category?\n\nThe shop and New order will only offer the pieces you have received. Sizes with orders still waiting, or nothing left, will show Sold out.')) return;
+          on.push(stk.catId);
+        }
+        try { await stockPost({ action: 'set_categories', category_ids: on }, i >= 0 ? 'Stock control switched off' : 'Stock control switched on'); await loadStock(); }
+        catch (err) { toast(err.message, 'err'); }
+        return;
+      }
+      var btn = e.target.closest('[data-stk-act]');
+      if (!btn) return;
+      var act = btn.getAttribute('data-stk-act');
+      var id = btn.getAttribute('data-id');
+      try {
+        if (act === 'receive') {
+          var ta = view.querySelector('[data-stk-weights="' + id + '"]');
+          var tag = view.querySelector('[data-stk-tag="' + id + '"]');
+          if (!ta.value.trim()) { toast('Type the weights first, e.g. 3.82, 3.65', 'err'); return; }
+          btn.disabled = true;
+          var r = await stockPost({ action: 'receive', product_id: id, weights: ta.value, tag_start: tag.value.trim() || null });
+          toast(r.received + ' added to stock', 'ok');
+          stk.open[id] = true;
+        } else if (act === 'allocate') {
+          var itemId = btn.getAttribute('data-item');
+          var sel = view.querySelector('[data-stk-pick="' + itemId + '"]');
+          if (!sel || !sel.value) { toast('Choose a piece first', 'err'); return; }
+          var other = sel.selectedOptions[0] && sel.selectedOptions[0].getAttribute('data-other') === '1';
+          if (other && !window.confirm('That piece is from a different size. Give it to this order anyway? The line keeps its own $/kg.')) return;
+          btn.disabled = true;
+          await stockPost({ action: 'allocate', piece_id: sel.value, order_item_id: itemId, allow_other_product: other }, 'Piece given — weight and price set');
+        } else if (act === 'release') {
+          if (!window.confirm('Put this piece back in stock? The order line goes back to its estimate.')) return;
+          await stockPost({ action: 'release', piece_id: id }, 'Back in stock');
+        } else if (act === 'edit') {
+          var w = window.prompt('Weight in kg', btn.getAttribute('data-w'));
+          if (w == null || !String(w).trim()) return;
+          await stockPost({ action: 'update_piece', piece_id: id, weight_kg: String(w).trim() }, 'Weight updated');
+        } else if (act === 'writeoff') {
+          if (!window.confirm('Write off this piece (damaged, entered twice…)? It will not be offered to anyone.')) return;
+          await stockPost({ action: 'update_piece', piece_id: id, write_off: true }, 'Written off');
+        } else if (act === 'undo-writeoff') {
+          await stockPost({ action: 'update_piece', piece_id: id, write_off: false }, 'Back in stock');
+        } else if (act === 'close-suggest') {
+          stk.suggestions = null; $('stk-suggest-box').classList.add('hide'); return;
+        } else if (act === 'confirm-suggest') {
+          var picks = [];
+          view.querySelectorAll('[data-stk-pair]').forEach(function(c){
+            if (c.checked) {
+              var p = stk.suggestions[Number(c.getAttribute('data-stk-pair'))];
+              if (p) picks.push({ piece_id: p.piece_id, order_item_id: p.order_item_id });
+            }
+          });
+          if (!picks.length) { toast('Nothing selected', 'err'); return; }
+          btn.disabled = true;
+          var res = await stockPost({ action: 'allocate_many', pairs: picks });
+          toast(res.allocated + ' pieces given' + (res.failed && res.failed.length ? ' — ' + res.failed.length + ' could not be (refresh and check)' : ''), res.failed && res.failed.length ? 'err' : 'ok');
+          stk.suggestions = null; $('stk-suggest-box').classList.add('hide');
+        } else {
+          return;
+        }
+        await loadStock();
+      } catch (err) {
+        toast(err.message, 'err');
+        btn.disabled = false;
+      }
+    });
+  }
+  wireStock();
 
   /* ---------- Product Allocation (packing checklist) ---------- */
   async function loadAllocation(){
@@ -9324,7 +9773,8 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
               resolveNoOrderModeFromSettings(sysSettings);
             }).catch(function(){ state.noOrderMode = 'fast'; }),
             loadProductsCache({ includeQuestions: true }),
-            loadPickupWindows()
+            loadPickupWindows(),
+            loadNoStock()
           ]);
         } catch (_e) {}
         if (!state.noSelectedCat) state.noSelectedCat = resolveNoOrderCategoryFromSettings(sysSettings);
@@ -9342,6 +9792,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       else if (v === 'calendar') await loadCalendar();
       else if (v === 'pickup-day') await loadPickupDay();
       else if (v === 'allocation') await loadAllocation();
+      else if (v === 'stock') await loadStock();
       else if (v === 'labels') {
         if ($('lbl-date') && !$('lbl-date').value) {
           $('lbl-date').value = isoDate(new Date());

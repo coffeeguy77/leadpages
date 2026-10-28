@@ -559,6 +559,11 @@ module.exports = async function (req, res) {
           skipped.push({ name: it.product_name, reason: 'unavailable' });
           continue;
         }
+        // Stock-controlled (hams, turkeys…): the customer picks a real piece from what is left.
+        if (require('../../lib/order/stock').isStockProduct(system, product)) {
+          skipped.push({ name: product.name, reason: 'choose_piece', product_id: product.id });
+          continue;
+        }
         lines.push({
           product: product,
           quantity: it.quantity,
