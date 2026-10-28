@@ -1727,6 +1727,53 @@
     return answers;
   };
 
+  /* ---------- Stock-controlled products (hams, turkeys…): pick a real piece ---------- */
+  OrderStorefront.prototype.isStockProduct = function (p) {
+    return !!(p && p.stock && p.stock.tracked);
+  };
+  /** Fresh pieces list after one was taken (bypasses the short catalogue cache). */
+  OrderStorefront.prototype.reloadStock = async function () {
+    try {
+      var fresh = await api('/api/order/storefront?slug=' + encodeURIComponent(this.slug) + '&fresh=1');
+      var byId = {};
+      (fresh.products || []).forEach(function (p) { byId[p.id] = p; });
+      (this.state.catalogue.products || []).forEach(function (p) {
+        if (byId[p.id]) p.stock = byId[p.id].stock || null;
+      });
+    } catch (_e) {}
+    try { await this.refreshCart(); } catch (_e2) {}
+  };
+  /** Pieces still on offer: in stock and not already in this cart. */
+  OrderStorefront.prototype.piecesLeft = function (p) {
+    if (!this.isStockProduct(p) || p.stock.sold_out) return [];
+    var inCart = {};
+    (this.state.items || []).forEach(function (it) {
+      var sp = it.product_snapshot && it.product_snapshot.stock_piece;
+      if (sp && sp.id) inCart[sp.id] = true;
+    });
+    return (p.stock.pieces || []).filter(function (x) { return !inCart[x.id]; });
+  };
+  OrderStorefront.prototype.stockPickerHtml = function (p, where) {
+    var left = this.piecesLeft(p);
+    if (!left.length) return '<p class="lp-oe-soldout">Sold out</p>';
+    var busy = this.state.busy ? ' disabled' : '';
+    var html = '<div class="lp-oe-pieces" role="group" aria-label="Choose yours">';
+    html += '<p class="lp-oe-pieces-h">Choose yours \u2014 exact weight and price</p><div class="lp-oe-pieces-list">';
+    left.forEach(function (x) {
+      html +=
+        '<button type="button" class="lp-oe-piece" data-act="add-piece" data-where="' + esc(where) + '" data-id="' + esc(p.id) + '" data-piece="' + esc(x.id) + '"' + busy + '>' +
+        '<span class="lp-oe-piece-w">' + esc(fmtKg(x.weight_kg)) + '</span>' +
+        (x.price_display ? '<span class="lp-oe-piece-p">' + esc(x.price_display) + '</span>' : '') +
+        '</button>';
+    });
+    html += '</div></div>';
+    return html;
+  };
+  function fmtKg(w) {
+    var n = Math.round(Number(w) * 100) / 100;
+    return (isFinite(n) ? String(n) : String(w)) + ' kg';
+  }
+
   OrderStorefront.prototype.renderFastRow = function (p) {
     var id = p.id;
     var draft = this.state.fastDrafts[id] || {};
@@ -1767,10 +1814,15 @@
     html += '<div class="lp-oe-fast-info">';
     html += '<h3>' + esc(this.displayName(p)) + '</h3>';
     if (pack) html += '<p class="lp-oe-pack">' + esc(pack) + ' pack</p>';
-    if (qtyPrompt) html += '<p class="lp-oe-qty-prompt">' + esc(qtyPrompt) + '</p>';
+    if (qtyPrompt && !this.isStockProduct(p)) html += '<p class="lp-oe-qty-prompt">' + esc(qtyPrompt) + '</p>';
     if (p.short_description) html += '<p class="lp-oe-fast-desc">' + esc(p.short_description) + '</p>';
     html += this.priceHtml(p, 'div');
     html += '</div>';
+    var stockP = this.isStockProduct(p);
+    if (stockP) {
+      needsW = false;
+      showQty = false;
+    }
     html += '<div class="lp-oe-fast-controls">';
     if (showQty) {
       html +=
@@ -1811,17 +1863,20 @@
       '" aria-expanded="' +
       (notesOpen ? 'true' : 'false') +
       '">Notes</button>';
-    html +=
-      '<button type="button" class="lp-oe-fast-add' +
-      (addLabel === 'Choose Options' ? ' needs-options' : '') +
-      '" data-act="add-inline" data-id="' +
-      esc(id) +
-      '"' +
-      (this.state.busy ? ' disabled' : '') +
-      '>' +
-      esc(addLabel) +
-      '</button>';
+    if (!stockP) {
+      html +=
+        '<button type="button" class="lp-oe-fast-add' +
+        (addLabel === 'Choose Options' ? ' needs-options' : '') +
+        '" data-act="add-inline" data-id="' +
+        esc(id) +
+        '"' +
+        (this.state.busy ? ' disabled' : '') +
+        '>' +
+        esc(addLabel) +
+        '</button>';
+    }
     html += '</div></div>';
+    if (stockP) html += '<div class="lp-oe-fast-extra lp-oe-fast-pieces">' + this.stockPickerHtml(p, 'row') + '</div>';
     if (optionsOpen && hasQs) {
       html += '<div class="lp-oe-fast-extra lp-oe-fast-options">';
       html += this.renderQuestionFields(p.questions, draft.answers || {});
@@ -1872,7 +1927,9 @@
       if (pack) html += '<p class="lp-oe-pack">' + esc(pack) + ' pack</p>';
       if (p.short_description) html += '<p>' + esc(p.short_description) + '</p>';
       html += self.priceHtml(p, 'div');
-      html += '<button type="button" data-open="' + esc(p.id) + '">Add</button></div></article>';
+      if (self.isStockProduct(p) && !self.piecesLeft(p).length) html += '<p class="lp-oe-soldout">Sold out</p>';
+      else html += '<button type="button" data-open="' + esc(p.id) + '">' + (self.isStockProduct(p) ? 'Choose' : 'Add') + '</button>';
+      html += '</div></article>';
     });
     if (!products.length) html += '<p class="lp-oe-empty">No products in this category yet.</p>';
     html += '</div>';
@@ -1889,15 +1946,16 @@
   OrderStorefront.prototype.renderProduct = function (p) {
     var pack = this.packLabel(p);
     var qtyPrompt = this.quantityPrompt(p);
-    var needsW = this.needsWeight(p);
-    var showQty = this.showsQuantity(p);
+    var stockP = this.isStockProduct(p);
+    var needsW = stockP ? false : this.needsWeight(p);
+    var showQty = stockP ? false : this.showsQuantity(p);
     var minKg = this.minimumWeightKg(p);
     var defaultKg = this.defaultWeightKg(p);
     var html = '<div class="lp-oe-detail">';
     html += '<button type="button" class="lp-oe-link" data-act="back-shop">← Back</button>';
     html += '<h3>' + esc(p.name) + '</h3>';
     if (pack) html += '<p class="lp-oe-pack">' + esc(pack) + ' pack</p>';
-    if (qtyPrompt) html += '<p class="lp-oe-qty-prompt">' + esc(qtyPrompt) + '</p>';
+    if (qtyPrompt && !stockP) html += '<p class="lp-oe-qty-prompt">' + esc(qtyPrompt) + '</p>';
     html += this.priceHtml(p, 'p');
     if (p.description || p.short_description)
       html += '<p class="lp-oe-desc">' + esc(p.description || p.short_description) + '</p>';
@@ -1933,16 +1991,20 @@
     html += this.renderQuestionFields(p.questions || {}, {});
     html += '</div>';
     var detailAddLabel = fastAddButtonLabel(p.questions || [], {}, false);
-    html +=
-      '<button type="button" class="lp-oe-primary' +
-      (detailAddLabel === 'Choose Options' ? ' needs-options' : '') +
-      '" data-act="add-product" data-id="' +
-      esc(p.id) +
-      '"' +
-      (this.state.busy ? ' disabled' : '') +
-      '>' +
-      (detailAddLabel === 'Add' ? 'Add to cart' : detailAddLabel) +
-      '</button>';
+    if (stockP) {
+      html += this.stockPickerHtml(p, 'detail');
+    } else {
+      html +=
+        '<button type="button" class="lp-oe-primary' +
+        (detailAddLabel === 'Choose Options' ? ' needs-options' : '') +
+        '" data-act="add-product" data-id="' +
+        esc(p.id) +
+        '"' +
+        (this.state.busy ? ' disabled' : '') +
+        '>' +
+        (detailAddLabel === 'Add' ? 'Add to cart' : detailAddLabel) +
+        '</button>';
+    }
     if ((p.related || []).length && this.state.catalogue) {
       var heading =
         (this.state.catalogue.system && this.state.catalogue.system.cross_sell_heading) ||
@@ -2236,7 +2298,10 @@
       var q = Number(it.quantity) || 1;
       html += '<div class="lp-oe-line" data-line="' + esc(it.id) + '">';
       html += '<div class="lp-oe-line-main"><strong>' + esc(snap.name || 'Item') + '</strong>';
-      if (snap.pack_label) {
+      if (snap.stock_piece) {
+        html += '<p class="lp-oe-line-meta">' + esc(fmtKg(snap.stock_piece.weight_kg)) + ' (exact weight)</p>';
+        if (it.stock_unavailable) html += '<p class="lp-oe-line-warn">Sorry \u2014 this one has just been taken. Remove it and choose another.</p>';
+      } else if (snap.pack_label) {
         html += '<p class="lp-oe-line-meta">' + esc(snap.pack_label) + ' pack</p>';
       } else if (it.requested_weight_kg != null) {
         html += '<p class="lp-oe-line-meta">~' + esc(it.requested_weight_kg) + 'kg</p>';
@@ -2255,6 +2320,7 @@
       }
       html += '<p class="lp-oe-price">' + esc(self.linePriceLabel(it)) + '</p></div>';
       html += '<div class="lp-oe-line-actions">';
+      if (!snap.stock_piece) {
       html += '<div class="lp-oe-qty" role="group" aria-label="Quantity">';
       html +=
         '<button type="button" class="lp-oe-qty-btn" data-act="qty-dec" data-id="' +
@@ -2270,6 +2336,7 @@
         (self.state.busy ? ' disabled' : '') +
         ' aria-label="Increase">+</button>';
       html += '</div>';
+      }
       html +=
         '<button type="button" class="lp-oe-remove" data-act="remove" data-id="' +
         esc(it.id) +
@@ -2953,7 +3020,8 @@
             await self.refreshCart();
           }
           var added = (re.added || []).length;
-          var skipped = (re.skipped || []).length;
+          var pick = (re.skipped || []).filter(function (x) { return x.reason === 'choose_piece'; });
+          var skipped = (re.skipped || []).length - pick.length;
           self.state.msg =
             'Added ' +
             added +
@@ -2961,7 +3029,10 @@
             (added === 1 ? '' : 's') +
             ' to your cart' +
             (skipped ? ' (' + skipped + ' unavailable skipped)' : '') +
-            '. Review weights, then checkout.';
+            '. Review weights, then checkout.' +
+            (pick.length
+              ? ' Choose your ' + pick.map(function (x) { return x.name; }).join(', ') + ' from what is in stock.'
+              : '');
         } catch (e) {
           self.state.msg = self.friendlyAuthError((e && e.message) || e);
           self.state.msgKind = 'error';
@@ -3122,6 +3193,61 @@
           self.bumpCartTotalsOptimistic();
           await self.refreshCart();
           self.refreshCartChrome();
+        }
+        return;
+      }
+      if (act === 'add-piece') {
+        var pieceProductId = el.getAttribute('data-id');
+        var pieceId = el.getAttribute('data-piece');
+        var inDetail = el.getAttribute('data-where') === 'detail';
+        var pieceProduct = (self.state.catalogue.products || []).find(function (p) { return p.id === pieceProductId; });
+        if (!pieceProduct) return;
+        var pieceRow = inDetail ? null : el.closest('[data-fast-row]');
+        if (!inDetail) self.captureFastDrafts();
+        var pieceAnswers = inDetail ? self.collectAnswers(self.root) : self.fastRowAnswers(pieceRow, pieceProductId);
+        if (missingRequiredQuestions(pieceProduct.questions || [], pieceAnswers).length) {
+          if (!inDetail) self.state.optionsOpen[pieceProductId] = true;
+          self.state.msg = 'Choose required options for ' + (pieceProduct.name || 'this item') + ' first.';
+          self.render();
+          return;
+        }
+        var pieceDraft = self.state.fastDrafts[pieceProductId] || {};
+        var pieceNotesEl = inDetail ? $('#oe-notes', self.root) : pieceRow && pieceRow.querySelector('[data-fast-notes]');
+        var pieceNotes = (pieceNotesEl && pieceNotesEl.value) || pieceDraft.notes || null;
+        el.disabled = true;
+        self.state.busy = true;
+        try {
+          await self.ensureCart();
+          var outPiece = await api('/api/order/cart', {
+            method: 'POST',
+            body: {
+              action: 'add_item',
+              slug: self.slug,
+              cart_id: self.state.cartId,
+              product_id: pieceProductId,
+              stock_piece_id: pieceId,
+              notes: pieceNotes,
+              answers: pieceAnswers
+            }
+          });
+          self.applyPacked(outPiece);
+          self.state.fastDrafts[pieceProductId] = { qty: '1', kg: '', notes: '', answers: {} };
+          self.state.notesOpen[pieceProductId] = false;
+          self.state.optionsOpen[pieceProductId] = false;
+          if (inDetail) { self.state.view = 'shop'; self.state.selected = null; }
+          self.state.busy = false;
+          self.flashMsg('Added to cart', 'ok');
+          self.render();
+        } catch (pieceErr) {
+          self.state.busy = false;
+          var pieceCode = (pieceErr && pieceErr.data && pieceErr.data.error) || (pieceErr && pieceErr.message);
+          if (pieceCode === 'piece_unavailable' || pieceCode === 'piece_in_cart' || pieceCode === 'choose_piece') {
+            await self.reloadStock();
+            self.flashMsg('Sorry \u2014 that one has just gone. Here is what is left.', 'error');
+          } else {
+            self.flashMsg(pieceCode || 'Could not add to cart', 'error');
+          }
+          self.render();
         }
         return;
       }
@@ -3378,6 +3504,12 @@
             msg = 'That pickup day is full — please choose another.';
           } else if (msg === 'window_at_capacity') {
             msg = 'That pickup time is full — please choose another.';
+          } else if (msg === 'piece_taken' || msg === 'choose_piece') {
+            msg =
+              'Sorry \u2014 ' +
+              (e.data && e.data.product_name ? e.data.product_name + ' you chose' : 'one of the items you chose') +
+              ' has just been taken. Remove it from your order and choose another.';
+            await self.reloadStock();
           }
           self.state.msg = msg;
           self.state.busy = false;
@@ -3611,6 +3743,17 @@
       '.lp-oe-fast-notes-btn{border:1px solid var(--oe-line);background:transparent;color:var(--oe-muted)}',
       '.lp-oe-fast-notes-btn.on{border-color:var(--oe-accent);color:var(--oe-accent);background:color-mix(in srgb,var(--oe-accent) 10%,transparent)}',
       '.lp-oe-fast-add{border:1px solid var(--oe-btn);background:var(--oe-btn);color:var(--oe-btn-text)}',
+      '.lp-oe-fast-pieces{padding-top:2px}',
+      '.lp-oe-pieces{margin:10px 0 0}',
+      '.lp-oe-pieces-h{margin:0 0 8px;font-size:13px;color:var(--oe-muted)}',
+      '.lp-oe-pieces-list{display:flex;flex-wrap:wrap;gap:8px}',
+      '.lp-oe-piece{display:inline-flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:92px;padding:9px 12px;border:1px solid var(--oe-line);border-radius:10px;background:var(--oe-card);color:var(--oe-ink);font:inherit;cursor:pointer;text-align:left}',
+      '.lp-oe-piece:hover,.lp-oe-piece:focus-visible{border-color:var(--oe-accent);outline:none;box-shadow:0 0 0 2px color-mix(in srgb,var(--oe-accent) 22%,transparent)}',
+      '.lp-oe-piece:disabled{opacity:.55;cursor:default}',
+      '.lp-oe-piece-w{font-weight:700;font-variant-numeric:tabular-nums}',
+      '.lp-oe-piece-p{font-size:13px;color:var(--oe-muted);font-variant-numeric:tabular-nums}',
+      '.lp-oe-soldout{display:inline-block;width:max-content;max-width:100%;justify-self:start;align-self:flex-start;margin:8px 0 0;padding:4px 10px;border:1px solid var(--oe-line);border-radius:999px;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--oe-muted)}',
+      '.lp-oe-line-warn{margin:4px 0 0;font-size:13px;color:#b91c1c}',
       '.lp-oe-fast-add.needs-options{background:transparent;color:var(--oe-accent);border-color:color-mix(in srgb,var(--oe-accent) 45%,var(--oe-line))}',
       '.lp-oe-primary.needs-options{background:transparent;color:var(--oe-accent);border-color:color-mix(in srgb,var(--oe-accent) 45%,var(--oe-line))}',
       '.lp-oe-fast-add:disabled{opacity:.55;cursor:not-allowed}',

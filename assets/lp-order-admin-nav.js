@@ -36,6 +36,7 @@
         { id: 'pickup-day', label: 'Pickup Day View', route: 'pickup-day' },
         { id: 'supply', label: 'Production Summary', route: 'supply' },
         { id: 'allocation', label: 'Product Allocation', route: 'allocation' },
+        { id: 'stock', label: 'Stock', route: 'stock' },
         { id: 'labels', label: 'Labels & Stickers', route: 'labels' },
         { id: 'calendar', label: 'Pickup Calendar', route: 'calendar' }
       ]
@@ -78,6 +79,7 @@
     calendar: { view: 'calendar', label: 'Pickup Calendar', group: 'operations' },
     supply: { view: 'supply', label: 'Production Summary', group: 'operations' },
     allocation: { view: 'allocation', label: 'Product Allocation', group: 'operations' },
+    stock: { view: 'stock', label: 'Stock', group: 'operations' },
     labels: { view: 'labels', label: 'Labels & Stickers', group: 'operations' },
     products: { view: 'products', label: 'Products', group: null },
     customers: { view: 'customers', label: 'Customers', group: null },

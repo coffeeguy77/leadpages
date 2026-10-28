@@ -102,7 +102,27 @@ async function loadPortalCatalog(admin, system) {
     if (!byProduct[q.product_id]) byProduct[q.product_id] = [];
     byProduct[q.product_id].push(q);
   });
-  return buildPortalCatalog(categories || [], products || [], byProduct);
+  const catalog = buildPortalCatalog(categories || [], products || [], byProduct);
+  // Stock-controlled products (hams, turkeys…): the real pieces left, each with its price.
+  const stockInfo = await require('../../lib/order/stock').shopAvailability(system, products || []);
+  if (Object.keys(stockInfo).length) {
+    const { mulWeightRate, formatAud } = require('../../lib/order/money');
+    catalog.products = catalog.products.map(function (p) {
+      const info = stockInfo[p.id];
+      if (!info) return p;
+      return Object.assign({}, p, {
+        stock: {
+          tracked: true,
+          sold_out: !info.shop_open || !info.pieces.length,
+          pieces: info.pieces.map(function (x) {
+            const cents = p.pricing_method === 'per_weight' ? mulWeightRate(x.weight_kg, p.price_per_kg_cents) : p.price_cents;
+            return { id: x.id, weight_kg: x.weight_kg, price_cents: cents, price_display: cents != null ? formatAud(cents) : null };
+          })
+        }
+      });
+    });
+  }
+  return catalog;
 }
 
 module.exports = async function (req, res) {
@@ -216,7 +236,9 @@ module.exports = async function (req, res) {
             includes_gst: !!(it.product_snapshot && it.product_snapshot.includes_gst),
             selected_options: formatOptionsForPortal(it, answerRows),
             answers: answersMapFromItem(it, answerRows),
-            pricing_method: it.pricing_method
+            pricing_method: it.pricing_method,
+            // Holds a received ham / turkey: weight is exact, set from the piece.
+            stock_held: !!(it.options_snapshot && it.options_snapshot.stock && it.options_snapshot.stock.pieces)
           };
         }),
         change_history: (changes || []).map(summariseChangeRow),
@@ -312,6 +334,7 @@ module.exports = async function (req, res) {
     return json(res, 200, { ok: true, order: recalc.order });
   } catch (e) {
     console.error('order/portal', e);
-    return json(res, 500, { error: String((e && e.message) || e) });
+    const code = e && (e.code === 400 || e.code === 404 || e.code === 409) ? e.code : 500;
+    return json(res, code, { error: String((e && e.message) || e), product_name: (e && e.product_name) || undefined });
   }
 };

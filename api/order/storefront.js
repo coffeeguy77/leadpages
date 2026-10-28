@@ -139,6 +139,9 @@ module.exports = async function (req, res) {
     const gstSettings = parseGstSettings(system);
     const { specialInfo, specialSummary } = require('../../lib/order/specials');
     const shopTz = system.timezone || 'Australia/Sydney';
+    // Stock-controlled products (hams, turkeys…): the real pieces left, each with its price.
+    const stockInfo = await require('../../lib/order/stock').shopAvailability(system, products || []);
+    const { mulWeightRate } = require('../../lib/order/money');
     const displayProducts = (products || []).map(function (raw) {
       // Live special: the shop sees the special price (as the cart/checkout will charge),
       // plus the normal price and saving for the badge. Special settings stay private.
@@ -181,6 +184,16 @@ module.exports = async function (req, res) {
                     ? 'Approx. ' + formatAud(p.price_cents) + gstSuffix
                     : formatAud(p.price_cents) + gstSuffix,
         includes_gst: hasGst,
+        stock: stockInfo[p.id]
+          ? {
+              tracked: true,
+              sold_out: !stockInfo[p.id].shop_open || !stockInfo[p.id].pieces.length,
+              pieces: stockInfo[p.id].pieces.map(function (x) {
+                var cents = p.pricing_method === 'per_weight' ? mulWeightRate(x.weight_kg, p.price_per_kg_cents) : p.price_cents;
+                return { id: x.id, weight_kg: x.weight_kg, price_cents: cents, price_display: cents != null ? formatAud(cents) : null };
+              })
+            }
+          : null,
         special: sp
           ? Object.assign(specialSummary(sp), {
               was_display: formatAud(sp.was_cents) + (sp.per_kg ? '/kg' : ''),
