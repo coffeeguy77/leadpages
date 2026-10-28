@@ -259,7 +259,8 @@ module.exports = async function (req, res) {
             quantity: body.quantity,
             requested_weight_kg: body.requested_weight_kg,
             notes: body.notes,
-            answers: body.answers
+            answers: body.answers,
+            stock_piece_id: body.stock_piece_id || null
           }
         });
         return json(res, 200, out);
@@ -335,8 +336,19 @@ module.exports = async function (req, res) {
           actor: actor,
           method: body.method,
           amount_cents: body.amount_cents,
-          notes: body.notes
+          notes: body.notes,
+          received_on: body.received_on,
+          payer_name: body.payer_name,
+          bank_reference: body.bank_reference
         });
+        return json(res, 200, out);
+      }
+
+      if (action === 'correct_payment' || action === 'void_payment') {
+        if (!body.payment_id) return json(res, 400, { error: 'payment_id_required' });
+        const mp = require('../../lib/order/manual-payment');
+        const args = Object.assign({}, body, { site_id: siteId, actor: actor });
+        const out = action === 'void_payment' ? await mp.voidInhousePayment(args) : await mp.correctInhousePayment(args);
         return json(res, 200, out);
       }
 

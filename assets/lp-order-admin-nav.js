@@ -65,7 +65,8 @@
         { id: 'settings-store', label: 'Store Configuration', route: 'settings-store' },
         { id: 'messaging', label: 'Messaging', route: 'messaging' },
         { id: 'abandoned', label: 'Abandoned Carts', route: 'abandoned', badge: 'abandoned_carts' },
-        { id: 'import', label: 'Import', route: 'import' }
+        { id: 'import', label: 'Import', route: 'import' },
+        { id: 'wiki', label: 'Help & Wiki', route: 'wiki' }
       ]
     }
   ];
@@ -87,6 +88,7 @@
     messaging: { view: 'messaging', label: 'Messaging', group: 'settings' },
     abandoned: { view: 'abandoned', label: 'Abandoned Carts', group: 'settings' },
     import: { view: 'import', label: 'Import', group: 'settings' },
+    wiki: { view: 'wiki', label: 'Help & Wiki', group: 'settings' },
     'settings-cart': { view: 'settings', label: 'Menu Layouts', group: 'settings', settingsSection: 'menu-layouts' },
     'settings-schedule': { view: 'settings', label: 'Schedule & Opening Hours', group: 'settings', settingsSection: 'schedule' },
     'settings-general': { view: 'settings', label: 'Order Rules', group: 'settings', settingsSection: 'rules' },
