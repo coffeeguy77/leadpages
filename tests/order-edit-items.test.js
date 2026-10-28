@@ -56,5 +56,7 @@ test('orders.html includes edit-order item hooks', function () {
   assert.match(html, /type="hidden" data-om-product-id/);
   assert.match(html, /resolveOmProduct/);
   assert.match(html, /data-remove-item/);
-  assert.match(html, /om-add-item-btn/);
+  // New picker (same rows as New order): per-row Add and stock piece chips
+  assert.match(html, /data-om-add>Add<\/button>/);
+  assert.match(html, /data-om-piece=/);
 });

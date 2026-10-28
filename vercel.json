@@ -438,6 +438,9 @@
     "api/order/import.js": {
       "maxDuration": 60
     },
+    "api/order/wiki.js": {
+      "includeFiles": "docs/order-wiki/**"
+    },
     "api/domain-finder/search.js": {
       "maxDuration": 60
     },

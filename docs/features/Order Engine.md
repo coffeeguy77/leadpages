@@ -190,3 +190,29 @@ order line (`order_items.id`) it is allocated to. Rules live in `lib/order/stock
 - **Order again** skips stock-controlled products (`reason: 'choose_piece'`) — the customer picks again.
 - Staff "add item" in order detail and imports create lines without pieces: they show as waiting on
   the Stock screen.
+
+## Payments ledger, payment tracing, Send order, Other date, order screen redesign, wiki (2026-10-28)
+
+- **Ledger** — `lib/order/payment-ledger.js` + `GET /api/order/payments-ledger` (staff). One line per payment:
+  date received (`meta.received_on` → `paid_at` → `created_at`, shop time zone), method, channel
+  (counter = cash + EFTPOS, remote = Stripe + direct deposit, contra separate), status (received,
+  refund due, refunded, not finished, voided). Stripe payments with no `meta.stripe_account` are flagged as
+  taken on the platform account. Payments screen → **Ledger** tab: range presets incl. AU financial year,
+  method/channel filter, search, sortable columns, totals, CSV of what's on screen. Old Unpaid/Paid tabs kept.
+- **Recording payments** — `recordInhousePayment` now takes `amount_cents`, `received_on`, `payer_name`,
+  `bank_reference` (stored in `order_payments.meta`; no schema change). New `correctInhousePayment` /
+  `voidInhousePayment` (staff-recorded only; deposit paid moves by the difference; audit
+  `payment_corrected` / `payment_voided`). Order API actions `correct_payment`, `void_payment`.
+- **Send order** — order screen button → existing `send_receipt` action with channel (sms / email / both).
+- **Pickup "Other date…"** — New order and order screen list the usual dates plus Other date… (any day).
+  Staff PATCH of `pickup_date` recalculates `effective_cutoff_at` / `editing_state` with the same rule as new
+  orders (`lockTimeForPickup`), unless the order is locked.
+- **Order screen** — full-width sheet: docket on the left (items table with Weigh / Remove, totals),
+  sidebar cards (Status, Send & print, Payments, Customer & pickup, Staff notes, Importance, History).
+  All previous actions kept. Add-product picker reuses New order rows incl. stock pieces
+  (`add_order_item` accepts `stock_piece_id`).
+- **Wiki** — Settings → Help & Wiki. Pages in `docs/order-wiki/*.md` (front matter: title, section, order,
+  summary), served by `GET /api/order/wiki` (staff; bundled via vercel.json includeFiles), rendered by a small
+  safe Markdown renderer with search. Build history pages included.
+- **Data fix** ORD-2026-00012: payment $50 → $150 direct deposit received 14 Oct, pickup 2026-12-07, lock
+  2026-12-04 17:00 AEDT (backup + audit `payment_corrected`).
