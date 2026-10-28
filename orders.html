@@ -3078,7 +3078,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
         '<div class="oanav-tip-host">' +
         '<button type="button" class="oanav-group-head' + (groupActive ? ' on' : '') + '" ' +
         'data-nav-toggle="' + esc(groupId) + '" aria-expanded="' + (isExpanded ? 'true' : 'false') + '" aria-controls="nav-sub-' + esc(groupId) + '">' +
-        '<span class="oanav-ico-wrap">' + navIconHtml(groupId) + '</span>' +
+        '<span class="oanav-ico-wrap">' + navIconHtml(node.icon || groupId) + '</span>' +
         '<span class="oanav-label">' + esc(node.label) + '</span>' + groupBadgeHtml +
         navIconHtml('chevron') +
         '</button><span class="oanav-tip" role="tooltip">' + esc(node.label) + '</span></div>' +

@@ -162,7 +162,7 @@
         return isLeafVisible(c, ctx, node);
       });
       if (!children.length) return;
-      out.push({ id: node.id, label: node.label, group: node.id, children: children });
+      out.push({ id: node.id, label: node.label, group: node.id, icon: node.icon || node.id, children: children });
     });
     return out;
   }
