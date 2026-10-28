@@ -73,3 +73,11 @@ test('orders.html wires accordion navigation', function () {
   assert.doesNotMatch(html, /class="mark"/);
   assert.doesNotMatch(html, /if \(activeParent\) expanded = activeParent/);
 });
+
+test('every top-level menu entry has an icon (Order Operations uses "ops")', function () {
+  const tree = nav.flattenVisibleTree({ paymentsEnabled: true, depositsEnabled: true, isSuper: false });
+  tree.forEach(function (n) { assert.ok(nav.ICONS[n.icon], (n.id || n.route) + ' → ' + n.icon); });
+  const fs = require('fs');
+  const html = fs.readFileSync(require('path').join(__dirname, '..', 'orders.html'), 'utf8');
+  assert.match(html, /navIconHtml\(node\.icon \|\| groupId\)/);
+});
