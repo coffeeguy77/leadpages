@@ -193,7 +193,9 @@ input,select,textarea{
 .prod-opt-card{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--panel,#fff)}
 .prod-opt-card .prod-opt-head{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:10px}
 .prod-opt-card .prod-opt-choices{display:grid;gap:8px}
-.prod-opt-choice{display:grid;grid-template-columns:minmax(0,1fr) 110px auto;gap:8px;align-items:end}
+.prod-opt-choice{display:grid;grid-template-columns:minmax(0,1fr) 110px auto auto;gap:8px;align-items:end}
+.prod-opt-cook{display:inline-flex;align-items:center;gap:6px;font-size:var(--fs-sm);color:var(--ink-soft);white-space:nowrap;padding-bottom:9px}
+.prod-opt-cook input{width:auto;margin:0}
 @media(max-width:720px){.prod-opt-choice{grid-template-columns:1fr}}
 .prod-pack-badge{display:inline-block;margin-left:6px;padding:2px 7px;border-radius:999px;background:var(--accent-soft,#e8f3ef);color:var(--accent);font-size:10.5px;font-weight:700}
 .prod-extra-cats{display:flex;flex-wrap:wrap;gap:8px 14px;padding:10px 12px;border:1px solid var(--line,#e6e2da);border-radius:10px;background:var(--panel-soft,var(--panel,#fff));color:var(--ink);max-height:160px;overflow:auto}
@@ -2077,6 +2079,12 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
               <p class="notice">Fresh meat is usually GST-free. Processed items are typically sold with <strong>GST included</strong> in the shelf price.</p>
               <div class="field"><label>GST applies to products in these categories</label>
                 <div id="set-gst-cats" class="prod-extra-cats"></div>
+              </div>
+              <h4 class="section-title">Cooking rate</h4>
+              <p class="notice">Charged per kg when a customer picks an option marked <strong>“Charge cooking rate”</strong> (set that on the option in Products). Includes GST. Before weighing the customer sees a range, e.g. a 3–4 kg ham: $28.50–$38.00; at 3.6 kg it's $34.20.</p>
+              <div class="field"><label for="set-cook-rate">Cooking rate ($ per kg, inc. GST)</label>
+                <input id="set-cook-rate" type="number" min="0" step="0.01" inputmode="decimal" placeholder="9.50" style="max-width:180px">
+                <span class="field-hint">Leave blank to turn off. Changes apply to new orders and edits; existing order lines keep the rate they were ordered at.</span>
               </div>
             </div>
 
@@ -4022,10 +4030,15 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       html += '<td><strong>' + esc(it.product_name) + '</strong> ' + priceBadge(it) +
         (stockInfo ? ' <span class="badge info">' + (stockInfo.finalised ? 'stock given' : stockInfo.pieces + ' of ' + Number(it.quantity) + ' given') + '</span>' : '') +
         (optTxt ? '<span class="od-line-sub">' + esc(optTxt) + '</span>' : '') +
-        (it.notes ? '<span class="od-line-sub">“' + esc(it.notes) + '”</span>' : '') + '</td>';
+        (it.notes ? '<span class="od-line-sub">“' + esc(it.notes) + '”</span>' : '') +
+        (it.cooking_cents ? '<span class="od-line-sub">Includes cooking ' + esc(formatAud(it.cooking_cents)) + (it.actual_weight_kg == null ? ' (est.)' : '') + '</span>'
+          : (it.est_range && it.est_range.per_kg_extra_high_cents ? '<span class="od-line-sub">Includes cooking est. ' + esc(formatAud(it.est_range.per_kg_extra_low_cents)) + '–' + esc(formatAud(it.est_range.per_kg_extra_high_cents)) + '</span>' : '')) + '</td>';
       html += '<td class="od-r">' + esc(rate) + '</td>';
       html += '<td class="od-r">' + weight + '</td>';
-      html += '<td class="od-r">' + (amount != null ? esc(formatAud(amount)) + (it.price_status === 'estimated' ? '<span class="od-line-sub">estimate</span>' : '') : '<span class="od-muted">TBC</span>') + '</td>';
+      var er = it.line_final_cents == null ? it.est_range : null;
+      html += '<td class="od-r">' + (er
+        ? esc(formatAud(er.low_cents)) + '–' + esc(formatAud(er.high_cents)) + '<span class="od-line-sub">estimate (' + esc(er.low_kg) + '–' + esc(er.high_kg) + ' kg)</span>'
+        : amount != null ? esc(formatAud(amount)) + (it.price_status === 'estimated' ? '<span class="od-line-sub">estimate</span>' : '') : '<span class="od-muted">TBC</span>') + '</td>';
       html += '<td class="od-act">';
       if (needsWeight && it.price_status !== 'final' && !isVoided) {
         html += '<button class="btn ghost od-mini" type="button" data-weigh-toggle="' + esc(it.id) + '">' + (it.price_status === 'finalised' ? 'Re-weigh' : 'Weigh') + '</button>';
@@ -4751,6 +4764,10 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
   function choiceLabelForOption(o){
     if (typeof o === 'string') return o;
     var label = (o && (o.label || o.value)) || '';
+    if (o && o.cooking) {
+      var r = o.per_kg_cents != null ? o.per_kg_cents : state.cookingRateCents;
+      return label + (r ? ' (+' + formatAud(r) + '/kg)' : '');
+    }
     var price = Number(o && o.price_cents) || 0;
     if (price > 0) return label + ' (+' + formatAud(price) + ')';
     return label;
@@ -6158,6 +6175,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     state.products = data.products || [];
     state.categories = data.categories || [];
     if (data.questions) state.productQuestions = data.questions;
+    if (data.cooking_rate_cents !== undefined) state.cookingRateCents = data.cooking_rate_cents;
     state.productsCacheKey = key;
     state.productsCacheAt = now;
     return data;
@@ -7500,14 +7518,25 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     row.className = 'prod-opt-choice';
     var label = typeof o === 'string' ? o : (o.label || o.value || '');
     var price = typeof o === 'object' && o.price_cents != null ? centsToDollarsInput(o.price_cents) : '';
+    var cooking = typeof o === 'object' && o.cooking === true;
+    var rate = state.cookingRateCents;
     row.innerHTML =
       '<div class="field" style="margin:0"><label>Choice</label><input data-oc="label" value="' + esc(label) + '" placeholder="Apricot"></div>' +
-      '<div class="field" style="margin:0"><label>Price adjustment $</label><input data-oc="price" type="number" min="0" step="0.01" value="' + esc(price) + '" placeholder="0.00"></div>' +
+      '<div class="field" style="margin:0"><label>Price adjustment $</label><input data-oc="price" type="number" min="0" step="0.01" value="' + esc(price) + '" placeholder="0.00"' + (cooking ? ' disabled' : '') + '></div>' +
+      '<label class="prod-opt-cook" title="Charge the cooking rate per kg (Settings → Tax & Payments)"><input type="checkbox" data-oc="cooking"' + (cooking ? ' checked' : '') + '> Charge cooking rate' +
+        (rate != null ? ' (' + formatAud(rate) + '/kg)' : '') + '</label>' +
       '<button type="button" class="btn ghost" data-oc-remove aria-label="Delete choice">✕</button>';
     host.appendChild(row);
     row.querySelector('[data-oc-remove]').addEventListener('click', function(){ row.remove(); markProdDirty(); });
     row.querySelectorAll('input').forEach(function(el){
       el.addEventListener('input', markProdDirty);
+    });
+    var cookBox = row.querySelector('[data-oc="cooking"]');
+    if (cookBox) cookBox.addEventListener('change', function(){
+      var pr = row.querySelector('[data-oc="price"]');
+      if (pr) { pr.disabled = cookBox.checked; if (cookBox.checked) pr.value = ''; }
+      if (cookBox.checked && state.cookingRateCents == null) toast('Set the cooking rate in Settings → Tax & Payments', 'err');
+      markProdDirty();
     });
   }
 
@@ -7526,11 +7555,14 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
         var cl = String(((row.querySelector('[data-oc="label"]') || {}).value) || '').trim();
         if (!cl) return;
         var dollars = (row.querySelector('[data-oc="price"]') || {}).value;
-        options.push({
+        var cookEl = row.querySelector('[data-oc="cooking"]');
+        var choice = {
           label: cl,
           value: cl,
           price_cents: dollars !== '' ? dollarsToCents(dollars) : 0
-        });
+        };
+        if (cookEl && cookEl.checked) { choice.cooking = true; choice.price_cents = 0; }
+        options.push(choice);
       });
       out.push({
         key: label.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 40) || ('opt_' + (idx + 1)),
@@ -9027,6 +9059,8 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
         if (dch === 'sms,email') dch = 'email,sms';
         $('set-dep-rem-channels').value = dch === 'sms' || dch === 'email,sms' ? dch : 'email';
       }
+      var cook = (s.settings && s.settings.cooking) || {};
+      if ($('set-cook-rate')) $('set-cook-rate').value = cook.rate_cents_per_kg != null ? centsToDollarsInput(cook.rate_cents_per_kg) : '';
       var pay = (s.settings && s.settings.payments) || {};
       if ($('set-pay-provider')) $('set-pay-provider').value = pay.provider || 'stripe';
       if ($('set-stripe-mode')) $('set-stripe-mode').value = pay.stripe_charge_mode === 'direct' ? 'direct' : 'destination';
@@ -9210,6 +9244,9 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
           settings: Object.assign({}, existing, {
             payments: payments,
             storefront: storefront,
+            cooking: Object.assign({}, existing.cooking || {}, {
+              rate_cents_per_kg: $('set-cook-rate') && $('set-cook-rate').value !== '' ? dollarsToCents($('set-cook-rate').value) : null
+            }),
             gst: {
               enabled: true,
               category_ids: collectGstCategoryIds()

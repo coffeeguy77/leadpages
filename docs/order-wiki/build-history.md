@@ -13,7 +13,14 @@ Earlier months are in **Build history — August & September 2026**.
 
 ## 28 October 2026
 
-### This release (being built now)
+### Evening releases
+
+- **Cooking rate.** A shop-wide **Cooking rate** ($9.50/kg, GST included) in Settings → Tax & Payments. Tick **Charge cooking rate** on any product option (e.g. *Cooked*) and that choice is charged per kg. Before weighing, customers and staff see a range (a 3–4 kg ham: cooking $28.50–$38.00); once weighed it's exact (3.6 kg = $34.20). Items with a size in their name (e.g. *Half 3.5-4*) now show a full price range until weighed.
+- **Fix: option charges kept when weighing.** Weighing a line used to drop flat option charges (e.g. +$9.75 glaze). They now stay on the final price.
+- **Order Operations menu icon** restored (#876).
+- **Dark themes:** the new order screen, Payments ledger, Stock and wiki are readable in every staff theme (#875).
+
+### Payments, order screen and wiki (#874)
 
 - **Payments ledger.** Payments rebuilt as a ledger: Date, Customer, Order, Amount, Method, Status. Click any heading to sort, search box, date range (Today, This week, This month, Last month, This financial year or any dates), totals per method, **Over the counter** (Cash + EFTPOS) vs **Remote** (Stripe + Direct deposit), Contra shown separately, and CSV export for the period. *Why: the accounts person couldn't reconcile the ~$2,500 recorded with the Stripe account — most deposits were EFTPOS, cash or direct deposit, not Stripe.*
 - **Record payment upgraded.** Enter the real amount (not just the $50 default), the date received, and for direct deposits the payer name as it appears on the bank statement and the bank reference — so payments can be traced if there's a dispute. Manual payments can be corrected or voided, and every change is logged.

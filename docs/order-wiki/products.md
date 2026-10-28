@@ -31,6 +31,15 @@ summary: Your catalogue — prices per kg or each, size modes, minimum weights, 
 
 Add choices such as glaze, stuffing or slicing. Each choice can add a price (for example +$5 glaze). Mark an option **required** so the item can't be added without it, or **staff only** for internal choices.
 
+### Cooking (charged per kg)
+
+For a choice like **Cooked**, tick **Charge cooking rate** next to it instead of typing a price. That choice is then charged per kg at the shop's **Cooking rate** (Settings → Tax & Payments, e.g. $9.50/kg, GST included).
+
+- Before the item is weighed the customer sees a range, worked out from the size in the product name. A *HAM – Half 3-4kg* that's cooked: cooking $28.50–$38.00.
+- When you weigh it, the cooking is exact: 3.6 kg × $9.50 = **$34.20**, added to the line's final price.
+- The rate is locked onto each order line when it's ordered — changing the setting later doesn't change existing orders.
+- Tip: put the size range in the product name (e.g. *Half 3.5-4*) so customers see a price range.
+
 ## Categories
 
 - Every product has a main category (Beef, Ham, Turkey…).
