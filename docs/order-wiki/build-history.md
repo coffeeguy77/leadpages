@@ -11,6 +11,14 @@ A dated record of what changed in the ordering system and why, newest first. Num
 
 Earlier months are in **Build history — August & September 2026**.
 
+## 29 October 2026
+
+- **Same product, different options (staff New Order).** After pressing **Add**, a product row shows **+ Another**. That keeps the line in the order and gives a fresh row for the next one — e.g. two whole chickens, one Apricot and one Italian stuffing, both boned and rolled. Each line shows in the cart and can be removed on its own (#878). *Why: staff couldn't add a second chicken with a different stuffing — the row just said "Added".* The customer shop already allowed this.
+- **Options shown once.** The staff order screen listed every option twice (e.g. "porchetta seasoning · seasoned: porchetta seasoning"). Now one line per item: *Seasoned: porchetta seasoning* (#879). A choice named like its question (e.g. *Boned and Rolled*) shows once everywhere.
+- **Customer copy.** **Print customer copy** on every order (Send & print) prints the customer's own order page to hand over the counter — on A4 or an 80mm receipt printer. Shows pickup, items with options, $/kg, prices, what's been paid, the total or balance, and a QR code to open the order online.
+- **Kg prices only setting.** Settings → Tax & Payments → **Weighed item prices**. Choose *Kg price only* and items sold by the kg show just their $/kg (e.g. $19.70/kg · priced when weighed) instead of an estimate, in the shop, on the customer's order page, on prints and on staff screens. Display only: deposits and totals don't change.
+- **Catalogue.** Stuffing (Apricot / Traditional / Italian) added to chicken breast and thigh fillets, turkey buffs and turkey fillets. *HAM - Whole 10* glaze renamed from "Gazing" to **Glazing** and charged +$9.75 like the other hams.
+
 ## 28 October 2026
 
 ### Evening releases

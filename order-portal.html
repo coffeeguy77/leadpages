@@ -694,6 +694,7 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
       var rate = it.unit_price_cents != null && it.unit_price_cents > 0 ? money(it.unit_price_cents) + (perKg ? '' : ' ea') : '';
       var er = it.est_range;
       var amt = it.line_final_cents != null ? money(it.line_final_cents)
+        : it.kg_only_rate ? '<span class="dk-tbc">Priced when weighed</span>'
         : er ? '<span class="dk-tbc">est.</span> '+money(er.low_cents)+'–'+money(er.high_cents)
         : (it.price_status==='tbc'||it.price_status==='quote_required') ? '<span class="dk-tbc" title="Priced once weighed">TBC</span>'
         : it.line_known_cents != null ? money(it.line_known_cents)+(it.price_status==='estimated'?' <span class="dk-tbc">est.</span>':'')
@@ -799,8 +800,8 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
       html += '<div class="item" data-i="'+idx+'" data-item-id="'+esc(it.id)+'"><h3>'+esc(it.product_name)+'</h3>';
       if(!data.can_edit) html += renderOptionsDisplay(it);
       html += '<p>Qty '+esc(it.quantity)+(it.requested_weight_kg!=null?(' · approx '+esc(it.requested_weight_kg)+' kg'):'')+(it.actual_weight_kg!=null?(' · actual '+esc(it.actual_weight_kg)+' kg'):'')+'</p>';
-      var price = it.line_final_cents!=null?money(it.line_final_cents):(it.price_status==='tbc'||it.price_status==='quote_required'?'Price TBC':(it.line_known_cents!=null?money(it.line_known_cents):'—'));
-      html += '<p style="margin-top:4px"><strong>'+price+'</strong>'+(it.price_status==='estimated'?' <span class="badge b-tbc">Est.</span>':'')+(it.includes_gst?' <span class="badge b-open">inc. GST</span>':'')+'</p>';
+      var price = it.line_final_cents!=null?money(it.line_final_cents):(it.kg_only_rate&&it.unit_price_cents!=null?money(it.unit_price_cents)+'/kg · priced when weighed':(it.price_status==='tbc'||it.price_status==='quote_required'?'Price TBC':(it.line_known_cents!=null?money(it.line_known_cents):'—')));
+      html += '<p style="margin-top:4px"><strong>'+price+'</strong>'+(it.price_status==='estimated'&&!it.kg_only_rate?' <span class="badge b-tbc">Est.</span>':'')+(it.includes_gst?' <span class="badge b-open">inc. GST</span>':'')+'</p>';
       if(data.can_edit){
         html += renderOptionEditors(it, data.catalog);
         if(it.stock_held){

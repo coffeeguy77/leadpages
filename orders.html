@@ -2088,6 +2088,15 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
                 <input id="set-cook-rate" type="number" min="0" step="0.01" inputmode="decimal" placeholder="9.50" style="max-width:180px">
                 <span class="field-hint">Leave blank to turn off. Changes apply to new orders and edits; existing order lines keep the rate they were ordered at.</span>
               </div>
+              <h4 class="section-title">Weighed item prices</h4>
+              <p class="notice">How items sold by the kg are priced before they're weighed — in the shop, on the customer's order page, on prints and on staff screens.</p>
+              <div class="field"><label for="set-kg-only">Before weighing, show</label>
+                <select id="set-kg-only" style="max-width:360px">
+                  <option value="0">Estimated price (e.g. 3–4 kg at $20/kg: $60.00–$80.00)</option>
+                  <option value="1">Kg price only (e.g. $20.00/kg · priced when weighed)</option>
+                </select>
+                <span class="field-hint">Display only — deposits and totals work the same either way. Weighed and fixed-price items always show their price.</span>
+              </div>
             </div>
 
             <button class="btn solid" type="submit" id="settings-save">Save settings</button>
@@ -2765,6 +2774,8 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     var st = orderOrItem.price_status;
     if (!st && orderOrItem.has_unknown_prices) st = 'tbc';
     if (!st) st = 'known';
+    // "Kg prices only": an unweighed line isn't an estimate to staff either.
+    if (orderOrItem.kg_only_rate) return '<span class="badge warn">when weighed</span>';
     var cls = st === 'final' || st === 'known' ? 'ok' : (st === 'tbc' || st === 'pending_weight' ? 'warn' : 'muted');
     var label = st === 'tbc' || orderOrItem.has_unknown_prices ? 'TBC' : String(st).replace(/_/g, ' ');
     return '<span class="badge ' + cls + '">' + esc(label) + '</span>';
@@ -4052,7 +4063,9 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       html += '<td class="od-r">' + esc(rate) + '</td>';
       html += '<td class="od-r">' + weight + '</td>';
       var er = it.line_final_cents == null ? it.est_range : null;
-      html += '<td class="od-r">' + (er
+      html += '<td class="od-r">' + (it.kg_only_rate
+        ? '<span class="od-muted">when weighed</span>'
+        : er
         ? esc(formatAud(er.low_cents)) + '–' + esc(formatAud(er.high_cents)) + '<span class="od-line-sub">estimate (' + esc(er.low_kg) + '–' + esc(er.high_kg) + ' kg)</span>'
         : amount != null ? esc(formatAud(amount)) + (it.price_status === 'estimated' ? '<span class="od-line-sub">estimate</span>' : '') : '<span class="od-muted">TBC</span>') + '</td>';
       html += '<td class="od-act">';
@@ -4077,7 +4090,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     html += '</table></div>';
 
     var known = display.known_subtotal || formatAud(o.known_subtotal_cents);
-    var est = o.estimated_subtotal_cents != null && o.estimated_subtotal_cents !== o.known_subtotal_cents ? formatAud(o.estimated_subtotal_cents) : null;
+    var est = !display.kg_prices_only && o.estimated_subtotal_cents != null && o.estimated_subtotal_cents !== o.known_subtotal_cents ? formatAud(o.estimated_subtotal_cents) : null;
     html += '<div class="od-totals">';
     html += '<div class="od-tot-row"><span>' + (o.price_status === 'finalised' ? 'Order total' : 'Known so far') + '</span><strong>' + esc(o.final_subtotal_cents != null ? formatAud(o.final_subtotal_cents) : known) + '</strong></div>';
     if (est) html += '<div class="od-tot-row"><span>Estimated total</span><strong>' + esc(est) + '</strong></div>';
@@ -4122,6 +4135,10 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     html += '<div class="od-send"><select id="om-send-channel" aria-label="Send by"><option value="both">SMS + email</option><option value="sms">SMS</option><option value="email">Email</option></select>' +
       '<button class="btn solid" type="button" data-act="send-order">Send order</button></div>';
     html += '<p class="od-note">Sends the customer a link to their order — they can view or print it (shows deposit paid) to bring in.</p>';
+    html += '<div class="od-btns od-copy-btns">' +
+      '<button class="btn solid" type="button" data-print="customer_copy" data-size="a4" data-airprint="1">Print customer copy</button>' +
+      '<button class="btn ghost" type="button" data-print="customer_copy" data-size="80mm" data-airprint="1">Customer copy · 80mm docket</button></div>';
+    html += '<p class="od-note">The customer’s own order page on paper, to hand over the counter.</p>';
     html += '<div class="od-btns">';
     html += '<button class="btn ghost" type="button" data-print="receipt">Print receipt</button>';
     html += '<button class="btn ghost" type="button" data-print="slip">Print packing slip</button>';
@@ -4409,7 +4426,8 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     $('om-body').querySelectorAll('[data-print]').forEach(function(btn){
       btn.addEventListener('click', function(){
         openPrint(
-          'order_id=' + encodeURIComponent(o.id) + '&format=' + encodeURIComponent(btn.getAttribute('data-print')),
+          'order_id=' + encodeURIComponent(o.id) + '&format=' + encodeURIComponent(btn.getAttribute('data-print')) +
+            (btn.getAttribute('data-size') ? '&size=' + encodeURIComponent(btn.getAttribute('data-size')) : ''),
           btn.getAttribute('data-airprint') === '1'
         );
       });
@@ -9142,6 +9160,8 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       }
       var cook = (s.settings && s.settings.cooking) || {};
       if ($('set-cook-rate')) $('set-cook-rate').value = cook.rate_cents_per_kg != null ? centsToDollarsInput(cook.rate_cents_per_kg) : '';
+      var priceDisp = (s.settings && s.settings.price_display) || {};
+      if ($('set-kg-only')) $('set-kg-only').value = priceDisp.kg_only === true ? '1' : '0';
       var pay = (s.settings && s.settings.payments) || {};
       if ($('set-pay-provider')) $('set-pay-provider').value = pay.provider || 'stripe';
       if ($('set-stripe-mode')) $('set-stripe-mode').value = pay.stripe_charge_mode === 'direct' ? 'direct' : 'destination';
@@ -9327,6 +9347,9 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
             storefront: storefront,
             cooking: Object.assign({}, existing.cooking || {}, {
               rate_cents_per_kg: $('set-cook-rate') && $('set-cook-rate').value !== '' ? dollarsToCents($('set-cook-rate').value) : null
+            }),
+            price_display: Object.assign({}, existing.price_display || {}, {
+              kg_only: $('set-kg-only') ? $('set-kg-only').value === '1' : !!(existing.price_display && existing.price_display.kg_only)
             }),
             gst: {
               enabled: true,

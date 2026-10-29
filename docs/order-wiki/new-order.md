@@ -21,6 +21,16 @@ New Order has three steps down the left: **Add Products → Customer & Pickup �
    - **Notes** for line notes ("cut thin", "no fat").
 3. Press **Add**. The row turns green and the item appears in the cart.
 
+### The same product with different options
+
+Two whole chickens, one with Apricot stuffing and one with Italian, both boned and rolled:
+
+1. Set up the first chicken (options, qty) and press **Add**.
+2. Press **+ Another** on the same row. The first chicken stays in the cart and the row clears for the next one.
+3. Choose the next options and press **Add** again. Repeat as often as you need.
+
+Each one is its own line in the cart (remove any with ✕) and its own line on the order.
+
 ### Stock items (hams, turkeys…)
 
 If the category has **stock control** switched on (see **Stock**), you don't type a quantity. Instead the row shows the actual pieces in stock — for example **4.78 kg #4 · $103.01**. Tap a piece to pick it (tap again to unpick). Pick two pieces for two hams.

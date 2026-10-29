@@ -2045,6 +2045,8 @@
   };
 
   OrderStorefront.prototype.linePriceLabel = function (it) {
+    // Shop set to "kg prices only": a line not weighed yet shows its $/kg rate, no estimate.
+    if (it.kg_only_rate && it.unit_price_cents != null) return money(it.unit_price_cents) + '/kg · priced when weighed';
     // Not weighed yet but the size is known (e.g. 3.5–4 kg): show the range, incl. cooking.
     if (it.est_range) return 'Est. ' + money(it.est_range.low_cents) + '–' + money(it.est_range.high_cents);
     if (it.price_status === 'tbc' || it.price_status === 'quote_required') return 'Price TBC';
@@ -2375,7 +2377,9 @@
         '<div class="row"><span>Known items</span><strong>' + esc(knownLbl) + '</strong></div>';
     }
     if (this.state.cart && this.state.cart.has_unknown_prices)
-      html += '<div class="row"><span>Other items</span><strong>Price TBC</strong></div>';
+      html += (this.state.display && this.state.display.kg_prices_only)
+        ? '<div class="row"><span>Weighed items</span><strong>Priced when weighed</strong></div>'
+        : '<div class="row"><span>Other items</span><strong>Price TBC</strong></div>';
     html +=
       '<div class="row emph"><span>Deposit due upon placement</span><strong>' +
       esc((this.state.display && this.state.display.deposit) || '—') +
