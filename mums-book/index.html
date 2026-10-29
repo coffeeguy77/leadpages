@@ -271,7 +271,7 @@ h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.022em;line-height:1.15}
 @media(max-width:620px){.g2,.g3{grid-template-columns:1fr}}
 .edsec{font-size:18px;font-weight:700;margin:26px 0 12px}
 .ingrow,.steprow{display:grid;align-items:start;gap:8px;margin-bottom:8px}
-.ingrow{grid-template-columns:22px 78px 92px minmax(0,1fr) 32px}
+.ingrow{grid-template-columns:22px 88px 94px minmax(0,1fr) 32px}
 .steprow{grid-template-columns:26px minmax(0,.78fr) minmax(0,1.3fr) 32px}
 @media(max-width:620px){
   .ingrow{grid-template-columns:22px 1fr 1fr 32px}
@@ -280,7 +280,7 @@ h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.022em;line-height:1.15}
   .steprow .step-body{grid-column:2/3}
 }
 .rowhead{display:grid;gap:8px;font-size:11.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:7px}
-.rowhead.ing{grid-template-columns:22px 78px 92px minmax(0,1fr) 32px}
+.rowhead.ing{grid-template-columns:22px 88px 94px minmax(0,1fr) 32px}
 .rowhead.stp2{grid-template-columns:26px minmax(0,.78fr) minmax(0,1.3fr) 32px}
 @media(max-width:620px){.rowhead{display:none}}
 .handle{width:22px;height:38px;display:grid;place-items:center;color:#C2BFB7;cursor:grab;border-radius:6px;font-size:15px}
@@ -292,6 +292,17 @@ h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.022em;line-height:1.15}
 .addrow{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;font-weight:600;color:var(--accent);padding:9px 14px;
   border-radius:999px;border:1px dashed rgba(239,74,60,.4);margin-top:6px;transition:.16s var(--ease)}
 .addrow:hover{background:var(--accent-soft);border-style:solid}
+.fracbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px}
+.fracbtn{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--ink-2);
+  padding:7px 13px;border:1px solid var(--line);border-radius:999px;background:#fff;transition:.14s var(--ease)}
+.fracbtn:hover{border-color:var(--ink);color:var(--ink)}
+.fracbtn.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.fracbtn .g{font-size:15px;line-height:1}
+.fracchips{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.fchip{min-width:36px;height:33px;padding:0 7px;display:grid;place-items:center;font-size:16px;color:var(--ink-2);
+  border:1px solid var(--line);border-radius:8px;background:#fff;transition:.14s var(--ease)}
+.fchip:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.frachint{font-size:12.5px;color:var(--muted)}
 .dragging{opacity:.4}
 .dragover{box-shadow:0 -2px 0 var(--accent)}
 .noteline{display:flex;align-items:center;gap:9px;margin:26px 0 8px}
@@ -427,10 +438,23 @@ function go(v,id){S.view=v;S.id=id||null;S.err="";window.scrollTo({top:0,behavio
    SHARED RECIPE RENDERER — one component for her pages, personal
    recipes and the editor preview.
    ==================================================================== */
+/* ---- fractions: 1 1/4 reads as 1¼ ---- */
+const FRAC={"1/2":"½","1/3":"⅓","2/3":"⅔","1/4":"¼","3/4":"¾","1/5":"⅕","2/5":"⅖","3/5":"⅗","4/5":"⅘",
+            "1/6":"⅙","5/6":"⅚","1/8":"⅛","3/8":"⅜","5/8":"⅝","7/8":"⅞","1/7":"⅐","1/9":"⅑","1/10":"⅒"};
+const FRAC_CHIPS=["½","⅓","⅔","¼","¾","⅛","⅜","⅝","⅞","⅙","⅕"];
+function prettyFrac(s){
+  if(typeof s!=="string"||s.indexOf("/")<0)return s;
+  return s
+    // whole number + space + fraction:  1 1/4 -> 1¼
+    .replace(/(^|[^\d])(\d+)[  ]+(\d+\/\d+)(?!\d)/g,(m,p,w,f)=>FRAC[f]?p+w+FRAC[f]:m)
+    // bare fraction: 1/4 -> ¼   (leaves 50/50 and 1/16 alone — it's a lookup, not a pattern)
+    .replace(/(^|[^\d\/])(\d+\/\d+)(?!\d)/g,(m,p,f)=>FRAC[f]?p+FRAC[f]:m);
+}
+
 function ingText(i){
-  if(typeof i==="string")return i;
+  if(typeof i==="string")return prettyFrac(i);
   if(!i)return "";
-  return [i.qty,i.unit,i.name].filter(x=>String(x||"").trim()).join(" ").trim();
+  return prettyFrac([i.qty,i.unit,i.name].filter(x=>String(x||"").trim()).join(" ").trim());
 }
 function normalise(r){
   // accepts either {group,items:[string|{qty,unit,name}]} or a flat editor list
@@ -764,7 +788,7 @@ function vRecipe(){
 /* ---------- editor ---------- */
 function blankEd(){
   return {title:"",author:(S.profile&&S.profile.name)||"",sub:"",section:"ours",book_page:"",
-    temp_c:"",time_value:"",time_unit:"mins",serves:"",note:"",image:"",rot:0,
+    temp_c:"",time_value:"",time_unit:"mins",serves:"",note:"",image:"",rot:0,showFrac:false,
     ings:[{qty:"",unit:"",name:""},{qty:"",unit:"",name:""},{qty:"",unit:"",name:""}],
     steps:[{title:"",body:""},{title:"",body:""},{title:"",body:""}]};
 }
@@ -816,6 +840,13 @@ function vCreate(){
         </div>
 
         <h3 class="edsec">Ingredients</h3>
+        <div class="fracbar">
+          <button class="fracbtn ${e.showFrac?"on":""}" data-act="frac-toggle" aria-expanded="${e.showFrac?"true":"false"}">
+            <span class="g">½</span> Fractions</button>
+          ${e.showFrac
+            ? `<div class="fracchips">${FRAC_CHIPS.map(f=>`<button class="fchip" data-frac="${f}" aria-label="Insert ${f}">${f}</button>`).join("")}</div>`
+            : `<span class="frachint">Type <b>1 1/4</b> and it becomes <b>1¼</b> on its own.</span>`}
+        </div>
         <div class="rowhead ing"><span></span><span>Qty</span><span>Unit</span><span>Ingredient</span><span></span></div>
         <div id="inglist">${e.ings.map((i,n)=>`<div class="ingrow" draggable="true" data-row="ing" data-i="${n}">
           <button class="handle" data-drag="ing" data-i="${n}" aria-label="Reorder — use arrow keys">${ic("grip")}</button>
@@ -951,9 +982,25 @@ function openIndexAtPage(page){
   go("contents");
 }
 
+/* keep the chip palette from stealing focus off the quantity field */
+document.addEventListener("mousedown",e=>{if(e.target.closest("[data-frac]"))e.preventDefault()});
+document.addEventListener("focusin",e=>{
+  const el=e.target;
+  if(el&&el.dataset&&el.dataset.ing==="qty")S.lastQty=+el.dataset.i;
+});
+
 document.addEventListener("click",async ev=>{
-  const t=ev.target.closest("[data-nav],[data-open],[data-filter],[data-idxfilter],[data-act],[data-tick],[data-zoom],[data-search],[data-photo],[data-page],[data-delrow],#a-go,#a-swap");
+  const t=ev.target.closest("[data-nav],[data-open],[data-filter],[data-idxfilter],[data-act],[data-tick],[data-zoom],[data-search],[data-photo],[data-page],[data-delrow],[data-frac],#a-go,#a-swap");
   if(!t)return;const d=t.dataset;
+  if(d.frac){
+    if(!S.ed)return;
+    const i=(S.lastQty!=null&&S.ed.ings[S.lastQty])?S.lastQty:0;
+    S.ed.ings[i].qty=(S.ed.ings[i].qty||"")+d.frac;
+    render();
+    setTimeout(()=>{const n=document.querySelector(`[data-ing="qty"][data-i="${i}"]`);
+      if(n){n.focus();n.setSelectionRange(n.value.length,n.value.length)}},0);
+    return;
+  }
   if(d.page){ev.stopPropagation();return openIndexAtPage(d.page)}
   if(d.nav){ev.preventDefault();if(d.nav==="create"&&!S.ed)S.ed=blankEd();return go(d.nav)}
   if(d.open)return go("recipe",d.open);
@@ -978,6 +1025,7 @@ document.addEventListener("click",async ev=>{
     case "cook-prev":S.cook.step=Math.max(0,S.cook.step-1);return render();
     case "cook-next":S.cook.step++;return render();
     case "cook-done":{S.cook.on=false;keepAwake(false);const r=S.recipes.find(x=>String(x.id)===String(S.id));if(r)await logCook(r);return}
+    case "frac-toggle":S.ed.showFrac=!S.ed.showFrac;return render();
     case "add-ing":S.ed.ings.push({qty:"",unit:"",name:""});return render();
     case "add-step":S.ed.steps.push({title:"",body:""});return render();
     case "img-rotate":S.ed.rot=((S.ed.rot||0)+90)%360;
@@ -1002,7 +1050,20 @@ document.addEventListener("input",ev=>{
   }
   if(!S.ed)return;
   if(el.dataset.ed!==undefined){S.ed[el.dataset.ed]=el.value;return schedulePreview()}
-  if(el.dataset.ing!==undefined){S.ed.ings[+el.dataset.i][el.dataset.ing]=el.value;return schedulePreview()}
+  if(el.dataset.ing!==undefined){
+    let v=el.value;
+    if(el.dataset.ing==="qty"){
+      const pv=prettyFrac(v);
+      if(pv!==v){
+        const pos=el.selectionStart;
+        const newPos=prettyFrac(v.slice(0,pos)).length;
+        el.value=v=pv;
+        try{el.setSelectionRange(newPos,newPos)}catch(x){}
+      }
+    }
+    S.ed.ings[+el.dataset.i][el.dataset.ing]=v;
+    return schedulePreview();
+  }
   if(el.dataset.step!==undefined){S.ed.steps[+el.dataset.i][el.dataset.step]=el.value;return schedulePreview()}
 });
 document.addEventListener("change",async ev=>{
