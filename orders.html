@@ -3740,14 +3740,27 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
   function formatItemOptions(item, data){
     var snap = item.product_snapshot || {};
     var sel = snap.selected_options || (item.options_snapshot && item.options_snapshot.selected) || [];
+    // One entry per option, on one line: "Stuffings: Apricot · Boned and Rolled".
+    // Selected options and stored answers describe the same choices, so each key is shown once.
     var bits = [];
+    var seen = {};
+    function pushBit(key, question, label){
+      label = label == null ? '' : String(label).trim();
+      if (!label) return;
+      var k = String(key || question || label).toLowerCase();
+      if (seen[k]) return;
+      seen[k] = true;
+      var q = question == null ? '' : String(question).trim();
+      if (!q || q.toLowerCase() === label.toLowerCase()) bits.push(label);
+      else bits.push(q.charAt(0).toUpperCase() + q.slice(1) + ': ' + label);
+    }
     if (Array.isArray(sel)) {
-      sel.forEach(function(o){ if (o && o.label) bits.push(o.label); });
+      sel.forEach(function(o){ if (o && o.label) pushBit(o.key, o.question, o.label); });
     }
     answersForItem(item.id, data).forEach(function(a){
       var v = a.value;
-      if (v && typeof v === 'object' && v.label) bits.push(a.question_label + ': ' + v.label);
-      else if (v != null && v !== '') bits.push(a.question_label + ': ' + String(v));
+      if (v && typeof v === 'object' && v.label) pushBit(a.question_key, a.question_label, v.label);
+      else if (v != null && v !== '' && typeof v !== 'object') pushBit(a.question_key, a.question_label, String(v));
     });
     return bits.length ? bits.join(' · ') : '';
   }
