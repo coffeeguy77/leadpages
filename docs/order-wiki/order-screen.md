@@ -39,7 +39,7 @@ Stock items (hams, turkeys) given a piece on the Stock screen are already weighe
 | Card | What you can do |
 |---|---|
 | **Status** | The status and lock countdown. **Lock**, **Mark ready**, **Mark collected**, **Mark completed**, **Void order** / **Restore order**. |
-| **Send & print** | **Send order** — choose SMS + email, SMS or Email, then send the customer a link to their order. **Print receipt**, **Print packing slip**, **Print order label**, **Print item stickers**, **Copy to new order**. |
+| **Send & print** | **Send order** — choose SMS + email, SMS or Email, then send the customer a link to their order. **Print customer copy** (A4) or **Customer copy · 80mm docket**, **Print receipt**, **Print packing slip**, **Print order label**, **Print item stickers**, **Copy to new order**. |
 | **Payments** | Deposit required and paid, and every payment on this order (amount, method, date, payer, reference, status). **Record payment**, **Correct** / **Void** a manual payment, **Send deposit link**, **Checkout deposit**. |
 | **Customer & pickup** | Customer name (first/last), phone, email, **Pickup date** (the list, or **Other date…** for any day), customer notes. Press **Save changes**. Changing the pickup date recalculates when the order locks. |
 | **Staff notes** | Notes only staff can see. **Save staff notes**. |
@@ -52,6 +52,11 @@ Stock items (hams, turkeys) given a piece on the Stock screen are already weighe
 1. Open the order.
 2. In **Payments**, press **Record payment** → method **Direct deposit** → enter the amount received (for example $150), the date it arrived, the payer name as it shows on your bank statement and the bank reference.
 3. In **Send & print**, choose how to send (SMS + email, SMS or Email) and press **Send order**. (Or leave *Send the customer their order* ticked when recording the payment.) Their order page now says "Deposit $150 paid" and has a **Print** button.
+
+**Hand a customer their copy over the counter**
+1. Open the order.
+2. In **Send & print**, press **Print customer copy** (A4 printer or iPad AirPrint) or **Customer copy · 80mm docket** (receipt printer).
+3. The print dialog opens. The copy is the same as the customer's own order page: pickup, items with their options, prices, what they've paid and the balance, plus a QR code they can scan to see the order online.
 
 **Change a pickup to a day outside the normal range**
 1. In **Customer & pickup**, set **Pickup date** to **Other date…** and pick the date.

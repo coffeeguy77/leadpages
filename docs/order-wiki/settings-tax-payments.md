@@ -19,6 +19,14 @@ The price per kg charged when a customer chooses an option marked **Charge cooki
 - Leave it blank to stop charging for cooking.
 - Changing it only affects new orders and edits; existing order lines keep the rate they were ordered at.
 
+## Weighed item prices
+
+What customers and staff see for items sold by the kg before they're weighed.
+
+- **Estimated price** (default) — a range from the size in the product name, e.g. a 3–4 kg item at $20/kg shows $60.00–$80.00; with a weight asked for, an estimate for that weight.
+- **Kg price only** — just the $/kg, e.g. "$20.00/kg · priced when weighed". Applies in the shop, on the customer's order page, on receipts and customer copies, and on staff screens.
+- Display only: deposits and totals are worked out the same way either way. Weighed items and fixed-price items always show their price.
+
 ## Payment rule (deposit)
 
 - **None / pay later**, **Fixed deposit** (for example $50 per order), **Percentage deposit**, **Full payment**, **Quote first**.

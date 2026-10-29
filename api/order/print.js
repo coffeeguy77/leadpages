@@ -131,6 +131,7 @@ module.exports = async function (req, res) {
         .eq('id', tokenRow.site_id)
         .maybeSingle();
       const fmt = normaliseFormat(format, true);
+      const { data: tokSystem } = await admin.from('order_systems').select('*').eq('id', loaded.order.order_system_id).maybeSingle();
       return sendHtml(
         res,
         200,
@@ -138,7 +139,7 @@ module.exports = async function (req, res) {
           format: fmt,
           business: site || {},
           order: loaded.order,
-          items: loaded.items,
+          items: require('../../lib/order/price-display').applyKgOnly(tokSystem, loaded.items),
           autoprint: autoprint
         })
       );
@@ -152,8 +153,54 @@ module.exports = async function (req, res) {
       return sendHtml(res, access.code, buildPrintDocument({ format: 'slip', order: { order_number: 'Access denied' }, items: [] }));
     }
     const system = await ensureOrderSystem(siteId);
-    const fmt = normaliseFormat(format, false);
     const business = access.site || {};
+
+    // Customer copy: the customer's own order page, printed over the counter (A4 or 80mm docket).
+    if (String(format).toLowerCase() === 'customer_copy') {
+      if (!orderId) {
+        return sendHtml(res, 400, buildPrintDocument({ format: 'slip', business: business, order: { order_number: 'order_id required' }, items: [] }));
+      }
+      const loaded = await loadOrderWithItems(admin, orderId, siteId);
+      if (!loaded) {
+        return sendHtml(res, 404, buildPrintDocument({ format: 'slip', business: business, order: { order_number: 'Not found' }, items: [] }));
+      }
+      const size = (req.query && req.query.size) === '80mm' ? '80mm' : 'a4';
+      const ids = loaded.items.map(function (it) { return it.id; });
+      const [ansRes, payRes, siteRes] = await Promise.all([
+        ids.length ? admin.from('order_item_answers').select('*').in('order_item_id', ids) : Promise.resolve({ data: [] }),
+        admin.from('order_payments').select('*').eq('order_id', loaded.order.id).order('created_at'),
+        admin
+          .from('sites')
+          .select('id,slug,business_name,cfg_logo:config->logo,cfg_phone:config->phoneText,cfg_phone2:config->phone,cfg_email:config->email')
+          .eq('id', siteId)
+          .maybeSingle()
+      ]);
+      const site = siteRes.data || {};
+      try { await attachPortalQrToOrders([loaded.order], siteId, { qrWidth: 120 }); } catch (e) { console.error('order/print customer_copy qr', e); }
+      const other = new URLSearchParams(Object.assign({}, req.query || {}, { size: size === '80mm' ? 'a4' : '80mm', autoprint: '0' }));
+      return sendHtml(
+        res,
+        200,
+        require('../../lib/order/customer-copy').buildCustomerCopy({
+          system: system,
+          order: loaded.order,
+          items: loaded.items,
+          answer_rows: ansRes.data || [],
+          payments: payRes.data || [],
+          business: {
+            business_name: site.business_name || business.business_name,
+            logo_url: (site.cfg_logo && typeof site.cfg_logo === 'object' && site.cfg_logo.imageUrl) || null,
+            phone: site.cfg_phone || site.cfg_phone2 || null,
+            email: site.cfg_email || null
+          },
+          size: size,
+          autoprint: autoprint,
+          other_size_url: '/api/order/print?' + other.toString()
+        })
+      );
+    }
+
+    const fmt = normaliseFormat(format, false);
 
     if (fmt === 'label' || fmt === 'item_labels') {
       let orders = [];
@@ -308,7 +355,7 @@ module.exports = async function (req, res) {
         format: fmt,
         business: business,
         order: loaded.order,
-        items: loaded.items,
+        items: require('../../lib/order/price-display').applyKgOnly(system, loaded.items),
         autoprint: autoprint
       })
     );

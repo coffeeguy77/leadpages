@@ -219,7 +219,7 @@ module.exports = async function (req, res) {
             (system && system.balance_settlement) ||
             'at_pickup'
         },
-        items: items.map(function (it) {
+        items: require('../../lib/order/price-display').applyKgOnly(system, items.map(function (it) {
           return {
             id: it.id,
             product_id: it.product_id,
@@ -242,7 +242,7 @@ module.exports = async function (req, res) {
             // Holds a received ham / turkey: weight is exact, set from the piece.
             stock_held: !!(it.options_snapshot && it.options_snapshot.stock && it.options_snapshot.stock.pieces)
           };
-        }),
+        })),
         change_history: (changes || []).map(summariseChangeRow),
         pending_change_request: pendingReq || null,
         catalog: catalog,
@@ -256,6 +256,7 @@ module.exports = async function (req, res) {
           email: (site && site.cfg_email) || null
         },
         display: {
+          kg_prices_only: require('../../lib/order/price-display').kgPricesOnly(system),
           known_subtotal: formatAud(order.known_subtotal_cents),
           deposit_required: formatAud(order.deposit_required_cents),
           deposit_paid: formatAud(order.deposit_paid_cents),

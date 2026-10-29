@@ -201,7 +201,7 @@ module.exports = async function (req, res) {
             })
           : null,
         // Price range until weighed (e.g. "3.5-4" in the name → $107.80–$123.20).
-        est_range: require('../../lib/order/pricing').estimateRange({
+        est_range: require('../../lib/order/price-display').kgPricesOnly(system) ? null : require('../../lib/order/pricing').estimateRange({
           name: p.name,
           pricing_method: p.pricing_method,
           rate_cents: p.price_per_kg_cents,
@@ -262,6 +262,7 @@ module.exports = async function (req, res) {
       system: {
         id: system.id,
         cooking_rate_cents: require('../../lib/order/product-options').cookingRateCents(system),
+        kg_prices_only: require('../../lib/order/price-display').kgPricesOnly(system),
         enabled: system.enabled,
         industry_preset: system.industry_preset,
         currency: system.currency,
