@@ -476,6 +476,8 @@ html[data-theme="command-dark"] .led-warn,html[data-theme="neon-pink"] .led-warn
   flex:0 0 auto;min-height:40px;padding:0 14px;font-weight:700;white-space:nowrap;
   max-width:100%;justify-content:center;
 }
+.no-fast-another-btn{flex:0 0 auto;min-height:40px;padding:0 12px;font-weight:700;white-space:nowrap}
+.no-fast-extra-note{margin:6px 0 0;font:600 12px/1.3 var(--font-ui);color:var(--success,#16a34a)}
 .no-fast-add-btn.needs-options{background:transparent;color:var(--accent);border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
 .no-cust-mode{display:flex;flex-wrap:wrap;gap:14px 20px;margin:0 0 12px}
 .no-cust-mode label{display:inline-flex;align-items:center;gap:8px;font-weight:600;cursor:pointer;margin:0}
@@ -2379,6 +2381,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     noFastDrafts: {},
     noFastPanelOpen: {},
     noFastAdded: {},
+    noExtraLines: [],
     noCurrentStep: 'products',
     noDraftId: null,
     noDraftDirty: false,
@@ -3272,7 +3275,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     var meta = NAV.routeMeta(route);
     if (!meta) route = 'dashboard', meta = NAV.routeMeta(route);
     if (state.currentView === 'new' && meta.view !== 'new') {
-      var hasItems = Object.keys(state.noFastAdded || {}).some(function(k){ return state.noFastAdded[k]; });
+      var hasItems = noHasItems();
       var hasCust = (($('no-name') && $('no-name').value) || '').trim();
       persistNoDraftNow();
       if (hasItems || hasCust) {
@@ -4524,6 +4527,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     state.noCopyPrefill = null;
     state.noFastDrafts = pf.drafts || {};
     state.noFastAdded = pf.added || {};
+    state.noExtraLines = Array.isArray(pf.extraLines) ? pf.extraLines : [];
     state.noFastPanelOpen = {};
     if (pf.customerId) {
       state.noSelectedCustomerId = pf.customerId;
@@ -4949,9 +4953,24 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     return { product: product, line: line, needsW: needsW, showQty: showQty, qty: qty, wRaw: wRaw };
   }
 
+  /** Anything in the New Order cart (current rows + extra lines of the same product). */
+  function noHasItems(){
+    return Object.keys(state.noFastAdded || {}).some(function(k){ return state.noFastAdded[k]; }) ||
+      (state.noExtraLines || []).length > 0;
+  }
+
+  /** Extra lines: earlier lines of a product kept with "+ Another" (e.g. 2 chickens, 2 stuffings). */
+  function noExtraEntries(){
+    return (state.noExtraLines || []).map(function(x){
+      var product = (state.products || []).find(function(p){ return p.id === x.product_id; });
+      return product ? { key: 'extra:' + x.key, product: product, line: x.line, mode: 'extra' } : null;
+    }).filter(Boolean);
+  }
+
   function collectStaffCartEntries(){
     var entries = [];
     if (isNoFastMode()) {
+      entries = noExtraEntries();
       captureNoFastDrafts();
       var host = $('no-fast-list');
       var added = state.noFastAdded || {};
@@ -4985,7 +5004,11 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
 
   function removeCartEntryByKey(key){
     if (!key) return;
-    if (key.indexOf('fast:') === 0) {
+    if (key.indexOf('extra:') === 0) {
+      var xk = key.slice(6);
+      state.noExtraLines = (state.noExtraLines || []).filter(function(x){ return x.key !== xk; });
+      if (isNoFastMode()) renderNoFastList();
+    } else if (key.indexOf('fast:') === 0) {
       var pid = key.slice(5);
       if (state.noFastAdded) delete state.noFastAdded[pid];
       if (state.noPieces) delete state.noPieces[pid];
@@ -5059,6 +5082,12 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
         }
         controls += '<label class="no-full-cart-field no-full-cart-note"><span>Note</span>' +
           '<input type="text" value="' + esc(note) + '" data-no-cart-note="' + esc(p.id) + '" placeholder="Optional"></label>';
+      } else if (ent.mode === 'extra') {
+        var bits = [];
+        if (kg !== '' && kg != null) bits.push(String(kg) + ' kg');
+        else if (productShowsQuantity(p)) bits.push('Qty ' + (qty || 1));
+        if (note) bits.push(note);
+        if (bits.length) controls += '<span class="meta">' + esc(bits.join(' · ')) + '</span>';
       }
       return '<div class="no-full-cart-item" data-cart-key="' + esc(ent.key) + '">' +
         '<div class="no-full-cart-body"><strong>' + esc(p.name || 'Item') + '</strong>' +
@@ -5115,6 +5144,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       currentStep: state.noCurrentStep || 'products',
       status: 'draft',
       noFastAdded: state.noFastAdded || {},
+      noExtraLines: state.noExtraLines || [],
       noFastDrafts: state.noFastDrafts || {},
       customerMode: state.noCustomerMode || 'new',
       customerId: state.noSelectedCustomerId || null,
@@ -5172,6 +5202,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     state.noDraftId = pf.id || state.noDraftId;
     state.noFastDrafts = pf.noFastDrafts || {};
     state.noFastAdded = pf.noFastAdded || {};
+    state.noExtraLines = Array.isArray(pf.noExtraLines) ? pf.noExtraLines : [];
     state.noFastPanelOpen = {};
     state.noCustomerMode = pf.customerMode === 'existing' ? 'existing' : 'new';
     state.noSelectedCustomerId = pf.customerId || null;
@@ -5195,11 +5226,11 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
   function maybeRestoreNoDraft(){
     var api = draftApi();
     if (!api || !state.siteId) return;
-    var hasMem = Object.keys(state.noFastAdded || {}).some(function(k){ return state.noFastAdded[k]; });
+    var hasMem = noHasItems();
     if (hasMem) return;
     var saved = api.loadDraft(state.siteId);
     if (!saved) return;
-    var savedHas = Object.keys(saved.noFastAdded || {}).some(function(k){ return saved.noFastAdded[k]; });
+    var savedHas = (Object.keys(saved.noFastAdded || {}).some(function(k){ return saved.noFastAdded[k]; }) || (saved.noExtraLines || []).length > 0);
     var savedCust = !!(saved.customerName || saved.customerPhone);
     if (!savedHas && !savedCust) return;
     if (!window.confirm('A saved draft order was found.\n\nOK = Resume draft\nCancel = Discard draft')) {
@@ -5388,12 +5419,13 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
   }
 
   function clearNoCartWithConfirm(){
-    if (!Object.keys(state.noFastAdded || {}).some(function(k){ return state.noFastAdded[k]; })) {
+    if (!noHasItems()) {
       toast('Cart is already empty', 'ok');
       return;
     }
     if (!window.confirm('Clear the cart? Customer and pickup stay attached.')) return;
     state.noFastAdded = {};
+    state.noExtraLines = [];
     state.noFastDrafts = {};
     state.noFastPanelOpen = {};
     if (isNoFastMode()) renderNoFastList();
@@ -5722,8 +5754,12 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
           (isAdded ? ' on' : '') +
           (addLabel === 'Choose Options' ? ' needs-options' : '') +
           '" data-fast-add>' + esc(addLabel) + '</button>';
+        // Same product again with different options (e.g. 2nd chicken, other stuffing).
+        if (isAdded) html += '<button type="button" class="btn ghost no-fast-another-btn" data-fast-another title="Keep this one in the order and set up another">+ Another</button>';
       }
       html += '</div>';
+      var extraCount = (state.noExtraLines || []).filter(function(x){ return x.product_id === p.id; }).length;
+      if (extraCount) html += '<div class="no-fast-extra-note">' + (extraCount + (isAdded ? 1 : 0)) + ' in this order · each listed in the cart</div>';
       if (stockInfo) {
         var chosen = (state.noPieces || {})[p.id] || [];
         html += '<div class="no-fast-panel no-fast-pieces">';
@@ -5809,6 +5845,35 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
           if (at < 0) announceNoCartAdd(product && product.name, collectStaffCartEntries().length);
         });
       });
+      var anotherBtn = row.querySelector('[data-fast-another]');
+      if (anotherBtn) {
+        anotherBtn.addEventListener('click', function(){
+          captureNoFastDrafts();
+          var draftNow = (state.noFastDrafts || {})[pid] || {};
+          if (missingRequiredForProduct(pid, row, draftNow.answers).length) {
+            toast('Choose required options for ' + ((product && product.name) || 'this product'), 'err');
+            return;
+          }
+          var builtNow = lineFromFastDraft(pid, draftNow, row);
+          if (!builtNow) return;
+          if (!state.noExtraLines) state.noExtraLines = [];
+          state.noExtraLines.push({
+            key: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+            product_id: pid,
+            line: JSON.parse(JSON.stringify(builtNow.line))
+          });
+          // Fresh row for the next one: same qty/kg, options and notes cleared.
+          state.noFastDrafts[pid] = { qty: draftNow.qty, kg: draftNow.kg, notes: '', answers: {} };
+          delete state.noFastAdded[pid];
+          if (!state.noFastPanelOpen) state.noFastPanelOpen = {};
+          state.noFastPanelOpen[pid] = { notes: false, options: showOptionsToggleForProduct(pid) };
+          renderNoFastList();
+          renderNoStaffCart();
+          updateNoSubmitEnabled();
+          toast('Kept in the order. Set up the next ' + ((product && product.name) || 'one') + '.', 'ok');
+          scheduleNoDraftPersist();
+        });
+      }
       var addBtn = row.querySelector('[data-fast-add]');
       if (addBtn) {
         addBtn.addEventListener('click', function(){
@@ -5911,7 +5976,9 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       }
       items.push(line);
     });
-    return items;
+    // Lines kept with "+ Another" go first, matching the cart order.
+    var kept = (state.noExtraLines || []).map(function(x){ return JSON.parse(JSON.stringify(x.line)); });
+    return kept.concat(items);
   }
 
   function validateFastOrderItems(){
@@ -7161,6 +7228,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       state.noFastDrafts = {};
       state.noFastPanelOpen = {};
       state.noFastAdded = {};
+      state.noExtraLines = [];
       state.noPieces = {};
       loadNoStock().catch(function(){});
       state.noSelectedCustomerId = null;
@@ -10467,7 +10535,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       else if (v === 'orders') await loadOrders();
       else if (v === 'new') {
         // Keep in-memory draft cart; do not reset category-scoped UI into a new cart.
-        var hadMem = Object.keys(state.noFastAdded || {}).some(function(k){ return state.noFastAdded[k]; });
+        var hadMem = noHasItems();
         if (!hadMem) {
           state.noFastPanelOpen = state.noFastPanelOpen || {};
         }
@@ -10590,7 +10658,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     loadCurrentView();
   });
   $('site-select').addEventListener('change', function(){
-    var hasItems = Object.keys(state.noFastAdded || {}).some(function(k){ return state.noFastAdded[k]; });
+    var hasItems = noHasItems();
     if (hasItems || state.noDraftDirty) {
       if (!window.confirm('Change site? The current New Order draft stays saved for the previous site.')) {
         $('site-select').value = state.siteId;
@@ -10601,6 +10669,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     state.siteId = $('site-select').value || '';
     try { localStorage.setItem(SITE_KEY, state.siteId); } catch (_e) {}
     state.noFastAdded = {};
+    state.noExtraLines = [];
     state.noFastDrafts = {};
     state.noFastPanelOpen = {};
     state.noSelectedCustomerId = null;
@@ -10644,7 +10713,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
   $('new-order-form').addEventListener('submit', submitNewOrder);
   window.addEventListener('beforeunload', function(ev){
     if (state.currentView !== 'new') return;
-    var hasItems = Object.keys(state.noFastAdded || {}).some(function(k){ return state.noFastAdded[k]; });
+    var hasItems = noHasItems();
     if (!hasItems && !state.noDraftDirty) return;
     persistNoDraftNow();
     ev.preventDefault();
