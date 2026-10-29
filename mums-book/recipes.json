@@ -21,7 +21,11 @@
   "tags": [
    "front"
   ],
-  "cooks": []
+  "cooks": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p002",
@@ -45,7 +49,11 @@
   "tags": [
    "front"
   ],
-  "cooks": []
+  "cooks": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p003",
@@ -70,7 +78,11 @@
    "art",
    "watercolour and pencil, 1996"
   ],
-  "cooks": []
+  "cooks": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p004",
@@ -94,7 +106,11 @@
   "tags": [
    "front"
   ],
-  "cooks": []
+  "cooks": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p005",
@@ -119,7 +135,11 @@
    "art",
    "pencil, 2017"
   ],
-  "cooks": []
+  "cooks": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p006",
@@ -143,7 +163,11 @@
   "tags": [
    "primi"
   ],
-  "cooks": []
+  "cooks": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p007",
@@ -158,8 +182,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -209,7 +231,7 @@
     "body": "Pour the hot sauce into each bowl around the edge.\nSprinkle with togarashi & serve."
    }
   ],
-  "note": "She has written \"yum yum\" beside the sauce.",
+  "note": "yum yum",
   "serve_with": "",
   "tags": [
    "bonito",
@@ -240,7 +262,11 @@
    "togarashi"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 180,
+  "time_value": "15",
+  "time_unit": "mins"
  },
  {
   "id": "p008",
@@ -255,8 +281,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -325,7 +349,11 @@
    "zucchini"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "10",
+  "time_unit": "mins"
  },
  {
   "id": "p009",
@@ -350,7 +378,11 @@
    "art",
    "sumi-e ink"
   ],
-  "cooks": []
+  "cooks": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p010",
@@ -365,8 +397,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "Batter",
@@ -454,7 +484,11 @@
    "water"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "30",
+  "time_unit": "mins"
  },
  {
   "id": "p011",
@@ -469,8 +503,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "15 mins",
   "ingredients": [
    {
     "group": "",
@@ -513,7 +545,7 @@
     "body": "Place mushrooms on a plate, pour sauce over & garnish with rocket tossed in a little olive oil."
    }
   ],
-  "note": "She titles the page \"Baked portabella mushrooms ~ Fungi al forno\". Beside the herbs she notes: ie a good handful of each herb.",
+  "note": "ie a good handful of each herb.",
   "serve_with": "Rocket tossed in a little olive oil",
   "tags": [
    "breadcrumbs",
@@ -542,7 +574,11 @@
    "vege"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 180,
+  "time_value": "15",
+  "time_unit": "mins"
  },
  {
   "id": "p012",
@@ -557,8 +593,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -602,7 +636,7 @@
     "body": "Heat oil & fry 1 tablespoon at a time until golden brown. Approx 15 [?].\nDrain on paper towel."
    }
   ],
-  "note": "TIP: Double the spice paste for more oomph. Beside the oil she notes: coconut oil is good.",
+  "note": "TIP: Double the spice paste for more oomph. coconut oil is good.",
   "serve_with": "",
   "tags": [
    "chilli",
@@ -641,7 +675,11 @@
   "cooks": [],
   "check": [
    "the '∴ 15' at the end of the frying step - no unit written, probably 'makes approx 15'"
-  ]
+  ],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p013",
@@ -656,8 +694,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "approx 10",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -699,7 +735,7 @@
     "body": "Put mushroom mix into warmed serving bowls. (I use teacups) - approx 10.\nPour stock mix over mushrooms.\nTop with a piece of truffle or truffle oil."
    }
   ],
-  "note": "Titled on the page \"BJ's ~ Cappuccino of mushroom\". She writes: Delicious! Great amuse bouche.",
+  "note": "Delicious! Great amuse bouche.",
   "serve_with": "",
   "tags": [
    "chopped",
@@ -734,7 +770,11 @@
   "cooks": [],
   "check": [
    "quantity of truffle slices - reads as 10 but could be 40"
-  ]
+  ],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "6",
+  "time_unit": "mins"
  },
  {
   "id": "p014",
@@ -749,8 +789,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "6",
-  "prep": "",
-  "cook": "45 min at 200°C",
   "ingredients": [
    {
     "group": "Filling",
@@ -832,7 +870,11 @@
    "thyme"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 200,
+  "time_value": "1",
+  "time_unit": "hrs"
  },
  {
   "id": "p015",
@@ -847,8 +889,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "Soup",
@@ -904,7 +944,7 @@
     "body": "Dollop a tablespoon of pesto on each plate of soup.\nSluuurp."
    }
   ],
-  "note": "Titled on the page \"Chickpea & vegetable soup with rosemary & anchovy pesto ~ Heidi's\".",
+  "note": "",
   "serve_with": "",
   "tags": [
    "allspice",
@@ -938,7 +978,11 @@
    "vegeta"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "1",
+  "time_unit": "hrs"
  },
  {
   "id": "p016",
@@ -953,8 +997,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -1017,7 +1059,11 @@
    "with"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p017",
@@ -1032,8 +1078,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -1124,7 +1168,11 @@
    "yoghurt"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p018",
@@ -1139,8 +1187,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -1223,7 +1269,11 @@
    "turmeric"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "1",
+  "time_unit": "hrs"
  },
  {
   "id": "p019",
@@ -1238,8 +1288,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "Figs with ham & cheese",
@@ -1327,7 +1375,11 @@
    "works"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "2-3",
+  "time_unit": "mins"
  },
  {
   "id": "p020",
@@ -1342,8 +1394,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "Cucumber relish",
@@ -1433,7 +1483,11 @@
    "wine"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p021",
@@ -1448,8 +1502,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -1548,7 +1600,11 @@
   "cooks": [],
   "check": [
    "last two characters of the tip - 'for gado gado ic.' (possibly '1 C')"
-  ]
+  ],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "12",
+  "time_unit": "hrs"
  },
  {
   "id": "p022",
@@ -1563,8 +1619,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "4 serving dishes",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -1631,7 +1685,11 @@
    "wine"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "5",
+  "time_unit": "mins"
  },
  {
   "id": "p023",
@@ -1646,8 +1704,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "makes approx 24 rolls",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -1709,7 +1765,11 @@
    "zucchini"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 180,
+  "time_value": "10-15",
+  "time_unit": "mins"
  },
  {
   "id": "p024",
@@ -1724,8 +1784,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -1788,7 +1846,11 @@
    "water"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "35-40",
+  "time_unit": "mins"
  },
  {
   "id": "p025",
@@ -1803,8 +1865,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "Fills one 18 cm pie tin x 4.5 cm",
-  "prep": "",
-  "cook": "35 mins at 180°C (plus blind baking)",
   "ingredients": [
    {
     "group": "Egg mix",
@@ -1886,7 +1946,11 @@
    "yolk"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 180,
+  "time_value": "35",
+  "time_unit": "mins"
  },
  {
   "id": "p026",
@@ -1901,8 +1965,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -1961,7 +2023,11 @@
    "wrappers"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "3",
+  "time_unit": "mins"
  },
  {
   "id": "p027",
@@ -1976,8 +2042,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -2049,7 +2113,11 @@
    "tomato"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "5",
+  "time_unit": "mins"
  },
  {
   "id": "p028",
@@ -2064,8 +2132,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "4",
-  "prep": "",
-  "cook": "20 mins at 180°C",
   "ingredients": [
    {
     "group": "",
@@ -2139,7 +2205,11 @@
   "check": [
    "ramekin size - reads '4 200g ramekins', possibly 200 ml",
    "two or three words after 'Add parmesan & chèvre - melt and ...'"
-  ]
+  ],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "20",
+  "time_unit": "mins"
  },
  {
   "id": "p029",
@@ -2154,8 +2224,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "10 mins at 200°C fan forced",
   "ingredients": [
    {
     "group": "To finish",
@@ -2220,7 +2288,11 @@
    "virgin"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 200,
+  "time_value": "10",
+  "time_unit": "mins"
  },
  {
   "id": "p030",
@@ -2235,8 +2307,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -2277,7 +2347,7 @@
     "body": "Serve sprinkled with basil."
    }
   ],
-  "note": "Credited at the bottom of the page: - Gaz & Deb -",
+  "note": "",
   "serve_with": "",
   "tags": [
    "basil",
@@ -2307,7 +2377,11 @@
    "thai"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "Gaz & Deb",
+  "temp_c": null,
+  "time_value": "10",
+  "time_unit": "mins"
  },
  {
   "id": "p031",
@@ -2322,8 +2396,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -2407,7 +2479,11 @@
    "torn"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p032",
@@ -2431,7 +2507,11 @@
   "tags": [
    "contorni"
   ],
-  "cooks": []
+  "cooks": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p033",
@@ -2446,8 +2526,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -2488,7 +2566,7 @@
     "body": "Return all ingredients to pan with cream & sauce. Add pasta and toss to combine."
    }
   ],
-  "note": "TIP: Use broccoli for brussel sprout.\nTIP: Have pasta boiling at this stage (while the meat is being sautéed).",
+  "note": "TIP: Use broccoli for brussel sprout. TIP: Have pasta boiling at this stage (while the meat is being sautéed).",
   "serve_with": "",
   "tags": [
    "beef",
@@ -2522,7 +2600,11 @@
    "worcestershire"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "10",
+  "time_unit": "mins"
  },
  {
   "id": "p034",
@@ -2537,8 +2619,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "Best cauliflower cheese",
@@ -2608,7 +2688,7 @@
     "body": "Bake till golden & bubbly. Enjoy!"
    }
   ],
-  "note": "Page heading reads \"Best cauliflower cheese\". A signature sits between the two recipes that appears to read \"thks Howie\" [?]. The caramelised fennel is written on the same page as a second recipe.",
+  "note": "The caramelised fennel is written on the same page as a second recipe.",
   "serve_with": "",
   "tags": [
    "blanched",
@@ -2649,7 +2729,11 @@
   "check": [
    "signature between the two recipes - reads something like 'thks Howie'",
    "no ingredient quantities are given for the cauliflower cheese itself; the list above is drawn from her method"
-  ]
+  ],
+  "credit": "Howie",
+  "temp_c": 180,
+  "time_value": "20",
+  "time_unit": "mins"
  },
  {
   "id": "p035",
@@ -2664,8 +2748,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "45-60 minutes",
   "ingredients": [
    {
     "group": "",
@@ -2749,7 +2831,11 @@
   "cooks": [],
   "check": [
    "\"Bechamel sauce - see\" - the page reference she was pointing to is not written"
-  ]
+  ],
+  "credit": "",
+  "temp_c": 180,
+  "time_value": "45-60",
+  "time_unit": "mins"
  },
  {
   "id": "p036",
@@ -2764,8 +2850,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "Tomato sauce",
@@ -2817,7 +2901,7 @@
     "body": "Serve kofta on cooked spaghetti with the tomato sauce."
    }
   ],
-  "note": "Page heading reads \"Cauliflower kofta in tomato ~ Kurma Dasa\" - credited to Kurma Dasa. Written along the bottom of the page: \"BEST VEGOBALLS ON TOP OF SPAGHETTI\".",
+  "note": "",
   "serve_with": "Cooked spaghetti with the tomato sauce.",
   "tags": [
    "black",
@@ -2850,7 +2934,11 @@
   "cooks": [],
   "check": [
    "\"1/4 C oil oil\" in the tomato sauce - the word before 'oil' could not be read confidently (possibly 'olive')"
-  ]
+  ],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p037",
@@ -2865,8 +2953,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -2945,7 +3031,11 @@
   "check": [
    "red curry paste line - a unit is crossed out and '(tbs)' added afterwards; read as 1 tbsp",
    "'Mix boiled egg noodle' - a word is crossed out after 'noodle' and replaced with 'Put'"
-  ]
+  ],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p038",
@@ -2960,8 +3050,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -2999,7 +3087,7 @@
     "body": "Top with daikon, spring onion & nori.\nPour sauce over each bowl."
    }
   ],
-  "note": "Page title is written \"Chilled soba noodles with mushroom\".",
+  "note": "",
   "serve_with": "",
   "tags": [
    "approximately",
@@ -3033,7 +3121,11 @@
    "thinly"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "4",
+  "time_unit": "mins"
  },
  {
   "id": "p039",
@@ -3048,8 +3140,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "Christmas curry pasta salad",
@@ -3139,7 +3229,11 @@
    "whole"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p040",
@@ -3154,8 +3248,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -3221,7 +3313,11 @@
   "cooks": [],
   "check": [
    "\"fry 1 mm.\" - read as 'fry 1 min'"
-  ]
+  ],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "1",
+  "time_unit": "mins"
  },
  {
   "id": "p041",
@@ -3236,8 +3332,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -3278,7 +3372,7 @@
     "body": "Sprinkle with danish feta on top."
    }
   ],
-  "note": "Signed \"Heidi\".",
+  "note": "",
   "serve_with": "",
   "tags": [
    "chilli",
@@ -3312,7 +3406,11 @@
    "ximenez"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 200,
+  "time_value": "30-40",
+  "time_unit": "mins"
  },
  {
   "id": "p042",
@@ -3327,8 +3425,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "Garlic mashed potato",
@@ -3377,7 +3473,7 @@
     "body": "Keep hands well floured when making balls.\nFlatten to patty shape and shallow fry in oil till crispy brown."
    }
   ],
-  "note": "Mashed potato is headed \"- Shaun -\"; the lentil patties are credited \"CARA\".\nTIP (mash): Do a large batch of mash & put in dariole moulds. Cling wrap & freeze portions. When needed thaw & reheat each portion in microwave for 1 minute.\nTIP (patties): Add 1 tbsp grated ginger.",
+  "note": "Mashed potato is headed \"- Shaun -\"; the lentil patties are credited \"CARA\". TIP (mash): Do a large batch of mash & put in dariole moulds. Cling wrap & freeze portions. When needed thaw & reheat each portion in microwave for 1 minute. TIP (patties): Add 1 tbsp grated ginger.",
   "serve_with": "",
   "tags": [
    "brown",
@@ -3417,7 +3513,11 @@
   "check": [
    "\"125 gml of thickened cream\" - read as 125 ml",
    "no quantities are written for the potatoes themselves"
-  ]
+  ],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p043",
@@ -3432,8 +3532,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -3496,7 +3594,11 @@
    "unsalted"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "6",
+  "time_unit": "mins"
  },
  {
   "id": "p044",
@@ -3511,8 +3613,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "45-60 mins",
   "ingredients": [
    {
     "group": "",
@@ -3592,7 +3692,11 @@
    "water"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 170,
+  "time_value": "45-60",
+  "time_unit": "mins"
  },
  {
   "id": "p045",
@@ -3607,8 +3711,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "4-6",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "Balinese base wangen - marinade for meat/tofu",
@@ -3693,7 +3795,11 @@
    "whole"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p046",
@@ -3708,8 +3814,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -3795,7 +3899,11 @@
    "wedges"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p047",
@@ -3810,8 +3918,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -3853,7 +3959,7 @@
     "body": "Add 1 tbsp chicken fat to a saucepan & saute till fragrant remaining garlic & ginger."
    }
   ],
-  "note": "Headed \"- Two asian kitchens -\". Page title is written \"Hainese chicken rice\". OPT: Serve chilli sauce with chicken along with onion & ginger oil. Marked \"CONT →\" at the foot of the page.",
+  "note": "Headed \"- Two asian kitchens -\". OPT: Serve chilli sauce with chicken along with onion & ginger oil. Marked \"CONT →\" at the foot of the page.",
   "serve_with": "Coriander, sliced cucumber & sliced spring onion.",
   "tags": [
    "approximately",
@@ -3883,7 +3989,11 @@
    "thick"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "1",
+  "time_unit": "hrs"
  },
  {
   "id": "p048",
@@ -3898,8 +4008,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "Spring onion & ginger oil",
@@ -3945,7 +4053,7 @@
     "body": "Once sizzling stops combine gently with pestle & leave to infuse for a few minutes.\nServe with chicken & rice."
    }
   ],
-  "note": "Headed \"CONT:\".\nALT: Fry rice first & transfer to rice cooker.\nTIP: Left over chicken stock can be served as a light broth with spring onions.",
+  "note": "Headed \"CONT:\". ALT: Fry rice first & transfer to rice cooker. TIP: Left over chicken stock can be served as a light broth with spring onions.",
   "serve_with": "",
   "tags": [
    "contorni",
@@ -3963,7 +4071,11 @@
    "thinly"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "10",
+  "time_unit": "mins"
  },
  {
   "id": "p049",
@@ -3978,8 +4090,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "6",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "Spice mix",
@@ -4101,7 +4211,11 @@
   "cooks": [],
   "check": [
    "number of chicken thighs - written like a '5' but could be a '3'"
-  ]
+  ],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "10",
+  "time_unit": "mins"
  },
  {
   "id": "p050",
@@ -4116,8 +4230,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "Sauce",
@@ -4172,7 +4284,7 @@
     "body": "Combine spaghetti, sauce & topping in a large serving bowl. Add some pasta water to loosen.\nSprinkle with herbs."
    }
   ],
-  "note": "Page title is written \"Honeymoon spaghetti\".",
+  "note": "",
   "serve_with": "",
   "tags": [
    "blue",
@@ -4210,7 +4322,11 @@
    "wine"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "1",
+  "time_unit": "hrs"
  },
  {
   "id": "p051",
@@ -4225,8 +4341,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -4307,7 +4421,11 @@
    "zest"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "30",
+  "time_unit": "mins"
  },
  {
   "id": "p052",
@@ -4322,8 +4440,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [],
   "method": [
    {
@@ -4366,7 +4482,11 @@
    "rice"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "40",
+  "time_unit": "mins"
  },
  {
   "id": "p053",
@@ -4381,8 +4501,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -4425,7 +4543,7 @@
     "body": "Check seasoning. It should be hot, sour & salty. Adjust if necessary.\nSprinkle with rice flour."
    }
   ],
-  "note": "Page title is written \"Larp gai - salad\".",
+  "note": "",
   "serve_with": "Serve with raw vegetables such as chopped cabbage, beans, cucumber, spring onion, lettuce, green tomato & green mango.",
   "tags": [
    "chicken",
@@ -4463,7 +4581,11 @@
    "white"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "3-4",
+  "time_unit": "mins"
  },
  {
   "id": "p054",
@@ -4478,8 +4600,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "30-40 mins",
   "ingredients": [
    {
     "group": "",
@@ -4522,7 +4642,7 @@
     "body": "Place in greased casserole & top with extra cheese.\nCook at 180°C for 30-40 mins."
    }
   ],
-  "note": "The page heading is written \"MICHELE'S MACARONI CHEESE\" (one 'l'), though the book's index spells it Michelle's.",
+  "note": "",
   "serve_with": "BEST SERVED WITH COLESLAW",
   "tags": [
    "bacon",
@@ -4549,7 +4669,11 @@
    "worcestershire"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 180,
+  "time_value": "30-40",
+  "time_unit": "mins"
  },
  {
   "id": "p055",
@@ -4564,8 +4688,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -4610,7 +4732,7 @@
     "body": "Combine mayo, oil, juice & tarragon & puree till smooth.\nSeason then drizzle over salad bowls to serve."
    }
   ],
-  "note": "\"thks Helen & Jeff\" written in the top corner.\nOpt: Brown rice with raw salmon & avocado, vegetables, spinach & dressing.",
+  "note": "\"thks Helen & Jeff\" written in the top corner. Opt: Brown rice with raw salmon & avocado, vegetables, spinach & dressing.",
   "serve_with": "",
   "tags": [
    "alfalfa",
@@ -4648,7 +4770,11 @@
    "water"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "15",
+  "time_unit": "mins"
  },
  {
   "id": "p056",
@@ -4663,8 +4789,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -4751,7 +4875,11 @@
   "cooks": [],
   "check": [
    "\"4 tb acid butter (see\" - the page reference she meant to add is not written"
-  ]
+  ],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "5",
+  "time_unit": "mins"
  },
  {
   "id": "p057",
@@ -4766,8 +4894,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "1",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -4814,7 +4940,7 @@
     "body": "Add bean sprout & chives."
    }
   ],
-  "note": "OPT: Use the egg to make a fine omelet & serve noodles in the egg net. Garnish with sliced chilli/coriander.\nShe has drawn a small sketch of a wok with the cooked food pushed to the edge and the noodles in the middle.",
+  "note": "OPT: Use the egg to make a fine omelet & serve noodles in the egg net. Garnish with sliced chilli/coriander. She has drawn a small sketch of a wok with the cooked food pushed to the edge and the noodles in the middle.",
   "serve_with": "Serve with lime & ground peanut.",
   "tags": [
    "bean",
@@ -4849,7 +4975,11 @@
   "cooks": [],
   "check": [
    "\"serves 1\" - the number is partly hidden behind the flower stamp"
-  ]
+  ],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p058",
@@ -4864,8 +4994,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -4937,7 +5065,11 @@
    "vodka"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p059",
@@ -4952,8 +5084,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "45-60 mins",
   "ingredients": [
    {
     "group": "",
@@ -5019,7 +5149,11 @@
    "vegetables"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 180,
+  "time_value": "45-60",
+  "time_unit": "mins"
  },
  {
   "id": "p060",
@@ -5034,8 +5168,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "45-50 mins, plus 30 mins resting",
   "ingredients": [
    {
     "group": "",
@@ -5106,7 +5238,11 @@
    "water"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 190,
+  "time_value": "45-50",
+  "time_unit": "mins"
  },
  {
   "id": "p061",
@@ -5121,8 +5257,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "Gnocchi",
@@ -5219,7 +5353,11 @@
   "cooks": [],
   "check": [
    "Bintje (potato variety) - written 'Binge/Bintje'"
-  ]
+  ],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "2",
+  "time_unit": "mins"
  },
  {
   "id": "p062",
@@ -5234,8 +5372,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -5324,7 +5460,11 @@
    "wine"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "4-5",
+  "time_unit": "mins"
  },
  {
   "id": "p063",
@@ -5339,8 +5479,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "Spiced carrot purée",
@@ -5403,7 +5541,11 @@
    "vegetables"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p064",
@@ -5418,8 +5560,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "1 hour soaking",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -5497,7 +5637,11 @@
    "turmeric"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "2",
+  "time_unit": "hrs"
  },
  {
   "id": "p065",
@@ -5512,8 +5656,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "80-90 mins steaming",
   "ingredients": [],
   "method": [
    {
@@ -5556,7 +5698,11 @@
    "rice"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "80-90",
+  "time_unit": "mins"
  },
  {
   "id": "p066",
@@ -5571,8 +5717,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "1 hour marinating",
-  "cook": "",
   "ingredients": [
    {
     "group": "Marinade",
@@ -5667,7 +5811,11 @@
    "vinegar"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "1",
+  "time_unit": "hrs"
  },
  {
   "id": "p067",
@@ -5682,8 +5830,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -5764,7 +5910,11 @@
   "cooks": [],
   "check": [
    "the marginal NOTE is partly cropped at the right edge - read as 'straw mushrooms, corn, diced zucchini, peas, prawns etc.'"
-  ]
+  ],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "1",
+  "time_unit": "mins"
  },
  {
   "id": "p068",
@@ -5779,8 +5929,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "15 mins kneading + minimum 15 mins resting",
-  "cook": "",
   "ingredients": [
    {
     "group": "Pasta dough",
@@ -5851,7 +5999,11 @@
    "wheat"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "15",
+  "time_unit": "mins"
  },
  {
   "id": "p069",
@@ -5866,8 +6018,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [],
   "method": [
    {
@@ -5894,7 +6044,11 @@
    "pasta"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "15",
+  "time_unit": "mins"
  },
  {
   "id": "p070",
@@ -5909,8 +6063,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "1 hr resting",
-  "cook": "45-60 mins",
   "ingredients": [
    {
     "group": "Crust",
@@ -5989,7 +6141,11 @@
    "wholemeal"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 180,
+  "time_value": "45-60",
+  "time_unit": "mins"
  },
  {
   "id": "p071",
@@ -6014,7 +6170,11 @@
    "art",
    "sumi-e, 2020"
   ],
-  "cooks": []
+  "cooks": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p072",
@@ -6038,7 +6198,11 @@
   "tags": [
    "secondi"
   ],
-  "cooks": []
+  "cooks": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p073",
@@ -6053,8 +6217,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "45 mins simmering",
   "ingredients": [
    {
     "group": "",
@@ -6133,7 +6295,11 @@
    "used"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "45",
+  "time_unit": "mins"
  },
  {
   "id": "p074",
@@ -6148,8 +6314,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "4",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -6222,7 +6386,11 @@
   "cooks": [],
   "check": [
    "sweet potato disc thickness - the numeral is overwritten, read as 2 cm"
-  ]
+  ],
+  "credit": "",
+  "temp_c": 180,
+  "time_value": "30",
+  "time_unit": "mins"
  },
  {
   "id": "p075",
@@ -6237,8 +6405,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "45 mins covered + 30 mins uncovered",
   "ingredients": [
    {
     "group": "",
@@ -6270,7 +6436,7 @@
     "body": "Uncover & add capsicum cut into wedges (8) and cook uncovered for 30 mins to brown."
    }
   ],
-  "note": "One pot dish. Use your imagination for different combinations. Keep it simple to enjoy each element.\nOther vegetable ideas:\n- tomato, potato, olives, tarragon\n- witlof, shallots, white wine, thyme, creme fraiche (at end)\n- piquillo pepper, smoked paprika, fresh tomato, prosciutto\n- mushrooms or porcini, marsala, rosemary\n~ Howie ~",
+  "note": "One pot dish. Use your imagination for different combinations. Keep it simple to enjoy each element. Other vegetable ideas:\n- tomato, potato, olives, tarragon\n- witlof, shallots, white wine, thyme, creme fraiche (at end)\n- piquillo pepper, smoked paprika, fresh tomato, prosciutto\n- mushrooms or porcini, marsala, rosemary\n~ Howie ~",
   "serve_with": "",
   "tags": [
    "bone",
@@ -6309,7 +6475,11 @@
    "wine"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 200,
+  "time_value": "45",
+  "time_unit": "mins"
  },
  {
   "id": "p076",
@@ -6324,8 +6494,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "1 hour simmering",
   "ingredients": [
    {
     "group": "",
@@ -6412,7 +6580,11 @@
    "white"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 150,
+  "time_value": "1",
+  "time_unit": "hrs"
  },
  {
   "id": "p077",
@@ -6427,8 +6599,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "1-2 hours marinating",
-  "cook": "10 mins at 230°C + 50 mins to 1 hour at 190°C",
   "ingredients": [
    {
     "group": "",
@@ -6517,7 +6687,11 @@
    "zucchini"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 190,
+  "time_value": "1-2",
+  "time_unit": "hrs"
  },
  {
   "id": "p078",
@@ -6532,8 +6706,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "2",
-  "prep": "",
-  "cook": "20-25 mins",
   "ingredients": [
    {
     "group": "",
@@ -6640,7 +6812,11 @@
    "wine"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 220,
+  "time_value": "20-25",
+  "time_unit": "mins"
  },
  {
   "id": "p079",
@@ -6655,8 +6831,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "30 mins",
   "ingredients": [
    {
     "group": "",
@@ -6706,7 +6880,11 @@
    "wineglass"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 220,
+  "time_value": "30",
+  "time_unit": "mins"
  },
  {
   "id": "p080",
@@ -6721,8 +6899,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "1 1/2 hrs",
   "ingredients": [
    {
     "group": "",
@@ -6788,7 +6964,11 @@
   "cooks": [],
   "check": [
    "garlic clove count written over another numeral - read as 10"
-  ]
+  ],
+  "credit": "",
+  "temp_c": 190,
+  "time_value": "2",
+  "time_unit": "hrs"
  },
  {
   "id": "p081",
@@ -6803,8 +6983,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "Kids nuggets",
@@ -6848,7 +7026,7 @@
     "body": "Cover tightly and gently simmer on top of the stove until chicken is tender."
    }
   ],
-  "note": "Two recipes on one page: Kids nuggets and Braised chicken. The secret to the braised chicken is browning the onions in olive oil till they are almost burnt.",
+  "note": "The secret to the braised chicken is browning the onions in olive oil till they are almost burnt.",
   "serve_with": "Serve the braised chicken with salad or green beans",
   "tags": [
    "amount",
@@ -6884,7 +7062,11 @@
    "zucchini"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p082",
@@ -6899,8 +7081,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "1-2 hours simmering + 20 mins baking",
   "ingredients": [
    {
     "group": "",
@@ -6995,7 +7175,11 @@
    "zest"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 180,
+  "time_value": "1-2",
+  "time_unit": "hrs"
  },
  {
   "id": "p083",
@@ -7010,8 +7194,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "minimum 1 hour marinating (schnitzel)",
-  "cook": "",
   "ingredients": [
    {
     "group": "Orange vinaigrette",
@@ -7054,7 +7236,7 @@
     "body": "Crumb in panko & refrigerate till ready to cook in 1 cm hot oil."
    }
   ],
-  "note": "Two recipes on one page. The schnitzel is headed \"Michele's chicken snitzie\".",
+  "note": "The schnitzel is headed \"Michele's chicken snitzie\".",
   "serve_with": "Serve the vinaigrette with fresh leaves or a fennel & orange salad",
   "tags": [
    "apple",
@@ -7085,7 +7267,11 @@
    "vinegar"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "1",
+  "time_unit": "hrs"
  },
  {
   "id": "p084",
@@ -7100,8 +7286,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "1 hour covered + 30-40 mins uncovered",
   "ingredients": [
    {
     "group": "",
@@ -7154,7 +7338,11 @@
    "wings"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 180,
+  "time_value": "1",
+  "time_unit": "hrs"
  },
  {
   "id": "p085",
@@ -7169,8 +7357,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -7211,7 +7397,7 @@
     "body": "Season & garnish with parsley."
    }
   ],
-  "note": "Page is headed \"Porto pollo\" (the printed index lists it as \"Pollo pollo\"). Credited in the margin: \"thks Shaun\".",
+  "note": "",
   "serve_with": "Serve with garlic mashed potato",
   "tags": [
    "breasts",
@@ -7242,7 +7428,11 @@
    "tomatoes"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "Shaun",
+  "temp_c": null,
+  "time_value": "5-10",
+  "time_unit": "mins"
  },
  {
   "id": "p086",
@@ -7257,8 +7447,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -7357,7 +7545,11 @@
    "'Br[?] breasts in fat' - possibly 'Brush breasts in fat'",
    "'till a sauce [?] is cooked off' - words hidden mid-line",
    "'risotto' / 'polenta' - the word before 'polenta' is partly covered"
-  ]
+  ],
+  "credit": "",
+  "temp_c": 220,
+  "time_value": "24",
+  "time_unit": "hrs"
  },
  {
   "id": "p087",
@@ -7372,8 +7564,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -7451,7 +7641,11 @@
    "work"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 180,
+  "time_value": "20",
+  "time_unit": "mins"
  },
  {
   "id": "p088",
@@ -7466,8 +7660,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -7557,7 +7749,11 @@
    "your"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 180,
+  "time_value": "1",
+  "time_unit": "hrs"
  },
  {
   "id": "p089",
@@ -7572,8 +7768,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -7624,7 +7818,11 @@
    "water"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "45",
+  "time_unit": "mins"
  },
  {
   "id": "p090",
@@ -7639,8 +7837,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -7715,7 +7911,11 @@
    "wine"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 140,
+  "time_value": "2",
+  "time_unit": "hrs"
  },
  {
   "id": "p091",
@@ -7730,8 +7930,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -7822,7 +8020,11 @@
   "cooks": [],
   "check": [
    "a small superscript mark (possibly '++') written above the line between '2 tbs' and 'tomato paste', and again on the paprika line"
-  ]
+  ],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p092",
@@ -7837,8 +8039,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -7879,7 +8079,7 @@
     "body": "Add a good handful of fresh basil. Serve with spaghetti."
    }
   ],
-  "note": "TIP: Add 1 tsp ground cloves & soy.\nGood filling for canneloni, see [symbol].\nAlt: Ricotta, spinach, parmesan or pecorino, garlic, egg (optional), nutmeg.",
+  "note": "TIP: Add 1 tsp ground cloves & soy. Good filling for canneloni, see [symbol]. Alt: Ricotta, spinach, parmesan or pecorino, garlic, egg (optional), nutmeg.",
   "serve_with": "Spaghetti",
   "tags": [
    "basil",
@@ -7907,7 +8107,11 @@
    "zucchini"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "30",
+  "time_unit": "mins"
  },
  {
   "id": "p093",
@@ -7922,8 +8126,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "Pie",
@@ -8010,7 +8212,11 @@
   "cooks": [],
   "check": [
    "the mince quantity is written over the cheese line and reads 500 g, but is partly overwritten"
-  ]
+  ],
+  "credit": "",
+  "temp_c": 180,
+  "time_value": "30",
+  "time_unit": "mins"
  },
  {
   "id": "p094",
@@ -8025,8 +8231,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -8094,7 +8298,11 @@
   "cooks": [],
   "check": [
    "'finishing with a potato the egg/cream' - she appears to have written 'the' where 'then' is meant"
-  ]
+  ],
+  "credit": "",
+  "temp_c": 180,
+  "time_value": "4",
+  "time_unit": "hrs"
  },
  {
   "id": "p095",
@@ -8109,8 +8317,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -8193,7 +8399,11 @@
   "cooks": [],
   "check": [
    "'cut into 12 x 6cm leng.' - whether this means 12 pieces of 6 cm, or lengths of 12 x 6 cm"
-  ]
+  ],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "5-7",
+  "time_unit": "mins"
  },
  {
   "id": "p096",
@@ -8208,8 +8418,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -8265,7 +8473,7 @@
     "body": "Bake at 180°C for 45 mins."
    }
   ],
-  "note": "circa 1984.\nPage heading reads 'Michele's shephards pie'; the book's index has 'Michele's shepherd's pie'. A meerkat illustration covers the left of the topping section but the text is still legible.",
+  "note": "circa 1984. A meerkat illustration covers the left of the topping section but the text is still legible.",
   "serve_with": "",
   "tags": [
    "beaten",
@@ -8302,7 +8510,11 @@
   "cooks": [],
   "check": [
    "'60 g milk butter' - the word 'milk' appears struck out, leaving 60 g butter"
-  ]
+  ],
+  "credit": "",
+  "temp_c": 180,
+  "time_value": "45",
+  "time_unit": "mins"
  },
  {
   "id": "p097",
@@ -8317,8 +8529,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -8402,7 +8612,11 @@
    "with"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "2",
+  "time_unit": "hrs"
  },
  {
   "id": "p098",
@@ -8417,8 +8631,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [],
   "method": [
    {
@@ -8450,14 +8662,18 @@
     "body": "Check seasoning & serve with toasted walnut halves."
    }
   ],
-  "note": "Opt: You can remove oxtail & blitz the sauce for a creamy finish.\nPart 2 of 2 — the ingredients are listed on the previous page.",
+  "note": "Opt: You can remove oxtail & blitz the sauce for a creamy finish. Part 2 of 2 — the ingredients are listed on the previous page.",
   "serve_with": "Toasted walnut halves",
   "tags": [
    "beef",
    "secondi"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "2",
+  "time_unit": "hrs"
  },
  {
   "id": "p099",
@@ -8472,8 +8688,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -8513,7 +8727,7 @@
     "body": "Finally add cream for a mellow flavour."
    }
   ],
-  "note": "TIP: Add 1 tsp ground cloves & soy sauce to your spag bol. Use milk as well as stock.\nSuitable for all types of pasta.",
+  "note": "TIP: Add 1 tsp ground cloves & soy sauce to your spag bol. Use milk as well as stock. Suitable for all types of pasta.",
   "serve_with": "All types of pasta",
   "tags": [
    "beef",
@@ -8541,7 +8755,11 @@
   "cooks": [],
   "check": [
    "the minced veal & pork quantity has been written over - it reads 500 g but the first digit is corrected"
-  ]
+  ],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "2",
+  "time_unit": "hrs"
  },
  {
   "id": "p100",
@@ -8556,8 +8774,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "Steak",
@@ -8641,7 +8857,11 @@
   "cooks": [],
   "check": [
    "the butter quantity in the Diane sauce - written over, reads as 15 g but could be 50 g"
-  ]
+  ],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "5",
+  "time_unit": "mins"
  },
  {
   "id": "p101",
@@ -8656,8 +8876,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -8738,7 +8956,11 @@
   "cooks": [],
   "check": [
    "the rice wine vinegar is listed but not referred to again in the method"
-  ]
+  ],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "3-4",
+  "time_unit": "mins"
  },
  {
   "id": "p102",
@@ -8753,8 +8975,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -8802,7 +9022,7 @@
     "body": "Serve with polenta & gremolata made from 2 chopped garlic cloves, grated zest of 1 lemon, good handful of finely chopped parsley."
    }
   ],
-  "note": "Page heading is written in capitals as 'THE BEST OSSA BUCA'; the book's index has 'The best osso buco'.",
+  "note": "",
   "serve_with": "Polenta & gremolata",
   "tags": [
    "beef",
@@ -8838,7 +9058,11 @@
    "zest"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "2",
+  "time_unit": "hrs"
  },
  {
   "id": "p103",
@@ -8853,8 +9077,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "Rub well into the meat",
@@ -8936,7 +9158,11 @@
    "wine"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 150,
+  "time_value": "4",
+  "time_unit": "hrs"
  },
  {
   "id": "p104",
@@ -8951,8 +9177,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -9044,7 +9268,11 @@
    "with"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "7",
+  "time_unit": "mins"
  },
  {
   "id": "p105",
@@ -9059,8 +9287,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -9098,7 +9324,7 @@
     "body": "Garnish with fresh lime & chilli."
    }
   ],
-  "note": "Page heading reads 'Easy thai-style satay cutlets with lime'; the book's index has 'Easy Thai-style lamb cutlets with lime'.",
+  "note": "",
   "serve_with": "Jasmine rice & salad",
   "tags": [
    "brown",
@@ -9123,7 +9349,11 @@
    "sugar"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "30",
+  "time_unit": "mins"
  },
  {
   "id": "p106",
@@ -9138,8 +9368,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -9196,7 +9424,11 @@
    "water"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "1",
+  "time_unit": "hrs"
  },
  {
   "id": "p107",
@@ -9211,8 +9443,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -9252,7 +9482,7 @@
     "body": "Serve with parboiled vegetables finished off by roasting in the oven while lamb is resting."
    }
   ],
-  "note": "Tip: Remove lid after 2 hours & brown limb [lamb].\nIf the lamb is very young it may not need 2 1/2 hours.",
+  "note": "Tip: Remove lid after 2 hours & brown limb [lamb]. If the lamb is very young it may not need 2 1/2 hours.",
   "serve_with": "Parboiled vegetables finished off by roasting in the oven while the lamb rests",
   "tags": [
    "cider",
@@ -9276,7 +9506,11 @@
   "cooks": [],
   "check": [
    "'& brown limb' in the tip - she appears to have written 'limb' for 'lamb'"
-  ]
+  ],
+  "credit": "",
+  "temp_c": 180,
+  "time_value": "2",
+  "time_unit": "hrs"
  },
  {
   "id": "p108",
@@ -9291,8 +9525,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "1",
@@ -9349,7 +9581,7 @@
     "body": "Add peas. Check gravy for thickness & seasoning. Cook 15 mins. Serve with parsley."
    }
   ],
-  "note": "The page is numbered in two stages, 1 and 2. A painted rose stem runs down the right-hand side of the page but the writing remains legible.",
+  "note": "A painted rose stem runs down the right-hand side of the page but the writing remains legible.",
   "serve_with": "",
   "tags": [
    "baby",
@@ -9383,7 +9615,11 @@
    "turnips"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "1",
+  "time_unit": "hrs"
  },
  {
   "id": "p109",
@@ -9398,8 +9634,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -9469,7 +9703,11 @@
   "cooks": [],
   "check": [
    "'H & G' at the foot of the page - initials or a source, not spelled out"
-  ]
+  ],
+  "credit": "",
+  "temp_c": 110,
+  "time_value": "5-6",
+  "time_unit": "hrs"
  },
  {
   "id": "p110",
@@ -9484,8 +9722,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -9543,7 +9779,11 @@
   "cooks": [],
   "check": [
    "she writes 'sesame' as 'seseme'"
-  ]
+  ],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p111",
@@ -9558,8 +9798,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -9650,7 +9888,11 @@
    "with"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "2-3",
+  "time_unit": "hrs"
  },
  {
   "id": "p112",
@@ -9665,8 +9907,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -9745,7 +9985,11 @@
    "worcestershire"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 180,
+  "time_value": "1",
+  "time_unit": "hrs"
  },
  {
   "id": "p113",
@@ -9760,8 +10004,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -9815,7 +10057,11 @@
    "tbsp"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 180,
+  "time_value": "2",
+  "time_unit": "hrs"
  },
  {
   "id": "p114",
@@ -9830,8 +10076,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "Nanna & Didi's beans & franks",
@@ -9872,7 +10116,7 @@
     "body": "Mix together all the remaining ingredients. Top apple. Bake 180°C for 45 min or until brown and cooked through."
    }
   ],
-  "note": "Two recipes on one page. The beans & franks are headed '- one for the road -'. The baking time for the crumble is written to the side with an asterisk: '* for 45 min or until brown & cooked through.'",
+  "note": "The beans & franks are headed '- one for the road -'. The baking time for the crumble is written to the side with an asterisk: '* for 45 min or until brown & cooked through.'",
   "serve_with": "Beans & franks: serve with rice.",
   "tags": [
    "almond",
@@ -9910,7 +10154,11 @@
    "with"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 180,
+  "time_value": "45",
+  "time_unit": "mins"
  },
  {
   "id": "p115",
@@ -9925,8 +10173,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -9997,7 +10243,11 @@
    "water"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "10",
+  "time_unit": "mins"
  },
  {
   "id": "p116",
@@ -10022,7 +10272,11 @@
    "art",
    "pencil"
   ],
-  "cooks": []
+  "cooks": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p117",
@@ -10037,8 +10291,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -10104,7 +10356,11 @@
    "water"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 180,
+  "time_value": "15",
+  "time_unit": "mins"
  },
  {
   "id": "p118",
@@ -10119,8 +10375,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "Pork souvlaki",
@@ -10198,7 +10452,11 @@
    "yoghurt"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "2",
+  "time_unit": "hrs"
  },
  {
   "id": "p119",
@@ -10213,8 +10471,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "8-10",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -10303,7 +10559,11 @@
    "veal"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 180,
+  "time_value": "30",
+  "time_unit": "mins"
  },
  {
   "id": "p120",
@@ -10318,8 +10578,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "1 1/2 hrs",
   "ingredients": [
    {
     "group": "",
@@ -10378,7 +10636,11 @@
    "sliced"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "2",
+  "time_unit": "hrs"
  },
  {
   "id": "p121",
@@ -10393,8 +10655,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "8 hours on low or 5 hours on high",
   "ingredients": [
    {
     "group": "",
@@ -10481,7 +10741,11 @@
   "cooks": [],
   "check": [
    "signature initials at foot of page - 'H & C' or 'H & G'"
-  ]
+  ],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "8",
+  "time_unit": "hrs"
  },
  {
   "id": "p122",
@@ -10496,8 +10760,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -10535,7 +10797,7 @@
     "body": "Rest meat for 20 minutes.\nTo serve, cut crackling off pork and serve pork and crackle separate with apple sauce."
    }
   ],
-  "note": "* You can leave in fridge on a rack, uncovered for 2-3 [?] days (written vertically down the left margin, keyed to the rubbing step). Credited at the end: 'tks HFW'.",
+  "note": "* You can leave in fridge on a rack, uncovered for 2-3 [?] days (written vertically down the left margin, keyed to the rubbing step).",
   "serve_with": "apple sauce",
   "tags": [
    "belly",
@@ -10561,7 +10823,11 @@
   "cooks": [],
   "check": [
    "number of days in the margin note - written over, reads '2-3' days"
-  ]
+  ],
+  "credit": "HFW'",
+  "temp_c": 180,
+  "time_value": "2",
+  "time_unit": "hrs"
  },
  {
   "id": "p123",
@@ -10576,8 +10842,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -10625,7 +10889,7 @@
     "body": "Fry mushrooms, add sauce and coriander. Saute scallops. Stack and serve."
    }
   ],
-  "note": "The page heading reads 'Slow cooked pork belly with shiitake, scallops, chilli oil & mirin' - the book's index gives it as 'chilli & mirin' (no 'oil').",
+  "note": "",
   "serve_with": "",
   "tags": [
    "anise",
@@ -10665,7 +10929,11 @@
    "tbsp"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "4-5",
+  "time_unit": "hrs"
  },
  {
   "id": "p124",
@@ -10680,8 +10948,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -10773,7 +11039,11 @@
   "cooks": [],
   "check": [
    "number of green capsicums/bullnose peppers (obscured by stamp - 6 or 8)"
-  ]
+  ],
+  "credit": "",
+  "temp_c": 180,
+  "time_value": "25",
+  "time_unit": "mins"
  },
  {
   "id": "p125",
@@ -10788,8 +11058,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -10864,7 +11132,11 @@
    "white"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 200,
+  "time_value": "1",
+  "time_unit": "hrs"
  },
  {
   "id": "p126",
@@ -10879,8 +11151,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -10954,7 +11224,11 @@
    "tbsp"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "2-3",
+  "time_unit": "mins"
  },
  {
   "id": "p127",
@@ -10969,8 +11243,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -11037,7 +11309,11 @@
    "water"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "20-25",
+  "time_unit": "mins"
  },
  {
   "id": "p128",
@@ -11052,8 +11328,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -11125,7 +11399,11 @@
    "well"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 180,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p129",
@@ -11140,8 +11418,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -11208,7 +11484,11 @@
    "well"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 180,
+  "time_value": "15",
+  "time_unit": "mins"
  },
  {
   "id": "p130",
@@ -11223,8 +11503,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -11298,7 +11576,11 @@
    "zucchini"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 220,
+  "time_value": "45",
+  "time_unit": "mins"
  },
  {
   "id": "p131",
@@ -11313,8 +11595,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -11379,7 +11659,11 @@
    "whole"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 160,
+  "time_value": "30",
+  "time_unit": "mins"
  },
  {
   "id": "p132",
@@ -11394,8 +11678,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -11478,7 +11760,11 @@
    "turmeric"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 180,
+  "time_value": "1",
+  "time_unit": "hrs"
  },
  {
   "id": "p133",
@@ -11493,8 +11779,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -11564,7 +11848,11 @@
    "turmeric"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "6-8",
+  "time_unit": "mins"
  },
  {
   "id": "p134",
@@ -11579,8 +11867,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -11656,7 +11942,11 @@
    "water"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "1",
+  "time_unit": "hrs"
  },
  {
   "id": "p135",
@@ -11671,8 +11961,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -11770,7 +12058,11 @@
    "yoghurt"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "30",
+  "time_unit": "mins"
  },
  {
   "id": "p136",
@@ -11785,8 +12077,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -11875,7 +12165,11 @@
    "whole"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "15-20",
+  "time_unit": "mins"
  },
  {
   "id": "p137",
@@ -11890,8 +12184,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -11932,7 +12224,7 @@
     "body": "Add 9 and 10 and stir well.\nSimmer for 10-15 minutes.\nAdd salt to taste.\nCover & simmer until chicken is tender & cooked."
    }
   ],
-  "note": "Page heading reads \"Paullings simple Malaysian chicken curry\" (index title: Paul Ling's simple Malaysian chicken curry). Optional: add 1 stick pounded lemongrass.",
+  "note": "Optional: add 1 stick pounded lemongrass.",
   "serve_with": "",
   "tags": [
    "broken",
@@ -11964,7 +12256,11 @@
    "water"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "10-15",
+  "time_unit": "mins"
  },
  {
   "id": "p138",
@@ -11979,8 +12275,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "1-2 hours",
   "ingredients": [
    {
     "group": "",
@@ -12066,7 +12360,11 @@
    "vinegar"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "1-2",
+  "time_unit": "hrs"
  },
  {
   "id": "p139",
@@ -12081,8 +12379,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -12160,7 +12456,11 @@
   "cooks": [],
   "check": [
    "first ingredient ends '& ch' - possibly 'chopped'; the word is cut off/overwritten"
-  ]
+  ],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p140",
@@ -12175,8 +12475,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "4 hours marinating",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -12212,7 +12510,7 @@
     "body": "Thread 2 pieces of chicken onto a bamboo skewer & place on serving platter.\nContinue with remaining chicken."
    }
   ],
-  "note": "Signed at the foot of the page \"~ G & D ~\" (Gaz & Deb).",
+  "note": "",
   "serve_with": "Serve with pappadums & chutney",
   "tags": [
    "chicken",
@@ -12235,7 +12533,11 @@
    "yoghurt"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "G & D",
+  "temp_c": null,
+  "time_value": "4",
+  "time_unit": "hrs"
  },
  {
   "id": "p141",
@@ -12260,7 +12562,11 @@
    "art",
    "illustrations by lij"
   ],
-  "cooks": []
+  "cooks": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p142",
@@ -12275,8 +12581,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "Makes 12",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "1. Dough of 'masa lista' - earth & soil",
@@ -12331,7 +12635,11 @@
    "white"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p143",
@@ -12346,8 +12654,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "3. Curido - gently",
@@ -12411,7 +12717,11 @@
    "white"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p144",
@@ -12426,8 +12736,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -12463,7 +12771,7 @@
     "body": "The ingredient list is large, so just select a variety of items."
    }
   ],
-  "note": "Marked \"PART 1\". \"One of Rose's favourites. Thks Gaz\".",
+  "note": "Marked \"PART 1\". \"One of Rose's favourites.",
   "serve_with": "",
   "tags": [
    "asparagus",
@@ -12500,7 +12808,11 @@
    "wombok"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "Gaz",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p145",
@@ -12515,8 +12827,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "Stock",
@@ -12603,7 +12913,11 @@
    "water"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "20",
+  "time_unit": "mins"
  },
  {
   "id": "p146",
@@ -12618,8 +12932,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "Prepare 2 hrs before",
-  "cook": "",
   "ingredients": [
    {
     "group": "Squid",
@@ -12716,7 +13028,11 @@
    "wine"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "2",
+  "time_unit": "hrs"
  },
  {
   "id": "p147",
@@ -12731,8 +13047,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "Prawn",
@@ -12793,7 +13107,11 @@
    "wine"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p148",
@@ -12817,7 +13135,11 @@
   "tags": [
    "dolce"
   ],
-  "cooks": []
+  "cooks": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p149",
@@ -12832,8 +13154,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "15 mins",
   "ingredients": [
    {
     "group": "",
@@ -12887,7 +13207,11 @@
    "sultanas"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 180,
+  "time_value": "15",
+  "time_unit": "mins"
  },
  {
   "id": "p150",
@@ -12902,8 +13226,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "Makes 36 (dog biccies)",
-  "prep": "1 hr chilling",
-  "cook": "",
   "ingredients": [
    {
     "group": "Chewy dog biccies",
@@ -12959,7 +13281,7 @@
     "body": "Store in freezer for 3 months or fridge for 1 week."
    }
   ],
-  "note": "Two recipes on one page. Page heading reads \"Chewsy Dog Biccies\" (index: Chewy dog biscuits & cat treats). The dog biccie storage line as written says fridge for 3 months / a week in freezer, which appears reversed compared with the cat treats line.",
+  "note": "The dog biccie storage line as written says fridge for 3 months / a week in freezer, which appears reversed compared with the cat treats line.",
   "serve_with": "",
   "tags": [
    "beaten",
@@ -12987,7 +13309,11 @@
   "check": [
    "dog biccie roll-out thickness reads '6 mm' but the numeral is looped over",
    "dog biccie storage line - fridge/freezer durations appear transposed"
-  ]
+  ],
+  "credit": "",
+  "temp_c": 170,
+  "time_value": "1",
+  "time_unit": "hrs"
  },
  {
   "id": "p151",
@@ -13002,8 +13328,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "2 hours",
   "ingredients": [
    {
     "group": "",
@@ -13078,7 +13402,11 @@
   "cooks": [],
   "check": [
    "egg white weight - written with an extra loop, reads as '200g' but could be '2000g'; 200 g fits the 435 g sugar"
-  ]
+  ],
+  "credit": "",
+  "temp_c": 110,
+  "time_value": "2",
+  "time_unit": "hrs"
  },
  {
   "id": "p152",
@@ -13093,8 +13421,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "Cinnie's peanut biscuits",
@@ -13142,7 +13468,7 @@
     "body": "Remove pod & pour into glasses.\nCool a bit then refrigerate."
    }
   ],
-  "note": "Two recipes on one page. Panna cotta credited \"From Certaldo, Italy 2014 - Heidi -\". TIP: Add some pandanus essence to taste, for Asian dessert.",
+  "note": "Panna cotta credited \"From Certaldo, Italy 2014 - Heidi -\". TIP: Add some pandanus essence to taste, for Asian dessert.",
   "serve_with": "",
   "tags": [
    "bean",
@@ -13169,7 +13495,11 @@
   "cooks": [],
   "check": [
    "biscuits: '1 tea coconut' - reads as 1 teaspoon coconut, which seems small; could be '1 C coconut'"
-  ]
+  ],
+  "credit": "",
+  "temp_c": 160,
+  "time_value": "20",
+  "time_unit": "mins"
  },
  {
   "id": "p153",
@@ -13184,8 +13514,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "Makes 18 large",
-  "prep": "",
-  "cook": "15-20 mins",
   "ingredients": [
    {
     "group": "",
@@ -13260,7 +13588,11 @@
    "tbsp"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 220,
+  "time_value": "15-20",
+  "time_unit": "mins"
  },
  {
   "id": "p154",
@@ -13275,8 +13607,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "1 1/2 hours chilling",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -13349,7 +13679,11 @@
    "tbsp"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "2",
+  "time_unit": "hrs"
  },
  {
   "id": "p155",
@@ -13364,8 +13698,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "Sara's rum balls",
@@ -13428,7 +13760,7 @@
     "body": "Roll in walnut sized balls. Bake 180°C for 15-20 minutes."
    }
   ],
-  "note": "Three recipes on one page: Sara's rum balls, Coconut biscuits (SJM) and Ginger biscuits (SJM). The index lists only \"Sara's rum balls & ginger biscuits\".",
+  "note": "",
   "serve_with": "",
   "tags": [
    "baking",
@@ -13463,7 +13795,11 @@
    "weet"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 180,
+  "time_value": "1-2",
+  "time_unit": "hrs"
  },
  {
   "id": "p156",
@@ -13478,8 +13814,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "15-20 mins",
   "ingredients": [
    {
     "group": "Base",
@@ -13549,7 +13883,11 @@
   "cooks": [],
   "check": [
    "Weet-Bix quantity in the base - the numeral is partly covered by the flower stamp; reads as 3"
-  ]
+  ],
+  "credit": "",
+  "temp_c": 180,
+  "time_value": "15-20",
+  "time_unit": "mins"
  },
  {
   "id": "p157",
@@ -13564,8 +13902,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "approximately 15 mins",
   "ingredients": [
    {
     "group": "",
@@ -13629,7 +13965,11 @@
    "tbsp"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 180,
+  "time_value": "15",
+  "time_unit": "mins"
  },
  {
   "id": "p158",
@@ -13644,8 +13984,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "45-60 minutes",
   "ingredients": [
    {
     "group": "",
@@ -13699,7 +14037,11 @@
    "through"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 180,
+  "time_value": "45-60",
+  "time_unit": "mins"
  },
  {
   "id": "p159",
@@ -13714,8 +14056,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "approximately 1 hour",
   "ingredients": [
    {
     "group": "",
@@ -13795,7 +14135,11 @@
    "wholewheat"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 160,
+  "time_value": "1",
+  "time_unit": "hrs"
  },
  {
   "id": "p160",
@@ -13810,8 +14154,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [],
   "method": [
    {
@@ -13850,7 +14192,11 @@
    "dolce"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p161",
@@ -13865,8 +14211,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "35 mins",
   "ingredients": [
    {
     "group": "",
@@ -13963,7 +14307,11 @@
    "yolks"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 120,
+  "time_value": "35",
+  "time_unit": "mins"
  },
  {
   "id": "p162",
@@ -13978,8 +14326,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "30 mins",
   "ingredients": [
    {
     "group": "",
@@ -14026,7 +14372,11 @@
    "vanilla"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 180,
+  "time_value": "30",
+  "time_unit": "mins"
  },
  {
   "id": "p163",
@@ -14041,8 +14391,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "35-40 mins",
   "ingredients": [
    {
     "group": "",
@@ -14112,7 +14460,11 @@
    "with"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 180,
+  "time_value": "35-40",
+  "time_unit": "mins"
  },
  {
   "id": "p164",
@@ -14127,8 +14479,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "1 hour",
   "ingredients": [
    {
     "group": "",
@@ -14184,7 +14534,11 @@
    "zucchini"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 180,
+  "time_value": "1",
+  "time_unit": "hrs"
  },
  {
   "id": "p165",
@@ -14199,8 +14553,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "70-75 mins at 160°C, then 10 mins at 150°C",
   "ingredients": [
    {
     "group": "",
@@ -14285,7 +14637,11 @@
    "zested"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 150,
+  "time_value": "70-75",
+  "time_unit": "mins"
  },
  {
   "id": "p166",
@@ -14300,8 +14656,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -14379,7 +14733,11 @@
   "cooks": [],
   "check": [
    "'2 tea baking pwd + bi carb soda' — unclear whether 2 tsp applies to both the baking powder and the bicarb soda, or only to the baking powder"
-  ]
+  ],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p167",
@@ -14394,8 +14752,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "30 mins at 180°C",
   "ingredients": [
    {
     "group": "",
@@ -14461,7 +14817,11 @@
    "yoghurt"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 180,
+  "time_value": "30",
+  "time_unit": "mins"
  },
  {
   "id": "p168",
@@ -14476,8 +14836,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "Base 30-35 mins at 150°C; filling 50 mins - 1 hour at 150°C",
   "ingredients": [
    {
     "group": "Base",
@@ -14526,7 +14884,7 @@
     "body": "Bake at 150°C for 50 mins - 1 hour or until light golden brown & just set.\nRefrigerate for 1 hour then enjoy."
    }
   ],
-  "note": "The page heading reads 'Mark's ricotta cheesecake'; the book's index spells it 'Marc's'.",
+  "note": "",
   "serve_with": "",
   "tags": [
    "almond",
@@ -14559,7 +14917,11 @@
    "water"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 150,
+  "time_value": "1",
+  "time_unit": "hrs"
  },
  {
   "id": "p169",
@@ -14574,8 +14936,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "Soak fruit in brandy for at least 4 days",
-  "cook": "10 mins at 175°C, then 3 hours at 135°C",
   "ingredients": [
    {
     "group": "",
@@ -14621,7 +14981,7 @@
     "body": "Bake at 175°C for 10 mins, then at 135°C for 3 hrs."
    }
   ],
-  "note": "TIP: If mixture is cooked in 2 cake tins then only cook for 2 hours @ 135°C (after 10 mins @ 175°C).\nTo macerate fruit for longer keep adding alcohol.",
+  "note": "TIP: If mixture is cooked in 2 cake tins then only cook for 2 hours @ 135°C (after 10 mins @ 175°C). To macerate fruit for longer keep adding alcohol.",
   "serve_with": "",
   "tags": [
    "almonds",
@@ -14661,7 +15021,11 @@
    "water"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 135,
+  "time_value": "3",
+  "time_unit": "hrs"
  },
  {
   "id": "p170",
@@ -14676,8 +15040,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "approximately 45 mins at 180°C fan forced",
   "ingredients": [
    {
     "group": "",
@@ -14724,7 +15086,7 @@
     "body": "Cool for 20 mins before slicing.\nFreeze slices between baking paper & toast to defrost."
    }
   ],
-  "note": "The page heading reads 'Tara's sugarfree banana bread'; the book's index calls it 'Tara's surprise banana bread'.",
+  "note": "",
   "serve_with": "",
   "tags": [
    "arrowroot",
@@ -14762,7 +15124,11 @@
    "wholemeal"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 180,
+  "time_value": "45",
+  "time_unit": "mins"
  },
  {
   "id": "p171",
@@ -14777,8 +15143,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "Chill base 20 mins",
-  "cook": "40 minutes",
   "ingredients": [
    {
     "group": "Base",
@@ -14846,7 +15210,11 @@
    "white"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 180,
+  "time_value": "1",
+  "time_unit": "hrs"
  },
  {
   "id": "p172",
@@ -14871,7 +15239,11 @@
    "art",
    "sumi-e ink"
   ],
-  "cooks": []
+  "cooks": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p173",
@@ -14886,8 +15258,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "Bake 200°C for 40 [?] mins",
   "ingredients": [
    {
     "group": "Filling",
@@ -14963,7 +15333,11 @@
   "cooks": [],
   "check": [
    "Baking time '40 mins' — the numeral is written over and could be another figure"
-  ]
+  ],
+  "credit": "",
+  "temp_c": 200,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p174",
@@ -14978,8 +15352,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "Makes 8",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "Batter",
@@ -15028,7 +15400,7 @@
     "body": "Add 2-3 tbsp of coconut filling & fold pancake into an envelope.\nMakes 8."
    }
   ],
-  "note": "NOTE: Add pandan essence or pandan leaf cooked in a little water to make pancake batter turn green.\nI ♥ BALINESE FOOD. One of Suma's favourites.",
+  "note": "NOTE: Add pandan essence or pandan leaf cooked in a little water to make pancake batter turn green. I ♥ BALINESE FOOD. One of Suma's favourites.",
   "serve_with": "4 tbsp palm sugar with a pinch of salt",
   "tags": [
    "beaten",
@@ -15054,7 +15426,11 @@
    "water"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "3",
+  "time_unit": "mins"
  },
  {
   "id": "p175",
@@ -15069,8 +15445,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "4",
-  "prep": "",
-  "cook": "30-40 mins at 175°C (not fan forced)",
   "ingredients": [
    {
     "group": "",
@@ -15120,7 +15494,11 @@
    "zest"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 175,
+  "time_value": "30-40",
+  "time_unit": "mins"
  },
  {
   "id": "p176",
@@ -15135,8 +15513,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "Refrigerate pastry 1 hr",
-  "cook": "Tart approximately 20 mins at 180°C; pastry pre-baked approximately 10 mins at 180°C",
   "ingredients": [
    {
     "group": "Lemon tart",
@@ -15209,7 +15585,11 @@
    "water"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": 180,
+  "time_value": "1",
+  "time_unit": "hrs"
  },
  {
   "id": "p177",
@@ -15224,8 +15604,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "10 [?] mins at 170°C",
   "ingredients": [
    {
     "group": "",
@@ -15263,7 +15641,7 @@
     "body": "Bake for 10 [?] mins in oven or until skewer comes out clean (not sticky).\nDust with icing sugar."
    }
   ],
-  "note": "The page heading reads 'Mark's clafoutis'; the book's index spells it 'Marc's'.",
+  "note": "",
   "serve_with": "",
   "tags": [
    "almond",
@@ -15298,7 +15676,11 @@
   "cooks": [],
   "check": [
    "Baking time reads '10 mins' — short for a clafoutis, the numeral could be 40"
-  ]
+  ],
+  "credit": "",
+  "temp_c": 170,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p178",
@@ -15313,8 +15695,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -15358,7 +15738,7 @@
     "body": "Coulis: strawbs, lemon juice, zest, sugar."
    }
   ],
-  "note": "- Certaldo Italy '14 -  - Heidi -\nOPT: Add a pandanas leaf or essence instead of vanilla.\nThe page heads this 'Panacotta'; the book's index calls it 'Panna cotta'.",
+  "note": "- Certaldo Italy '14 -  - Heidi -\nOPT: Add a pandanas leaf or essence instead of vanilla.",
   "serve_with": "Strawberry coulis",
   "tags": [
    "bean",
@@ -15380,7 +15760,11 @@
    "zest"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p179",
@@ -15395,8 +15779,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "6",
-  "prep": "",
-  "cook": "5 minutes poaching",
   "ingredients": [
    {
     "group": "",
@@ -15469,7 +15851,11 @@
    "white"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "5",
+  "time_unit": "mins"
  },
  {
   "id": "p180",
@@ -15484,8 +15870,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "4",
-  "prep": "",
-  "cook": "approximately 30 minutes",
   "ingredients": [
    {
     "group": "",
@@ -15545,7 +15929,11 @@
    "wine"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "30",
+  "time_unit": "mins"
  },
  {
   "id": "p181",
@@ -15560,8 +15948,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "1 hr @ 160 [?] °C",
   "ingredients": [
    {
     "group": "Sticky date pudding",
@@ -15625,7 +16011,11 @@
   "check": [
    "Tin size '2 x 20 cm' — the second numeral is unclear (could be 26)",
    "Oven temperature '160°C' — the figure has been written over and corrected"
-  ]
+  ],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "1",
+  "time_unit": "hrs"
  },
  {
   "id": "p182",
@@ -15640,8 +16030,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "Soak 20 mins",
-  "cook": "2-3 mins",
   "ingredients": [
    {
     "group": "",
@@ -15701,7 +16089,11 @@
    "water"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "20",
+  "time_unit": "mins"
  },
  {
   "id": "p183",
@@ -15726,7 +16118,11 @@
    "art",
    "sumi-e ink"
   ],
-  "cooks": []
+  "cooks": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p184",
@@ -15750,7 +16146,11 @@
   "tags": [
    "bits"
   ],
-  "cooks": []
+  "cooks": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p185",
@@ -15765,8 +16165,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -15802,7 +16200,7 @@
     "body": "Use in risotto to finish."
    }
   ],
-  "note": "The page heading reads 'Acid butter for risotto'; the book's index calls it 'Acidified butter for risotto'.",
+  "note": "",
   "serve_with": "",
   "tags": [
    "bits",
@@ -15824,7 +16222,11 @@
   "cooks": [],
   "check": [
    "Fridge life '30 days' — the first numeral could be an 8 (80 days)"
-  ]
+  ],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p186",
@@ -15839,8 +16241,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "Air freshener",
@@ -15891,7 +16291,11 @@
    "water"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p187",
@@ -15906,8 +16310,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "Stand 1 hour",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -15967,7 +16369,11 @@
   "cooks": [],
   "check": [
    "'colonada' vinegar condiment — brand/name spelling uncertain"
-  ]
+  ],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "1",
+  "time_unit": "hrs"
  },
  {
   "id": "p188",
@@ -15982,8 +16388,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "Pickles refrigerate 3-6 hours",
-  "cook": "",
   "ingredients": [
    {
     "group": "Bashed cucumbers",
@@ -16067,7 +16471,11 @@
    "white"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "3-6",
+  "time_unit": "hrs"
  },
  {
   "id": "p189",
@@ -16082,8 +16490,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "Date paste approximately 10 mins",
   "ingredients": [
    {
     "group": "Caesar salad dressing",
@@ -16147,7 +16553,11 @@
    "water"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "10",
+  "time_unit": "mins"
  },
  {
   "id": "p190",
@@ -16162,8 +16572,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "Soak chillies 10 mins",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -16218,7 +16626,11 @@
    "tbsp"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "10",
+  "time_unit": "mins"
  },
  {
   "id": "p191",
@@ -16233,8 +16645,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -16290,7 +16700,11 @@
   "cooks": [],
   "check": [
    "Kombu size '13 x 15 cm' — the first numeral could be 15"
-  ]
+  ],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "10-12",
+  "time_unit": "mins"
  },
  {
   "id": "p192",
@@ -16305,8 +16719,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "Judd's Baileys cream",
@@ -16374,7 +16786,11 @@
    "water"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "10",
+  "time_unit": "mins"
  },
  {
   "id": "p193",
@@ -16389,8 +16805,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "Florance's tomato relish",
@@ -16479,7 +16893,11 @@
   "check": [
    "subtitle: 'or why Phil mamed Florance' — most likely 'married'",
    "'- ♥ loved' at the end of the Hazel Southwell line"
-  ]
+  ],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "30",
+  "time_unit": "mins"
  },
  {
   "id": "p194",
@@ -16494,8 +16912,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "Poached eggs",
@@ -16553,7 +16969,11 @@
    "white"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "15",
+  "time_unit": "mins"
  },
  {
   "id": "p195",
@@ -16568,8 +16988,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "Hoisin sauce",
@@ -16651,7 +17069,11 @@
   "cooks": [],
   "check": [
    "Hoisin: first quantity written over/corrected — read as '3 tbs' fermented soy beans, could be '2'"
-  ]
+  ],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p196",
@@ -16666,8 +17088,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "Makes 6 cups",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "Japanese rice — hakumai",
@@ -16731,7 +17151,11 @@
   "cooks": [],
   "check": [
    "'le Barilla' — brand name, reading of 'le' uncertain"
-  ]
+  ],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "15–30",
+  "time_unit": "mins"
  },
  {
   "id": "p197",
@@ -16746,8 +17170,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -16861,7 +17283,11 @@
   "cooks": [],
   "check": [
    "chilli variety 'guagila' (likely 'guajillo')"
-  ]
+  ],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "10",
+  "time_unit": "mins"
  },
  {
   "id": "p198",
@@ -16876,8 +17302,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -16939,7 +17363,11 @@
   "cooks": [],
   "check": [
    "the figure '5' for garlic cloves, thyme sprigs and peppercorns — her 3/5 glyph is ambiguous here"
-  ]
+  ],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "1",
+  "time_unit": "hrs"
  },
  {
   "id": "p199",
@@ -16954,8 +17382,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "Nuoc cham",
@@ -17024,7 +17450,11 @@
    "white"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p200",
@@ -17039,8 +17469,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -17110,7 +17538,11 @@
   "cooks": [],
   "check": [
    "final seasoning quantity read as '2 1/2 tea salt' — could be '1/2 tea'"
-  ]
+  ],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p201",
@@ -17125,8 +17557,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -17182,7 +17612,11 @@
    "water"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "5",
+  "time_unit": "mins"
  },
  {
   "id": "p202",
@@ -17197,8 +17631,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "Tuna dip or sandwich filling",
@@ -17287,7 +17719,11 @@
    "yolks"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p203",
@@ -17302,8 +17738,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -17378,7 +17812,11 @@
    "turmeric"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "10",
+  "time_unit": "mins"
  },
  {
   "id": "p204",
@@ -17393,8 +17831,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -17471,7 +17907,11 @@
    "white"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "30",
+  "time_unit": "mins"
  },
  {
   "id": "p205",
@@ -17486,8 +17926,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -17521,7 +17959,7 @@
     "body": "Fry gently for at least 10 minutes (can take up to 20 mins to get a well integrated sambal)."
    }
   ],
-  "note": "This versatile sambal is a great accompaniment to any Asian style meal. This version is not as firey due to the capsicum.\nTIP: Add coconut rice, a curry, fried peanuts & ikan bilis, cucumber & hard boiled egg for nasi lemak.\nCan be frozen in portion sizes but will last in the fridge for a week or two.",
+  "note": "This versatile sambal is a great accompaniment to any Asian style meal. This version is not as firey due to the capsicum. TIP: Add coconut rice, a curry, fried peanuts & ikan bilis, cucumber & hard boiled egg for nasi lemak. Can be frozen in portion sizes but will last in the fridge for a week or two.",
   "serve_with": "Any Asian style meal; with coconut rice, a curry, fried peanuts & ikan bilis, cucumber & hard boiled egg for nasi lemak",
   "tags": [
    "bits",
@@ -17546,7 +17984,11 @@
   "cooks": [],
   "check": [
    "'5 small red chilli' — her 3/5 glyph; also '3 tbs oil' uses the same glyph"
-  ]
+  ],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "20",
+  "time_unit": "mins"
  },
  {
   "id": "p206",
@@ -17561,8 +18003,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -17626,7 +18066,11 @@
    "white"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p207",
@@ -17641,8 +18085,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "Paris butter",
@@ -17693,7 +18135,7 @@
     "body": "Add some cream & parsley & thicken."
    }
   ],
-  "note": "Page heading reads 'Shaun's sauces (continued)'; the book's index lists this as 'Sharon's sauces'. Pepper roux: refrigerate for up to 6 months.",
+  "note": "Pepper roux: refrigerate for up to 6 months.",
   "serve_with": "Paris butter: melt on hot steak.",
   "tags": [
    "bits",
@@ -17726,7 +18168,11 @@
   "cooks": [],
   "check": [
    "page heading 'Shaun's' vs index 'Sharon's'"
-  ]
+  ],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p208",
@@ -17741,8 +18187,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -17800,7 +18244,11 @@
    "whole"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p209",
@@ -17815,8 +18263,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "",
@@ -17864,7 +18310,11 @@
    "wine"
   ],
   "cooks": [],
-  "check": []
+  "check": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "30–40",
+  "time_unit": "mins"
  },
  {
   "id": "p210",
@@ -17879,8 +18329,6 @@
   "source": "mum",
   "added_by_name": "Mum",
   "serves": "",
-  "prep": "",
-  "cook": "",
   "ingredients": [
    {
     "group": "Spice paste",
@@ -17971,7 +18419,11 @@
   "cooks": [],
   "check": [
    "quantity of coconut milk — not written"
-  ]
+  ],
+  "credit": "",
+  "temp_c": null,
+  "time_value": "5",
+  "time_unit": "mins"
  },
  {
   "id": "p211",
@@ -17995,7 +18447,11 @@
   "tags": [
    "index"
   ],
-  "cooks": []
+  "cooks": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p212",
@@ -18019,7 +18475,11 @@
   "tags": [
    "index"
   ],
-  "cooks": []
+  "cooks": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p213",
@@ -18043,7 +18503,11 @@
   "tags": [
    "index"
   ],
-  "cooks": []
+  "cooks": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p214",
@@ -18067,7 +18531,11 @@
   "tags": [
    "index"
   ],
-  "cooks": []
+  "cooks": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p215",
@@ -18091,7 +18559,11 @@
   "tags": [
    "notes"
   ],
-  "cooks": []
+  "cooks": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  },
  {
   "id": "p216",
@@ -18115,6 +18587,10 @@
   "tags": [
    "notes"
   ],
-  "cooks": []
+  "cooks": [],
+  "credit": "",
+  "temp_c": null,
+  "time_value": null,
+  "time_unit": null
  }
 ]
