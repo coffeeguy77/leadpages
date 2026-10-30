@@ -325,6 +325,18 @@ h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.022em;line-height:1.15}
 .addrow{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;font-weight:600;color:var(--accent);padding:9px 14px;
   border-radius:999px;border:1px dashed rgba(239,74,60,.4);margin-top:6px;transition:.16s var(--ease)}
 .addrow:hover{background:var(--accent-soft);border-style:solid}
+.btn-danger{background:#C0392B;color:#fff}
+.btn-danger:hover{background:#A8301F}
+.btn-ghost.danger{color:#C0392B;border-color:#E8C7C1}
+.btn-ghost.danger:hover{background:#FCEFEC;border-color:#C0392B}
+.dangerrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:26px;padding-top:20px;border-top:1px solid var(--line-2)}
+.dangertxt{font-size:13.5px;color:var(--muted);max-width:46ch;line-height:1.5}
+.editedflag{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--sage-600);
+  background:var(--sage-50);border:1px solid var(--sage-line);padding:5px 11px;border-radius:999px;margin:14px 0 0}
+.ovpanel{display:flex;align-items:center;gap:18px;flex-wrap:wrap;background:var(--sage-50);border:1px solid var(--sage-line);
+  border-radius:var(--r-lg);padding:20px 24px;margin-top:34px}
+.ovpanel h4{font-size:15px;color:var(--sage-ink);display:flex;align-items:center;gap:7px}
+.ovpanel p{margin:5px 0 0;font-size:13.5px;color:var(--sage-ink);opacity:.85;max-width:58ch;line-height:1.55}
 .fracbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px}
 .fracbtn{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--ink-2);
   padding:7px 13px;border:1px solid var(--line);border-radius:999px;background:#fff;transition:.14s var(--ease)}
@@ -419,6 +431,8 @@ const I={
  shuffle:'<path d="M18 4l3 3-3 3"/><path d="M18 14l3 3-3 3"/><path d="M3 7h4l10 10h4"/><path d="M3 17h4l3-3"/>',
  grip:'<circle cx="9" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="18" r="1"/>',
  trash:'<path d="M4 7h16"/><path d="M9 7V5h6v2"/><path d="M6 7l1 13h10l1-13"/>',
+ pencil:'<path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16Z"/><path d="M14 6l4 4"/>',
+ download:'<path d="M12 4v11"/><path d="m7.5 11 4.5 4 4.5-4"/><path d="M5 19h14"/>',
  plus:'<path d="M12 5v14M5 12h14"/>',
  crop:'<path d="M6 2v16h16"/><path d="M2 6h16v16"/>',
  rotate:'<path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/>',
@@ -449,7 +463,9 @@ const SEED=[{
  cooks:[{by:"Shaun",on:"2026-08-16"},{by:"Shaun",on:"2026-07-26"}]}];
 
 /* ---------- state ---------- */
+const OV_KEY="mb-overrides-v1", LOCAL_KEY="mb-local-v1";
 const S={user:null,profile:null,people:[],recipes:[],photos:{},view:"home",id:null,
+ ov:{},local:[],
  q:"",filter:"all",idxq:"",idxFilter:"all",idxSort:"book",idxJump:null,
  heroId:null,authMode:"in",busy:false,err:"",ticked:{},
  cook:{on:false,step:0},ed:null};
@@ -535,15 +551,33 @@ function noteBlock(r){
 
 /* ---------- data ---------- */
 async function loadBook(){try{const r=await fetch("recipes.json",{cache:"no-cache"});return r.ok?await r.json():[]}catch(e){return []}}
+/* Her 194 pages come from a static recipes.json the browser can't write to.
+   Edits and deletions are kept on this device as an overrides layer and
+   applied on load, so nothing is lost and nothing is pretended. */
+function applyLayer(list){
+  return list
+    .filter(r=>!(S.ov[r.id]&&S.ov[r.id].__deleted))
+    .map(r=>{
+      const o=S.ov[r.id];
+      if(!o)return r;
+      const merged={...r,...o,_edited:true};
+      delete merged._h;            // search cache must not survive an edit
+      return merged;
+    });
+}
+const countEdits=()=>Object.keys(S.ov).length;
+
 async function loadAll(){
   const book=await loadBook();
+  S.ov=LS.get(OV_KEY,{})||{};
+  S.local=LS.get(LOCAL_KEY,[])||[];
   const base=[{name:"Mum",relation:"Wrote the book"},{name:"Shaun",relation:"Typed it all up"}];
-  if(!LIVE){S.recipes=[...SEED.map(r=>({...r})),...book];S.people=base;return}
+  if(!LIVE){S.recipes=applyLayer([...S.local,...SEED.map(r=>({...r})),...book]);S.people=base;return}
   const [{data:rs},{data:ps},{data:ph}]=await Promise.all([
     sb.from("recipes").select("*").order("created_at",{ascending:false}),
     sb.from("profiles").select("*").order("joined_at",{ascending:true}),
     sb.from("photos").select("*").order("created_at",{ascending:false})]);
-  S.recipes=[...SEED.map(r=>({...r})),...(rs||[]).map(r=>({...r,cooks:r.cooks||[]})),...book];
+  S.recipes=applyLayer([...S.local,...SEED.map(r=>({...r})),...(rs||[]).map(r=>({...r,cooks:r.cooks||[]})),...book]);
   S.people=(ps&&ps.length)?[...base,...ps]:base;
   (ph||[]).forEach(p=>{(S.photos[p.recipe_key]=S.photos[p.recipe_key]||[]).push(p)});
 }
@@ -662,7 +696,10 @@ function vHome(){
   const hero=S.recipes.find(r=>r.id===S.heroId);
   const matched=match(S.recipes,S.q,S.filter);
   const filtered=S.q||S.filter!=="all";
-  const six=matched.filter(r=>r.kind==="recipe").slice(0,6);
+  // the gallery is a wall of pictures — a recipe with no picture belongs in Contents
+  const withPic=matched.filter(r=>r.kind==="recipe"&&(r.thumb||r.image));
+  const six=withPic.slice(0,6);
+  const noPic=matched.filter(r=>r.kind==="recipe"&&!(r.thumb||r.image)).length;
   const total=allRecipes().length;
   const pills=[["all","All recipes"],...ORDER.filter(k=>k!=="ours").map(k=>[k,SECTIONS[k]]),["ours","Ours"]];
   const log=recentCooks();
@@ -697,8 +734,10 @@ function vHome(){
         :`<button class="seeall" data-nav="contents">View all ${total} recipes ${ic("arrow")}</button>`}
     </div>
     ${six.length?`<div class="grid">${six.map(card).join("")}</div>
-      ${matched.filter(r=>r.kind==="recipe").length>6?`<div style="text-align:center;padding:26px 0 0">
-        <button class="btn btn-ghost btn-lg" data-act="see-all">View all ${matched.filter(r=>r.kind==="recipe").length} recipes ${ic("arrow")}</button></div>`:""}`
+      ${(withPic.length>6||noPic)?`<div style="text-align:center;padding:26px 0 0">
+        <button class="btn btn-ghost btn-lg" data-act="see-all">View all ${matched.filter(r=>r.kind==="recipe").length} recipes ${ic("arrow")}</button>
+        ${noPic?`<p style="font-size:13.5px;color:var(--muted);margin:12px 0 0">${noPic} recipe${noPic>1?"s have":" has"} no photo yet &mdash; ${noPic>1?"they're":"it's"} in the index.</p>`:""}
+      </div>`:""}`
     :`<div class="empty"><h3>Nothing by that name</h3>
       <p>Try an ingredient instead — mushrooms, tamarind, condensed milk — or someone's name, like Heidi.</p>
       <button class="btn btn-primary" data-act="clear">Show everything</button></div>`}
@@ -776,9 +815,11 @@ function vRecipe(){
       ${r.credit?`<p class="dsub">Given to Mum by ${esc(r.credit)}.</p>`:(r.source!=="mum"&&r.sub?`<p class="dsub">${esc(r.sub)}</p>`:"")}
       <div class="metarow">${metaBits(r,true)}<div class="sp"></div>
         <div class="acts">
+          <button class="btn btn-ghost" data-act="edit" title="Edit this recipe">${ic("pencil")} Edit</button>
           ${typed?`<button class="btn btn-dark" data-act="cookmode">${ic("play")} Cooking mode</button>`:""}
           <button class="btn btn-primary" data-act="cooked">${ic("check")} I cooked this</button>
         </div></div>
+      ${r._edited?`<p class="editedflag">${ic("pencil")} Edited on this device</p>`:""}
     </div>
     <div class="dcols fade">
       <div>
@@ -818,18 +859,51 @@ function vRecipe(){
 }
 
 /* ---------- editor ---------- */
+/* Pull a leading quantity off an ingredient line. The unit is only taken when
+   it exactly matches one in the dropdown, so "1¾ cups macaroni" keeps her word
+   "cups" in the text and round-trips byte for byte. */
+const QTY=/^\s*((?:\d+[\d.,/]*\s*)?[¼½¾⅐⅑⅒⅓⅔⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]|\d+(?:[.,]\d+)?(?:\s*[–\-]\s*\d+(?:[.,]\d+)?)?)\s+(.*)$/;
+function splitIng(s){
+  if(typeof s!=="string")return {qty:s.qty||"",unit:s.unit||"",name:s.name||""};
+  const m=QTY.exec(s);
+  if(!m)return {qty:"",unit:"",name:s.trim()};
+  let rest=m[2],unit="";
+  const first=rest.split(/\s+/)[0];
+  if(UNITS.includes(first)&&first){unit=first;rest=rest.slice(first.length).trim()}
+  return {qty:m[1].trim(),unit,name:rest};
+}
+function recipeToEd(r){
+  const rows=[];
+  normalise(r).ingredients.forEach(g=>(g.items||[]).forEach(i=>{
+    const row=splitIng(i);
+    if(g.group&&!rows.some(x=>x._g===g.group))row._g=g.group;
+    rows.push(row);
+  }));
+  return {editId:r.id,title:r.title||"",author:r.added_by_name||"",sub:r.sub||"",
+    section:r.section||"ours",book_page:r.book_page||"",
+    temp_c:r.temp_c||"",time_value:r.time_value||"",time_unit:r.time_unit||"mins",
+    serves:r.serves||"",note:r.note||"",image:r.image||"",rot:0,showFrac:false,confirmDel:false,
+    _group:(normalise(r).ingredients[0]||{}).group||"",
+    _origin:r.source==="mum"?"book":(String(r.id).startsWith("local-")?"local":"db"),
+    ings:rows.length?rows:[{qty:"",unit:"",name:""}],
+    steps:(r.method||[]).length?(r.method||[]).map(m=>({title:m.title||"",body:m.body||""})):[{title:"",body:""}]};
+}
+
 function blankEd(){
   return {title:"",author:(S.profile&&S.profile.name)||"",sub:"",section:"ours",book_page:"",
     temp_c:"",time_value:"",time_unit:"mins",serves:"",note:"",image:"",rot:0,showFrac:false,
+    editId:null,confirmDel:false,_group:"",_origin:"local",
     ings:[{qty:"",unit:"",name:""},{qty:"",unit:"",name:""},{qty:"",unit:"",name:""}],
     steps:[{title:"",body:""},{title:"",body:""},{title:"",body:""}]};
 }
 function edToRecipe(e){
-  return {id:"preview",title:e.title||"Your recipe",sub:e.sub,section:e.section,kind:"recipe",source:"family",
+  const base=e.editId?(S.recipes.find(x=>String(x.id)===String(e.editId))||{}):{};
+  return {...base,id:e.editId||"preview",title:e.title||"Your recipe",sub:e.sub,section:e.section,kind:"recipe",
+    source:base.source||"family",
     serves:e.serves,temp_c:e.temp_c?Number(e.temp_c):null,time_value:e.time_value||null,time_unit:e.time_unit,
     book_page:e.book_page?Number(e.book_page):null,image:e.image,thumb:e.image,note:e.note,serve_with:"",
-    added_by_name:e.author,credit:"",check:[],cooks:[],
-    ingredients:[{group:"",items:e.ings.filter(i=>ingText(i))}],
+    added_by_name:e.author,credit:base.credit||"",check:base.check||[],cooks:base.cooks||[],
+    ingredients:[{group:e._group||"",items:e.ings.filter(i=>ingText(i))}],
     method:e.steps.filter(s=>String(s.body||s.title||"").trim())};
 }
 function vCreate(){
@@ -838,11 +912,13 @@ function vCreate(){
   const cats=[...new Set(allRecipes().map(r=>r.sub).filter(Boolean))].sort();
   return `${vNav()}<main class="wrap">
     <div class="edhead">
-      <div><h1>Create a recipe</h1><p>Your recipe, in the family style.</p></div>
+      <div><h1>${e.editId?"Edit recipe":"Create a recipe"}</h1>
+      <p>${e.editId?"Changes are kept on this device.":"Your recipe, in the family style."}</p></div>
       <div class="sp"></div>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
+        ${e.editId?`<button class="btn btn-ghost" data-act="ed-cancel">Cancel</button>`:""}
         <button class="btn btn-ghost" data-act="ed-preview">Preview recipe</button>
-        <button class="btn btn-primary" data-act="ed-save" ${S.busy?"disabled":""}>${S.busy?"Saving…":"Save recipe"}</button></div>
+        <button class="btn btn-primary" data-act="ed-save" ${S.busy?"disabled":""}>${S.busy?"Saving…":(e.editId?"Save changes":"Save recipe")}</button></div>
     </div>
     ${S.err?`<p class="err" style="margin-top:14px">${esc(S.err)}</p>`:""}
     <div class="edcols">
@@ -902,6 +978,19 @@ function vCreate(){
 
         <div class="noteline">${ic("heart","hi")}<b>Author's note</b><span class="opt" style="color:var(--muted);font-size:13px">(optional)</span></div>
         <div class="field"><textarea data-ed="note" rows="2" placeholder="A tip, memory or serving suggestion in your own words.">${esc(e.note)}</textarea></div>
+
+        ${e.editId?`<div class="dangerrow">
+          ${e.confirmDel
+            ? `<span class="dangertxt">${e._origin==="book"
+                 ? "Remove this page from your copy of the book? Her scan stays in the archive and you can restore it from Family."
+                 : "Delete this recipe? That can't be undone."}</span>
+               <div class="sp"></div>
+               <button class="btn btn-ghost" data-act="ed-del-cancel">Keep it</button>
+               <button class="btn btn-danger" data-act="ed-del-yes">${e._origin==="book"?"Remove":"Delete"}</button>`
+            : `<span class="dangertxt">${e._origin==="book"?"Remove this page from your copy of the book.":"Delete this recipe."}</span>
+               <div class="sp"></div>
+               <button class="btn btn-ghost danger" data-act="ed-del">${ic("trash")} ${e._origin==="book"?"Remove from my copy":"Delete recipe"}</button>`}
+        </div>`:""}
       </div>
 
       <div>
@@ -949,6 +1038,15 @@ function vFamily(){
     ${top.length?`<div class="sechead" style="margin-top:40px"><h2>Credited in her pages</h2></div>
       <p style="color:var(--muted);font-size:15px;margin:-8px 0 0">Names she wrote beside the recipes — the friends and family who gave her the dish.</p>
       <div class="namechips">${top.map(([n,c])=>`<button class="namechip" data-search="${esc(n)}">${esc(n)}${c>1?` &middot; ${c}`:""}</button>`).join("")}</div>`:""}
+    ${countEdits()?`<div class="ovpanel">
+      <div><h4>${ic("pencil")} Your edits</h4>
+      <p>${countEdits()} change${countEdits()>1?"s":""} saved in this browser. Nobody else sees them, and they stay
+      until you clear them. Download them and they can be folded into the book properly later.</p></div>
+      <div class="sp"></div>
+      <div style="display:flex;gap:9px;flex-wrap:wrap">
+        <button class="btn btn-ghost" data-act="ov-export">${ic("download")} Download</button>
+        <button class="btn btn-ghost danger" data-act="ov-reset">Clear all</button></div>
+    </div>`:""}
     <div class="note" style="margin-top:32px;max-width:640px"><strong>Inviting someone.</strong> Send them this address.
       ${LIVE?`They pick "Join the family book" and they're in.`:`It's open to anyone with the link at the moment.`}</div>
   </main>${vFoot()}`;
@@ -1034,7 +1132,9 @@ document.addEventListener("click",async ev=>{
     return;
   }
   if(d.page){ev.stopPropagation();return openIndexAtPage(d.page)}
-  if(d.nav){ev.preventDefault();if(d.nav==="create"&&!S.ed)S.ed=blankEd();return go(d.nav)}
+  if(d.nav){ev.preventDefault();
+    if(d.nav==="create"&&(!S.ed||S.ed.editId))S.ed=blankEd();
+    return go(d.nav)}
   if(d.open)return go("recipe",d.open);
   if(d.filter){S.filter=d.filter;return render()}
   if(d.idxfilter){S.idxFilter=d.idxfilter;return render()}
@@ -1058,6 +1158,20 @@ document.addEventListener("click",async ev=>{
     case "cook-next":S.cook.step++;return render();
     case "cook-done":{S.cook.on=false;keepAwake(false);const r=S.recipes.find(x=>String(x.id)===String(S.id));if(r)await logCook(r);return}
     case "frac-toggle":S.ed.showFrac=!S.ed.showFrac;return render();
+    case "edit":{const r=S.recipes.find(x=>String(x.id)===String(S.id));
+      if(r){S.ed=recipeToEd(r);S.err="";go("create")}return}
+    case "ed-cancel":{const id=S.ed&&S.ed.editId;S.ed=null;S.err="";return id?go("recipe",id):go("home")}
+    case "ed-del":S.ed.confirmDel=true;return render();
+    case "ed-del-cancel":S.ed.confirmDel=false;return render();
+    case "ed-del-yes":return removeRecipe();
+    case "ov-export":{
+      const blob=new Blob([JSON.stringify(S.ov,null,1)],{type:"application/json"});
+      const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+      a.download="mums-book-edits.json";a.click();
+      setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+      toast("Downloaded your edits");return;
+    }
+    case "ov-reset":{S.ov={};persistOv();await loadAll();toast("Edits cleared");return render()}
     case "add-ing":S.ed.ings.push({qty:"",unit:"",name:""});return render();
     case "add-step":S.ed.steps.push({title:"",body:""});return render();
     case "img-rotate":S.ed.rot=((S.ed.rot||0)+90)%360;
@@ -1172,6 +1286,34 @@ function pickPhoto(r){
 }
 
 /* ---------- save ---------- */
+function persistLocal(){LS.set(LOCAL_KEY,S.local);}
+function persistOv(){LS.set(OV_KEY,S.ov);}
+
+/* Only the fields the editor actually owns go into an override, so a future
+   recipes.json update still flows through for everything else. */
+const ED_FIELDS=["title","sub","section","serves","temp_c","time_value","time_unit",
+                 "book_page","note","image","thumb","ingredients","method","added_by_name","tags"];
+function overrideFrom(rec){
+  const o={};ED_FIELDS.forEach(k=>{if(rec[k]!==undefined)o[k]=rec[k]});return o;
+}
+
+async function removeRecipe(){
+  const e=S.ed,id=e.editId;
+  if(!id)return;
+  if(e._origin==="local"){
+    S.local=S.local.filter(r=>String(r.id)!==String(id));persistLocal();
+    delete S.ov[id];
+  }else if(e._origin==="db"&&LIVE){
+    try{await sb.from("recipes").delete().eq("id",id)}catch(x){}
+  }else{
+    S.ov[id]={__deleted:true};        // her page: hidden on this device, scan untouched
+  }
+  persistOv();
+  S.ed=null;await loadAll();
+  toast(e._origin==="book"?"Removed from your copy":"Deleted");
+  go("contents");
+}
+
 async function saveRecipe(){
   const e=S.ed;
   if(!String(e.title).trim()){S.err="Give it a name — even a rough one.";window.scrollTo({top:0,behavior:"smooth"});return render()}
@@ -1182,23 +1324,43 @@ async function saveRecipe(){
     delete rec.id;
     rec.created_at=new Date().toISOString().slice(0,10);
     rec.tags=[e.sub.toLowerCase()].filter(Boolean);
-    if(LIVE){
-      if(e.image&&e._file){
-        try{
-          const path=`${S.user.id}/${Date.now()}.jpg`;
-          const blob=await (await fetch(e.image)).blob();
-          const {error}=await sb.storage.from("photos").upload(path,blob,{contentType:"image/jpeg"});
-          if(!error){rec.image=sb.storage.from("photos").getPublicUrl(path).data.publicUrl;rec.thumb=rec.image}
-        }catch(x){}
+    if(LIVE&&e.image&&e._file){
+      try{
+        const path=`${S.user.id}/${Date.now()}.jpg`;
+        const blob=await (await fetch(e.image)).blob();
+        const {error}=await sb.storage.from("photos").upload(path,blob,{contentType:"image/jpeg"});
+        if(!error){rec.image=sb.storage.from("photos").getPublicUrl(path).data.publicUrl;rec.thumb=rec.image}
+      }catch(x){}
+    }
+
+    if(e.editId){
+      /* editing something that already exists */
+      if(e._origin==="db"&&LIVE){
+        const row={...rec};delete row.id;delete row._edited;delete row._h;
+        const {error}=await sb.from("recipes").update(row).eq("id",e.editId);
+        if(error)throw error;
+      }else if(e._origin==="local"){
+        S.local=S.local.map(r=>String(r.id)===String(e.editId)?{...r,...rec,id:e.editId}:r);
+        persistLocal();
+      }else{
+        S.ov[e.editId]=overrideFrom(rec);persistOv();
       }
+      const id=e.editId;S.ed=null;S.busy=false;
+      await loadAll();toast("Changes saved on this device");return go("recipe",id);
+    }
+
+    /* brand new */
+    if(LIVE){
       rec.added_by=S.user.id;
-      const {data,error}=await sb.from("recipes").insert(rec).select().single();
+      const row={...rec};delete row.id;
+      const {data,error}=await sb.from("recipes").insert(row).select().single();
       if(error)throw error;
       S.recipes.unshift({...data,cooks:data.cooks||[]});
     }else{
-      S.recipes.unshift({...rec,id:"local-"+Date.now()});
+      const made={...rec,id:"local-"+Date.now()};
+      S.local.unshift(made);persistLocal();
     }
-    S.ed=null;S.busy=false;toast("Saved to the book");go("home");
+    S.ed=null;S.busy=false;await loadAll();toast("Saved to the book");go("home");
   }catch(err){S.busy=false;S.err=err.message||"Couldn't save that. Try again.";render()}
 }
 
