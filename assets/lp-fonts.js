@@ -70,9 +70,16 @@
       body: { family: 'Newsreader', fallback: 'Georgia,serif' },
       eyebrow: { family: 'Jost', fallback: 'system-ui,sans-serif', weight: 500, spacing: '.2em', button: '.14em' },
       google: 'Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Jost:wght@400;500;600'
+    },
+    jost: {
+      label: 'Jost Architectural', note: 'Light Jost headings, Jost body, tracked capitals',
+      head: { family: 'Jost', fallback: 'system-ui,sans-serif', weight: 400, transform: 'none', spacing: '-.005em' },
+      body: { family: 'Jost', fallback: 'system-ui,sans-serif' },
+      eyebrow: { family: 'Jost', fallback: 'system-ui,sans-serif', weight: 500, spacing: '.24em', button: '.02em' },
+      google: 'Jost:wght@300;400;500;600'
     }
   };
-  var ORDER = ['classic', 'archivo', 'oswald', 'bebas', 'montserrat', 'poppins', 'space', 'playfair', 'heritage'];
+  var ORDER = ['classic', 'archivo', 'oswald', 'bebas', 'montserrat', 'poppins', 'space', 'playfair', 'heritage', 'jost'];
 
   function get(key) { return (key && SETS[key] && key !== 'classic') ? SETS[key] : null; }
   function q(f) { return '"' + String(f).replace(/["\\<>]/g, '') + '"'; }

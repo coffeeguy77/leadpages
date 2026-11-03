@@ -1590,7 +1590,7 @@
     if (window.LP_FONTS) { go(); return; }
     if (!FONTS_P) {
       FONTS_P = new Promise(function (resolve) {
-        var sc = document.createElement('script'); sc.src = '/assets/lp-fonts.js?v=2'; sc.async = true;
+        var sc = document.createElement('script'); sc.src = '/assets/lp-fonts.js?v=3'; sc.async = true;
         sc.onload = resolve; sc.onerror = function () { FONTS_P = null; resolve(); };
         document.head.appendChild(sc);
       });

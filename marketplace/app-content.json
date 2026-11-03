@@ -1914,6 +1914,43 @@
       "default"
     ]
   },
+  "productExplorer": {
+    "name": "Product Explorer",
+    "tagline": "Let visitors filter your models and compare floor plans",
+    "summary": "An architectural model selector: pick a category, filter by type, compare floor plans and enquire.",
+    "pitch": "Show a range of models the way buyers want to choose them. Visitors pick a category, filter by type and click a model to see its floor plan, elevations and photos beside the key details, then enquire about that exact model in one click.",
+    "features": [
+      {
+        "title": "Floor plans first",
+        "text": "A large viewer for each model's floor plan, elevations and photos, with zoom and full screen."
+      },
+      {
+        "title": "Model-specific enquiries",
+        "text": "Enquire selects the model in your quote form, and Back keeps the selection."
+      },
+      {
+        "title": "Phone friendly",
+        "text": "Compact filters and a sideways-scrolling model strip above the plan."
+      }
+    ],
+    "partnerBenefits": [
+      {
+        "title": "Built from data",
+        "text": "Add, hide or reorder models in the editor; no page redesign needed."
+      },
+      {
+        "title": "Never the wrong plan",
+        "text": "A model without its own plan shows a clear placeholder, never another model's plan."
+      },
+      {
+        "title": "Works with any theme",
+        "text": "Uses the site's fonts and colours."
+      }
+    ],
+    "presets": [
+      "default"
+    ]
+  },
   "storyRows": {
     "name": "Story Rows",
     "tagline": "Alternating photo or drawing and text rows that tell your story",
