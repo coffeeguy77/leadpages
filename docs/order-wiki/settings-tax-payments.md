@@ -27,6 +27,15 @@ What customers and staff see for items sold by the kg before they're weighed.
 - **Kg price only** — just the $/kg, e.g. "$20.00/kg · priced when weighed". Applies in the shop, on the customer's order page, on receipts and customer copies, and on staff screens.
 - Display only: deposits and totals are worked out the same way either way. Weighed items and fixed-price items always show their price.
 
+## Special prices
+
+What customers see when a line on their order has a special price (see **Special prices**):
+
+- **Their price and the normal price** (default), e.g. "Special price: $27.00/kg (was $30.80/kg)".
+- **Just their price.**
+
+You can also hide the normal price on any single order with the tick under the order totals.
+
 ## Payment rule (deposit)
 
 - **None / pay later**, **Fixed deposit** (for example $50 per order), **Percentage deposit**, **Full payment**, **Quote first**.

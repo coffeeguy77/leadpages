@@ -551,7 +551,7 @@ html[data-theme="command-dark"] .led-warn,html[data-theme="neon-pink"] .led-warn
 #order-modal .modal-body{max-height:none;overflow:visible;flex:1;padding:18px;background:color-mix(in srgb,var(--ink) 2.5%,var(--surface))}
 #order-modal .modal-foot:empty{display:none}
 .od{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:18px;align-items:start}
-.od-main{display:grid;gap:16px;min-width:0}
+.od-main{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;min-width:0}
 .od-side{display:grid;gap:12px;position:sticky;top:70px}
 .od-docket{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:22px 24px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
 .od-dk-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin:0 0 16px}
@@ -580,6 +580,20 @@ html[data-theme="command-dark"] .led-warn,html[data-theme="neon-pink"] .led-warn
 .od-muted{color:var(--ink-faint);font-size:12.5px}
 .od-mini{padding:4px 9px;font-size:12px;min-height:0}
 .od-weigh td{background:color-mix(in srgb,var(--accent) 6%,transparent)}
+.pill-special{display:inline-flex;align-items:center;padding:3px 9px;border-radius:999px;font:800 11px/1.3 var(--font-ui);letter-spacing:.03em;text-transform:uppercase;white-space:nowrap;
+  background:color-mix(in srgb,#7c3aed 15%,transparent);color:#6d28d9;border:1px solid color-mix(in srgb,#7c3aed 40%,transparent)}
+.pill-special.pill-sm{padding:1px 7px;font-size:10px;vertical-align:1px}
+html[data-theme="command-dark"] .pill-special,html[data-theme="neon-pink"] .pill-special,html[data-theme="electric-blue"] .pill-special,html[data-theme="studio-dark"] .pill-special{color:#d8ccff;background:color-mix(in srgb,#8b5cf6 26%,transparent);border-color:color-mix(in srgb,#a78bfa 55%,transparent)}
+.od-pills{margin:6px 0 0;display:flex;flex-wrap:wrap;gap:6px}
+.od-special-sub{color:var(--ink)}
+.od-special td{background:color-mix(in srgb,#7c3aed 5%,transparent)}
+.od-special-grid{display:grid;grid-template-columns:minmax(0,220px) minmax(0,140px) minmax(0,1fr);gap:10px;align-items:end}
+.od-special-grid .field{margin:0}
+.od-special-grid select,.od-special-grid input{width:100%;background:var(--input-bg,var(--surface));color:var(--ink)}
+.od-sp-actions{grid-column:1/-1}
+.od-sp-hint{grid-column:1/-1;margin:0}
+.od-hide-was{display:flex;gap:8px;align-items:flex-start;margin:12px 0 0;font-size:13px;color:var(--ink);cursor:pointer}
+.od-hide-was input{margin-top:2px;flex:0 0 auto}
 .od-weigh-grid{display:grid;grid-template-columns:repeat(3,minmax(0,200px));gap:10px;align-items:end}
 .od-weigh-grid .field{margin:0}
 .od-totals{margin:14px 0 0 auto;max-width:340px;display:grid;gap:4px}
@@ -636,7 +650,7 @@ html[data-theme="command-dark"] .led-warn,html[data-theme="neon-pink"] .led-warn
 @media(max-width:900px){.wiki{grid-template-columns:1fr}.wiki-nav{position:static;max-height:none}.wiki-page{padding:18px}}
 .ihp-trace{display:none;border:1px dashed var(--line-strong);border-radius:10px;padding:10px 12px;margin:0 0 12px}
 .ihp-trace.ihp-trace-on{display:block}
-@media(max-width:1100px){.od{grid-template-columns:1fr}.od-side{position:static}}
+@media(max-width:1100px){.od{grid-template-columns:minmax(0,1fr)}.od-side{position:static}}
 @media(max-width:720px){
   #order-modal{padding:0}
   #order-modal > .modal{border-radius:0;min-height:100vh}
@@ -646,6 +660,9 @@ html[data-theme="command-dark"] .led-warn,html[data-theme="neon-pink"] .led-warn
   .od-dk-cust{grid-template-columns:1fr 1fr}
   .od-dk-cust > div:nth-child(3){border-left:0;padding-left:0}
   .od-weigh-grid{grid-template-columns:1fr}
+  .od-special-grid{grid-template-columns:1fr}
+  /* Line editors stay in view while the line table scrolls sideways on a phone. */
+  .od-special-grid,.od-weigh-grid{position:sticky;left:0;max-width:calc(100vw - 72px)}
 }
 .item-block{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px}
 .item-block-head{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start;justify-content:space-between}
@@ -985,6 +1002,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
                           <div><span>Items</span><strong id="no-pay-item-count">0</strong></div>
                           <div><span>Estimated total</span><strong id="no-pay-est-total">—</strong></div>
                         </div>
+                        <label class="od-hide-was hide" id="no-hide-was-wrap"><input type="checkbox" id="no-hide-was"> Don’t show the customer the normal price on this order <span class="od-muted">(they still get the special price)</span></label>
                       </div>
                       <div class="pay-on-create no-review-block">
                         <h4>Payment</h4>
@@ -1689,6 +1707,31 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       <section class="view" id="view-customers" data-view="customers">
         <div class="card">
           <h3>Customers</h3>
+          <div class="pay-tabs" role="tablist">
+            <button type="button" class="btn ghost pay-tab cust-tab on" data-cust-tab="list">Customers</button>
+            <button type="button" class="btn ghost pay-tab cust-tab" data-cust-tab="special">Special prices</button>
+          </div>
+          <div id="cust-special" class="hide">
+            <p class="sub" style="margin:0 0 10px">Every special price given on an order — who, what, the normal price and what they paid — kept even if the line or order is later removed. Handy to check what a customer got last time. Click a heading to sort, a row to open the order.</p>
+            <div class="toolbar led-filters">
+              <input id="sp-search" type="search" placeholder="Search customer, phone, order, product, reason" style="flex:1;min-width:200px">
+              <label class="led-date">From <input id="sp-from" type="date"></label>
+              <label class="led-date">To <input id="sp-to" type="date"></label>
+              <label class="led-check"><input type="checkbox" id="sp-current"> Current only</label>
+              <button class="btn ghost" type="button" id="sp-export">Export CSV</button>
+            </div>
+            <div class="table-wrap"><table class="oe led-table sp-table"><thead><tr>
+              <th data-sp-sort="created_at" class="sortable">Date</th>
+              <th data-sp-sort="customer_name" class="sortable">Customer</th>
+              <th data-sp-sort="order_number" class="sortable">Order</th>
+              <th data-sp-sort="product_name" class="sortable">Product</th>
+              <th data-sp-sort="normal_sort" class="sortable led-r">Normal</th>
+              <th data-sp-sort="special_sort" class="sortable led-r">Special</th>
+              <th data-sp-sort="saving_cents" class="sortable led-r">Saving</th>
+              <th>Reason / staff</th>
+            </tr></thead><tbody id="sp-tbody"></tbody></table></div>
+          </div>
+          <div id="cust-list">
           <p class="sub">Click a row to open customer details, order history, and messages. Names use Given Surname title case (e.g. Shaun Matthews).</p>
           <div class="toolbar">
             <input id="cust-q" placeholder="Search name, phone, email" style="flex:1;min-width:180px">
@@ -1699,6 +1742,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
           <div class="table-wrap"><table class="oe"><thead><tr>
             <th>Name</th><th>Phone</th><th>Email</th><th>Orders</th><th>Lifetime</th><th>Last order</th>
           </tr></thead><tbody id="cust-tbody"></tbody></table></div>
+          </div>
         </div>
       </section>
 
@@ -2096,6 +2140,15 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
                   <option value="1">Kg price only (e.g. $20.00/kg · priced when weighed)</option>
                 </select>
                 <span class="field-hint">Display only — deposits and totals work the same either way. Weighed and fixed-price items always show their price.</span>
+              </div>
+              <h4 class="section-title">Special prices</h4>
+              <p class="notice">Staff can give one order line a special price (Special price on the order, or Price in New Order). What should the customer see on their order page, receipts and customer copy?</p>
+              <div class="field"><label for="set-special-was">Customers see</label>
+                <select id="set-special-was" style="max-width:360px">
+                  <option value="1">Their price and the normal price (e.g. $27.00/kg, was $30.80/kg)</option>
+                  <option value="0">Just their price</option>
+                </select>
+                <span class="field-hint">You can also hide the normal price on any single order (tick on the order).</span>
               </div>
             </div>
 
@@ -3679,7 +3732,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
           '<td>' + esc(formatAud(o.deposit_paid_cents)) +
             (o.deposit_required_cents ? ' / ' + esc(formatAud(o.deposit_required_cents)) : '') + '</td>' +
           '<td>' + statusBadge(o.status) + '</td>' +
-          '<td>' + priceBadge(o) + '</td>' +
+          '<td>' + priceBadge(o) + (o.has_price_override ? ' <span class="pill-special pill-sm" title="Has special pricing">Custom pricing</span>' : '') + '</td>' +
           '<td><button class="btn ghost" type="button" data-open="' + esc(o.id) + '">Open</button></td>' +
         '</tr>';
       }).join('');
@@ -4004,6 +4057,97 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     return h;
   }
 
+  /** Inline editor for a line's special price (this order only). */
+  function specialPriceRowHtml(it){
+    var ov = it.price_override || {};
+    var weighed = it.pricing_method === 'per_weight' || it.pricing_method === 'price_tbc';
+    var mode = ov.mode || 'rate';
+    var val = mode === 'rate' ? (ov.rate_cents != null ? centsToDollarsInput(ov.rate_cents) : '')
+      : mode === 'fixed' ? (ov.line_cents != null ? centsToDollarsInput(ov.line_cents) : '')
+      : (ov.percent != null ? ov.percent : '');
+    var normal = ov.normal_unit_cents != null ? ov.normal_unit_cents : it.unit_price_cents;
+    return '<tr class="od-special hide" data-special-row="' + esc(it.id) + '"><td></td><td colspan="5"><div class="od-special-grid">' +
+      '<div class="field"><label>Special price</label><select data-sp-mode>' +
+        '<option value="rate"' + (mode === 'rate' ? ' selected' : '') + '>' + (weighed ? 'New price per kg' : 'New price each') + '</option>' +
+        '<option value="fixed"' + (mode === 'fixed' ? ' selected' : '') + '>Fixed price for this line</option>' +
+        '<option value="percent"' + (mode === 'percent' ? ' selected' : '') + '>% off this line</option>' +
+      '</select></div>' +
+      '<div class="field"><label data-sp-val-label>' + (mode === 'percent' ? '% off' : mode === 'fixed' ? 'Line price ($)' : (weighed ? '$ per kg' : '$ each')) + '</label>' +
+        '<input type="number" min="0" step="0.01" inputmode="decimal" data-sp-val value="' + esc(val) + '" placeholder="' + (mode === 'percent' ? '10' : '0.00') + '"></div>' +
+      '<div class="field od-sp-reason"><label>Reason <span class="od-muted">(optional)</span></label><input data-sp-reason maxlength="200" value="' + esc(ov.reason || '') + '" placeholder="e.g. bulk order, regular customer"></div>' +
+      '<div class="field od-sp-actions"><label>&nbsp;</label><div class="od-btns" style="margin:0">' +
+        '<button class="btn solid" type="button" data-sp-save="' + esc(it.id) + '">Save special price</button>' +
+        (it.price_override ? '<button class="btn ghost" type="button" data-sp-clear="' + esc(it.id) + '">Back to normal price</button>' : '') +
+      '</div></div>' +
+      '<p class="od-note od-sp-hint">Normal price ' + (normal != null ? esc(formatAud(normal)) + (weighed ? '/kg' : ' each') : '—') + '. This order only — the product price and other orders don’t change. Kept when weighed or edited.</p>' +
+      '</div></td></tr>';
+  }
+
+  function wireSpecialPriceRows(o){
+    var host = $('om-body');
+    host.querySelectorAll('[data-special-toggle]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var row = host.querySelector('[data-special-row="' + btn.getAttribute('data-special-toggle') + '"]');
+        if (row) row.classList.toggle('hide');
+        var inp = row && row.querySelector('[data-sp-val]');
+        if (inp && !row.classList.contains('hide')) inp.focus();
+      });
+    });
+    host.querySelectorAll('[data-special-row]').forEach(function(row){
+      var sel = row.querySelector('[data-sp-mode]');
+      var lbl = row.querySelector('[data-sp-val-label]');
+      var weighed = /per kg/.test(sel.options[0].textContent);
+      sel.addEventListener('change', function(){
+        lbl.textContent = sel.value === 'percent' ? '% off' : sel.value === 'fixed' ? 'Line price ($)' : (weighed ? '$ per kg' : '$ each');
+        row.querySelector('[data-sp-val]').placeholder = sel.value === 'percent' ? '10' : '0.00';
+      });
+    });
+    async function send(itemId, override, btn){
+      btn.disabled = true;
+      try {
+        await api('/api/order/orders', { method: 'POST', body: { site_id: state.siteId, action: 'set_price_override', order_id: o.id, item_id: itemId, override: override } });
+        toast(override ? 'Special price saved' : 'Back to the normal price', 'ok');
+        await openOrderDetail(o.id);
+      } catch (e) {
+        toast((e && e.message) || String(e), 'err');
+        btn.disabled = false;
+      }
+    }
+    host.querySelectorAll('[data-sp-save]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var row = btn.closest('[data-special-row]');
+        var mode = row.querySelector('[data-sp-mode]').value;
+        var raw = row.querySelector('[data-sp-val]').value;
+        var n = Number(raw);
+        if (raw === '' || !isFinite(n) || n < 0) { toast('Enter the special price', 'err'); return; }
+        if (mode === 'percent' && (n <= 0 || n > 100)) { toast('Enter a % between 0 and 100', 'err'); return; }
+        var ov = { mode: mode, reason: row.querySelector('[data-sp-reason]').value.trim() };
+        if (mode === 'rate') ov.rate_cents = dollarsToCents(raw);
+        else if (mode === 'fixed') ov.line_cents = dollarsToCents(raw);
+        else ov.percent = n;
+        send(btn.getAttribute('data-sp-save'), ov, btn);
+      });
+    });
+    host.querySelectorAll('[data-sp-clear]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        if (!window.confirm('Put this line back to the normal price? The special price stays in the history.')) return;
+        send(btn.getAttribute('data-sp-clear'), null, btn);
+      });
+    });
+    var hide = $('om-hide-was');
+    if (hide) hide.addEventListener('change', async function(){
+      hide.disabled = true;
+      try {
+        await api('/api/order/orders', { method: 'POST', body: { site_id: state.siteId, action: 'set_hide_normal_price', order_id: o.id, hide: hide.checked } });
+        toast(hide.checked ? 'Normal price hidden from the customer' : 'Customer sees the normal price too', 'ok');
+      } catch (e) {
+        hide.checked = !hide.checked;
+        toast((e && e.message) || String(e), 'err');
+      }
+      hide.disabled = false;
+    });
+  }
+
   function renderOrderDetail(data){
     var o = data.order || {};
     var items = data.items || [];
@@ -4025,6 +4169,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     html += '<div class="od-dk-head"><div>';
     html += '<p class="od-eyebrow">Order</p><h2 class="od-num">' + esc(o.order_number || '') + '</h2>';
     html += '<p class="od-sub">Placed ' + esc(odShortDate(o.created_at)) + (o.source ? ' · ' + esc(o.source === 'online' ? 'online' : o.source === 'staff' ? 'by staff' : o.source) : '') + '</p>';
+    if (o.has_price_override) html += '<p class="od-pills"><span class="pill-special" title="One or more lines on this order have a special price">Custom pricing</span></p>';
     html += '</div><div class="od-pickbox"><span class="od-pick-lbl">PICK UP</span><strong>' +
       esc(o.pickup_date ? formatPickupDateLong(o.pickup_date) : 'No date set') + '</strong>' +
       (o.pickup_time ? '<span>' + esc(String(o.pickup_time).slice(0, 5)) + '</span>' : '') +
@@ -4054,7 +4199,14 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
         : (it.requested_weight_kg != null ? '~' + esc(odKg(it.requested_weight_kg)) : '<span class="od-muted">when weighed</span>');
       html += '<tbody class="item-block" data-item="' + esc(it.id) + '"><tr>';
       html += '<td class="od-q">' + esc(Number(it.quantity)) + '</td>';
+      var sp = it.special;
       html += '<td><strong>' + esc(it.product_name) + '</strong> ' + priceBadge(it) +
+        (sp ? ' <span class="pill-special pill-sm">Special price</span>' : '') +
+        (sp ? '<span class="od-line-sub od-special-sub">Special: <strong>' + esc(sp.label) + '</strong>' +
+          (sp.normal_label ? ' · normal ' + esc(sp.normal_label) : '') +
+          (sp.normal_line_cents != null && sp.mode !== 'rate' ? ' (' + esc(formatAud(sp.normal_line_cents)) + ')' : '') +
+          (sp.reason ? ' · “' + esc(sp.reason) + '”' : '') +
+          (sp.set_by_label ? ' · ' + esc(sp.set_by_label) : '') + '</span>' : '') +
         (stockInfo ? ' <span class="badge info">' + (stockInfo.finalised ? 'stock given' : stockInfo.pieces + ' of ' + Number(it.quantity) + ' given') + '</span>' : '') +
         (optTxt ? '<span class="od-line-sub">' + esc(optTxt) + '</span>' : '') +
         (it.notes ? '<span class="od-line-sub">“' + esc(it.notes) + '”</span>' : '') +
@@ -4072,16 +4224,22 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       if (needsWeight && it.price_status !== 'final' && !isVoided) {
         html += '<button class="btn ghost od-mini" type="button" data-weigh-toggle="' + esc(it.id) + '">' + (it.price_status === 'finalised' ? 'Re-weigh' : 'Weigh') + '</button>';
       }
+      if (!isVoided && ['refunded', 'archived'].indexOf(o.status) < 0) {
+        html += '<button class="btn ghost od-mini" type="button" data-special-toggle="' + esc(it.id) + '" title="Special price for this order only">' + (sp ? 'Edit price' : 'Special price') + '</button>';
+      }
       if (canEditItems) {
         html += '<button class="btn ghost od-mini" type="button" data-remove-item="' + esc(it.id) + '" title="Remove line">Remove</button>';
       }
       html += '</td></tr>';
+      if (!isVoided) html += specialPriceRowHtml(it);
       if (needsWeight && it.price_status !== 'final' && !isVoided) {
         html += '<tr class="od-weigh hide" data-weigh-row="' + esc(it.id) + '"><td></td><td colspan="5"><div class="od-weigh-grid">' +
           '<div class="field"><label>Actual weight (kg)</label><input type="number" min="0" step="0.01" inputmode="decimal" data-weight value="' +
           esc(it.actual_weight_kg != null ? it.actual_weight_kg : (it.requested_weight_kg || '')) + '"></div>' +
-          '<div class="field"><label>Rate (cents' + (it.pricing_method === 'per_weight' ? ' per kg' : '') + ')</label><input type="number" min="0" step="1" data-rate value="' +
-          esc(it.unit_price_cents != null ? it.unit_price_cents : '') + '"></div>' +
+          (sp
+            ? '<div class="field"><label>Price</label><p class="od-note" style="margin:8px 0 0">Special price applies: ' + esc(sp.label) + '</p></div>'
+            : '<div class="field"><label>Rate (cents' + (it.pricing_method === 'per_weight' ? ' per kg' : '') + ')</label><input type="number" min="0" step="1" data-rate value="' +
+              esc(it.unit_price_cents != null ? it.unit_price_cents : '') + '"></div>') +
           '<div class="field"><label>&nbsp;</label><button class="btn solid" type="button" data-finalise="' + esc(it.id) + '">Save final price</button></div>' +
           '</div></td></tr>';
       }
@@ -4098,6 +4256,10 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     html += '<div class="od-tot-row"><span>Deposit paid</span><strong>' + esc(display.deposit_paid || formatAud(o.deposit_paid_cents)) + '</strong></div>';
     html += '<div class="od-tot-row od-tot-big"><span>Balance' + (o.balance_cents == null ? ' (after weighing)' : '') + '</span><strong>' + esc(o.balance_cents != null ? formatAud(o.balance_cents) : 'TBC') + '</strong></div>';
     html += '</div>';
+    if (o.has_price_override) {
+      html += '<label class="od-hide-was"><input type="checkbox" id="om-hide-was"' + (o.hide_normal_price ? ' checked' : '') + '> ' +
+        'Don’t show the customer the normal price on this order <span class="od-muted">(they still get the special price)</span></label>';
+    }
     html += '</section>';
 
     if (canEditItems) {
@@ -4278,6 +4440,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       });
     });
 
+    wireSpecialPriceRows(o);
     $('om-body').querySelectorAll('[data-finalise]').forEach(function(btn){
       btn.addEventListener('click', async function(){
         var block = btn.closest('.item-block');
@@ -4808,6 +4971,38 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     return label;
   }
 
+  /** Special price typed in a New Order row's Price panel → { mode, value, reason }, or the previous one when the panel is closed. */
+  function readFastSpecial(row, prev){
+    var modeEl = row && row.querySelector('[data-fast-sp-mode]');
+    if (!modeEl) return prev || null;
+    var val = (row.querySelector('[data-fast-sp-val]') || {}).value;
+    var reason = ((row.querySelector('[data-fast-sp-reason]') || {}).value || '').trim();
+    if (val == null || String(val).trim() === '') return null;
+    return { mode: modeEl.value, value: String(val).trim(), reason: reason };
+  }
+
+  /** Draft special price → order line price_override (or null). */
+  function fastSpecialToOverride(sp){
+    if (!sp || sp.value === '' || sp.value == null) return null;
+    var n = Number(sp.value);
+    if (!isFinite(n) || n < 0) return null;
+    var ov = { mode: sp.mode || 'rate' };
+    if (sp.reason) ov.reason = sp.reason;
+    if (ov.mode === 'percent') { if (n <= 0 || n > 100) return null; ov.percent = n; }
+    else if (ov.mode === 'fixed') ov.line_cents = dollarsToCents(sp.value);
+    else ov.rate_cents = dollarsToCents(sp.value);
+    return ov;
+  }
+
+  /** "Special $27.00/kg" for the cart. */
+  function fastSpecialLabel(product, ov){
+    if (!ov) return '';
+    var per = productNeedsWeight(product) || (product && product.pricing_method === 'per_weight') ? '/kg' : ' each';
+    if (ov.mode === 'percent') return 'Special: ' + String(ov.percent) + '% off';
+    if (ov.mode === 'fixed') return 'Special: ' + formatAud(ov.line_cents) + ' for the line';
+    return 'Special: ' + formatAud(ov.rate_cents) + per;
+  }
+
   function captureNoFastDrafts(){
     var host = $('no-fast-list');
     if (!host) return;
@@ -4820,7 +5015,8 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
         kg: (row.querySelector('[data-fast-kg]') || {}).value,
         notes: (row.querySelector('[data-fast-notes]') || {}).value,
         touched: row.getAttribute('data-touched') === '1',
-        answers: collectLineAnswers(row)
+        answers: collectLineAnswers(row),
+        special: readFastSpecial(row, drafts[id] && drafts[id].special)
       };
     });
   }
@@ -4903,6 +5099,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       if (a && a.label && a.value) parts.push(a.label + ': ' + a.value);
     });
     if (line.notes) parts.push('“' + line.notes + '”');
+    if (line.price_override) parts.push(fastSpecialLabel(product, line.price_override));
     return parts.join(' · ') || (product && product.pack_label ? product.pack_label : '');
   }
 
@@ -4956,6 +5153,8 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       if (picked.length) sLine.requested_weight_kg = Math.round(sw * 1000) / 1000;
       var sNotes = row ? (sNotesEl && sNotesEl.value.trim()) : (draft.notes && String(draft.notes).trim());
       if (sNotes) sLine.notes = sNotes;
+      var sOv = fastSpecialToOverride(row ? readFastSpecial(row, draft.special) : draft.special);
+      if (sOv) sLine.price_override = sOv;
       return { product: product, line: sLine, needsW: false, showQty: true, qty: picked.length, wRaw: '' };
     }
     var needsW = productNeedsWeight(product);
@@ -4981,6 +5180,8 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     var line = { product_id: product_id, quantity: needsW ? 1 : qty, answers: answers };
     if (wRaw !== '' && wRaw != null && isFinite(Number(wRaw))) line.requested_weight_kg = Number(wRaw);
     if (notes) line.notes = notes;
+    var ovr = fastSpecialToOverride(row ? readFastSpecial(row, draft.special) : draft.special);
+    if (ovr) line.price_override = ovr;
     return { product: product, line: line, needsW: needsW, showQty: showQty, qty: qty, wRaw: wRaw };
   }
 
@@ -5122,6 +5323,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       }
       return '<div class="no-full-cart-item" data-cart-key="' + esc(ent.key) + '">' +
         '<div class="no-full-cart-body"><strong>' + esc(p.name || 'Item') + '</strong>' +
+        (ent.line && ent.line.price_override ? ' <span class="pill-special pill-sm">Special price</span>' : '') +
         (meta ? '<div class="meta">' + esc(meta) + '</div>' : '') +
         '<div class="no-full-cart-controls">' + controls + '</div></div>' +
         '<button type="button" class="btn ghost no-full-cart-rm" data-cart-rm="' + esc(ent.key) + '" aria-label="Remove ' + esc(p.name || 'item') + '">✕</button></div>';
@@ -5346,6 +5548,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     if ($('no-emb-cart-count')) $('no-emb-cart-count').textContent = entries.length + ' item' + (entries.length === 1 ? '' : 's');
     if ($('no-pay-item-count')) $('no-pay-item-count').textContent = String(entries.length);
     if ($('no-pay-est-total')) $('no-pay-est-total').textContent = entries.length ? 'See lines' : '—';
+    if ($('no-hide-was-wrap')) $('no-hide-was-wrap').classList.toggle('hide', !entries.some(function(e){ return e.line && e.line.price_override; }));
 
     var review = $('no-review-summary');
     if (review) {
@@ -5750,6 +5953,8 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       var panel = (state.noFastPanelOpen && state.noFastPanelOpen[p.id]) || {};
       var optionsOpen = !!panel.options;
       var notesOpen = !!panel.notes;
+      var specialOpen = !!panel.special;
+      var draftSpecial = draft.special || null;
       var isAdded = !!(state.noFastAdded && state.noFastAdded[p.id]);
       var draftAnswers = {};
       Object.keys(draft.answers || {}).forEach(function(k){ draftAnswers[k] = { value: draft.answers[k] }; });
@@ -5780,6 +5985,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
         html += '<button type="button" class="btn ghost no-fast-toggle-btn' + (optionsOpen ? ' on' : '') + '" data-fast-options-toggle>Options</button>';
       }
       html += '<button type="button" class="btn ghost no-fast-toggle-btn' + (notesOpen ? ' on' : '') + '" data-fast-notes-toggle>Notes</button>';
+      html += '<button type="button" class="btn ghost no-fast-toggle-btn' + (specialOpen || draftSpecial ? ' on' : '') + '" data-fast-special-toggle title="Special price for this order only">' + (draftSpecial ? 'Price ✓' : 'Price') + '</button>';
       if (!stockInfo) {
         html += '<button type="button" class="btn solid no-fast-add-btn' +
           (isAdded ? ' on' : '') +
@@ -5813,6 +6019,22 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       if (notesOpen) {
         html += '<div class="no-fast-panel no-fast-notes-panel"><div class="field" style="margin:0"><label>Line notes</label><input data-fast-notes placeholder="Optional" value="' + esc(notesVal) + '"></div></div>';
       }
+      if (specialOpen) {
+        var spMode = (draftSpecial && draftSpecial.mode) || 'rate';
+        var weighedP = p.pricing_method === 'per_weight' || p.pricing_method === 'price_tbc';
+        var normalP = p.pricing_method === 'per_weight' ? p.price_per_kg_cents : p.price_cents;
+        html += '<div class="no-fast-panel no-fast-special-panel"><div class="od-special-grid">' +
+          '<div class="field"><label>Special price</label><select data-fast-sp-mode>' +
+            '<option value="rate"' + (spMode === 'rate' ? ' selected' : '') + '>' + (weighedP ? 'New price per kg' : 'New price each') + '</option>' +
+            (stockInfo ? '' : '<option value="fixed"' + (spMode === 'fixed' ? ' selected' : '') + '>Fixed price for this line</option>') +
+            '<option value="percent"' + (spMode === 'percent' ? ' selected' : '') + '>% off this line</option>' +
+          '</select></div>' +
+          '<div class="field"><label>' + (spMode === 'percent' ? '% off' : spMode === 'fixed' ? 'Line price ($)' : (weighedP ? '$ per kg' : '$ each')) + '</label>' +
+            '<input type="number" min="0" step="0.01" inputmode="decimal" data-fast-sp-val value="' + esc((draftSpecial && draftSpecial.value) || '') + '" placeholder="' + (spMode === 'percent' ? '10' : '0.00') + '"></div>' +
+          '<div class="field"><label>Reason <span class="od-muted">(optional)</span></label><input data-fast-sp-reason maxlength="200" value="' + esc((draftSpecial && draftSpecial.reason) || '') + '" placeholder="e.g. bulk order"></div>' +
+          '<p class="od-note od-sp-hint">Normal ' + (normalP != null ? esc(formatAud(normalP)) + (weighedP ? '/kg' : ' each') : 'price') + '. This order only. Leave blank for the normal price.</p>' +
+          '</div></div>';
+      }
       html += '</article>';
       return html;
     }).join('');
@@ -5833,17 +6055,32 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
           captureNoFastDrafts();
           if (!state.noFastPanelOpen) state.noFastPanelOpen = {};
           var cur = state.noFastPanelOpen[pid] || {};
-          state.noFastPanelOpen[pid] = { notes: !!cur.notes, options: !cur.options };
+          state.noFastPanelOpen[pid] = { notes: !!cur.notes, options: !cur.options, special: !!cur.special };
           renderNoFastList();
         });
       }
+      var spBtn = row.querySelector('[data-fast-special-toggle]');
+      if (spBtn) {
+        spBtn.addEventListener('click', function(){
+          captureNoFastDrafts();
+          if (!state.noFastPanelOpen) state.noFastPanelOpen = {};
+          var cur = state.noFastPanelOpen[pid] || {};
+          state.noFastPanelOpen[pid] = { notes: !!cur.notes, options: !!cur.options, special: !cur.special };
+          renderNoFastList();
+        });
+      }
+      var spModeSel = row.querySelector('[data-fast-sp-mode]');
+      if (spModeSel) spModeSel.addEventListener('change', function(){ captureNoFastDrafts(); renderNoFastList(); });
+      row.querySelectorAll('[data-fast-sp-val],[data-fast-sp-reason]').forEach(function(inp){
+        inp.addEventListener('change', function(){ captureNoFastDrafts(); renderNoStaffCart(); scheduleNoDraftPersist(); });
+      });
       var notesBtn = row.querySelector('[data-fast-notes-toggle]');
       if (notesBtn) {
         notesBtn.addEventListener('click', function(){
           captureNoFastDrafts();
           if (!state.noFastPanelOpen) state.noFastPanelOpen = {};
           var cur = state.noFastPanelOpen[pid] || {};
-          state.noFastPanelOpen[pid] = { notes: !cur.notes, options: !!cur.options };
+          state.noFastPanelOpen[pid] = { notes: !cur.notes, options: !!cur.options, special: !!cur.special };
           renderNoFastList();
         });
       }
@@ -5859,7 +6096,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
             if (missingRequiredForProduct(pid, row).length) {
               if (!state.noFastPanelOpen) state.noFastPanelOpen = {};
               var curP = state.noFastPanelOpen[pid] || {};
-              state.noFastPanelOpen[pid] = { notes: !!curP.notes, options: true };
+              state.noFastPanelOpen[pid] = { notes: !!curP.notes, options: true, special: !!curP.special };
               toast('Choose required options for ' + ((product && product.name) || 'this product'), 'err');
               renderNoFastList();
               return;
@@ -5921,14 +6158,14 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
           if (chooseLabel === 'Choose Options') {
             if (!state.noFastPanelOpen) state.noFastPanelOpen = {};
             var curChoose = state.noFastPanelOpen[pid] || {};
-            state.noFastPanelOpen[pid] = { notes: !!curChoose.notes, options: true };
+            state.noFastPanelOpen[pid] = { notes: !!curChoose.notes, options: true, special: !!curChoose.special };
             renderNoFastList();
             return;
           }
           if (missingRequiredForProduct(pid, row).length) {
             if (!state.noFastPanelOpen) state.noFastPanelOpen = {};
             var cur = state.noFastPanelOpen[pid] || {};
-            state.noFastPanelOpen[pid] = { notes: !!cur.notes, options: true };
+            state.noFastPanelOpen[pid] = { notes: !!cur.notes, options: true, special: !!cur.special };
             toast('Choose required options for ' + (product.name || 'this product'), 'err');
             renderNoFastList();
             return;
@@ -7241,7 +7478,8 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
         customer_notes: $('no-notes').value.trim() || null,
         items: items,
         after_create_action: payEl.value,
-        send_phone: phone
+        send_phone: phone,
+        hide_normal_price: !!($('no-hide-was') && $('no-hide-was').checked && items.some(function(x){ return x.price_override; }))
       };
       if (state.noSelectedCustomerId) body.customer_id = state.noSelectedCustomerId;
       if (payEl.value === 'inhouse_payment') {
@@ -9162,6 +9400,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       if ($('set-cook-rate')) $('set-cook-rate').value = cook.rate_cents_per_kg != null ? centsToDollarsInput(cook.rate_cents_per_kg) : '';
       var priceDisp = (s.settings && s.settings.price_display) || {};
       if ($('set-kg-only')) $('set-kg-only').value = priceDisp.kg_only === true ? '1' : '0';
+      if ($('set-special-was')) $('set-special-was').value = priceDisp.special_show_was === false ? '0' : '1';
       var pay = (s.settings && s.settings.payments) || {};
       if ($('set-pay-provider')) $('set-pay-provider').value = pay.provider || 'stripe';
       if ($('set-stripe-mode')) $('set-stripe-mode').value = pay.stripe_charge_mode === 'direct' ? 'direct' : 'destination';
@@ -9349,7 +9588,8 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
               rate_cents_per_kg: $('set-cook-rate') && $('set-cook-rate').value !== '' ? dollarsToCents($('set-cook-rate').value) : null
             }),
             price_display: Object.assign({}, existing.price_display || {}, {
-              kg_only: $('set-kg-only') ? $('set-kg-only').value === '1' : !!(existing.price_display && existing.price_display.kg_only)
+              kg_only: $('set-kg-only') ? $('set-kg-only').value === '1' : !!(existing.price_display && existing.price_display.kg_only),
+              special_show_was: $('set-special-was') ? $('set-special-was').value !== '0' : !(existing.price_display && existing.price_display.special_show_was === false)
             }),
             gst: {
               enabled: true,
@@ -10172,6 +10412,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
         });
         html += '</tbody></table></div>';
       }
+      html += '<div id="cd-special"></div>';
       if (payments.length) {
         html += '<h4 style="margin:16px 0 8px">Payments</h4><div class="table-wrap"><table class="oe"><thead><tr><th>When</th><th>Status</th><th>Amount</th></tr></thead><tbody>';
         payments.slice(0, 12).forEach(function(p){
@@ -10189,6 +10430,20 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       }
       body.innerHTML = html;
       if ($('cd-name')) lpSplitName($('cd-name'));
+      (async function(){
+        try {
+          var sd = await api('/api/order/special-prices?' + siteQuery('customer_id=' + encodeURIComponent(c.id || '') + (c.phone ? '&phone=' + encodeURIComponent(c.phone) : '')));
+          var srows = (sd.rows || []).map(spLine);
+          var hostSp = $('cd-special');
+          if (!hostSp || !srows.length) return;
+          hostSp.innerHTML = '<h4 style="margin:16px 0 8px">Special prices <span class="pill-special pill-sm">' + srows.filter(function(r){ return r.action !== 'removed'; }).length + '</span></h4>' +
+            '<div class="table-wrap"><table class="oe led-table sp-table"><thead><tr><th>Date</th><th>Customer</th><th>Order</th><th>Product</th><th class="led-r">Normal</th><th class="led-r">Special</th><th class="led-r">Saving</th><th>Reason / staff</th></tr></thead><tbody>' +
+            srows.map(spRowHtml).join('') + '</tbody></table></div>';
+          hostSp.querySelectorAll('[data-open-order]').forEach(function(tr){
+            tr.addEventListener('click', function(){ if (!tr.getAttribute('data-open-order')) return; modal.classList.add('hide'); openOrderDetail(tr.getAttribute('data-open-order')); });
+          });
+        } catch (_e) {}
+      })();
       body.querySelectorAll('[data-open-order]').forEach(function(tr){
         tr.addEventListener('click', function(ev){
           if (ev.target && ev.target.closest && ev.target.closest('[data-copy-order]')) return;
@@ -10404,6 +10659,141 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
         var numeric = key === 'amount_cents' || key === 'date';
         state.ledgerSort = cur.key === key ? { key: key, dir: cur.dir === 'asc' ? 'desc' : 'asc' } : { key: key, dir: numeric ? 'desc' : 'asc' };
         paintLedger();
+      });
+    });
+  })();
+
+  /* ---------- Special prices history (Customers → Special prices) ---------- */
+  function spLine(r){
+    var per = r.pricing_method === 'per_weight' || r.pricing_method === 'price_tbc' ? '/kg' : ' each';
+    var normal = r.normal_unit_cents != null ? formatAud(r.normal_unit_cents) + per : '—';
+    var special = r.action === 'removed' ? 'Back to normal'
+      : r.mode === 'rate' ? formatAud(r.special_unit_cents) + per
+      : r.mode === 'percent' ? String(r.percent).replace(/\.0+$/, '') + '% off'
+      : r.mode === 'fixed' ? formatAud(r.special_line_cents) + ' line' : '—';
+    var saving = r.action !== 'removed' && r.normal_line_cents != null && r.special_line_cents != null ? r.normal_line_cents - r.special_line_cents
+      : (r.action !== 'removed' && r.mode === 'rate' && r.normal_unit_cents != null && r.special_unit_cents != null ? null : null);
+    var perKgSaving = r.action !== 'removed' && r.mode === 'rate' && r.normal_unit_cents != null && r.special_unit_cents != null ? r.normal_unit_cents - r.special_unit_cents : null;
+    return Object.assign({}, r, {
+      normal_label: normal,
+      normal_line_label: r.normal_line_cents != null ? formatAud(r.normal_line_cents) : null,
+      special_label: special,
+      special_line_label: r.action !== 'removed' && r.special_line_cents != null && r.mode !== 'fixed' ? formatAud(r.special_line_cents) : null,
+      saving_cents: saving != null ? saving : (perKgSaving != null ? perKgSaving : null),
+      saving_label: saving != null ? formatAud(saving) : (perKgSaving != null ? formatAud(perKgSaving) + per : ''),
+      normal_sort: r.normal_unit_cents != null ? r.normal_unit_cents : -1,
+      special_sort: r.mode === 'rate' ? r.special_unit_cents : r.special_line_cents != null ? r.special_line_cents : -1,
+      qty_label: r.weight_kg != null && per === '/kg' ? Number(r.weight_kg) + ' kg' : (r.quantity != null ? Number(r.quantity) + 'x' : '')
+    });
+  }
+
+  async function loadSpecialPrices(){
+    if (!requireSite()) return;
+    $('sp-tbody').innerHTML = '<tr><td colspan="8">Loading…</td></tr>';
+    try {
+      var d = await api('/api/order/special-prices?' + siteQuery());
+      state.spRows = (d.rows || []).map(spLine);
+      paintSpecialPrices();
+    } catch (e) {
+      $('sp-tbody').innerHTML = '<tr><td colspan="8">' + esc((e && e.message) || e) + '</td></tr>';
+    }
+  }
+
+  function specialPriceRows(){
+    var rows = (state.spRows || []).slice();
+    var q = String(($('sp-search') && $('sp-search').value) || '').toLowerCase().trim();
+    var from = $('sp-from') && $('sp-from').value;
+    var to = $('sp-to') && $('sp-to').value;
+    if ($('sp-current') && $('sp-current').checked) {
+      var seen = {};
+      rows = rows.filter(function(r){
+        var k = r.order_item_id || r.id;
+        if (seen[k]) return false;
+        seen[k] = true;
+        return r.action !== 'removed';
+      });
+    }
+    rows = rows.filter(function(r){
+      var day = String(r.created_at || '').slice(0, 10);
+      if (from && day < from) return false;
+      if (to && day > to) return false;
+      if (!q) return true;
+      var blob = [r.customer_name, r.customer_phone, r.customer_email, r.order_number, r.product_name, r.reason, r.actor_label].join(' ').toLowerCase();
+      return q.split(/\s+/).every(function(w){ return blob.indexOf(w) >= 0; });
+    });
+    var srt = state.spSort || { key: 'created_at', dir: 'desc' };
+    rows.sort(function(a, b){
+      var x = a[srt.key], y = b[srt.key];
+      if (x == null) x = ''; if (y == null) y = '';
+      var c = typeof x === 'number' && typeof y === 'number' ? x - y : String(x).localeCompare(String(y));
+      return srt.dir === 'asc' ? c : -c;
+    });
+    return rows;
+  }
+
+  function paintSpecialPrices(){
+    var rows = specialPriceRows();
+    var srt = state.spSort || { key: 'created_at', dir: 'desc' };
+    document.querySelectorAll('[data-sp-sort]').forEach(function(th){
+      th.classList.toggle('asc', th.getAttribute('data-sp-sort') === srt.key && srt.dir === 'asc');
+      th.classList.toggle('desc', th.getAttribute('data-sp-sort') === srt.key && srt.dir === 'desc');
+    });
+    $('sp-tbody').innerHTML = rows.map(spRowHtml).join('') || '<tr><td colspan="8" class="empty">No special prices yet.</td></tr>';
+    $('sp-tbody').querySelectorAll('[data-open-order]').forEach(function(tr){
+      tr.addEventListener('click', function(){ if (tr.getAttribute('data-open-order')) openOrderDetail(tr.getAttribute('data-open-order')); });
+    });
+  }
+
+  function spRowHtml(r){
+    return '<tr class="clickable" data-open-order="' + esc(r.order_id || '') + '">' +
+      '<td>' + esc(odShortDate(r.created_at)) + (r.action !== 'set' ? '<span class="led-sub">' + (r.action === 'removed' ? 'removed' : 'changed') + '</span>' : '') + '</td>' +
+      '<td><strong>' + esc(r.customer_name || '—') + '</strong>' + (r.customer_phone ? '<span class="led-sub">' + esc(r.customer_phone) + '</span>' : '') + '</td>' +
+      '<td>' + esc(r.order_number || '—') + (r.pickup_date ? '<span class="led-sub">pickup ' + esc(r.pickup_date) + '</span>' : '') + '</td>' +
+      '<td>' + esc(r.product_name || '—') + (r.qty_label ? '<span class="led-sub">' + esc(r.qty_label) + '</span>' : '') + '</td>' +
+      '<td class="led-r">' + esc(r.normal_label) + (r.normal_line_label ? '<span class="led-sub">' + esc(r.normal_line_label) + '</span>' : '') + '</td>' +
+      '<td class="led-r"><strong>' + esc(r.special_label) + '</strong>' + (r.special_line_label ? '<span class="led-sub">' + esc(r.special_line_label) + '</span>' : '') + '</td>' +
+      '<td class="led-r">' + esc(r.saving_label || '') + '</td>' +
+      '<td>' + (r.reason ? '“' + esc(r.reason) + '”' : '<span class="od-muted">—</span>') + (r.actor_label ? '<span class="led-sub">' + esc(r.actor_label) + '</span>' : '') + '</td></tr>';
+  }
+
+  function exportSpecialPricesCsv(){
+    var rows = specialPriceRows();
+    var head = ['Date', 'Action', 'Customer', 'Phone', 'Email', 'Order', 'Pickup', 'Product', 'Qty / weight', 'Normal price', 'Normal line', 'Special price', 'Special line', 'Saving', 'Reason', 'Staff'];
+    var lines = [head].concat(rows.map(function(r){
+      return [String(r.created_at || '').slice(0, 10), r.action, r.customer_name || '', r.customer_phone || '', r.customer_email || '', r.order_number || '', r.pickup_date || '',
+        r.product_name || '', r.qty_label || '', r.normal_label, r.normal_line_label || '', r.special_label, r.special_line_label || '', r.saving_label || '', r.reason || '', r.actor_label || ''];
+    }));
+    var csv = lines.map(function(row){ return row.map(function(v){ v = String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }).join(','); }).join('\n');
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+    a.download = 'special-prices.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
+  }
+
+  function setCustomersTab(tab){
+    state.custTab = tab === 'special' ? 'special' : 'list';
+    document.querySelectorAll('.cust-tab').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-cust-tab') === state.custTab); });
+    if ($('cust-list')) $('cust-list').classList.toggle('hide', state.custTab !== 'list');
+    if ($('cust-special')) $('cust-special').classList.toggle('hide', state.custTab !== 'special');
+    if (state.custTab === 'special') loadSpecialPrices();
+  }
+
+  (function wireSpecialPrices(){
+    if (!$('sp-tbody')) return;
+    document.querySelectorAll('.cust-tab').forEach(function(b){
+      b.addEventListener('click', function(){ setCustomersTab(b.getAttribute('data-cust-tab')); });
+    });
+    ['sp-search'].forEach(function(id){ $(id).addEventListener('input', paintSpecialPrices); });
+    ['sp-from', 'sp-to', 'sp-current'].forEach(function(id){ $(id).addEventListener('change', paintSpecialPrices); });
+    $('sp-export').addEventListener('click', exportSpecialPricesCsv);
+    document.querySelectorAll('[data-sp-sort]').forEach(function(th){
+      th.addEventListener('click', function(){
+        var key = th.getAttribute('data-sp-sort');
+        var cur = state.spSort || { key: 'created_at', dir: 'desc' };
+        var numeric = /cents|sort|created_at/.test(key);
+        state.spSort = cur.key === key ? { key: key, dir: cur.dir === 'asc' ? 'desc' : 'asc' } : { key: key, dir: numeric ? 'desc' : 'asc' };
+        paintSpecialPrices();
       });
     });
   })();

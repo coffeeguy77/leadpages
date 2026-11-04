@@ -84,7 +84,11 @@ module.exports = async function (req, res) {
           order: order,
           items: require('../../lib/order/price-display').applyKgOnly(system, (items || []).map(function (it) {
             const P = require('../../lib/order/pricing');
-            return Object.assign({}, it, { est_range: P.lineEstimateRange(it), cooking_cents: P.lineCookingCents(it) });
+            return Object.assign({}, it, {
+              est_range: require('../../lib/order/price-override').estimateRange(it),
+              cooking_cents: P.lineCookingCents(it),
+              special: require('../../lib/order/price-override').describe(it)
+            });
           })),
           payments: payments || [],
           changes: changes || [],
@@ -136,7 +140,8 @@ module.exports = async function (req, res) {
           system: system,
           site: access.site,
           actor: actor,
-          body: body
+          body: body,
+          allow_price_override: true
         });
         const linkBase = await orderLinkBase(access.site);
         return json(res, 200, {
@@ -216,6 +221,36 @@ module.exports = async function (req, res) {
           payload: { status: body.status }
         });
         return json(res, 200, { order: data });
+      }
+
+      if (action === 'set_price_override') {
+        if (!body.order_id || !body.item_id) return json(res, 400, { error: 'order_id_and_item_id_required' });
+        const out = await require('../../lib/order/price-override').setLineOverride({
+          order_id: body.order_id,
+          item_id: body.item_id,
+          site_id: siteId,
+          override: body.override || null,
+          actor: actor
+        });
+        return json(res, 200, out);
+      }
+
+      if (action === 'set_hide_normal_price') {
+        if (!body.order_id) return json(res, 400, { error: 'order_id_required' });
+        const { data: upd, error: hErr } = await admin
+          .from('order_orders')
+          .update({ hide_normal_price: !!body.hide, updated_at: new Date().toISOString() })
+          .eq('id', body.order_id)
+          .eq('site_id', siteId)
+          .select('*')
+          .maybeSingle();
+        if (hErr) throw hErr;
+        if (!upd) return json(res, 404, { error: 'not_found' });
+        await require('../../lib/order/audit').writeAudit({
+          order_system_id: system.id, site_id: siteId, order_id: upd.id, event_type: 'hide_normal_price',
+          actor_user_id: actor.user_id || null, actor_label: actor.label || null, source: 'admin', payload: { hide: !!body.hide }
+        });
+        return json(res, 200, { order: upd });
       }
 
       if (action === 'finalise_item') {

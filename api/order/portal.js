@@ -237,7 +237,8 @@ module.exports = async function (req, res) {
             selected_options: formatOptionsForPortal(it, answerRows),
             answers: answersMapFromItem(it, answerRows),
             pricing_method: it.pricing_method,
-            est_range: require('../../lib/order/pricing').lineEstimateRange(it),
+            est_range: require('../../lib/order/price-override').estimateRange(it),
+            special: require('../../lib/order/price-override').customerView(it, require('../../lib/order/price-override').showWasPrice(system, order)),
             cooking_cents: require('../../lib/order/pricing').lineCookingCents(it),
             // Holds a received ham / turkey: weight is exact, set from the piece.
             stock_held: !!(it.options_snapshot && it.options_snapshot.stock && it.options_snapshot.stock.pieces)
