@@ -38,7 +38,7 @@ test('plain page text renderer is unchanged (numbered lines and *x* stay as type
   assert.match(out, /\n1\. <strong>One<\/strong>: first\n2\. Two/);
   assert.match(out, /- \*Jo\*/);
   assert.doesNotMatch(out, /<ol>|<em>|<a /);
-  assert.match(html, /\(p\.rich===true\?_lpMdRich\(p\.body\|\|''\):_lpMd\(p\.body\|\|''\)\)/);
+  assert.match(html, /\(p\.rich===true\?_lpMdRich\(p\.blocks===true\?String\(p\.body\|\|''\)\.replace\(\/\^ \*:::\.\*\$\/gm,''\):\(p\.body\|\|''\)\):_lpMd\(p\.body\|\|''\)\)/);
 });
 
 test('rich text: links, numbered lists, sub-bullets, italics, tables; raw HTML still escaped', () => {
@@ -84,7 +84,7 @@ test('page CSS for tables, numbered and nested lists', () => {
 });
 
 test('lp-layouts: every new option is registered and opt-in', () => {
-  assert.match(js, /siteWidth, headerItems, navActive, subPageNav, heroPortrait, featureBand, footerContact, footerDecor, pageBanner\];/);
+  assert.match(js, /siteWidth, headerItems, navActive, subPageNav, heroPortrait, featureBand, footerContact, footerDecor, pageBanner, pageBlocks\];/);
   assert.match(js, /if \(w >= 960 && w <= 1600\) de\.style\.setProperty\('--maxw', w \+ 'px'\); else de\.style\.removeProperty\('--maxw'\);/);
   assert.match(js, /var on = H\.ctaPlace === 'menu' && NM\.on === true && NM\.placement === 'bar'/);
   assert.match(js, /var on = NM\.activeStyle === 'fill';/);
@@ -134,7 +134,7 @@ test('Source Serif Clinical font set: menu and buttons as typed', () => {
   assert.match(c, /\.nm-link,\.nm-sub-link/);
   // Other sets don't get the new rules.
   assert.doesNotMatch(F.css('jost'), /\.nm-link/);
-  assert.match(read('manage.html'), /lp-fonts\.js\?v=4/);
+  assert.match(read('manage.html'), /lp-fonts\.js\?v=5/);
 });
 
 test('About profile layout, quote banner, hero tagline: opt-in and editable', () => {
@@ -159,6 +159,6 @@ test('About profile layout, quote banner, hero tagline: opt-in and editable', ()
   for (const l of ['aboutUsFocus', 'aboutUsExpertise', 'aboutUsMemberships']) assert.match(manage, new RegExp(l + ':\\{secId:\'aboutUs\''), l);
   // The AI composer never picks them.
   const L = read('lib/ai-composer/layouts.js');
-  assert.match(L, /ctaBanner: \['', 'boxes', 'notice', 'quote'\]/);
+  assert.match(L, /ctaBanner: \['', 'boxes', 'notice', 'quote'(, '[a-z]+')*\]/);
   assert.match(L, /aboutUs: \['profile'\]/);
 });

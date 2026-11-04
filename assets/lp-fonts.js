@@ -83,7 +83,7 @@
       head: { family: 'Source Serif 4', fallback: 'Georgia,serif', weight: 500, transform: 'none', spacing: '-.005em' },
       body: { family: 'Source Sans 3', fallback: 'system-ui,sans-serif' },
       eyebrow: { family: 'Source Sans 3', fallback: 'system-ui,sans-serif', weight: 600, spacing: '.18em', button: '.01em', labelCase: 'none' },
-      google: 'Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=Source+Sans+3:wght@400;500;600;700'
+      google: 'Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&family=Source+Sans+3:wght@400;500;600;700'
     }
   };
   var ORDER = ['classic', 'archivo', 'oswald', 'bebas', 'montserrat', 'poppins', 'space', 'playfair', 'heritage', 'jost', 'clinical'];
