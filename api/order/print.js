@@ -89,6 +89,15 @@ async function loadOrdersForDate(admin, systemId, siteId, pickupDate) {
   });
 }
 
+/** Special price label on each line (customer view: "was" price per shop setting / order). */
+function withSpecial(system, order, items) {
+  const PO = require('../../lib/order/price-override');
+  const showWas = PO.showWasPrice(system, order);
+  return (items || []).map(function (it) {
+    return it.price_override ? Object.assign({}, it, { special: PO.customerView(it, showWas) }) : it;
+  });
+}
+
 function sendHtml(res, code, html) {
   res.statusCode = code;
   res.setHeader('content-type', 'text/html; charset=utf-8');
@@ -139,7 +148,7 @@ module.exports = async function (req, res) {
           format: fmt,
           business: site || {},
           order: loaded.order,
-          items: require('../../lib/order/price-display').applyKgOnly(tokSystem, loaded.items),
+          items: withSpecial(tokSystem, loaded.order, require('../../lib/order/price-display').applyKgOnly(tokSystem, loaded.items)),
           autoprint: autoprint
         })
       );
@@ -355,7 +364,7 @@ module.exports = async function (req, res) {
         format: fmt,
         business: business,
         order: loaded.order,
-        items: require('../../lib/order/price-display').applyKgOnly(system, loaded.items),
+        items: withSpecial(system, loaded.order, require('../../lib/order/price-display').applyKgOnly(system, loaded.items)),
         autoprint: autoprint
       })
     );

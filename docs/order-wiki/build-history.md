@@ -11,6 +11,13 @@ A dated record of what changed in the ordering system and why, newest first. Num
 
 Earlier months are in **Build history — August & September 2026**.
 
+## 4 November 2026
+
+- **Special prices.** Give one order line a special price for that order only: a new $/kg or $ each, a fixed price for the line, or % off. The reason is optional. It's set on the order (**Special price** on the line) or in New Order (**Price** on the product row). Lines show a **Special price** pill, and orders show **Custom pricing** in the order and in Live Orders. Special prices are kept when items are weighed, edited by the customer or given stock pieces. *Why: bulk buys and regular customers get special pricing, and it mustn't get lost or change other orders.*
+- **Special prices history.** Customers → **Special prices** lists every special price ever given: who, which order, product, normal vs special price, saving, reason and staff. It has search, sorting, dates and CSV, and each customer's record shows theirs. It's kept even if the order is removed, so you can check what someone paid last time.
+- **What customers see.** By default customers see the special price plus the normal ("was") price. Change this in Settings → Tax & Payments, or hide the normal price on a single order with the tick under its totals.
+- **Fix: order screen on phones** no longer runs off the side of the screen. The line table scrolls inside the page.
+
 ## 29 October 2026
 
 - **Same product, different options (staff New Order).** After pressing **Add**, a product row shows **+ Another**. That keeps the line in the order and gives a fresh row for the next one — e.g. two whole chickens, one Apricot and one Italian stuffing, both boned and rolled. Each line shows in the cart and can be removed on its own (#878). *Why: staff couldn't add a second chicken with a different stuffing — the row just said "Added".* The customer shop already allowed this.

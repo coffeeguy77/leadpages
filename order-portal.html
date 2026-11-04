@@ -272,6 +272,7 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
 .dk-sub{display:block;font-size:12px;color:var(--muted);margin-top:2px}
 .dk-sub.dk-hand{font-size:15px;color:#1d2a55}
 .dk-tbc{font-size:12px;color:var(--muted)}
+.dk-special{color:var(--accent)}
 .dk-blank td{height:30px}
 .dk-pair{display:inline-flex;align-items:baseline;gap:6px;white-space:nowrap}
 .dk-rate-m{display:none}
@@ -699,7 +700,10 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
         : (it.price_status==='tbc'||it.price_status==='quote_required') ? '<span class="dk-tbc" title="Priced once weighed">TBC</span>'
         : it.line_known_cents != null ? money(it.line_known_cents)+(it.price_status==='estimated'?' <span class="dk-tbc">est.</span>':'')
         : '';
+      var sp = it.special;
+      if(sp && sp.was_line_label && amt) amt = '<s class="dk-tbc">'+esc(sp.was_line_label)+'</s> '+amt;
       html += '<tr><td class="dk-q">'+qty+'</td><td><span class="dk-item">'+esc(it.product_name)+'</span>'
+        + (sp ? '<span class="dk-sub dk-special"><b>Special price: '+esc(sp.price_label)+'</b>'+(sp.was_rate_label?' (was '+esc(sp.was_rate_label)+')':'')+'</span>' : '')
         + (rate ? '<span class="dk-sub dk-rate-m">'+rate+(perKg?'/kg':'')+'</span>' : '')
         + ((it.selected_options||[]).length ? '<span class="dk-sub">'+(it.selected_options||[]).map(esc).join(' · ')+'</span>' : '')
         + (it.notes ? '<span class="dk-sub dk-hand">'+esc(it.notes)+'</span>' : '')
@@ -801,10 +805,13 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
       if(!data.can_edit) html += renderOptionsDisplay(it);
       html += '<p>Qty '+esc(it.quantity)+(it.requested_weight_kg!=null?(' · approx '+esc(it.requested_weight_kg)+' kg'):'')+(it.actual_weight_kg!=null?(' · actual '+esc(it.actual_weight_kg)+' kg'):'')+'</p>';
       var price = it.line_final_cents!=null?money(it.line_final_cents):(it.kg_only_rate&&it.unit_price_cents!=null?money(it.unit_price_cents)+'/kg · priced when weighed':(it.price_status==='tbc'||it.price_status==='quote_required'?'Price TBC':(it.line_known_cents!=null?money(it.line_known_cents):'—')));
+      if(it.special) html += '<p style="margin-top:4px"><span class="badge b-open">Special price</span> '+esc(it.special.price_label)+(it.special.was_rate_label?' <span class="dk-tbc">(was '+esc(it.special.was_rate_label)+')</span>':'')+'</p>';
       html += '<p style="margin-top:4px"><strong>'+price+'</strong>'+(it.price_status==='estimated'&&!it.kg_only_rate?' <span class="badge b-tbc">Est.</span>':'')+(it.includes_gst?' <span class="badge b-open">inc. GST</span>':'')+'</p>';
       if(data.can_edit){
         html += renderOptionEditors(it, data.catalog);
-        if(it.stock_held){
+        if(it.special && it.special.fixed){
+          html += '<p class="note" style="margin:8px 0 0">This item has a special price for the whole line. To change the quantity, please contact us.</p>';
+        } else if(it.stock_held){
           // A received ham / turkey: exact weight, chosen piece — remove it to choose another.
           html += '<p class="note" style="margin:8px 0 0">Exact weight '+esc(it.actual_weight_kg!=null?it.actual_weight_kg:it.requested_weight_kg)+' kg. To swap it, remove this item and add the one you want.</p>';
         } else {
