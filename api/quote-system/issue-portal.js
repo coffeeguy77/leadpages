@@ -5,6 +5,7 @@
  */
 
 const { readBody, json, clean } = require('../../lib/quote-system/http');
+const { replyToForSite } = require('../../lib/customer-email');
 const { getSessionByToken } = require('../../lib/quote-system/auth');
 const { finalizeVerifiedPortal } = require('../../lib/quote-system/portal');
 const { sendPortalLinkEmail } = require('../../lib/quote-system/portal-email');
@@ -27,7 +28,7 @@ module.exports = async function handler(req, res) {
     if (!finalized.ok) return json(res, 403, { ok: false, error: finalized.error });
 
     const { data: site } = await getAdmin().from('sites')
-      .select('business_name')
+      .select('business_name,owner_email,config')
       .eq('id', result.session.site_id)
       .maybeSingle();
 
@@ -36,6 +37,7 @@ module.exports = async function handler(req, res) {
       emailed = await sendPortalLinkEmail({
         to: finalized.session.contact_email,
         businessName: (site && site.business_name) || 'Your provider',
+        replyTo: site ? replyToForSite(site) : '',
         portalUrl: finalized.portalUrl,
         totalFormatted: finalized.quote && finalized.quote.totalFormatted
       });

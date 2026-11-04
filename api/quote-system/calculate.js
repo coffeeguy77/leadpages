@@ -20,9 +20,10 @@ const {
 } = require('../../lib/quote-system/session');
 const { serializeQuoteResult, serializeSession } = require('../../lib/quote-system/serializers');
 const { RESPONSE_LEVEL, SESSION_STATUS } = require('../../lib/quote-system/constants');
-const { createQuoteLead } = require('../../lib/quote-system/crm');
+const { createQuoteLead, notifyOwnerUnconfirmedQuote, updateQuoteLeadVerification } = require('../../lib/quote-system/crm');
 const { sendQuoteToEventureOS } = require('../../lib/quote-system/eventureos');
 const { assertQuoteAppEntitled } = require('../../lib/quote-system/billing');
+const { senderForSiteId } = require('../../lib/customer-email');
 const { normalizeEmail, isEmailWhitelisted } = require('../../lib/quote-system/email-whitelist');
 const { ensureEmailVerificationSent } = require('../../lib/quote-system/verify');
 const { sendQuoteSummaryEmail } = require('../../lib/quote-system/email-verify-flow');
@@ -98,7 +99,8 @@ module.exports = async function handler(req, res) {
           configVersion.config.business.name;
         // Always force a fresh email on calculate so "Get my quote" actually delivers a code.
         const mail = await ensureEmailVerificationSent(workingSession.id, email, businessName, {
-          force: true
+          force: true,
+          sender: await senderForSiteId(require('../../lib/quote-system/supabase').getAdmin(), workingSession.site_id, businessName)
         });
         emailVerification.sent = !!mail.sent;
         emailVerification.reason = mail.reason || null;
@@ -133,10 +135,13 @@ module.exports = async function handler(req, res) {
     const updatedSession = workingSession;
     let eventureLead = false;
 
-    if (!updatedSession.lead_id && updatedSession.contact_email && level !== RESPONSE_LEVEL.PUBLIC_PROGRESS) {
+    // Every submitted quote becomes a lead, verified or not, so the business never loses one
+    // when a customer's email code doesn't arrive. Unconfirmed ones are flagged and the owner
+    // gets an email to follow up.
+    if (!updatedSession.lead_id && updatedSession.contact_email) {
       const admin = require('../../lib/quote-system/supabase').getAdmin();
       const { data: siteRow } = await admin.from('sites')
-        .select('id,business_name,owner_user_id,config')
+        .select('id,slug,business_name,owner_user_id,owner_email,config')
         .eq('id', session.site_id)
         .maybeSingle();
       if (siteRow) {
@@ -144,11 +149,23 @@ module.exports = async function handler(req, res) {
           const leadId = await createQuoteLead(siteRow, updatedSession, calc, configVersion.config);
           if (leadId) {
             await linkLeadToSession(updatedSession, leadId);
-            eventureLead = true;
+            updatedSession.lead_id = leadId;
+            if (level !== RESPONSE_LEVEL.PUBLIC_PROGRESS) {
+              eventureLead = true;
+            } else {
+              const note = await notifyOwnerUnconfirmedQuote(siteRow, updatedSession, calc, configVersion.config);
+              if (!note.sent) console.warn('quote-system unconfirmed quote alert not sent:', note.reason);
+            }
           }
         } catch (leadErr) {
           console.error('quote lead create:', leadErr && leadErr.message);
         }
+      }
+    } else if (updatedSession.lead_id && level !== RESPONSE_LEVEL.PUBLIC_PROGRESS) {
+      try {
+        await updateQuoteLeadVerification(updatedSession.lead_id, updatedSession);
+      } catch (flagErr) {
+        console.warn('quote lead verification flags:', flagErr && flagErr.message);
       }
     }
 

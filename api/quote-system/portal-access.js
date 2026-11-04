@@ -6,6 +6,8 @@
  */
 
 const { readBody, json, clean } = require('../../lib/quote-system/http');
+const { getAdmin } = require('../../lib/quote-system/supabase');
+const { senderForSiteId } = require('../../lib/customer-email');
 const {
   resolveSiteBySlug,
   getQuoteSystemForSite,
@@ -67,10 +69,12 @@ module.exports = async function handler(req, res) {
     } catch (_) { /* ignore */ }
 
     const portalUrl = jobsPortalUrl(req, resolved.portal.access_token);
+    const sender = await senderForSiteId(getAdmin(), site.id, businessName);
     const mail = await sendPortalAccessEmail({
       to: email,
       businessName: businessName,
-      portalUrl: portalUrl
+      portalUrl: portalUrl,
+      replyTo: sender.replyTo
     });
 
     if (!mail.sent && mail.reason === 'no_key') {

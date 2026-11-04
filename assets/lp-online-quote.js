@@ -511,6 +511,19 @@
         '<button type="button" class="lp-oq-btn" data-act="confirm-email">Confirm email code</button>' +
         '<button type="button" class="lp-oq-btn lp-oq-btn-ghost" data-act="send-email">' +
         (this.state.emailCodeSent ? 'Resend code' : 'Send code') + '</button></div>';
+      // Email code not arriving (strict company mail filters)? Verify the mobile instead.
+      if (this.state.emailCodeSent || this.state.emailSendReason) {
+        if (this.state.smsInstead) {
+          html += '<div class="lp-oq-alt"><p class="lp-oq-lead">We texted a code to your mobile. Enter it below.</p>' +
+            '<label class="lp-oq-field"><span>SMS code</span><input data-field="smsCode" placeholder="6-digit code" inputmode="numeric" autocomplete="one-time-code" maxlength="8"></label>' +
+            '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">' +
+            '<button type="button" class="lp-oq-btn" data-act="confirm-sms-instead">Confirm SMS code</button>' +
+            '<button type="button" class="lp-oq-btn lp-oq-btn-ghost" data-act="sms-instead">Text it again</button></div></div>';
+        } else {
+          html += '<div class="lp-oq-alt"><p class="lp-oq-lead">Didn\u2019t get the email? Check your junk folder, or ' +
+            '<button type="button" class="lp-oq-link" data-act="sms-instead">text the code to my mobile instead</button>.</p></div>';
+        }
+      }
     } else if (q.level === 'email_verified_total') {
       html += '<p class="lp-oq-total">' + esc(q.totalFormatted || '') + ' <small>inc GST</small></p>' +
         (this.state.emailWhitelisted
@@ -614,6 +627,8 @@
         else if (act === 'confirm-email') self.confirmEmail();
         else if (act === 'send-sms') self.sendSms();
         else if (act === 'confirm-sms') self.confirmSms();
+        else if (act === 'sms-instead') self.sendSms({ instead: true });
+        else if (act === 'confirm-sms-instead') self.confirmSms({ instead: true });
         else if (act === 'portal-access-toggle') {
           self.togglePortalAccess();
         }
@@ -947,10 +962,12 @@
     });
   };
 
-  OnlineQuoteWidget.prototype.sendSms = function() {
+  OnlineQuoteWidget.prototype.sendSms = function(opts) {
     if (this.blockSpend('verify-sms')) return;
 
     var self = this;
+    opts = opts || {};
+    this.syncContactFromDom && this.syncContactFromDom();
     var phone = contactPhone.call(this);
     if (!phone || phone.length < 11) {
       alert('Enter a valid Australian mobile number (e.g. 0414 631 463).');
@@ -959,27 +976,34 @@
     post('/verify-sms', {
       token: this.token,
       action: 'send',
-      phone: phone
+      phone: phone,
+      instead: opts.instead === true
     }).then(function(res) {
-      if (!res.sent) alert('SMS verification is not available yet.');
+      if (!res || !res.sent) { alert('We could not text a code just now. Please try again shortly.'); return; }
+      if (opts.instead) self.state.smsInstead = true;
       else alert('Verification code sent to your mobile.');
       self.render();
+    }).catch(function() {
+      alert('We could not text a code just now. Please try again shortly.');
     });
   };
 
-  OnlineQuoteWidget.prototype.confirmSms = function() {
+  OnlineQuoteWidget.prototype.confirmSms = function(opts) {
     if (this.blockSpend('confirm-sms')) return;
 
     var self = this;
+    opts = opts || {};
     var codeInp = this.el.querySelector('[data-field="smsCode"]');
     var code = codeInp ? codeInp.value : '';
     post('/verify-sms', {
       token: this.token,
       action: 'confirm',
       code: code,
-      phone: contactPhone.call(this)
+      phone: contactPhone.call(this),
+      instead: opts.instead === true
     }).then(function(res) {
-      if (!res.ok) { alert('Invalid or expired SMS code.'); return; }
+      if (!res || !res.ok) { alert('Invalid or expired SMS code.'); return; }
+      self.state.smsInstead = false;
       self.state.portalUrl = res.portalUrl || null;
       self.state.pdfUrl = res.pdfUrl || null;
       self.state.jobsPortalUrl = res.jobsPortalUrl || null;
@@ -1128,6 +1152,8 @@
       '.lp-oq-showcase-banner{margin:0 0 12px;padding:10px 14px;border-radius:10px;background:rgba(168,74,94,.12);border:1px solid rgba(168,74,94,.28);color:#5a3038;font-size:13px;font-weight:600;line-height:1.4}',
       '.lp-oq-showcase-done{display:inline-flex;align-items:center;padding:10px 14px;border-radius:8px;background:#f3efe8;color:#5a5248;font-size:13px;font-weight:600}',
       '.lp-oq-btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 18px;border:none;border-radius:8px;background:var(--lp-oq-btn-bg,' + brand + ');color:var(--lp-oq-btn-text,var(--accent-text, var(--on-pipe, var(--ink))));font-weight:600;cursor:pointer;font:inherit;line-height:1.2;box-sizing:border-box}',
+      '.lp-oq-alt{margin-top:14px;padding-top:12px;border-top:1px solid color-mix(in srgb,currentColor 15%,transparent)}',
+      '.lp-oq-link{background:none;border:0;padding:0;font:inherit;color:' + brand + ';text-decoration:underline;text-underline-offset:3px;cursor:pointer}',
       '.lp-oq-btn-ghost{background:var(--lp-oq-btn-ghost-bg,transparent);color:var(--lp-oq-btn-ghost-text,' + brand + ');border:1px solid var(--lp-oq-btn-ghost-border,color-mix(in srgb,' + brand + ' 40%, var(--line, var(--border, currentColor))))}',
       '.lp-oq-quote{margin-top:18px;padding-top:18px;border-top:1px solid color-mix(in srgb,' + brand + ' 18%, var(--line, var(--border, currentColor)))}',
       '.lp-oq-total{font-size:1.6rem;font-weight:800;margin:0 0 8px;color:var(--lp-oq-body,var(--ink, var(--text, inherit)))}',

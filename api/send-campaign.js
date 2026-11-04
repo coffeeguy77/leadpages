@@ -19,6 +19,7 @@
 //      CAMPAIGN_FROM (or LEADS_FROM), PUBLIC_BASE_URL (for the unsubscribe link).
 
 const { createClient } = require('@supabase/supabase-js');
+const { senderForSite, withFooterHtml } = require('../lib/customer-email');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_KEY  = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -72,7 +73,7 @@ function wrapHtml({ subject, bodyHtml, imageUrl, business, unsubUrl }) {
     + '</div>';
 }
 
-async function resendSend({ to, from, subject, html, unsubUrl }) {
+async function resendSend({ to, from, subject, html, unsubUrl, replyTo }) {
   const key = process.env.RESEND_API_KEY;
   if (!key) return { ok: false, reason: 'no_key' };
   try {
@@ -81,7 +82,8 @@ async function resendSend({ to, from, subject, html, unsubUrl }) {
       headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         from, to: [to], subject,
-        html,
+        html: withFooterHtml(html),
+        reply_to: replyTo || undefined,
         headers: { 'List-Unsubscribe': '<' + unsubUrl + '>', 'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click' }
       })
     });
@@ -95,8 +97,12 @@ async function resendSend({ to, from, subject, html, unsubUrl }) {
 async function deliverCampaign(campaign) {
   const siteId = campaign.site_id;
   await admin.from('campaign_recipients').delete().eq('campaign_id', campaign.id); // idempotent re-send safety
-  const site = (await admin.from('sites').select('business_name').eq('id', siteId).maybeSingle()).data || {};
+  const site = (await admin.from('sites').select('business_name,owner_email,config').eq('id', siteId).maybeSingle()).data || {};
   const business = site.business_name || 'us';
+  // Sent to the business's customers: from the business's name (unless CAMPAIGN_FROM is set),
+  // replies to the business.
+  const sender = senderForSite(site);
+  const campaignFrom = process.env.CAMPAIGN_FROM || sender.from || FROM;
 
   // Resolve recipients.
   let emails = [];
@@ -123,7 +129,7 @@ async function deliverCampaign(campaign) {
     }
     const unsubUrl = BASE + '/api/unsubscribe?s=' + encodeURIComponent(siteId) + '&e=' + encodeURIComponent(email);
     const html = wrapHtml({ subject: campaign.subject, bodyHtml: campaign.body_html, imageUrl: campaign.image_url, business, unsubUrl });
-    const res = await resendSend({ to: email, from: FROM, subject: campaign.subject || ('A message from ' + business), html, unsubUrl });
+    const res = await resendSend({ to: email, from: campaignFrom, subject: campaign.subject || ('A message from ' + business), html, unsubUrl, replyTo: sender.replyTo });
     await admin.from('campaign_recipients').insert({
       campaign_id: campaign.id, email,
       status: res.ok ? 'sent' : 'failed', error: res.ok ? null : (res.reason + (res.body ? ': ' + res.body : '')),

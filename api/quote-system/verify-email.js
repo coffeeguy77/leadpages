@@ -17,6 +17,7 @@ const {
 } = require('../../lib/quote-system/verify');
 const { sendQuoteSummaryEmail } = require('../../lib/quote-system/email-verify-flow');
 const { assertQuoteAppEntitled } = require('../../lib/quote-system/billing');
+const { senderForSiteId } = require('../../lib/customer-email');
 const { normalizeEmail, whitelistEmail } = require('../../lib/quote-system/email-whitelist');
 
 const VERIFY_ERROR_MESSAGES = {
@@ -62,7 +63,8 @@ module.exports = async function handler(req, res) {
 
       const mail = await ensureEmailVerificationSent(session.id, email, businessName, {
         // Explicit send/resend must always attempt delivery.
-        force: body.force !== false
+        force: body.force !== false,
+        sender: await senderForSiteId(require('../../lib/quote-system/supabase').getAdmin(), session.site_id, businessName)
       });
       return json(res, 200, {
         ok: true,

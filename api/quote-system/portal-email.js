@@ -6,6 +6,7 @@
  */
 
 const { readBody, json, clean } = require('../../lib/quote-system/http');
+const { replyToForSite } = require('../../lib/customer-email');
 const { loadPortalContext, pdfUrl, portalUrl } = require('../../lib/quote-system/portal');
 const { loadCustomerJobDetail } = require('../../lib/quote-system/customer-portal');
 const { sendPortalLinkEmail } = require('../../lib/quote-system/portal-email');
@@ -58,7 +59,8 @@ module.exports = async function handler(req, res) {
       businessName: ctx.businessName,
       portalUrl: mailPortalUrl,
       totalFormatted: ctx.quote && ctx.quote.totalFormatted,
-      pdfBuffer
+      pdfBuffer,
+      replyTo: replyToForSite(ctx.site)
     });
 
     return json(res, 200, {

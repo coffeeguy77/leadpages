@@ -5,6 +5,7 @@
  */
 
 const { readBody, json, clean } = require('../../lib/quote-system/http');
+const { replyToForSite, senderForSiteId } = require('../../lib/customer-email');
 const { getSessionByToken } = require('../../lib/quote-system/auth');
 const { updateSession } = require('../../lib/quote-system/session');
 const { sendSmsCode, checkSmsCode } = require('../../lib/quote-system/verify');
@@ -35,7 +36,10 @@ module.exports = async function handler(req, res) {
     const entitled = await assertQuoteAppEntitled(session.site_id);
     if (!entitled.ok) return json(res, 403, { ok: false, error: entitled.error });
 
-    if (!session.email_verified_at) {
+    // Normally SMS is the second step, after the email code. "instead" lets a customer whose
+    // email code never arrived (strict company mail filters) prove their mobile number instead.
+    const instead = body.instead === true && !!session.contact_email && session.status === 'submitted';
+    if (!session.email_verified_at && !instead) {
       return json(res, 403, { ok: false, error: 'email_not_verified' });
     }
 
@@ -46,7 +50,8 @@ module.exports = async function handler(req, res) {
       }
 
       await updateSession(session.id, { contact_phone: phone });
-      const sms = await sendSmsCode(phone, null);
+      const smsSender = await senderForSiteId(require('../../lib/quote-system/supabase').getAdmin(), session.site_id);
+      const sms = await sendSmsCode(phone, null, smsSender.name);
       return json(res, 200, {
         ok: true,
         sent: sms.sent,
@@ -67,7 +72,8 @@ module.exports = async function handler(req, res) {
       await updateSession(session.id, { sms_verified_at: new Date().toISOString() });
 
       try {
-        if (session.contact_email) {
+        // Only remember emails that were actually verified (not when SMS was used instead).
+        if (session.contact_email && session.email_verified_at) {
           const { whitelistEmail } = require('../../lib/quote-system/email-whitelist');
           await whitelistEmail(session.site_id, session.contact_email, {
             name: session.contact_name,
@@ -85,7 +91,7 @@ module.exports = async function handler(req, res) {
       if (finalized.ok) {
         const { getAdmin } = require('../../lib/quote-system/supabase');
         const { data: site } = await getAdmin().from('sites')
-          .select('id,business_name,config')
+          .select('id,business_name,owner_email,config')
           .eq('id', refreshed.session.site_id)
           .maybeSingle();
         const businessName = (site && site.business_name) || 'Your provider';
@@ -120,6 +126,7 @@ module.exports = async function handler(req, res) {
           await sendPortalLinkEmail({
             to: refreshed.session.contact_email,
             businessName,
+            replyTo: replyToForSite(site),
             portalUrl: jobsUrl || finalized.portalUrl,
             totalFormatted: finalized.quote && finalized.quote.totalFormatted,
             pdfBuffer
