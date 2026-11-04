@@ -138,6 +138,8 @@ module.exports = async (req, res) => {
         const list = await listPrefix(creds, p);
         list.forEach((x) => {
           if (seen[x.public_id]) return; seen[x.public_id] = 1;
+          // PDFs (brochures) live in the same folder but aren't pictures — keep them out of the image picker.
+          if (String(x.format || '').toLowerCase() === 'pdf') return;
           images.push({
             publicId: x.public_id,
             url: x.secure_url,

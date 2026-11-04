@@ -13,8 +13,13 @@ exact model. Built from data — models are list items in the editor, not page l
 - **Desktop:** panel ~30/70. Left: category buttons (with counts), type chips (All + each type),
   scrollable model list (thumbnail, name, area / bed / bath), optional help note. Right: viewer
   tabs (Floor plan · Elevations · Photos — only tabs with images, Floor plan always), large
-  image with next / previous and dots, click → full-screen viewer with **Zoom** (200%, scroll to pan),
-  then name, description, spec tiles, **Enquire About {name}**, **full details** link, small print.
+  image with next / previous and dots. Only the **Click to enlarge** pill ("Tap to enlarge" on touch
+  screens) opens the full-screen viewer — clicking the picture itself does nothing — with **Zoom**
+  (200%, scroll to pan). Then name, description, spec tiles, **Enquire About {name}**,
+  **Download brochure** (only when the model has one), **full details** link, small print.
+- **Swipe:** on touch screens, swipe left / right to step through the images, on the page and in
+  the full-screen viewer (not while zoomed — then a drag pans). Only clearly sideways swipes count,
+  so the page still scrolls. Closing the viewer leaves the page on the image you were looking at.
 - **Phones (≤ 860px):** one column; categories and type chips scroll sideways; models are a
   sideways-scrolling strip above the viewer; help note under the details.
 - Optional **category photo cards** under the panel ("Explore {count} models") jump to that category.
@@ -40,17 +45,29 @@ exact model. Built from data — models are list items in the editor, not page l
 | `panelColor`, `accentColor` | Panel background; icons and card buttons |
 | `step1Label`, `step2Label`, `step3Label`, `allLabel` | Picker labels |
 | `unit` | Floor area unit (default m²) |
-| `enquireLabel` (`{name}`), `enquireHref`, `detailsLabel` | Buttons |
+| `enquireLabel` (`{name}`), `enquireHref`, `brochureLabel`, `detailsLabel` | Buttons (brochure default "Download brochure") |
 | `fillQuote`, `notSureLabel` | Quote job list = models |
 | `placeholderText` | Text when a model has no floor plan |
 | `note` | Small print under the buttons (e.g. approvals, "see the manufacturer for pricing") |
 | `helpTitle`, `helpText`, `helpCtaLabel`, `helpCtaHref` | "Not sure which suits?" note |
 | `cardsOn`, `cardsCtaLabel` (`{count}`) | Category photo cards |
 | `categories[]` | `on`, `label`, `blurb`, `image` (card photo) |
-| `items[]` | `on`, `name`, `category` (must match a category label), `group` (type filter), `bedrooms`, `bathrooms`, `area`, `dimensions`, `description`, `link`, `floorPlan`, `elev1`–`elev4`, `photo1`–`photo3`, `alt` |
+| `items[]` | `on`, `name`, `category` (must match a category label), `group` (type filter), `bedrooms`, `bathrooms`, `area`, `dimensions`, `description`, `link`, `brochure` (PDF link), `floorPlan`, `floorPlan2`, `elev1`–`elev4`, `photo1`–`photo8`, `alt` |
 
 Editor: Page → Product Explorer → **Explorer settings**, **Categories**, **Models** (each model has
-upload slots for the floor plan, four elevations and three photos; untick to hide, drag to reorder).
+upload slots for two floor plans, four elevations, eight photos and a **Brochure (PDF)**; untick to hide,
+drag to reorder).
+
+## Brochure PDF upload
+
+- List field type `pdf` in `manage.html` (`cwPdfHTML` + `cwUploadPdf`): paste a link or **Upload PDF**
+  (up to 10 MB, the Cloudinary Free plan per-file limit). **View** opens it, **✕** removes it.
+- Uploads are signed by `/api/cloudinary/sign` and stored in the client's folder
+  `leadpages/<site id>/productexplorer/brochure/<file name>-<random>` as an image-type asset (link ends
+  in `.pdf`), so the existing in-use / delete clean-up covers them. `api/cloudinary/library.js` leaves
+  PDFs out of the image library picker.
+- Cloudinary **Free** accounts block PDF delivery until *Settings → Security → Allow delivery of PDF and
+  ZIP files* is on. If a brochure link returns 401, switch that on.
 
 ## Also added
 

@@ -72,3 +72,35 @@ test('marketplace registration and Jost font set', () => {
   assert.ok(F.ORDER.includes('jost'));
   assert.match(F.css('jost'), /--lp-font-head:"Jost"/);
 });
+
+test('enlarge only from the pill, swipe between images, brochure button', () => {
+  // The picture itself is not a button any more; only the pill opens the full-screen viewer.
+  assert.match(js, /<div class="pe-stage-img"><img /);
+  assert.match(js, /<button type="button" class="pe-stage-tools" data-pe-full /);
+  assert.doesNotMatch(js, /class="pe-stage-img" data-pe-full/);
+  assert.match(js, /Click to enlarge<\/span><span class="pe-say-tap">Tap to enlarge/);
+  assert.match(css, /@media \(hover:none\),\(pointer:coarse\)\{\.pe-say-click\{display:none\}\.pe-say-tap\{display:inline\}\}/);
+  // Swipe on the page stage and in the full-screen viewer (not while zoomed), sideways only.
+  assert.match(js, /function swipe\(el, onStep\)/);
+  assert.match(js, /Math\.abs\(dx\) < Math\.abs\(dy\) \* 1\.5/);
+  assert.match(js, /swipe\(box, function \(d\) \{ if \(!box\.classList\.contains\('is-zoom'\)\) go\(d\); \}\);/);
+  assert.match(js, /swipe\(node, function \(d\) \{ if \(inStage\) stepMain\(d\); \}\);/);
+  assert.match(css, /\.pe-stage\{[^}]*touch-action:pan-y pinch-zoom/);
+  // Brochure button sits between Enquire and full details, only when the model has one.
+  const enq = js.indexOf('data-pe-enquire>'), bro = js.indexOf('data-pe-brochure>'), det = js.indexOf("'<a class=\"lpl-btn pe-btn pe-out\"");
+  assert.ok(enq > 0 && bro > enq && det > bro);
+  assert.match(js, /\(pdf \? '<a class="lpl-btn pe-btn pe-bro"/);
+  assert.match(js, /txt\(M\.brochureLabel\) \|\| 'Download brochure'/);
+});
+
+test('editor: brochure PDF upload to the site’s Cloudinary folder; PDFs stay out of the image library', () => {
+  const m = read('manage.html');
+  assert.match(m, /\{k:'brochure',type:'pdf',label:'Brochure \(PDF\)'/);
+  assert.match(m, /\{t:'text',k:'brochureLabel',/);
+  assert.match(m, /if\(f\.type==='pdf'\) return .*cwPdfHTML\('data-k="'\+f\.k\+'"'/);
+  assert.match(m, /<input type="file" class="cw-pdf-in" accept="application\/pdf,\.pdf"/);
+  assert.match(m, /async function cwUploadPdf\(file,parts\)\{/);
+  assert.match(m, /var _folder='leadpages\/'\+cwSiteSeg\(\)\+'\/'\+parts\.map\(cwSeg\)\.join\('\/'\);\n    var _base=/);
+  assert.match(m, /var CW_PDF_MAX=10\*1024\*1024;/);
+  assert.match(read('api/cloudinary/library.js'), /String\(x\.format \|\| ''\)\.toLowerCase\(\) === 'pdf'\) return;/);
+});

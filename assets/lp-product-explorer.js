@@ -10,6 +10,7 @@
  *   step1Label, step2Label, step3Label  labels over the category / type / model pickers
  *   allLabel                            type filter "All" chip text
  *   enquireLabel ("Enquire About {name}"), detailsLabel, enquireHref (default #quote)
+ *   brochureLabel ("Download brochure")  button shown for models with a brochure PDF
  *   unit ("m²"), placeholderText
  *   helpTitle, helpText, helpCtaLabel, helpCtaHref   "Not sure which suits?" note
  *   note                                small print under the actions (e.g. approvals)
@@ -17,7 +18,10 @@
  *   fillQuote (default true)            quote form's job list = the models; selected on Enquire
  *   categories[] {on, label, image, blurb}
  *   items[] {on, name, category, group, bedrooms, bathrooms, area, dimensions, description,
- *            link, floorPlan, floorPlan2, elev1..elev4, photo1..photo8, alt}
+ *            link, brochure (PDF link), floorPlan, floorPlan2, elev1..elev4, photo1..photo8, alt}
+ *
+ * Images open full screen only from the "Click to enlarge" pill (not the picture itself).
+ * Swipe left / right steps through images on touch screens, on the page and full screen.
  *
  * Deep links: ?pe-cat=<category>&pe-model=<model> (kept in the address as you browse, so Back
  * and shared links reopen the same model). Never shows one model's images for another: a
@@ -51,6 +55,7 @@
   var I_FULL = SVG('<path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/>');
   var I_ZOOM = SVG('<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/><path d="M11 8v6"/><path d="M8 11h6"/>');
   var I_X = SVG('<path d="M18 6 6 18"/><path d="m6 6 12 12"/>');
+  var I_DOWN = SVG('<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/>');
   var I_PLAN = SVG('<rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 12h7v9"/><path d="M14 3v6h7"/>');
 
   function sec() { return document.querySelector('[data-sec="productExplorer"]'); }
@@ -178,8 +183,9 @@
         esc(t[1]) + (t[2] > 1 ? ' <small>' + t[2] + '</small>' : '') + '</button>';
     }).join('') + '</div>';
     var stage = src
-      ? '<button type="button" class="pe-stage-img" data-pe-full aria-label="Open ' + esc(alt) + ' full screen"><img src="' + esc(src) + '" alt="' + esc(alt) + '"></button>' +
-        '<span class="pe-stage-tools">' + I_ZOOM + '<span>Click to enlarge</span></span>'
+      ? '<div class="pe-stage-img"><img src="' + esc(src) + '" alt="' + esc(alt) + '" draggable="false"></div>' +
+        '<button type="button" class="pe-stage-tools" data-pe-full aria-label="Open ' + esc(alt) + ' full screen">' + I_ZOOM +
+          '<span class="pe-say-click">Click to enlarge</span><span class="pe-say-tap">Tap to enlarge</span></button>'
       : '<div class="pe-ph">' + I_PLAN + '<strong>' + esc(txt(M.placeholderText) || 'Official floor plan coming soon') + '</strong>' +
         (txt(it.link) ? '<a href="' + esc(url(it.link)) + '" target="_blank" rel="noopener">See the plan on the manufacturer’s site ' + I_OUT + '</a>' : '') + '</div>';
     var nav = set.length > 1
@@ -194,7 +200,9 @@
   function detailHtml(it, M) {
     var enq = fill(txt(M.enquireLabel) || 'Enquire About {name}', it);
     var det = txt(M.detailsLabel) || 'View full details';
+    var bro = txt(M.brochureLabel) || 'Download brochure';
     var link = url(it.link);
+    var pdf = url(it.brochure);
     return '<div class="pe-detail-body">' +
       '<div class="pe-info">' +
         '<h3 class="pe-name" data-lpe="list:productExplorerItems:' + STATE.curIndex + ':name">' + esc(txt(it.name)) + '</h3>' +
@@ -203,6 +211,7 @@
       '</div>' +
       '<div class="pe-actions">' +
         '<a class="lpl-btn pe-btn pe-enq" href="' + esc(txt(M.enquireHref) || '#quote') + '" data-pe-enquire>' + esc(enq) + I_ARROW + '</a>' +
+        (pdf ? '<a class="lpl-btn pe-btn pe-bro" href="' + esc(pdf) + '" target="_blank" rel="noopener" data-pe-brochure>' + esc(bro) + I_DOWN + '</a>' : '') +
         (link ? '<a class="lpl-btn pe-btn pe-out" href="' + esc(link) + '" target="_blank" rel="noopener">' + esc(det) + I_OUT + '</a>' : '') +
         (txt(M.note) ? '<p class="pe-note" data-lpe="note">' + esc(txt(M.note)) + '</p>' : '') +
       '</div>' +
@@ -292,6 +301,7 @@
     STATE.scrollList = false;
     fillQuote(M, R);
     writeUrl();
+    bindSwipe();
   }
 
   /* ---------- Quote form: the job list becomes the models; Enquire selects one ---------- */
@@ -353,32 +363,71 @@
         '<div class="pe-lb-stage"><img src="' + esc(set[i]) + '" alt="' + esc(txt(R.cur.it.name)) + '"></div>' +
         (set.length > 1 ? '<button type="button" class="pe-nav pe-prev" data-lb="-1" aria-label="Previous image">' + I_PREV + '</button><button type="button" class="pe-nav pe-next" data-lb="1" aria-label="Next image">' + I_NEXT + '</button>' : '');
     }
-    function close() { document.removeEventListener('keydown', key); box.parentNode && box.parentNode.removeChild(box); document.documentElement.classList.remove('pe-lb-open'); }
+    function close() {
+      document.removeEventListener('keydown', key); box.parentNode && box.parentNode.removeChild(box); document.documentElement.classList.remove('pe-lb-open');
+      if (STATE.idx !== i) { STATE.idx = i; render(); } // the page shows the image you were last looking at
+    }
+    function go(d) { if (set.length < 2) return; i = (i + d + set.length) % set.length; paint(); }
     function zoom() {
       var on = !box.classList.contains('is-zoom'); box.classList.toggle('is-zoom', on);
       var b = box.querySelector('[data-lb="zoom"]'); if (b) b.setAttribute('aria-pressed', String(on));
     }
     function key(e) {
       if (e.key === 'Escape') close();
-      else if (e.key === 'ArrowRight' && set.length > 1) { i = (i + 1) % set.length; paint(); }
-      else if (e.key === 'ArrowLeft' && set.length > 1) { i = (i - 1 + set.length) % set.length; paint(); }
+      else if (e.key === 'ArrowRight') go(1);
+      else if (e.key === 'ArrowLeft') go(-1);
     }
     box.addEventListener('click', function (e) {
       var b = e.target.closest('[data-lb]');
       if (b) {
         var a = b.getAttribute('data-lb');
         if (a === 'close') close(); else if (a === 'zoom') zoom();
-        else { i = (i + Number(a) + set.length) % set.length; paint(); }
+        else go(Number(a));
         return;
       }
       if (e.target.tagName === 'IMG') zoom();
       else if (e.target === box || e.target.classList.contains('pe-lb-stage')) close();
     });
+    // Swipe between images (not while zoomed in — then a drag pans the picture).
+    swipe(box, function (d) { if (!box.classList.contains('is-zoom')) go(d); });
     paint();
     document.body.appendChild(box);
     document.documentElement.classList.add('pe-lb-open');
     document.addEventListener('keydown', key);
     var c = box.querySelector('[data-lb="close"]'); if (c) c.focus();
+  }
+
+  /* ---------- Swipe (touch screens) ---------- */
+  // Calls onStep(+1) for a swipe to the left (next) and onStep(-1) for a swipe to the right.
+  // Only clearly sideways swipes count, so scrolling the page up and down still works.
+  function swipe(el, onStep) {
+    var x0 = null, y0 = 0, t0 = 0;
+    el.addEventListener('touchstart', function (e) {
+      if (e.touches.length !== 1) { x0 = null; return; }
+      x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; t0 = Date.now();
+    }, { passive: true });
+    el.addEventListener('touchmove', function (e) { if (e.touches.length !== 1) x0 = null; }, { passive: true });
+    el.addEventListener('touchend', function (e) {
+      if (x0 == null) return;
+      var t = e.changedTouches && e.changedTouches[0]; if (!t) return;
+      var dx = t.clientX - x0, dy = t.clientY - y0; x0 = null;
+      if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy) * 1.5 || Date.now() - t0 > 900) return;
+      onStep(dx < 0 ? 1 : -1);
+    }, { passive: true });
+  }
+  function stepMain(d) {
+    var M = S(); var R = resolve(M); if (!R.cur) return;
+    var n = (imagesOf(R.cur.it)[STATE.tab] || []).length; if (n < 2) return;
+    STATE.idx = (STATE.idx + d + n) % n; render();
+  }
+  // Bound once on the section (the stage is redrawn on every change), only reacting inside the image.
+  var SWIPE_ON = null;
+  function bindSwipe() {
+    var node = sec(); if (!node || SWIPE_ON === node) return;
+    SWIPE_ON = node;
+    var inStage = false;
+    node.addEventListener('touchstart', function (e) { inStage = !!(e.target.closest && e.target.closest('.pe-stage')); }, { passive: true, capture: true });
+    swipe(node, function (d) { if (inStage) stepMain(d); });
   }
 
   /* ---------- Events ---------- */
@@ -394,11 +443,7 @@
     if ((b = t.closest('[data-pe-group]'))) { STATE.group = b.getAttribute('data-pe-group'); STATE.model = ''; STATE.tab = ''; render(); swap(); return; }
     if ((b = t.closest('[data-pe-model]'))) { STATE.model = b.getAttribute('data-pe-model'); STATE.tab = ''; STATE.idx = 0; STATE.scrollList = true; render(); swap(); return; }
     if ((b = t.closest('[data-pe-tab]'))) { STATE.tab = b.getAttribute('data-pe-tab'); STATE.idx = 0; render(); return; }
-    if ((b = t.closest('[data-pe-step]'))) {
-      var M = S(); var R = resolve(M); if (!R.cur) return;
-      var n = (imagesOf(R.cur.it)[STATE.tab] || []).length; if (n < 2) return;
-      STATE.idx = (STATE.idx + Number(b.getAttribute('data-pe-step')) + n) % n; render(); return;
-    }
+    if ((b = t.closest('[data-pe-step]'))) { stepMain(Number(b.getAttribute('data-pe-step'))); return; }
     if (t.closest('[data-pe-full]')) { openFull(); return; }
     if ((b = t.closest('[data-pe-enquire]'))) { if (enquire(b.getAttribute('href'))) e.preventDefault(); return; }
     if ((b = t.closest('[data-pe-card]'))) {

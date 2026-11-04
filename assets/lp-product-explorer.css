@@ -69,12 +69,17 @@ section[data-sec="productExplorer"]:not(.pe-dark) .pe-head{color:var(--ink,#1f2a
 .pe-tab{padding:7px 14px;border-radius:999px;border:1px solid var(--pe-line);background:transparent;color:var(--pe-ink);font:inherit;font-size:13.5px;cursor:pointer}
 .pe-tab small{opacity:.65}
 .pe-tab.is-on{background:var(--pe-ink);color:var(--pe-panel,var(--pe-panel-d));border-color:transparent}
-.pe-stage{position:relative;border-radius:10px;overflow:hidden;background:var(--pe-stage);aspect-ratio:16/10}
+.pe-stage{position:relative;border-radius:10px;overflow:hidden;background:var(--pe-stage);aspect-ratio:16/10;touch-action:pan-y pinch-zoom}
 .pe-stage-plan,.pe-stage-elev{background:#fff}
-.pe-stage-img{display:block;width:100%;height:100%;padding:0;border:0;background:none;cursor:zoom-in}
+.pe-stage-img{display:block;width:100%;height:100%}
+.pe-stage-img img{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .pe-stage-img img{width:100%;height:100%;display:block;object-fit:contain}
 .pe-stage-photo .pe-stage-img img{object-fit:cover}
-.pe-stage-tools{position:absolute;right:12px;bottom:12px;display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:rgba(20,28,23,.72);color:#fff;font-size:12px;pointer-events:none}
+.pe-stage-tools{position:absolute;right:12px;bottom:12px;z-index:2;display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:999px;border:0;background:rgba(20,28,23,.78);color:#fff;font:inherit;font-size:12px;cursor:zoom-in;transition:background .15s}
+.pe-stage-tools:hover{background:rgba(20,28,23,.95)}
+.pe-stage-tools:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.pe-say-tap{display:none}
+@media (hover:none),(pointer:coarse){.pe-say-click{display:none}.pe-say-tap{display:inline}}
 .pe-stage-tools .lp-ic{width:15px;height:15px}
 .pe-tag{position:absolute;top:12px;right:12px;display:inline-flex;gap:8px;padding:6px 12px;border-radius:6px;background:rgba(20,28,23,.82);color:#fff;font-size:13px;font-weight:600}
 .pe-ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:24px;text-align:center;color:var(--pe-muted)}
@@ -101,6 +106,8 @@ section[data-sec="productExplorer"]:not(.pe-dark) .pe-head{color:var(--ink,#1f2a
 .pe-btn .lp-ic{width:16px;height:16px}
 .pe-enq{background:var(--pe-band,var(--pe-band-d))!important;color:#f6f1e8!important;border:1px solid transparent!important}
 .pe-out{background:transparent!important;color:var(--pe-ink)!important;border:1px solid var(--pe-ink)!important}
+.pe-bro{background:var(--pe-surface)!important;color:var(--pe-ink)!important;border:1px solid var(--pe-line)!important}
+.pe-bro:hover{border-color:var(--pe-ink)!important}
 .pe-note{margin:4px 0 0;font-size:12.5px;line-height:1.5;color:var(--pe-muted)}
 
 /* Category photo cards */
@@ -123,7 +130,8 @@ html.pe-lb-open{overflow:hidden}
 .pe-lb-bar span{opacity:.7;margin-right:auto}
 .pe-lb-bar button{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.3);background:transparent;color:#fff;font:inherit;cursor:pointer}
 .pe-lb-bar button[aria-pressed="true"]{background:#fff;color:#111}
-.pe-lb-stage{flex:1 1 auto;overflow:auto;display:flex;align-items:center;justify-content:center;padding:0 16px 16px}
+.pe-lb-stage{flex:1 1 auto;overflow:auto;display:flex;align-items:center;justify-content:center;padding:0 16px 16px;touch-action:pan-y pinch-zoom}
+.pe-lb.is-zoom .pe-lb-stage{touch-action:auto}
 .pe-lb-stage img{max-width:100%;max-height:100%;object-fit:contain;background:#fff;border-radius:6px;cursor:zoom-in}
 .pe-lb.is-zoom .pe-lb-stage{align-items:flex-start;justify-content:flex-start}
 .pe-lb.is-zoom .pe-lb-stage img{max-width:none;max-height:none;width:200%;cursor:zoom-out}
@@ -157,6 +165,8 @@ html.pe-lb-open{overflow:hidden}
   .pe-detail{order:2}
   .pe-help{order:3}
   .pe-stage{aspect-ratio:4/3}
+  .pe-dots{bottom:54px}
+  .pe-stage-tools{right:10px;bottom:10px;padding:7px 11px}
   .pe-specs li{flex:1 1 calc(50% - 8px);min-width:0}
   .pe-actions{flex-direction:column}
   .pe-actions .pe-btn{flex:none;width:100%}
