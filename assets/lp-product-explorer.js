@@ -17,7 +17,7 @@
  *   fillQuote (default true)            quote form's job list = the models; selected on Enquire
  *   categories[] {on, label, image, blurb}
  *   items[] {on, name, category, group, bedrooms, bathrooms, area, dimensions, description,
- *            link, floorPlan, elev1..elev4, photo1..photo3, alt}
+ *            link, floorPlan, floorPlan2, elev1..elev4, photo1..photo8, alt}
  *
  * Deep links: ?pe-cat=<category>&pe-model=<model> (kept in the address as you browse, so Back
  * and shared links reopen the same model). Never shows one model's images for another: a
@@ -86,11 +86,14 @@
     });
     return out;
   }
+  var PHOTO_KEYS = ['photo1', 'photo2', 'photo3', 'photo4', 'photo5', 'photo6', 'photo7', 'photo8'];
   function imagesOf(it) {
-    var plan = url(it.floorPlan);
-    var elev = ['elev1', 'elev2', 'elev3', 'elev4'].map(function (k) { return url(it[k]); }).filter(Boolean);
-    var photo = ['photo1', 'photo2', 'photo3'].map(function (k) { return url(it[k]); }).filter(Boolean);
-    return { plan: plan ? [plan] : [], elev: elev, photo: photo };
+    var pick = function (keys) { return keys.map(function (k) { return url(it[k]); }).filter(Boolean); };
+    return {
+      plan: pick(['floorPlan', 'floorPlan2']),
+      elev: pick(['elev1', 'elev2', 'elev3', 'elev4']),
+      photo: pick(PHOTO_KEYS)
+    };
   }
   function unitOf(M) { return txt(M.unit) || 'm²'; }
   function fill(tpl, it, extra) {

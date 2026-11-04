@@ -33,7 +33,8 @@ test('section order: optional and off by default', () => {
 
 test('explorer never borrows another model’s images and falls back to a placeholder', () => {
   assert.match(js, /function imagesOf\(it\)/);
-  assert.match(js, /\['elev1', 'elev2', 'elev3', 'elev4'\]/);
+  assert.match(js, /pick\(\['elev1', 'elev2', 'elev3', 'elev4'\]\)/);
+  assert.match(js, /pick\(\['floorPlan', 'floorPlan2'\]\)/);
   assert.match(js, /Official floor plan coming soon/);
   assert.doesNotMatch(js, /items\[0\]\.floorPlan|firstPlan/);
 });
@@ -53,7 +54,7 @@ test('editor: defaults, lists with upload slots, settings card, menu and app ent
   const m = read('manage.html');
   assert.match(m, /productExplorer:\{on:false,eyebrow:'Explorer'/);
   assert.match(m, /productExplorerItems:\{secId:'productExplorer',key:'items',addLabel:'Add model'/);
-  for (const k of ['floorPlan', 'elev1', 'elev2', 'elev3', 'elev4', 'photo1', 'photo2', 'photo3']) {
+  for (const k of ['floorPlan', 'floorPlan2', 'elev1', 'elev2', 'elev3', 'elev4', 'photo1', 'photo2', 'photo3', 'photo4', 'photo5', 'photo6', 'photo7', 'photo8']) {
     assert.match(m, new RegExp("\\{k:'" + k + "',type:'image'"));
   }
   assert.match(m, /productExplorerCats:\{secId:'productExplorer',key:'categories'/);
