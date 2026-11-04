@@ -102,5 +102,9 @@ test('editor: brochure PDF upload to the site’s Cloudinary folder; PDFs stay o
   assert.match(m, /async function cwUploadPdf\(file,parts\)\{/);
   assert.match(m, /var _folder='leadpages\/'\+cwSiteSeg\(\)\+'\/'\+parts\.map\(cwSeg\)\.join\('\/'\);\n    var _base=/);
   assert.match(m, /var CW_PDF_MAX=10\*1024\*1024;/);
+  // Paste a link to a PDF elsewhere → Cloudinary copies it into the client's folder; non-PDFs are removed again.
+  assert.match(m, /class="btn ghost cw-pdf-copy"/);
+  assert.match(m, /if\(isLink\) fd\.append\('file',file\.link\);/);
+  assert.match(m, /if\(String\(uj\.format\|\|''\)\.toLowerCase\(\)!=='pdf'\)\{ cwDelete\(uj\.public_id\);/);
   assert.match(read('api/cloudinary/library.js'), /String\(x\.format \|\| ''\)\.toLowerCase\(\) === 'pdf'\) return;/);
 });

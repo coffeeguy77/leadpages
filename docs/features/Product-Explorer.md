@@ -62,6 +62,9 @@ drag to reorder).
 
 - List field type `pdf` in `manage.html` (`cwPdfHTML` + `cwUploadPdf`): paste a link or **Upload PDF**
   (up to 10 MB, the Cloudinary Free plan per-file limit). **View** opens it, **✕** removes it.
+- **Copy link to storage:** paste a link to a PDF on another website and press it — Cloudinary downloads
+  the file itself (no browser download, no CORS) into the same folder. Anything that isn't a PDF is deleted
+  again with an error.
 - Uploads are signed by `/api/cloudinary/sign` and stored in the client's folder
   `leadpages/<site id>/productexplorer/brochure/<file name>-<random>` as an image-type asset (link ends
   in `.pdf`), so the existing in-use / delete clean-up covers them. `api/cloudinary/library.js` leaves

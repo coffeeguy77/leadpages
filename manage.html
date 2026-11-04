@@ -7589,27 +7589,36 @@ function heroCtaCard(c){
   async function cwDeletePrefix(prefix){ if(!prefix) return; try{ var t=await cwToken(); await fetch('/api/cloudinary/delete',{method:'POST',headers:{'content-type':'application/json',Authorization:'Bearer '+t},body:JSON.stringify({prefix:prefix})}); }catch(e){} }
   function cwImgHTML(idOrData, ph, hint){ var _h=(hint?(esc(hint)+' \u00b7 '):'')+'JPG, PNG, WebP or SVG \u00b7 up to 8 MB \u00b7 images over ~800 KB are compressed on upload'; return '<div class="cw-row" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;"><input type="text" '+idOrData+' placeholder="'+(ph||'https://\u2026 or upload')+'" style="flex:1;min-width:150px;"><button type="button" class="btn ghost cw-up" tabindex="-1">Upload</button><button type="button" class="btn ghost cw-lib" tabindex="-1" title="Choose from this site\u2019s image library">Library</button><button type="button" class="btn ghost cw-clr" tabindex="-1" title="Clear image">\u2715</button></div><div class="hint" style="margin:4px 0 0;font-size:11.5px;">'+_h+'</div>'; }
   /** PDF field (brochures, spec sheets): link box + Upload PDF (to this site's Cloudinary folder) + View + clear. */
-  function cwPdfHTML(idOrData, ph, hint){ var _h=(hint?(esc(hint)+' \u00b7 '):'')+'PDF \u00b7 up to 10 MB'; return '<div class="cw-row cw-pdf-row" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;"><input type="text" '+idOrData+' placeholder="'+(ph||'https://\u2026 or upload a PDF')+'" style="flex:1;min-width:150px;"><label class="btn ghost cw-pdf-up" style="position:relative;overflow:hidden;cursor:pointer;">Upload PDF<input type="file" class="cw-pdf-in" accept="application/pdf,.pdf" aria-label="Upload a PDF" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;"></label><button type="button" class="btn ghost cw-pdf-view" tabindex="-1" title="Open the PDF in a new tab">View</button><button type="button" class="btn ghost cw-clr" tabindex="-1" title="Remove PDF">\u2715</button></div><div class="hint cw-pdf-status" style="margin:4px 0 0;font-size:11.5px;" aria-live="polite"></div><div class="hint" style="margin:2px 0 0;font-size:11.5px;">'+_h+'</div>'; }
+  function cwPdfHTML(idOrData, ph, hint){ var _h=(hint?(esc(hint)+' \u00b7 '):'')+'PDF \u00b7 up to 10 MB \u00b7 or paste a link to a PDF and press Copy link to storage'; return '<div class="cw-row cw-pdf-row" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;"><input type="text" '+idOrData+' placeholder="'+(ph||'https://\u2026 or upload a PDF')+'" style="flex:1;min-width:150px;"><label class="btn ghost cw-pdf-up" style="position:relative;overflow:hidden;cursor:pointer;">Upload PDF<input type="file" class="cw-pdf-in" accept="application/pdf,.pdf" aria-label="Upload a PDF" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;"></label><button type="button" class="btn ghost cw-pdf-copy" tabindex="-1" title="Pasted a link to a PDF on another website? Save a copy in this site\u2019s own storage">Copy link to storage</button><button type="button" class="btn ghost cw-pdf-view" tabindex="-1" title="Open the PDF in a new tab">View</button><button type="button" class="btn ghost cw-clr" tabindex="-1" title="Remove PDF">\u2715</button></div><div class="hint cw-pdf-status" style="margin:4px 0 0;font-size:11.5px;" aria-live="polite"></div><div class="hint" style="margin:2px 0 0;font-size:11.5px;">'+_h+'</div>'; }
   var CW_PDF_MAX=10*1024*1024; // Cloudinary Free plan per-file limit
   /** Upload a PDF to leadpages/<site>/<parts…>/ on Cloudinary. Stored like the site's images (so the
       existing delete / in-use checks cover it); the returned link ends in .pdf. */
   async function cwUploadPdf(file,parts){
     if(!file) throw new Error('No file chosen');
-    if(!(/pdf$/i.test(file.type||'')||/\.pdf$/i.test(file.name||''))) throw new Error('Please choose a PDF file');
-    if(file.size>CW_PDF_MAX) throw new Error('This PDF is '+cwLibSize(file.size)+'. The limit is 10 MB \u2014 save a smaller copy and try again.');
+    // A link (string): Cloudinary downloads it itself, so PDFs on other websites can be copied in.
+    var isLink=typeof file==='string';
+    if(isLink){
+      if(!/^https:\/\/[^\s"'<>]+$/i.test(file)) throw new Error('Paste a full https:// link to a PDF');
+      if(/^https:\/\/res\.cloudinary\.com\//i.test(file)) throw new Error('That PDF is already in storage');
+      file={ link:file, name:decodeURIComponent(String(file).split(/[?#]/)[0].split('/').pop()||'document.pdf') };
+    } else {
+      if(!(/pdf$/i.test(file.type||'')||/\.pdf$/i.test(file.name||''))) throw new Error('Please choose a PDF file');
+      if(file.size>CW_PDF_MAX) throw new Error('This PDF is '+cwLibSize(file.size)+'. The limit is 10 MB \u2014 save a smaller copy and try again.');
+    }
     var token=await cwToken(); if(!token) throw new Error('Please sign in again');
     var _folder='leadpages/'+cwSiteSeg()+'/'+parts.map(cwSeg).join('/');
     var _base=cwSeg(String(file.name||'document').replace(/\.pdf$/i,'').replace(/\s+/g,'-')).slice(0,60)||'document';
     var pid=_folder+'/'+_base+'-'+cwRand().slice(-5);
     var sr=await fetch('/api/cloudinary/sign',{method:'POST',headers:{'content-type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({publicId:pid,assetFolder:_folder})});
     if(!sr.ok) throw new Error('Could not authorise upload'); var s=await sr.json();
-    var fd=new FormData(); fd.append('file',file,file.name||'document.pdf'); fd.append('api_key',s.apiKey); fd.append('timestamp',s.timestamp); fd.append('public_id',s.publicId); if(s.assetFolder) fd.append('asset_folder',s.assetFolder); if(s.overwrite) fd.append('overwrite',s.overwrite); fd.append('signature',s.signature);
+    var fd=new FormData(); if(isLink) fd.append('file',file.link); else fd.append('file',file,file.name||'document.pdf'); fd.append('api_key',s.apiKey); fd.append('timestamp',s.timestamp); fd.append('public_id',s.publicId); if(s.assetFolder) fd.append('asset_folder',s.assetFolder); if(s.overwrite) fd.append('overwrite',s.overwrite); fd.append('signature',s.signature);
     var _cloud=(s.cloudName&&/^[a-zA-Z0-9_\-]+$/.test(s.cloudName))?s.cloudName:CW_CLOUD;
     var ur,uj;
     try{ ur=await fetch('https://api.cloudinary.com/v1_1/'+_cloud+'/image/upload',{method:'POST',body:fd}); }catch(_ne){ throw new Error('Network error reaching Cloudinary \u2014 check the connection and try again.'); }
     uj=await ur.json().catch(function(){return {};});
     if(!ur.ok||!uj.secure_url) throw new Error((uj.error&&uj.error.message)||('Cloudinary rejected the upload ('+ur.status+')'));
-    return { url:uj.secure_url, publicId:uj.public_id, bytes:uj.bytes||file.size, pages:uj.pages||null };
+    if(String(uj.format||'').toLowerCase()!=='pdf'){ cwDelete(uj.public_id); throw new Error('That link is not a PDF'); }
+    return { url:uj.secure_url, publicId:uj.public_id, bytes:uj.bytes||file.size||0, pages:uj.pages||null };
   }
   function cwBusy(btn,on){ if(!btn)return; if(on){ btn.dataset.t=btn.textContent; btn.textContent='\u2026'; btn.disabled=true; } else { btn.textContent=btn.dataset.t||'Upload'; btn.disabled=false; } }
   /** Fill every Order-shop-category select (list field type 'orderCat') from this site's storefront. */
@@ -7927,15 +7936,18 @@ function heroCtaCard(c){
     });
     __leAdd('change',function(e){ if(e.target.classList.contains('le-on')||e.target.type==='radio'||e.target.classList.contains('le-chk')) collect(false); });
     /* PDF upload (type:'pdf' fields): the file input sits inside the button's label, so no hidden picker is needed. */
-    __leAdd('change',function(e){
-      if(!e.target.classList||!e.target.classList.contains('cw-pdf-in')) return;
-      var _in=e.target,_f=_in.files&&_in.files[0]; if(!_f) return;
+    function lePdfSave(_in,_f){
       var _rw=_in.closest('.cw-row'),_tx=_rw.querySelector('input[type=text][data-k]'),_k=_tx.getAttribute('data-k'),_le=_in.closest('.le-row'),_pd=_le&&_le.querySelector('[data-k="'+_k+'_pid"]'),_pv=_pd?_pd.value:'',_lb=_in.closest('.cw-pdf-up');
       if(_lb){ _lb.classList.add('is-busy'); _lb.setAttribute('aria-busy','true'); }
-      var _st=_rw.parentNode.querySelector('.cw-pdf-status'); if(_st) _st.textContent='Uploading '+(_f.name||'PDF')+'\u2026';
-      cwUploadPdf(_f,[sc.secId,_k]).then(function(r){ _tx.value=r.url; if(_pd)_pd.value=r.publicId; collect(false); if(_pv&&_pv!==r.publicId) cwDelete(_pv); if(_st) _st.textContent='Uploaded \u2713 '+(_f.name||'')+' ('+cwLibSize(r.bytes)+')'; toast('Brochure uploaded'); })
+      var _nm=typeof _f==='string'?'PDF from link':(_f.name||'PDF');
+      var _st=_rw.parentNode.querySelector('.cw-pdf-status'); if(_st) _st.textContent='Uploading '+_nm+'\u2026';
+      return cwUploadPdf(_f,[sc.secId,_k]).then(function(r){ _tx.value=r.url; if(_pd)_pd.value=r.publicId; collect(false); if(_pv&&_pv!==r.publicId) cwDelete(_pv); if(_st) _st.textContent='Saved \u2713 '+(typeof _f==='string'?'':_nm+' ')+'('+cwLibSize(r.bytes)+')'; toast('PDF saved'); })
         .catch(function(err){ if(_st) _st.textContent=''; toast('Upload failed: '+((err&&err.message)||err)); })
-        .then(function(){ _in.value=''; if(_lb){ _lb.classList.remove('is-busy'); _lb.removeAttribute('aria-busy'); } });
+        .then(function(){ if(_in.type==='file') _in.value=''; if(_lb){ _lb.classList.remove('is-busy'); _lb.removeAttribute('aria-busy'); } });
+    }
+    __leAdd('change',function(e){
+      if(!e.target.classList||!e.target.classList.contains('cw-pdf-in')) return;
+      var _f=e.target.files&&e.target.files[0]; if(_f) lePdfSave(e.target,_f);
     });
     __leAdd('dragstart',function(e){
       var row=e.target.closest&&e.target.closest('.le-row'); if(!row||e.target.closest('input,textarea,select,button,a,label')){ e.preventDefault(); return; }
@@ -7975,6 +7987,7 @@ function heroCtaCard(c){
         collect(false); if(id<items.length-1) moveItem(id,id+1);
         return;
       }
+      if(e.target.classList.contains('cw-pdf-copy')){ var _cb=e.target,_cu=((_cb.closest('.cw-row').querySelector('input[type=text][data-k]')||{}).value||'').trim(); if(!/^https?:\/\//i.test(_cu)){ toast('Paste a link to a PDF first'); return; } if(/^https:\/\/res\.cloudinary\.com\//i.test(_cu)){ toast('This PDF is already in storage'); return; } cwBusy(_cb,true); lePdfSave(_cb,_cu).then(function(){ cwBusy(_cb,false); }); return; }
       if(e.target.classList.contains('cw-pdf-view')){ var _pu=(e.target.closest('.cw-row').querySelector('input[type=text][data-k]')||{}).value||''; if(/^https?:\/\//i.test(_pu)) window.open(_pu,'_blank','noopener'); else toast('Add or upload a PDF first'); return; }
       if(e.target.classList.contains('cw-up')){ var _b=e.target,_rw=_b.closest('.cw-row'),_tx=_rw.querySelector('input[type=text][data-k]'),_k=_tx.getAttribute('data-k'),_le=_b.closest('.le-row'),_pd=_le.querySelector('[data-k="'+_k+'_pid"]'),_pv=_pd?_pd.value:''; cwPick(function(file){ cwBusy(_b,true); cwUpload(file,[sc.secId,_k]).then(function(r){ _tx.value=r.url; if(_pd)_pd.value=r.publicId; collect(false); if(_pv&&_pv!==r.publicId) cwDelete(_pv); }).catch(function(err){ toast('Upload failed: '+((err&&err.message)||err)); }).then(function(){ cwBusy(_b,false); }); }); } else if(e.target.classList.contains('cw-clr')){ var _b2=e.target,_rw2=_b2.closest('.cw-row'),_tx2=_rw2.querySelector('input[type=text][data-k]'),_k2=_tx2.getAttribute('data-k'),_le2=_b2.closest('.le-row'),_pd2=_le2.querySelector('[data-k="'+_k2+'_pid"]'); if(_pd2&&_pd2.value){ cwDelete(_pd2.value); _pd2.value=''; } _tx2.value=''; collect(false); } else if(e.target.classList.contains('le-eyedrop')){ var _k=e.target.getAttribute('data-colorfor'); var _row=e.target.closest('.le-row'); var _tx=_row.querySelector('input[type=text][data-k="'+_k+'"]'); var _ci=_row.querySelector('.le-color[data-colorfor="'+_k+'"]'); if(window.EyeDropper){ try{ new window.EyeDropper().open().then(function(r){ if(r&&r.sRGBHex){ if(_tx)_tx.value=r.sRGBHex; if(_ci)_ci.value=r.sRGBHex; collect(false); } }).catch(function(){}); }catch(_e){ if(_ci)_ci.click(); } } else if(_ci){ _ci.click(); } } else if(e.target.classList.contains('le-del')){ var __r=e.target.closest('.le-row'); if(__r) __r.querySelectorAll('[data-k$="_pid"]').forEach(function(p){ if(p.value) cwDelete(p.value); }); var i=+__r.getAttribute('data-idx'); items.splice(i,1); setList(c,sk,items); render(); } else if(e.target.classList.contains('le-add')){ items=items.concat([Object.assign({on:true},sc.defaultItem)]); setList(c,sk,items); render(); }
     });
