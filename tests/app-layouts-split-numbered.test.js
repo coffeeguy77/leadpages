@@ -16,7 +16,7 @@ const css = read('assets/lp-layouts.css');
 const manage = read('manage.html');
 
 test('Hero Slider Split: drawn only when chosen, H1 handled, buttons reuse slide 1', () => {
-  assert.match(js, /var on = HS\.layout === 'split';/);
+  assert.match(js, /var on = HS\.layout === 'split' \|\| cover;/);
   assert.match(js, /node\.classList\.toggle\('hsp-on', on\)/);
   // Optional SEO H1 line: when set it is the H1 and the headline becomes an H2.
   assert.match(js, /var headTag = h1 \? 'h2' : 'h1';/);
@@ -60,8 +60,8 @@ test('"#app" links scroll to the app section when no element has that id', () =>
 
 test('template loads the new asset versions', () => {
   const tpl = read('trade.template.json');
-  assert.match(tpl, /lp-layouts\.css\?v=31/);
-  assert.match(tpl, /lp-layouts\.js\?v=34/);
+  assert.match(tpl, /lp-layouts\.css\?v=32/);
+  assert.match(tpl, /lp-layouts\.js\?v=35/);
 });
 
 test('services photo cards layout: whole card links to the service, editor offers it', () => {

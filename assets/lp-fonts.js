@@ -77,9 +77,16 @@
       body: { family: 'Jost', fallback: 'system-ui,sans-serif' },
       eyebrow: { family: 'Jost', fallback: 'system-ui,sans-serif', weight: 500, spacing: '.24em', button: '.02em' },
       google: 'Jost:wght@300;400;500;600'
+    },
+    clinical: {
+      label: 'Source Serif Clinical', note: 'Source Serif 4 headings + Source Sans 3 body, tracked capitals',
+      head: { family: 'Source Serif 4', fallback: 'Georgia,serif', weight: 500, transform: 'none', spacing: '-.005em' },
+      body: { family: 'Source Sans 3', fallback: 'system-ui,sans-serif' },
+      eyebrow: { family: 'Source Sans 3', fallback: 'system-ui,sans-serif', weight: 600, spacing: '.18em', button: '.01em', labelCase: 'none' },
+      google: 'Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=Source+Sans+3:wght@400;500;600;700'
     }
   };
-  var ORDER = ['classic', 'archivo', 'oswald', 'bebas', 'montserrat', 'poppins', 'space', 'playfair', 'heritage', 'jost'];
+  var ORDER = ['classic', 'archivo', 'oswald', 'bebas', 'montserrat', 'poppins', 'space', 'playfair', 'heritage', 'jost', 'clinical'];
 
   function get(key) { return (key && SETS[key] && key !== 'classic') ? SETS[key] : null; }
   function q(f) { return '"' + String(f).replace(/["\\<>]/g, '') + '"'; }
@@ -101,6 +108,14 @@
       out += ':root{--lp-font-label:' + q(e.family) + ',' + e.fallback + '}';
       out += '.eyebrow,.hsl-eyebrow,.sph-eyebrow,.lpl-eyebrow{font-family:var(--lp-font-label)!important;font-weight:' + e.weight + '!important;letter-spacing:' + e.spacing + '!important;font-stretch:100%}';
       out += '.btn,.hn-link,.hn-txt,.lpl-link,.lpl-btn{font-family:var(--lp-font-label)!important;font-weight:' + e.weight + '!important;letter-spacing:' + (e.button || e.spacing) + '!important;font-stretch:100%}';
+      // labelCase 'none': buttons and menu links as typed (eyebrows keep their capitals).
+      if (e.labelCase === 'none') {
+        out += '.btn,.hn-link,.hn-txt,.lpl-link,.lpl-btn,.hn-sub a{text-transform:none!important}';
+        // Menu bar links too (placement 'bar'): label font, sentence case, no browser button border.
+        out += '.nm-link,.nm-sub-link,.nm-drop>button.nm-link{font-family:var(--lp-font-label)!important;font-weight:' + e.weight + '!important;text-transform:none!important;letter-spacing:.005em!important;font-stretch:100%}';
+        out += '.nm-drop>button.nm-link{border:0}';
+        out += '.hnm-item,.hnm-parent,.hnm-panel a{font-family:var(--lp-font-label)!important;font-weight:' + e.weight + '!important;text-transform:none!important;letter-spacing:.005em!important}';
+      }
     }
     return out;
   }

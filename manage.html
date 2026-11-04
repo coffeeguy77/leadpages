@@ -830,7 +830,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 <script src="/assets/lp-hub-embed.js"></script>
 <link rel="stylesheet" href="/assets/lp-logo.css">
 <script src="/assets/lp-logo.js"></script>
-<script src="/assets/lp-fonts.js?v=3"></script>
+<script src="/assets/lp-fonts.js?v=4"></script>
 <script src="/assets/lp-admin-shell.js"></script>
 <script src="/assets/lp-ui-shell.js?v=2"></script>
 <script src="/assets/lp-messages-embed.js?v=support-new-1"></script>
@@ -1205,6 +1205,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
           </div>
         </div>
       </div>
+      <div class="f"><label style="display:flex;gap:8px;align-items:center;font-weight:600;cursor:pointer;"><input type="checkbox" id="lp-rich"> Rich text: links [text](https://…), tables, numbered lists, *italics*</label><span class="hint" style="display:block;margin-top:4px;">On for new pages. Pages made before Nov 2026 stay as they were until you tick it.</span></div>
       <div class="f"><label>Status</label><select id="lp-status" class="apsel"><option value="draft">Draft (hidden)</option><option value="published">Published (live)</option></select></div>
       <div class="lp-ed-foot"><button class="btn ghost" id="lp-close">Close</button><button class="btn ghost" id="lp-dup" title="Make a copy of this page (apps, layout and content) as a new draft">Duplicate page</button><button class="btn ghost danger" id="lp-del">Delete page</button></div>
       </div>
@@ -3671,7 +3672,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     if($('lp-ai-mode')){ $('lp-ai-mode').addEventListener('change',function(){ lpAiSetMode(this.value); }); lpAiSetMode($('lp-ai-mode').value||'seo'); }
     try{ lpConsumeSiHandoff({ autoGenerate: false }); }catch(_siH){}
     if(lpWired) return; lpWired=true;
-    $('lp-new-apps').addEventListener('click',function(){ const p={id:uid(),kind:'apps',title:'',slug:'',meta:'',h1:'',body:'',menu:'top',status:'draft',imgMode:'wrap-right',pageApps:[],pageSections:{},pageLayoutOrder:[]}; data.pages.push(p); persist(); lpSaveDB(); renderSeoPages(); lpOpen(p.id); lpSetEdTab('content'); try{ $('lp-title').focus(); }catch(_f){} toast('New app layout \u2014 give it a title and address, then add apps.'); });
+    $('lp-new-apps').addEventListener('click',function(){ const p={id:uid(),kind:'apps',title:'',slug:'',meta:'',h1:'',body:'',menu:'top',status:'draft',rich:true,imgMode:'wrap-right',pageApps:[],pageSections:{},pageLayoutOrder:[]}; data.pages.push(p); persist(); lpSaveDB(); renderSeoPages(); lpOpen(p.id); lpSetEdTab('content'); try{ $('lp-title').focus(); }catch(_f){} toast('New app layout \u2014 give it a title and address, then add apps.'); });
     $('lp-kind').addEventListener('change',function(){ if(!lpCur) return; if(this.value==='apps') lpCur.kind='apps'; else delete lpCur.kind; $('lp-editor').classList.toggle('lp-kind-apps', lpCur.kind==='apps'); persist(); lpAutosave(); });
     $('lp-dup').addEventListener('click',function(){
       if(!lpCur) return;
@@ -3684,7 +3685,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       persist(); lpSaveDB(); renderSeoPages(); lpOpen(copy.id); lpSetEdTab('content');
       toast('Duplicated as a draft \u2014 change the title, address and content, then publish.');
     });
-    $('lp-new').addEventListener('click',function(){ const p={id:uid(),title:'',slug:'',meta:'',h1:'',body:'',menu:'top',status:'draft',imgMode:'wrap-right',pageApps:[],pageSections:{},pageLayoutOrder:[]}; data.pages.push(p); try{ lpEnsureDefaultLandingApps(p); }catch(e){} persist(); lpSaveDB(); renderSeoPages(); lpOpen(p.id); lpSetEdTab('content'); try{ $('lp-title').focus(); }catch(_f){} });
+    $('lp-new').addEventListener('click',function(){ const p={id:uid(),title:'',slug:'',meta:'',h1:'',body:'',menu:'top',status:'draft',rich:true,imgMode:'wrap-right',pageApps:[],pageSections:{},pageLayoutOrder:[]}; data.pages.push(p); try{ lpEnsureDefaultLandingApps(p); }catch(e){} persist(); lpSaveDB(); renderSeoPages(); lpOpen(p.id); lpSetEdTab('content'); try{ $('lp-title').focus(); }catch(_f){} });
     list.addEventListener('click',function(e){
       var mb=e.target.closest('[data-lpx-menu]');
       if(mb){ e.stopPropagation(); lpxCardMenu(mb); return; }
@@ -4101,6 +4102,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   function lpPush(v){ lpHist=lpHist.slice(0,lpHi+1); lpHist.push(v); if(lpHist.length>50)lpHist.shift(); lpHi=lpHist.length-1; }
   function lpOpen(id){
     lpCur=data.pages.find(x=>x.id===id); if(!lpCur) return;
+    try{ var _rk=$('lp-rich'); if(_rk){ _rk.checked=lpCur.rich===true; if(!_rk.__w){ _rk.__w=1; _rk.addEventListener('change',function(){ if(!lpCur) return; if(_rk.checked) lpCur.rich=true; else delete lpCur.rich; persist(); lpAutosave(); previewApply(); }); } } }catch(_rkE){}
     lpCur._siPrevStatus=lpCur.status||'draft';
     lpEnsurePageApps(lpCur);
     try{ lpEnsureDefaultLandingApps(lpCur, {addMissing:false}); }catch(e){ lpEnsurePageLayoutOrder(lpCur); }
@@ -5325,6 +5327,8 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
     servicesFeatureItems:{secId:'services',key:'featureItems',addLabel:'Add point',item:[{k:'icon',label:'Icon',type:'icon'},{k:'image',type:'image',label:'Image (replaces the icon)',ph:'https://\u2026 (optional)',hint:'Transparent PNG or SVG line drawing works best'},{k:'title',label:'Title'},{k:'text',label:'Text',type:'ta'}],defaultItem:{on:true,icon:'leaf',title:'New point',text:''}},
     ctaBannerBoxes:{secId:'ctaBanner',key:'boxes',addLabel:'Add box',item:[{k:'icon',label:'Icon',type:'icon'},{k:'image',type:'image',label:'Image (replaces the icon)',ph:'https://\u2026 (optional)',hint:'Transparent PNG or SVG works best'},{k:'title',label:'Title',type:'ta'},{k:'text',label:'Text',type:'ta'},{k:'link',label:'Link (optional)',ph:'#quote, /page or https://\u2026'}],defaultItem:{on:true,icon:'shield',title:'New box',text:''}},
     storyRowsItems:{secId:'storyRows',key:'items',addLabel:'Add row',item:[{k:'title',label:'Heading (Enter for a new line)',type:'ta'},{k:'eyebrow',label:'Eyebrow (optional)'},{k:'text',label:'Text (leave a blank line between paragraphs)',type:'ta'},{k:'note',label:'Bold line under the text (optional)'},{k:'image',type:'image',label:'Photo or drawing',ph:'https://\u2026 (optional)',hint:'Photos \u2248 1600\u00d71200 px. Drawings: transparent PNG works best'},{k:'imageKind',label:'Image is a',type:'select',opts:[['photo','Photo \u2014 fills its half to the edge'],['drawing','Drawing \u2014 shown whole, with space around']]},{k:'imageSide',label:'Image side',type:'select',opts:[['left','Left'],['right','Right']]},{k:'tone',label:'Row background',type:'select',opts:[['','Page background'],['soft','Soft (theme light colour)'],['tint','Tint (colour set in Layout)'],['dark','Dark']]},{k:'fade',label:'Photo edge',type:'select',opts:[['','Sharp edge'],['fade','Fade into the row colour (wider photo)']]},{k:'btnLabel',label:'Button text (optional)'},{k:'btnLink',label:'Button link',ph:'#quote, /page or https://\u2026'},{k:'alt',label:'Image description (for search engines, optional)'}],defaultItem:{on:true,title:'New row',text:'',imageKind:'photo',imageSide:'left',tone:''}},
+    headerItems:{secId:'header',key:'items',addLabel:'Add contact item',item:[{k:'icon',type:'icon',label:'Icon',ph:'phone'},{k:'text',label:'Text',ph:'0400 000 000'},{k:'href',label:'Link (optional)',ph:'tel:0400000000, mailto:\u2026 or /page'}],defaultItem:{on:true,icon:'phone',text:'',href:''}},
+    footerBrandContact:{secId:'footer',key:'brandContact',addLabel:'Add line',item:[{k:'icon',type:'icon',label:'Icon',ph:'map-pin'},{k:'text',type:'ta',label:'Text (new line = line break)'},{k:'href',label:'Link (optional)',ph:'tel:\u2026, mailto:\u2026 or /page'}],defaultItem:{on:true,icon:'map-pin',text:'',href:''}},
     productExplorerItems:{secId:'productExplorer',key:'items',addLabel:'Add model',rowHeader:function(it){ return '<b>'+esc(it.name||'New model')+'</b>'+(it.category?' <span style="opacity:.65">\u00b7 '+esc(it.category)+(it.group?' \u00b7 '+esc(it.group):'')+'</span>':''); },item:[{k:'name',label:'Model name'},{k:'category',label:'Category (same spelling as under Categories)'},{k:'group',label:'Type filter (e.g. 1 Bedroom, Studio)'},{k:'bedrooms',label:'Bedrooms (0 = studio, empty = hide)',ph:'1'},{k:'bathrooms',label:'Bathrooms (empty = hide)',ph:'1'},{k:'area',label:'Floor area (number, empty = hide)',ph:'56'},{k:'dimensions',label:'Dimensions (empty = hide)',ph:'8.3m x 3.9m'},{k:'description',label:'Short description',type:'ta'},{k:'link',label:'Manufacturer / full details link',ph:'https://\u2026'},{k:'brochure',type:'pdf',label:'Brochure (PDF)',ph:'https://\u2026 or upload a PDF',hint:'Shows a \u201cDownload brochure\u201d button for this model'},{k:'floorPlan',type:'image',label:'Floor plan',ph:'https://\u2026',hint:'Official plan only. PNG or JPG, about 2000px wide. Empty = \u201cfloor plan coming soon\u201d.'},{k:'floorPlan2',type:'image',label:'Second floor plan (loft, option B \u2026)',ph:'https://\u2026'},{k:'elev1',type:'image',label:'Elevation 1',ph:'https://\u2026'},{k:'elev2',type:'image',label:'Elevation 2',ph:'https://\u2026'},{k:'elev3',type:'image',label:'Elevation 3',ph:'https://\u2026'},{k:'elev4',type:'image',label:'Elevation 4',ph:'https://\u2026'},{k:'photo1',type:'image',label:'Photo 1 (also the list thumbnail)',ph:'https://\u2026'},{k:'photo2',type:'image',label:'Photo 2',ph:'https://\u2026'},{k:'photo3',type:'image',label:'Photo 3',ph:'https://\u2026'},{k:'photo4',type:'image',label:'Photo 4',ph:'https://\u2026'},{k:'photo5',type:'image',label:'Photo 5',ph:'https://\u2026'},{k:'photo6',type:'image',label:'Photo 6',ph:'https://\u2026'},{k:'photo7',type:'image',label:'Photo 7',ph:'https://\u2026'},{k:'photo8',type:'image',label:'Photo 8',ph:'https://\u2026'},{k:'alt',label:'Image description (for search engines, optional)'}],defaultItem:{on:true,name:'New model',category:'',group:'',bedrooms:'',bathrooms:'',area:'',dimensions:'',description:'',link:''}},
     productExplorerCats:{secId:'productExplorer',key:'categories',addLabel:'Add category',item:[{k:'label',label:'Category name'},{k:'blurb',label:'Card text (category cards)',type:'ta'},{k:'image',type:'image',label:'Card photo (category cards)',ph:'https://\u2026'}],defaultItem:{on:true,label:'New category',blurb:'',image:''}},
     storyTimelineItems:{secId:'storyTimeline',key:'items',addLabel:'Add milestone',item:[{k:'year',label:'Year / date',ph:'e.g. 2003'},{k:'title',label:'Title'},{k:'text',label:'Text',type:'ta'},{k:'icon',label:'Icon (for Icon markers)',type:'icon'},{k:'image',type:'image',label:'Photo (Alternating and Photo cards layouts)',ph:'https://\u2026 (optional)'}],defaultItem:{on:true,year:'',title:'New milestone',text:''}},
@@ -6924,7 +6928,7 @@ function heroCtaCard(c){
   var LPL_WIDTH_ROW={t:'sel',k:'widthMode',label:'Width',opts:[['','Theme default'],['full','Full width (edge to edge)'],['site','Site width (maximum width in Settings)']]};
   var LPL_LAYOUT_SPECS={
     heroSlider:{lede:'Optional icon badges under the sub-headline, and whether the headline keeps the theme’s capitals. <b>Booking card</b> shows the first slide as a headline and photo beside a calendar: each day shows its price (from the Bookings rate cards) and, with Bookings hire set up, what\u2019s free \u2014 the button opens the booking. <b>Split</b> puts slide 1\u2019s text and buttons on the left and its photo on the right; the badges show as a short line under the buttons.',rows:[LPL_BTN_ROW,
-      {t:'sel',k:'layout',label:'Layout',opts:[['','Image slider (default)'],['booking','Booking card \u2014 headline, photo, calendar'],['half','Half-height banner \u2014 choose eyebrow / title / intro'],['split','Split \u2014 text left, photo right']]},
+      {t:'sel',k:'layout',label:'Layout',opts:[['','Image slider (default)'],['booking','Booking card \u2014 headline, photo, calendar'],['half','Half-height banner \u2014 choose eyebrow / title / intro'],['split','Split \u2014 text left, photo right'],['cover','Photo banner \u2014 photo across the band, text over its left']]},
       LPL_WIDTH_ROW,
       {t:'chk',k:'halfEyebrow',label:'Half banner: show eyebrow',def:true,when:'layout=half'},
       {t:'chk',k:'halfTitle',label:'Half banner: show title',def:true,when:'layout=half'},
@@ -6937,9 +6941,12 @@ function heroCtaCard(c){
       {t:'text',k:'bookCta',label:'Card button (online booking live)',ph:'Continue',when:'layout=booking'},
       {t:'text',k:'bookCtaCall',label:'Card button (until online booking is set up)',ph:'Call to book',when:'layout=booking'},
       {t:'text',k:'bookNote',label:'Small print under the button',ph:'Prefer to talk? Call …',when:'layout=booking'},
-      {t:'text',k:'imageCaption',label:'Photo caption',ph:'e.g. Our 4.5T Isuzu NNR',when:'layout=booking'},{t:'text',k:'splitH1',label:'SEO H1 line above the headline (optional)',ph:'e.g. Kitchens Canberra \u2014 empty = the headline is the H1',when:'layout=split'},{t:'sel',k:'splitTone',label:'Background',opts:[['','Page background'],['soft','Soft (theme light colour)'],['tint','Brand tint'],['dark','Dark']],when:'layout=split'},{t:'sel',k:'splitSide',label:'Photo side',opts:[['','Photo on the right'],['left','Photo on the left']],when:'layout=split'}],
+      {t:'text',k:'imageCaption',label:'Photo caption',ph:'e.g. Our 4.5T Isuzu NNR',when:'layout=booking'},{t:'text',k:'splitH1',label:'SEO H1 line above the headline (optional)',ph:'e.g. Kitchens Canberra \u2014 empty = the headline is the H1',when:'layout=split'},{t:'sel',k:'splitTone',label:'Background',opts:[['','Page background'],['soft','Soft (theme light colour)'],['tint','Brand tint'],['dark','Dark']],when:'layout=split'},{t:'sel',k:'splitSide',label:'Photo side',opts:[['','Photo on the right'],['left','Photo on the left']],when:'layout=split'},{t:'sel',k:'splitFit',label:'Photo fit',opts:[['','Fill the space (crop)'],['portrait','Whole photo, standing on the band (cut-out portraits)']],when:'layout=split'},{t:'color',k:'splitBg',label:'Band colour',ph:'Default',when:'layout=split|cover'},{t:'chk',k:'accentRule',label:'Short accent line under the headline',def:false,when:'layout=split|cover'},{t:'text',k:'imageAlt',label:'Photo description (for search engines)',ph:'e.g. Dr Jane Smith in her Canberra practice',when:'layout=split|cover'},{t:'text',k:'nameCardTitle',label:'Name card: name',ph:'e.g. Dr Jane Smith (empty = no card)',when:'layout=split|cover'},{t:'text',k:'nameCardText',label:'Name card: role',ph:'e.g. Clinical Psychologist',when:'layout=split|cover'},{t:'text',k:'nameCardX',label:'Name card from left (% of photo)',ph:'Empty = bottom right',when:'layout=split|cover'},{t:'text',k:'nameCardY',label:'Name card from top (% of photo)',ph:'Empty = bottom right',when:'layout=split|cover'},{t:'text',k:'coverRatio',label:'Photo proportions (width:height)',ph:'16:6 \u2014 use your photo\u2019s, e.g. 2400:760',when:'layout=cover'},{t:'text',k:'coverFocus',label:'Photo focus point',ph:'right center \u2014 or e.g. 80% 30%',when:'layout=cover'}],
       lists:[['heroSliderBadges','Hero badges','Icon + title + small text, shown in a row on every slide. Leave empty for none.']]},
     activityCounter:{rows:[{t:'sel',k:'style',label:'Style',opts:[['','Big counters'],['strip','Compact spec strip (icon, figure, label)']]}]},
+    featureStrip:{title:'Strip layout',rows:[{t:'sel',k:'layout',label:'Layout',opts:[['','Standard'],['band','Compact band \u2014 dividers, titles as typed']]}]},
+    navMenu:[{title:'Menu bar extras',lede:'For the <b>menu bar</b> placement.',rows:[{t:'sel',k:'activeStyle',label:'Current page',opts:[['','Not highlighted'],['fill','Filled with the fill colour']]},{t:'sel',k:'barMobile',label:'On phones',opts:[['','Show the menu bar'],['hamburger','Hide it \u2014 the \u2630 menu has the links']]}]},
+      {sec:'header',title:'Header contact items & button',lede:'Contact items show beside the logo on wide screens. <b>Button in the menu bar</b> moves the header button to the end of the menu bar (menu bar placement, desktop).',rows:[{t:'text',k:'btnIcon',label:'Button icon',ph:'e.g. calendar (empty = none)'},{t:'sel',k:'ctaPlace',label:'Button position',opts:[['','In the header'],['menu','In the menu bar']]},{t:'color',k:'itemsColor',label:'Contact item text colour',ph:'Header text colour'},{t:'color',k:'itemsIconColor',label:'Contact item icon colour',ph:'Brand colour'}],lists:[['headerItems','Header contact items','Icon + text (phone, email, location). A link is optional: tel:\u2026, mailto:\u2026 or /page.']]}],
     hero:{title:'Text options',lede:'Headline and eyebrow case, and whether the eyebrow (small label) sits above or below the headline.',rows:[LPL_BTN_ROW,{t:'sel',k:'textCase',label:'Headline case',opts:[['','Theme default'],['normal','As typed (no forced capitals)'],['lower','all lowercase'],['upper','ALL CAPITALS']]},
       {t:'sel',k:'eyebrowCase',label:'Eyebrow case',opts:[['','Capitals (default)'],['normal','As typed'],['lower','all lowercase']]},
       {t:'sel',k:'eyebrowPos',label:'Eyebrow position',opts:[['','Above the headline'],['below','Below the headline']]},LPL_WIDTH_ROW]},
@@ -6952,7 +6959,7 @@ function heroCtaCard(c){
       {t:'sel',k:'featureSide',label:'Photo side',opts:[['','Photo on the left'],['right','Photo on the right']]},
       {t:'sel',k:'featureTone',label:'Background',opts:[['','Page background'],['soft','Soft (theme light colour)'],['tint','Brand tint'],['dark','Dark']]}],
       lists:[['servicesFeatureItems','Feature points','Icon (or a small image), title and text for each point.']]},
-    {title:'Photo cards',when:'mode=photo',lede:'Each service shows its <b>Image</b> large, then its title and text. The whole card links wherever the service\u2019s <b>button</b> points (a page, a web address or a section) \u2014 set that on each service below.',rows:[{t:'sel',k:'photoCols',label:'Cards per row (desktop)',opts:[['','3'],['2','2'],['4','4']]},{t:'sel',k:'photoClamp',label:'Text length',opts:[['','Up to 4 lines'],['3','Up to 3 lines'],['6','Up to 6 lines'],['0','Show all text']]},{t:'chk',k:'photoHeadSplit',label:'Heading left, intro right',def:false},{t:'text',k:'photoLinkLabel',label:'Link under the cards',ph:'e.g. All services (empty = hidden)'},{t:'text',k:'photoLinkHref',label:'Link',ph:'/page, #section or https://\u2026'}]},
+    {title:'Photo cards',when:'mode=photo',lede:'Each service shows its <b>Image</b> large, then its title and text. The whole card links wherever the service\u2019s <b>button</b> points (a page, a web address or a section) \u2014 set that on each service below.',rows:[{t:'sel',k:'photoCols',label:'Cards per row (desktop)',opts:[['','3'],['2','2'],['4','4']]},{t:'sel',k:'photoClamp',label:'Text length',opts:[['','Up to 4 lines'],['3','Up to 3 lines'],['6','Up to 6 lines'],['0','Show all text']]},{t:'chk',k:'photoHeadSplit',label:'Heading left, intro right',def:false},{t:'chk',k:'photoHeadSide',label:'Heading, intro and link in a column beside the cards',def:false},{t:'chk',k:'photoIconBadge',label:'Round icon over each photo',def:false},{t:'sel',k:'photoMore',label:'Card link',opts:[['','Label + arrow'],['arrow','Arrow only']]},{t:'sel',k:'photoLinkStyle',label:'Link under the cards style',opts:[['','Text link'],['button','Button']]},{t:'text',k:'photoLinkLabel',label:'Link under the cards',ph:'e.g. All services (empty = hidden)'},{t:'text',k:'photoLinkHref',label:'Link',ph:'/page, #section or https://\u2026'}]},
     {title:'Numbered cards',when:'mode=numbered',lede:'Each service shows a big number (01, 02\u2026), its title and text, and its <b>Image</b> underneath. The eyebrow and heading sit on the left with the intro on the right. Add an optional text link under the cards.',rows:[{t:'text',k:'numLinkLabel',label:'Link under the cards',ph:'e.g. Let\u2019s discuss your ideas (empty = hidden)'},{t:'text',k:'numLinkHref',label:'Link',ph:'#quote, /page or https://\u2026 (empty = enquiry form)'},{t:'chk',k:'numHeadSplit',label:'Heading left, intro right',def:true}]},{title:'Story layout',when:'mode=story',lede:'Uses the eyebrow, heading and intro above, with a text link under them and one photo beside them. The service cards are hidden in this style. Leave the photo empty to use the first service\u2019s image.',rows:[
       {t:'image',k:'storyImage',label:'Photo'},
       {t:'text',k:'storyLinkLabel',label:'Link text',ph:'e.g. Our story (empty = hidden)'},
@@ -6970,6 +6977,7 @@ function heroCtaCard(c){
     textBox:{lede:'Icon feature list and an outline button under the text. <b>Split</b>: text on one side, the photo filling the other half to the page edge (photo side follows the text box\u2019s image side setting). <b>Brand band</b>: a coloured band; a feature written as \u201cLabel: value\u201d (e.g. \u201cPayload: 850kg\u201d) shows as a spec row, others as ticks; add dimensions to draw a box instead of the photo.',rows:[LPL_BTN_ROW,
       {t:'sel',k:'layout',label:'Layout',opts:[['','Standard'],['band','Brand band \u2014 specs, ticks, photo or box drawing'],['bleed','Split \u2014 text beside a photo that runs to the page edge']]},
       {t:'sel',k:'bleedTone',label:'Background',opts:[['','Page background'],['soft','Soft (theme light colour)'],['tint','Brand tint'],['dark','Dark']],when:'layout=bleed'},
+      {t:'chk',k:'featuresSide',label:'Feature list in its own column (desktop)',def:false,when:'layout=bleed'},
       {t:'sel',k:'bandTone',label:'Band colour',opts:[['','Brand colour'],['dark','Dark']],when:'layout=band'},
       {t:'text',k:'dimLength',label:'Box length',ph:'e.g. 4.2m',when:'layout=band'},
       {t:'text',k:'dimWidth',label:'Box width',ph:'e.g. 2.1m',when:'layout=band'},
@@ -7042,7 +7050,9 @@ function heroCtaCard(c){
       {t:'text',k:'minimalText',label:'Text beside the logo',ph:'e.g. From farm to plate, with care.',when:'layout=minimal'},
       {t:'sel',k:'minimalRight',label:'Right side',opts:[['','LeadPages logo'],['button','A button'],['none','Nothing']],when:'layout=minimal'},
       {t:'text',k:'minimalBtnLabel',label:'Button text',ph:'e.g. Visit us',when:'minimalRight=button'},
-      {t:'text',k:'minimalBtnHref',label:'Button link',ph:'#mapHours, /page or https://\u2026',when:'minimalRight=button'}]},
+      {t:'text',k:'minimalBtnHref',label:'Button link',ph:'#mapHours, /page or https://\u2026',when:'minimalRight=button'},
+      {t:'image',k:'decorImage',label:'Decorative image, bottom right (transparent PNG works best)',when:'layout!=minimal'}],
+      lists:[['footerBrandContact','Contact under the logo','Address, phone and email lines under the footer logo, each with an icon. A link (tel:, mailto:, /page) is optional.']]},
     orderStorefront:{title:'Shop layout & order page',lede:'<b>Editorial</b>: a clean list under each category heading, a search box, and an order summary card \u2014 no inner scrolling panels. The shop always has its own page at <code>/order</code> (link it from <b>Menu \u2192 Order shop (full page)</b>); untick <b>Show on page</b> above to keep it off the homepage. <b>Order page banner</b> puts a half-height photo banner with an eyebrow and title above the shop on that page.',rows:[
       {t:'sel',k:'layout',label:'Shop layout',opts:[['','Classic cards'],['editorial','Editorial \u2014 clean list + order summary']]},
       LPL_BTN_ROW,
@@ -7108,7 +7118,7 @@ function heroCtaCard(c){
       {t:'sel',k:'uploadsMax',label:'Files per enquiry',opts:[['','3 (default)'],['1','1'],['2','2'],['4','4'],['5','5']],when:'uploadsOn=true'},
       {t:'text',k:'uploadsHelp',label:'Help text under the label (optional)',ph:'Photos or PDFs \u2014 up to 3 files, 10 MB each. Optional.',when:'uploadsOn=true'}]},
     ctaBanner:{title:'Banner style & buttons',lede:'Leave a button\u2019s text empty to hide it. \u201cOpen the booking calendar\u201d opens the live hire calendar when Bookings is set up, otherwise it goes to the booking bar or quote form. <b>Title + boxes</b>: the heading on the left and outlined boxes (icon, title, text) on the right \u2014 add as many as you like under <b>Boxes</b>.',lists:[['ctaBannerBoxes','Boxes','Title + boxes layout: each box has an icon (or a small image), a title and a short line. Optional link makes the whole box clickable.']],rows:[LPL_BTN_ROW,
-      {t:'sel',k:'layout',label:'Layout',opts:[['','Text + buttons (default)'],['boxes','Title + boxes (icon, title, text)']]},
+      {t:'sel',k:'layout',label:'Layout',opts:[['','Text + buttons (default)'],['boxes','Title + boxes (icon, title, text)'],['notice','Notice \u2014 icon + heading | text, full width']]},{t:'text',k:'icon',label:'Notice icon',ph:'info (any icon name)',when:'layout=notice'},
       {t:'chk',k:'boxesButtons',label:'Show the buttons under the title',def:false,when:'layout=boxes'},
       {t:'sel',k:'boxIconSize',label:'Box icon / image size',when:'layout=boxes',opts:[['sm','Small'],['','Standard'],['lg','Large'],['xl','Extra large'],['xxl','Huge']]},
       {t:'sel',k:'boxImgMode',label:'Box icon / image colour',when:'layout=boxes',opts:[['','Auto \u2014 white on dark banners'],['original','Original image colours'],['tint','Choose a colour']]},
@@ -7137,6 +7147,8 @@ function heroCtaCard(c){
   }
   function lplMountOneLayoutCard(body,c,sub,spec){
     if(!spec||!body) return;
+    // spec.sec: the card edits another app's settings (e.g. the header's, from the menu editor).
+    if(spec.sec) sub=spec.sec;
     function ens(){ if(!c.sections) c.sections={}; if(!c.sections[sub]) c.sections[sub]={}; return c.sections[sub]; }
     var S=(c.sections&&c.sections[sub])||{};
     function cur(k,def){ var v=S[k]; if(sub==='aboutUs'&&k==='layout'&&!v) return 'story'; if(k==='overlapHero') return v===false?'false':''; if((v==null||v==='')&&def!=null) return String(def); return v==null?'':String(v); }
@@ -7223,6 +7235,24 @@ function heroCtaCard(c){
   }
   /** Branding → Buttons: corner style for every button on the site (config.buttonShape). Each app
    *  can override it in its Layout options (sections.<app>.btnShape). Applied by assets/lp-layouts.js. */
+  /** Branding → Page width & sub-pages: content width (config.siteWidth) and the landing-page
+   *  look (config.pageStyle 'banner' + pageEyebrow). Applied by assets/lp-layouts.js. */
+  function lpMountSiteLayoutCard(body,c){
+    if(!body||document.getElementById('lp-sl-card')) return;
+    var W=[['','Full (default, 1440px)'],['1320','1320px'],['1200','1200px'],['1100','1100px'],['1000','1000px']];
+    var h='<div class="card" id="lp-sl-card" style="margin-bottom:22px;"><h2>Page width & sub-pages</h2><p class="lede">Narrower widths suit text-led sites (practices, consultants). <b>Header band</b> puts each landing page\u2019s title in a band at the top, with the text on white.</p>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:12px;">'
+      +'<div class="f" style="margin:0;flex:1 1 calc(50% - 6px);min-width:190px;"><label>Content width</label><select id="lp-sl-w" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;background:var(--input-bg,#fff);color:inherit;">'+W.map(function(o){ return '<option value="'+o[0]+'"'+(String(c.siteWidth||'')===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('')+'</select></div>'
+      +'<div class="f" style="margin:0;flex:1 1 calc(50% - 6px);min-width:190px;"><label>Landing pages</label><select id="lp-sl-ps" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;background:var(--input-bg,#fff);color:inherit;"><option value="">Plain (default)</option><option value="banner"'+(c.pageStyle==='banner'?' selected':'')+'>Header band + white page</option></select></div>'
+      +'<div class="f" style="margin:0;flex:1 1 100%;"><label>Small line above landing page titles (header band)</label><input type="text" class="tin" id="lp-sl-eb" placeholder="e.g. your business name (empty = none)"></div>'
+      +'</div></div>';
+    var first=body.querySelector('.card'); if(first) first.insertAdjacentHTML('afterend',h); else body.insertAdjacentHTML('afterbegin',h);
+    var w=$('lp-sl-w'), ps=$('lp-sl-ps'), eb=$('lp-sl-eb');
+    if(eb) eb.value=c.pageEyebrow||'';
+    if(w) w.addEventListener('change',function(){ if(w.value) c.siteWidth=+w.value; else delete c.siteWidth; persist(); previewApply(); });
+    if(ps) ps.addEventListener('change',function(){ if(ps.value) c.pageStyle=ps.value; else delete c.pageStyle; persist(); previewApply(); });
+    if(eb) eb.addEventListener('input',function(){ if(eb.value) c.pageEyebrow=eb.value; else delete c.pageEyebrow; persist(); previewApply(); });
+  }
   function lpMountButtonShapeCard(body,c){
     if(!body) return;
     var cur=c.buttonShape||'';
@@ -13037,6 +13067,7 @@ function heroCtaCard(c){
         +'<p class="hint" id="co-bake-msg" style="margin:8px 0 0;"></p></div>';
       wireTradeColours(c); renderTradePresets(c); renderColourLibrary(c); wireColorOverrides(c); wireButtonLook(c);
       try{ lpMountFontCard(body,c); }catch(_fc){ try{ console.warn('[fonts]',_fc); }catch(_x){} }
+      try{ lpMountSiteLayoutCard(body,c); }catch(_sl){ try{ console.warn('[site layout]',_sl); }catch(_x){} }
       try{ lpMountButtonShapeCard(body,c); }catch(_bs){ try{ console.warn('[buttons]',_bs); }catch(_x){} }
       try{ if(!document.getElementById('lp-imglib-card')){ body.insertAdjacentHTML('beforeend','<div class="card" id="lp-imglib-card" style="margin-bottom:22px;"><h2 style="margin:0 0 6px;">Image library</h2><p class="lede" style="margin:0 0 12px;">Every image uploaded for this site in one place. Any image field\u2019s <b>Library</b> button reuses one instead of uploading it again. Delete images you no longer need \u2014 images in use are protected.</p><button type="button" class="btn" id="lp-imglib-open">Open image library</button></div>'); var _ilb=document.getElementById('lp-imglib-open'); if(_ilb) _ilb.addEventListener('click',function(){ cwLibOpen(); }); } }catch(_il){}
     } else if(sub==='logo'){

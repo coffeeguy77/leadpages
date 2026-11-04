@@ -654,10 +654,15 @@
       var tag = href ? 'a' : 'div';
       return '<' + tag + ' class="svc svp"' + (href ? ' ' + linkAttrs(href) : '') + (idx >= 0 ? ' data-lpe="list:services:' + idx + ':title"' : '') + '>' +
         '<span class="svp-media">' + (img ? '<img src="' + esc(img) + '" alt="' + esc(s.title || '') + '" loading="lazy">' : (icon(s.icon) ? '<span class="svp-ico">' + icon(s.icon) + '</span>' : '')) + '</span>' +
-        '<span class="svp-body">' + (txt(s.title) ? '<h3>' + esc(s.title) + '</h3>' : '') +
+        '<span class="svp-body">' + (img && SV.photoIconBadge === true && icon(s.icon) ? '<span class="svp-badge-ic" aria-hidden="true">' + icon(s.icon) + '</span>' : '') +
+        (txt(s.title) ? '<h3>' + esc(s.title) + '</h3>' : '') +
         (txt(s.body) ? '<p>' + esc(s.body) + '</p>' : '') +
-        (href ? '<span class="svp-more">' + esc(lab) + ARROW + '</span>' : '') + '</span></' + tag + '>';
+        (href ? '<span class="svp-more"' + (SV.photoMore === 'arrow' ? ' aria-label="' + esc(lab) + '"' : '') + '>' + (SV.photoMore === 'arrow' ? '' : esc(lab)) + ARROW + '</span>' : '') + '</span></' + tag + '>';
     }).join('');
+    var side = SV.photoHeadSide === true;
+    node.classList.toggle('svp-side', side);
+    node.classList.toggle('svp-badge', SV.photoIconBadge === true);
+    node.classList.toggle('svp-arrow', SV.photoMore === 'arrow');
     var head = node.querySelector('.section-head');
     if (head && SV.photoHeadSplit === true && !head.querySelector('.svn-lead')) {
       var lead = document.createElement('div');
@@ -668,7 +673,12 @@
       head.insertBefore(lead, head.firstChild);
     }
     var more = txt(SV.photoLinkLabel);
-    if (more) grid.insertAdjacentHTML('afterend', '<p class="svn-more svp-after" data-lpl="svp"><a class="lpl-link" data-lpe="photoLinkLabel" ' + linkAttrs(hrefOf(SV.photoLinkHref, contactHref())) + '>' + esc(more) + ARROW + '</a></p>');
+    var moreCls = SV.photoLinkStyle === 'button' ? 'lpl-btn svp-btn' : 'lpl-link';
+    var moreHtml = more ? '<p class="svn-more svp-after" data-lpl="svp"><a class="' + moreCls + '" data-lpe="photoLinkLabel" ' + linkAttrs(hrefOf(SV.photoLinkHref, contactHref())) + '>' + esc(more) + ARROW + '</a></p>' : '';
+    if (side && head) {
+      // Heading column beside the cards: the link sits under the intro.
+      if (moreHtml) head.insertAdjacentHTML('beforeend', moreHtml);
+    } else if (moreHtml) grid.insertAdjacentHTML('afterend', moreHtml);
   }
 
   /* ---------- Services: big photo beside a heading, intro and icon points ---------- */
@@ -785,19 +795,22 @@
 
   /* ---------- Text box: split with a photo that runs to the page edge ---------- */
   function textBleed(node, C, TB) {
+    node.classList.toggle('tbl-feats-side', TB.featuresSide === true);
     var img = bgUrl(TB.image);
     var lines = function (v) { return esc(v).replace(/\n/g, '<br>'); };
     var feats = live(TB.features).filter(function (f) { return txt(f.text); });
+    var featList = '<ul class="tbx-feats">' + feats.map(function (f) {
+      var t = esc(f.text).replace(/\(([^)]*)\)\s*$/, '<br><span class="tbx-sub">($1)</span>');
+      return '<li>' + (icon(f.icon) ? '<span class="tbx-fic">' + icon(f.icon) + '</span>' : '<span class="tbx-fic tbx-dot">' + CHECK + '</span>') + '<span>' + (TB.featuresSide === true ? t : esc(f.text)) + '</span></li>';
+    }).join('') + '</ul>';
     node.insertAdjacentHTML('afterbegin', '<div class="tbl" data-lpl="tbb"><div class="tbl-text"><div class="tbl-in">' +
       (txt(TB.eyebrow) ? '<span class="eyebrow tbl-eyebrow" data-lpe="eyebrow">' + esc(TB.eyebrow) + '</span>' : '') +
       (txt(TB.heading) ? '<h2 class="tbl-h" data-lpe="heading">' + lines(TB.heading) + '</h2>' : '') +
       (txt(TB.intro) ? '<p class="tbl-intro" data-lpe="intro">' + lines(TB.intro) + '</p>' : '') +
       (txt(TB.content) ? '<div class="tbl-content" data-lpe="content">' + lines(TB.content) + '</div>' : '') +
-      (feats.length ? '<ul class="tbx-feats">' + feats.map(function (f) {
-        return '<li>' + (icon(f.icon) ? '<span class="tbx-fic">' + icon(f.icon) + '</span>' : '<span class="tbx-fic tbx-dot">' + CHECK + '</span>') + '<span>' + esc(f.text) + '</span></li>';
-      }).join('') + '</ul>' : '') +
+      (feats.length && TB.featuresSide !== true ? featList : '') +
       (txt(TB.ctaLabel) ? '<a class="lpl-btn lpl-btn-outline tbx-cta" data-lpe="ctaLabel" ' + linkAttrs(hrefOf(TB.ctaHref, contactHref())) + '>' + esc(TB.ctaLabel) + ARROW + '</a>' : '') +
-      '</div></div>' +
+      '</div>' + (feats.length && TB.featuresSide === true ? '<div class="tbl-side">' + featList + '</div>' : '') + '</div>' +
       '<div class="tbl-media" data-lpe="image">' + (img ? '<img src="' + esc(img) + '" alt="' + esc(TB.imageAlt || '') + '" loading="lazy">' : '') + '</div></div>');
   }
 
@@ -1161,10 +1174,13 @@
     var tint = cbBoxTint(M);
     if (tint) node.style.setProperty('--cbx-tint', tint); else node.style.removeProperty('--cbx-tint');
     node.classList.toggle('cbx-tinted', !!tint);
-    if (M.on !== true) return;
+    if (M.on !== true) { node.classList.remove('cb-notice'); return; }
     var boxesOn = M.layout === 'boxes';
     node.classList.toggle('cb-boxes', boxesOn);
     if (boxesOn) { ctaBoxes(node, C, M); return; }
+    var noticeOn = M.layout === 'notice';
+    node.classList.toggle('cb-notice', noticeOn);
+    if (noticeOn) { ctaNotice(node, C, M); return; }
     var btns = ctaBtn(C, M, 1) + ctaBtn(C, M, 2);
     node.insertAdjacentHTML('afterbegin', '<div class="wrap cb-wrap" data-lpl="cb"><div class="cb"><div class="cb-text">' +
       (txt(M.eyebrow) ? '<span class="cb-eyebrow" data-lpe="eyebrow">' + esc(M.eyebrow) + '</span>' : '') +
@@ -1532,8 +1548,10 @@
   function heroSplit(C) {
     var node = sec('heroSlider'); if (!node) return;
     var HS = (C.sections && C.sections.heroSlider) || {};
-    var on = HS.layout === 'split';
+    var cover = HS.layout === 'cover';
+    var on = HS.layout === 'split' || cover;
     node.classList.toggle('hsp-on', on);
+    node.classList.toggle('hsp-cover', cover);
     ['soft', 'tint', 'dark'].forEach(function (t) { node.classList.toggle('lpl-tone-' + t, on && HS.splitTone === t); });
     node.classList.toggle('hsp-left', on && HS.splitSide === 'left');
     var old = node.querySelector('[data-lpl="hsp"]');
@@ -1558,8 +1576,17 @@
       '<div class="hsp-cta"></div>' +
       (badges.length ? '<p class="hsp-line" data-lpe="list:heroSliderBadges:0:title">' + badges.map(esc).join('<i aria-hidden="true">\u2022</i>') + '</p>' : '') +
       '</div>' +
-      '<figure class="hsp-media" data-lpe="' + L('imageUrl') + '">' + (img ? '<img src="' + esc(img) + '" alt="' + esc(txt(S.heading) || txt(h1)) + '">' : '<span class="hsp-ph"></span>') + '</figure>' +
+      '<figure class="hsp-media" data-lpe="' + L('imageUrl') + '">' + (img ? '<img src="' + esc(img) + '" alt="' + esc(txt(HS.imageAlt) || txt(S.heading) || txt(h1)) + '">' : '<span class="hsp-ph"></span>') + '</figure>' +
       '</div></div>';
+    if (cover) {
+      // Photo banner: the photo fills the band at its own proportions (so a name card can sit on
+      // a fixed spot of it); the text sits over its left side. Phones: text, then the photo.
+      var ar = String(HS.coverRatio || '').match(/^(\d+(?:\.\d+)?)\s*[:\/x]\s*(\d+(?:\.\d+)?)$/);
+      var ratio = ar ? (ar[1] + ' / ' + ar[2]) : '16 / 6';
+      html = '<div class="hsp hsc" data-lpl="hsp" style="--hsc-ratio:' + ratio + '">' +
+        '<figure class="hsc-media" data-lpe="' + L('imageUrl') + '">' + (img ? '<img src="' + esc(img) + '" alt="' + esc(txt(HS.imageAlt)) + '"' + (txt(HS.coverFocus) ? ' style="object-position:' + esc(txt(HS.coverFocus).replace(/[^\w %.-]/g, '')) + '"' : '') + '>' : '') + '</figure>' +
+        '<div class="wrap hsc-grid"><div class="hsp-text">' + html.split('<div class="hsp-text">')[1].split('</div><figure')[0] + '</div></div></div>';
+    }
     node.insertAdjacentHTML('afterbegin', html);
     var box = node.querySelector('[data-lpl="hsp"] .hsp-cta');
     var slideEls = node.querySelectorAll('.hsl-slide');
@@ -1590,7 +1617,7 @@
     if (window.LP_FONTS) { go(); return; }
     if (!FONTS_P) {
       FONTS_P = new Promise(function (resolve) {
-        var sc = document.createElement('script'); sc.src = '/assets/lp-fonts.js?v=3'; sc.async = true;
+        var sc = document.createElement('script'); sc.src = '/assets/lp-fonts.js?v=4'; sc.async = true;
         sc.onload = resolve; sc.onerror = function () { FONTS_P = null; resolve(); };
         document.head.appendChild(sc);
       });
@@ -1823,7 +1850,200 @@
       else if (/[\ud83c-\udbff]/.test(t)) el.innerHTML = ''; // an unknown colour emoji: no icon
     }
   }
-  var STEPS = [heroSlider, heroBanners, headerCta, minimalFooter, logoTint, buttonShapes, orderLayout, featuredProjects, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, trustBar, mapHours, ctaBanner, storyTimeline, storyRows, bookingWeek, heroBooking, bookingHire, fontSet, mobileBarSpace, heroSplit, appWidths, headingBreaks, strokeIcons];
+
+  /* ==========================================================================================
+   * Clinical / professional-practice options (Nov 2026, first used by Pam Connor & Associates).
+   * All OFF unless set, so existing sites are unchanged.
+   *   siteWidth (px, 960–1600)                         content width for the whole site
+   *   sections.header.items[{icon,text,href,on}]       contact items beside the logo (desktop)
+   *     itemsColor / itemsIconColor                    their text and icon colours
+   *   sections.header.btnIcon                          icon before the header button text
+   *   sections.header.ctaPlace = 'menu'                header button sits at the end of the menu bar
+   *                                                    (navMenu.placement 'bar'; desktop only)
+   *   sections.navMenu.activeStyle = 'fill'            current page's menu item filled (fill colour)
+   *   sections.navMenu.barMobile = 'hamburger'         menu bar hidden on phones (the ☰ menu has the links)
+   *   sections.heroSlider.splitFit = 'portrait'        split hero photo uncropped, standing on the band
+   *   sections.heroSlider.splitBg                      split hero band colour
+   *   sections.heroSlider.accentRule = true            short accent line under the headline
+   *   sections.heroSlider.nameCard{title,text}         dark name card over the split hero photo
+   *   sections.featureStrip.layout = 'band'            compact band, dividers, plain-case titles
+   *   sections.services photo mode: photoHeadSide       heading, intro and link in a column beside
+   *     the cards; photoIconBadge (round icon over each photo); photoLinkStyle 'button';
+   *     photoMore 'arrow' (arrow only, no label, on each card)
+   *   sections.ctaBanner.layout = 'notice' (+ icon)    icon + heading | divider | text, full width
+   *   sections.footer.brandContact[{icon,text,href}]   address / phone / email under the footer logo
+   *   sections.footer.decorImage                       faint decorative image, bottom right of the footer
+   *   sections.heroSlider.layout = 'cover'             photo banner: photo across the band at its own
+   *     proportions (coverRatio '1114:353', coverFocus), text over its left; nameCardTitle /
+   *     nameCardText / nameCardX / nameCardY (% on the photo) place the name card
+   *   sections.textBox.featuresSide = true             bleed layout: the icon list in its own column
+   *   pageStyle = 'banner' (+ pageEyebrow)             sub-pages: H1 in a band at the top, text on white
+   * ========================================================================================== */
+  function siteWidth(C) {
+    var w = parseInt(C && C.siteWidth, 10);
+    var de = document.documentElement;
+    if (w >= 960 && w <= 1600) de.style.setProperty('--maxw', w + 'px'); else de.style.removeProperty('--maxw');
+  }
+  function headerItems(C) {
+    var H = (C.sections && C.sections.header) || {};
+    var bar = document.querySelector('header.site .bar'); if (!bar) return;
+    clear(bar, 'hitems');
+    var items = live(H.items).filter(function (it) { return txt(it.text); });
+    var hdr = bar.parentNode;
+    if (hdr && hdr.style) {
+      var ic = hexOk(H.itemsIconColor), fg = hexOk(H.itemsColor);
+      if (ic) hdr.style.setProperty('--lpl-hi-ic', ic); else hdr.style.removeProperty('--lpl-hi-ic');
+      if (fg) hdr.style.setProperty('--lpl-hi-fg', fg); else hdr.style.removeProperty('--lpl-hi-fg');
+    }
+    document.documentElement.classList.toggle('lpl-has-hitems', items.length > 0);
+    if (items.length) {
+      var html = '<div class="lpl-hitems" data-lpl="hitems">' + items.map(function (it) {
+        var h = txt(it.href) ? hrefOf(it.href, '') : '';
+        var inner = (icon(it.icon) ? '<span class="lpl-hi-ic">' + icon(it.icon) + '</span>' : '') + '<span>' + esc(it.text) + '</span>';
+        return h ? '<a class="lpl-hi" ' + linkAttrs(h) + '>' + inner + '</a>' : '<span class="lpl-hi">' + inner + '</span>';
+      }).join('') + '</div>';
+      var call = bar.querySelector('.head-call');
+      if (call) call.insertAdjacentHTML('beforebegin', html); else bar.insertAdjacentHTML('beforeend', html);
+    }
+    // Icon before the header button text.
+    var hc = document.getElementById('headCall');
+    if (hc) {
+      clear(hc, 'hbi');
+      if (icon(H.btnIcon)) hc.insertAdjacentHTML('afterbegin', '<span class="lpl-hb-ic" data-lpl="hbi">' + icon(H.btnIcon) + '</span>');
+    }
+    menuCta(C, H, hc);
+  }
+  function menuCta(C, H, hc) {
+    var NM = (C.sections && C.sections.navMenu) || {};
+    var node = sec('navMenu');
+    var on = H.ctaPlace === 'menu' && NM.on === true && NM.placement === 'bar' && !!hc && H.on !== false;
+    document.documentElement.classList.toggle('lpl-cta-menu', on);
+    if (node) clear(node, 'mcta');
+    if (!on || !node) return;
+    var inner = node.querySelector('.nm-inner'); if (!inner) return;
+    var a = document.createElement('a');
+    a.className = 'btn lpl-menu-cta';
+    a.setAttribute('data-lpl', 'mcta');
+    a.setAttribute('href', hc.getAttribute('href') || '#');
+    if (hc.getAttribute('target')) { a.setAttribute('target', hc.getAttribute('target')); a.setAttribute('rel', 'noopener'); }
+    a.innerHTML = hc.innerHTML;
+    // Clicks go through the header button so its own actions (call tracking, booking popup…) still run.
+    a.addEventListener('click', function (ev) {
+      var href = hc.getAttribute('href') || '';
+      if (!href || href === '#' || /^javascript:/i.test(href)) { try { ev.preventDefault(); } catch (_e) {} hc.click(); }
+    });
+    inner.appendChild(a);
+  }
+  function navActive(C) {
+    var NM = (C.sections && C.sections.navMenu) || {};
+    // Phones: the menu bar hides when the header's ☰ menu holds the same links.
+    document.documentElement.classList.toggle('lpl-bar-ham', NM.on === true && NM.placement === 'bar' && NM.barMobile === 'hamburger' && NM.mobileHamburger !== false);
+    var node = sec('navMenu');
+    var on = NM.activeStyle === 'fill';
+    document.documentElement.classList.toggle('lpl-nav-fill', on);
+    var links = document.querySelectorAll('[data-sec="navMenu"] .nm-link, header.site .head-nav .hn-link, [data-sec="navMenu"] .nm-sub-link');
+    var here = location.pathname.replace(/\/+$/, '') || '/';
+    for (var i = 0; i < links.length; i++) {
+      var l = links[i], href = l.getAttribute('href');
+      var hit = false;
+      if (on && href && !/^(#|https?:|tel:|mailto:)/i.test(href)) hit = ((href.replace(/[?#].*$/, '').replace(/\/+$/, '') || '/') === here);
+      l.classList.toggle('lpl-nav-on', hit);
+      if (hit) l.setAttribute('aria-current', 'page'); else if (l.getAttribute('aria-current') === 'page') l.removeAttribute('aria-current');
+    }
+    var parents = document.querySelectorAll('[data-sec="navMenu"] .nm-drop');
+    for (var j = 0; j < parents.length; j++) {
+      var p = parents[j].querySelector('.nm-parent');
+      if (p) p.classList.toggle('lpl-nav-on', on && !!parents[j].querySelector('.nm-sub-link.lpl-nav-on'));
+    }
+    if (node) node.classList.toggle('lpl-nav-fill', on);
+  }
+  /** Sub-pages: the menu bar (placement 'bar') stays first and keeps its own background. */
+  function subPageNav(C) {
+    var NM = (C.sections && C.sections.navMenu) || {};
+    var node = sec('navMenu'); if (!node) return;
+    var main = document.getElementById('top');
+    var onSub = !!(main && main.querySelector(':scope > section.lp-page'));
+    if (!onSub || NM.on !== true || NM.placement !== 'bar') return;
+    node.style.setProperty('order', '-1', 'important');
+    var bg = hexOk(NM.bg);
+    if (bg) node.style.setProperty('background', bg, 'important');
+  }
+  function heroPortrait(C) {
+    var node = sec('heroSlider'); if (!node) return;
+    var HS = (C.sections && C.sections.heroSlider) || {};
+    var on = HS.layout === 'split' || HS.layout === 'cover';
+    node.classList.toggle('hsp-portrait', HS.layout === 'split' && HS.splitFit === 'portrait');
+    node.classList.toggle('hsp-rule', on && HS.accentRule === true);
+    var bg = on ? hexOk(HS.splitBg) : '';
+    if (bg) node.style.setProperty('--hsp-bg', bg); else node.style.removeProperty('--hsp-bg');
+    node.classList.toggle('hsp-has-bg', !!bg);
+    var fig = node.querySelector('[data-lpl="hsp"] .hsc-media') || node.querySelector('[data-lpl="hsp"] .hsp-media'); if (!fig) return;
+    clear(fig, 'hnc');
+    var NC = HS.nameCard || {};
+    var ncT = txt(HS.nameCardTitle) || txt(NC.title), ncS = txt(HS.nameCardText) || txt(NC.text);
+    if (on && (ncT || ncS)) {
+      // Position on the photo (percent from its left / top); default bottom right.
+      var pos = '';
+      var nx = parseFloat(HS.nameCardX), ny = parseFloat(HS.nameCardY);
+      if (!isNaN(nx) && nx >= 0 && nx <= 95) pos += 'left:' + nx + '%;right:auto;';
+      if (!isNaN(ny) && ny >= 0 && ny <= 95) pos += 'top:' + ny + '%;bottom:auto;';
+      fig.insertAdjacentHTML('beforeend', '<div class="hsp-namecard" data-lpl="hnc"' + (pos ? ' style="' + pos + '"' : '') + '>' +
+        (ncT ? '<strong data-lpe="nameCardTitle">' + esc(ncT) + '</strong>' : '') +
+        (ncS ? '<span data-lpe="nameCardText">' + esc(ncS) + '</span>' : '') + '<i aria-hidden="true"></i></div>');
+    }
+  }
+  function featureBand(C) {
+    var node = sec('featureStrip'); if (!node) return;
+    var FS = (C.sections && C.sections.featureStrip) || {};
+    node.classList.toggle('fstr-band', FS.layout === 'band');
+  }
+  function footerContact(C) {
+    var F = (C.sections && C.sections.footer) || {};
+    var ft = document.querySelector('footer.site') || document.querySelector('[data-sec="footer"]'); if (!ft) return;
+    clear(ft, 'fbc');
+    var items = live(F.brandContact).filter(function (it) { return txt(it.text); });
+    if (!items.length) return;
+    var brand = ft.querySelector('.f-brand') || ft.querySelector('.f-col-brand') || ft.querySelector('.f-grid > :first-child'); if (!brand) return;
+    brand.insertAdjacentHTML('beforeend', '<ul class="lpl-fbc" data-lpl="fbc">' + items.map(function (it, i) {
+      var h = txt(it.href) ? hrefOf(it.href, '') : '';
+      var t = esc(it.text).replace(/\n/g, '<br>');
+      return '<li data-lpe="list:footerBrandContact:' + i + ':text">' + (icon(it.icon) ? '<span class="lpl-fbc-ic">' + icon(it.icon) + '</span>' : '<span class="lpl-fbc-ic"></span>') +
+        (h ? '<a ' + linkAttrs(h) + '>' + t + '</a>' : '<span>' + t + '</span>') + '</li>';
+    }).join('') + '</ul>');
+  }
+  function footerDecor(C) {
+    var F = (C.sections && C.sections.footer) || {};
+    var ft = document.querySelector('footer.site'); if (!ft) return;
+    var u = bgUrl(F.decorImage);
+    ft.classList.toggle('lpl-f-decor', !!u);
+    if (u) ft.style.setProperty('--lpl-f-decor', 'url("' + u + '")'); else ft.style.removeProperty('--lpl-f-decor');
+  }
+  /** pageStyle 'banner': a sub-page's H1 sits in a band at the top (eyebrow = site name), text on white. */
+  function pageBanner(C) {
+    var art = document.querySelector('main#top > section.lp-page'); if (!art) return;
+    var on = C.pageStyle === 'banner';
+    art.classList.toggle('lpl-pb', on);
+    var old = art.querySelector(':scope > .lpl-pband');
+    if (!on) { if (old) { var h = old.querySelector('h1'); var t = art.querySelector('.lp-text'); if (h && t) t.insertBefore(h, t.firstChild); old.parentNode.removeChild(old); } return; }
+    if (old) return;
+    var h1 = art.querySelector('.lp-text > h1'); if (!h1) return;
+    var eb = txt(C.pageEyebrow);
+    var band = document.createElement('div');
+    band.className = 'lpl-pband';
+    band.innerHTML = '<div class="lp-wrap lpl-pband-in">' + (eb ? '<span class="eyebrow lpl-pband-eb">' + esc(eb) + '</span>' : '') + '</div>';
+    band.firstChild.appendChild(h1);
+    art.insertBefore(band, art.firstChild);
+  }
+  function ctaNotice(node, C, M) {
+    var ic = icon(txt(M.icon) || 'info');
+    node.insertAdjacentHTML('afterbegin', '<div class="wrap cb-wrap cbn-wrap" data-lpl="cb"><div class="cbn">' +
+      '<div class="cbn-head">' + (ic ? '<span class="cbn-ic">' + ic + '</span>' : '') +
+      (txt(M.heading) ? '<h2 class="cbn-h" data-lpe="heading">' + esc(M.heading) + '</h2>' : '') + '</div>' +
+      (txt(M.text) ? '<p class="cbn-p" data-lpe="text">' + esc(M.text).replace(/\n/g, '<br>') + '</p>' : '') +
+      '</div></div>');
+  }
+
+  var STEPS = [heroSlider, heroBanners, headerCta, minimalFooter, logoTint, buttonShapes, orderLayout, featuredProjects, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, trustBar, mapHours, ctaBanner, storyTimeline, storyRows, bookingWeek, heroBooking, bookingHire, fontSet, mobileBarSpace, heroSplit, appWidths, headingBreaks, strokeIcons, siteWidth, headerItems, navActive, subPageNav, heroPortrait, featureBand, footerContact, footerDecor, pageBanner];
 
   function run(cfg) {
     // On a landing page the template builds the page's own config (homepage + the page's
