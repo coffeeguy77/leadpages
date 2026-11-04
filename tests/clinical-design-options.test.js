@@ -136,3 +136,29 @@ test('Source Serif Clinical font set: menu and buttons as typed', () => {
   assert.doesNotMatch(F.css('jost'), /\.nm-link/);
   assert.match(read('manage.html'), /lp-fonts\.js\?v=4/);
 });
+
+test('About profile layout, quote banner, hero tagline: opt-in and editable', () => {
+  // Layout code only runs for the new values.
+  assert.match(js, /function aboutProfile\(node, ?C, ?AU\)/);
+  assert.match(js, /classList\.toggle\('au-is-profile'/);
+  assert.match(js, /hsp-tagline/);
+  assert.match(js, /classList\.toggle\('hsp-eb-rule', on && HS\.eyebrowRule === true\)/);
+  assert.match(js, /cbq/);
+  // Pages built only from apps still get the sub-page menu bar.
+  assert.match(js, /C\.pages\.some\(function \(pg\) \{ return pg && pg\.slug === seg; \}\)/);
+  for (const c of ['.au-is-profile', '.aup-focus', '.aup-exp', '.aup-num', '.cb-quote', '.hsp-tagline', '.hsp-eb-rule']) {
+    assert.ok(css.includes(c), c);
+  }
+  // Editor controls.
+  assert.match(manage, /\['profile','Profile — background, focus card, expertise cards \+ side card'\]/);
+  assert.match(manage, /\['quote','Quote \\u2014 large quote, divider, button'\]/);
+  for (const k of ['tagline', 'eyebrowRule', 'focusTitle', 'focusIcon', 'focusIntro', 'expertiseTitle', 'qualsTitle',
+    'summaryTitle', 'summaryIcon', 'summaryText', 'membershipsTitle', 'membershipsIcon', 'membershipsImage', 'btn1Icon']) {
+    assert.match(manage, new RegExp("k:'" + k + "'"), k);
+  }
+  for (const l of ['aboutUsFocus', 'aboutUsExpertise', 'aboutUsMemberships']) assert.match(manage, new RegExp(l + ':\\{secId:\'aboutUs\''), l);
+  // The AI composer never picks them.
+  const L = read('lib/ai-composer/layouts.js');
+  assert.match(L, /ctaBanner: \['', 'boxes', 'notice', 'quote'\]/);
+  assert.match(L, /aboutUs: \['profile'\]/);
+});

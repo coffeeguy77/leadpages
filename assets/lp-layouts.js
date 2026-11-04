@@ -859,7 +859,9 @@
     var AU = (C.sections && C.sections.aboutUs) || {};
     var on = AU.layout === 'location';
     node.classList.toggle('au-is-location', on);
+    node.classList.toggle('au-is-profile', AU.layout === 'profile');
     clear(node, 'au');
+    if (AU.layout === 'profile') { aboutProfile(node, C, AU); return; }
     if (!on) return;
     var addr = txt(AU.address);
     var hours = txt(AU.hours);
@@ -883,6 +885,51 @@
         }).join('') + '</ul>' : '') + '</div>' : '') +
       '</div>';
     node.insertAdjacentHTML('afterbegin', html);
+  }
+
+  /* ---------- About Us: profile (text, focus card, expertise cards | sidebar card) ----------
+   * heading + intro (blank line = new paragraph); focusTitle, focusIntro, focusIcon, focusItems[{title,text}];
+   * expertiseTitle, expertise[{icon,title,text}]; sidebar: qualsTitle + features[{icon,text}],
+   * summaryIcon / summaryTitle / summaryText, membershipsIcon / membershipsTitle / membershipsImage,
+   * memberships[{text}]. Empty parts are left out. */
+  function aboutProfile(node, C, AU) {
+    var paras = function (s) { return txt(s).split(/\n\s*\n/).map(function (p) { return '<p>' + esc(p.trim()).replace(/\n/g, '<br>') + '</p>'; }).join(''); };
+    var focus = live(AU.focusItems).filter(function (f) { return txt(f.title) || txt(f.text); });
+    var exp = live(AU.expertise).filter(function (f) { return txt(f.title) || txt(f.text); });
+    var quals = live(AU.features).filter(function (f) { return txt(f.text); });
+    var mems = live(AU.memberships).filter(function (f) { return txt(f.text); });
+    var h2 = function (t, k) { return '<h2 class="aup-h" data-lpe="' + k + '"><i aria-hidden="true"></i>' + esc(t) + '</h2>'; };
+    var main = '' +
+      (txt(AU.heading) ? h2(AU.heading, 'heading') : '') +
+      (txt(AU.intro) ? '<div class="aup-text" data-lpe="intro">' + paras(AU.intro) + '</div>' : '') +
+      ((txt(AU.focusTitle) || focus.length) ? '<div class="aup-focus">' +
+        '<div class="aup-focus-head">' + (icon(AU.focusIcon) ? '<span class="aup-focus-ic">' + icon(AU.focusIcon) + '</span>' : '') +
+          '<div>' + (txt(AU.focusTitle) ? '<h3 data-lpe="focusTitle">' + esc(AU.focusTitle) + '</h3>' : '') + (txt(AU.focusIntro) ? '<p data-lpe="focusIntro">' + esc(AU.focusIntro) + '</p>' : '') + '</div></div>' +
+        (focus.length ? '<ol class="aup-focus-list">' + focus.map(function (f, i) {
+          return '<li data-lpe="list:aboutUsFocus:' + i + ':title"><span class="aup-num">' + (i + 1) + '</span><div>' + (txt(f.title) ? '<strong>' + esc(f.title) + '</strong>' : '') + (txt(f.text) ? '<span>' + esc(f.text) + '</span>' : '') + '</div></li>';
+        }).join('') + '</ol>' : '') + '</div>' : '') +
+      ((txt(AU.expertiseTitle) || exp.length) ? (txt(AU.expertiseTitle) ? h2(AU.expertiseTitle, 'expertiseTitle') : '') +
+        (exp.length ? '<div class="aup-exp" style="--aup-cols:' + Math.min(4, exp.length) + '">' + exp.map(function (f, i) {
+          return '<div class="aup-card" data-lpe="list:aboutUsExpertise:' + i + ':title">' + (icon(f.icon) ? '<span class="aup-card-ic">' + icon(f.icon) + '</span>' : '') +
+            (txt(f.title) ? '<strong>' + esc(f.title) + '</strong>' : '') + (txt(f.text) ? '<span>' + esc(f.text) + '</span>' : '') + '</div>';
+        }).join('') + '</div>' : '') : '');
+    var memImg = bgUrl(AU.membershipsImage);
+    var side = '' +
+      ((txt(AU.qualsTitle) || quals.length) ? '<div class="aup-sb">' + (txt(AU.qualsTitle) ? '<h3 data-lpe="qualsTitle">' + esc(AU.qualsTitle) + '</h3>' : '') +
+        '<ul class="aup-quals">' + quals.map(function (f, i) {
+          return '<li data-lpe="list:aboutUsFeatures:' + i + ':text"><span class="aup-q-ic">' + (icon(f.icon) || CHECK) + '</span><span>' + esc(f.text).replace(/\s\(([^)]*)\)\s*$/, '<br>($1)') + '</span></li>';
+        }).join('') + '</ul></div>' : '') +
+      ((txt(AU.summaryTitle) || txt(AU.summaryText)) ? '<div class="aup-sb">' + '<div class="aup-sb-head">' + (icon(AU.summaryIcon) ? '<span class="aup-sb-ic">' + icon(AU.summaryIcon) + '</span>' : '') +
+        (txt(AU.summaryTitle) ? '<h3 data-lpe="summaryTitle">' + esc(AU.summaryTitle) + '</h3>' : '') + '</div>' +
+        (txt(AU.summaryText) ? '<div class="aup-sb-text" data-lpe="summaryText">' + paras(AU.summaryText) + '</div>' : '') + '</div>' : '') +
+      ((txt(AU.membershipsTitle) || mems.length || memImg) ? '<div class="aup-sb">' + '<div class="aup-sb-head">' + (icon(AU.membershipsIcon) ? '<span class="aup-sb-ic">' + icon(AU.membershipsIcon) + '</span>' : '') +
+        (txt(AU.membershipsTitle) ? '<h3 data-lpe="membershipsTitle">' + esc(AU.membershipsTitle) + '</h3>' : '') + '</div>' +
+        (memImg ? '<img class="aup-mem-img" src="' + esc(memImg) + '" alt="' + esc(AU.membershipsImageAlt || '') + '" loading="lazy">' : '') +
+        (mems.length ? '<ul class="aup-mems">' + mems.map(function (f, i) {
+          return '<li data-lpe="list:aboutUsMemberships:' + i + ':text"><span class="aup-m-ic">' + CHECK + '</span><span>' + esc(f.text) + '</span></li>';
+        }).join('') + '</ul>' : '') + '</div>' : '');
+    node.insertAdjacentHTML('afterbegin', '<div class="wrap aup" data-lpl="au"><div class="aup-main">' + main + '</div>' +
+      (side ? '<aside class="aup-side">' + side + '</aside>' : '') + '</div>');
   }
 
   /* ---------- Special offer: photo banner ---------- */
@@ -1147,6 +1194,8 @@
     else if (act === 'section') { var t = txt(M['btn' + n + 'Target']).replace(/[^\w-]/g, ''); href = t ? '#' + t : contactHref(); }
     else if (act === 'link') { href = hrefOf(M['btn' + n + 'Url'], contactHref()); }
     else { href = contactHref(); }
+    var own = icon(txt(M['btn' + n + 'Icon']));   // optional icon before the label (no arrow then)
+    if (own) ic = own;
     return '<a class="' + cls + '"' + lpe + ' ' + linkAttrs(href) + '>' + ic + esc(label) + (ic ? '' : ARROW) + '</a>';
   }
   function ctaBanner(C) {
@@ -1174,13 +1223,25 @@
     var tint = cbBoxTint(M);
     if (tint) node.style.setProperty('--cbx-tint', tint); else node.style.removeProperty('--cbx-tint');
     node.classList.toggle('cbx-tinted', !!tint);
-    if (M.on !== true) { node.classList.remove('cb-notice'); return; }
+    if (M.on !== true) { node.classList.remove('cb-notice'); node.classList.remove('cb-quote'); return; }
     var boxesOn = M.layout === 'boxes';
     node.classList.toggle('cb-boxes', boxesOn);
     if (boxesOn) { ctaBoxes(node, C, M); return; }
     var noticeOn = M.layout === 'notice';
     node.classList.toggle('cb-notice', noticeOn);
     if (noticeOn) { ctaNotice(node, C, M); return; }
+    var quoteOn = M.layout === 'quote';
+    node.classList.toggle('cb-quote', quoteOn);
+    var dec = quoteOn ? bgUrl(M.decorImage) : '';
+    if (dec) node.style.setProperty('--cbq-decor', 'url("' + dec + '")'); else node.style.removeProperty('--cbq-decor');
+    node.classList.toggle('cbq-decor', !!dec);
+    if (quoteOn) {
+      var qb = ctaBtn(C, M, 1);
+      node.insertAdjacentHTML('afterbegin', '<div class="wrap cb-wrap cbq-wrap" data-lpl="cb"><div class="cbq">' +
+        '<blockquote class="cbq-q"><span class="cbq-mark" aria-hidden="true">\u201C</span><p data-lpe="text">' + esc(M.text).replace(/\n/g, '<br>') + '\u201D</p></blockquote>' +
+        (qb ? '<div class="cbq-btn">' + qb + '</div>' : '') + '</div></div>');
+      return;
+    }
     var btns = ctaBtn(C, M, 1) + ctaBtn(C, M, 2);
     node.insertAdjacentHTML('afterbegin', '<div class="wrap cb-wrap" data-lpl="cb"><div class="cb"><div class="cb-text">' +
       (txt(M.eyebrow) ? '<span class="cb-eyebrow" data-lpe="eyebrow">' + esc(M.eyebrow) + '</span>' : '') +
@@ -1572,6 +1633,7 @@
     var html = '<div class="hsp" data-lpl="hsp"><div class="wrap hsp-grid"><div class="hsp-text">' +
       (txt(S.eyebrow) ? '<span class="eyebrow hsp-eyebrow" data-lpe="' + L('eyebrow') + '">' + esc(S.eyebrow) + '</span>' : '') +
       (h1 ? '<h1 class="hsp-h1" data-lpe="splitH1">' + esc(h1) + '</h1>' : '') + head +
+      (txt(HS.tagline) ? '<p class="hsp-tagline" data-lpe="tagline">' + esc(HS.tagline).replace(/\s+\|\s+/g, '<i aria-hidden="true">|</i>') + '</p>' : '') +
       (txt(S.subText) ? '<p class="hsp-sub" data-lpe="' + L('subText') + '">' + esc(S.subText) + '</p>' : '') +
       '<div class="hsp-cta"></div>' +
       (badges.length ? '<p class="hsp-line" data-lpe="list:heroSliderBadges:0:title">' + badges.map(esc).join('<i aria-hidden="true">\u2022</i>') + '</p>' : '') +
@@ -1877,6 +1939,10 @@
    *     proportions (coverRatio '1114:353', coverFocus), text over its left; nameCardTitle /
    *     nameCardText / nameCardX / nameCardY (% on the photo) place the name card
    *   sections.textBox.featuresSide = true             bleed layout: the icon list in its own column
+   *   sections.heroSlider.tagline / eyebrowRule        split / cover: a serif line under the headline
+   *                                                    ("A | B" shows a divider); a short line after the eyebrow
+   *   sections.aboutUs.layout = 'profile'              text, focus card, expertise cards | sidebar card
+   *   sections.ctaBanner.layout = 'quote' (+ decorImage) large quote, divider, button
    *   pageStyle = 'banner' (+ pageEyebrow)             sub-pages: H1 in a band at the top, text on white
    * ========================================================================================== */
   function siteWidth(C) {
@@ -1963,6 +2029,11 @@
     var node = sec('navMenu'); if (!node) return;
     var main = document.getElementById('top');
     var onSub = !!(main && main.querySelector(':scope > section.lp-page'));
+    if (!onSub && Array.isArray(C.pages)) {
+      // Pages built only from apps have no article: match the URL's last segment to a page slug.
+      var seg = String(location.pathname || '').replace(/\/+$/, '').split('/').pop();
+      onSub = !!seg && C.pages.some(function (pg) { return pg && pg.slug === seg; });
+    }
     if (!onSub || NM.on !== true || NM.placement !== 'bar') return;
     node.style.setProperty('order', '-1', 'important');
     var bg = hexOk(NM.bg);
@@ -1973,7 +2044,8 @@
     var HS = (C.sections && C.sections.heroSlider) || {};
     var on = HS.layout === 'split' || HS.layout === 'cover';
     node.classList.toggle('hsp-portrait', HS.layout === 'split' && HS.splitFit === 'portrait');
-    node.classList.toggle('hsp-rule', on && HS.accentRule === true);
+    node.classList.toggle('hsp-rule', on && HS.accentRule === true && !txt(HS.tagline));
+    node.classList.toggle('hsp-eb-rule', on && HS.eyebrowRule === true);
     var bg = on ? hexOk(HS.splitBg) : '';
     if (bg) node.style.setProperty('--hsp-bg', bg); else node.style.removeProperty('--hsp-bg');
     node.classList.toggle('hsp-has-bg', !!bg);

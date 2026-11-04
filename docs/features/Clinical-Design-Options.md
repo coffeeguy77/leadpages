@@ -53,3 +53,18 @@ both on pages with apps and on pages without them.
   this for the header card.
 - The AI Composer doesn't offer `heroSlider: cover`, the `featureStrip` layouts or
   `ctaBanner: notice` yet (`NOT_OFFERED`).
+
+## About page options (Nov 2026)
+
+All opt-in; existing sites are unchanged.
+
+| Option | Config | Editor |
+|---|---|---|
+| Profile layout | `sections.aboutUs.layout = 'profile'` — heading + intro (blank line = new paragraph), focus card (`focusIcon`, `focusTitle`, `focusIntro`, `focusItems[{title,text}]`, numbered), expertise cards (`expertiseTitle`, `expertise[{icon,title,text}]`), side card: list (`qualsTitle` + `features[{icon,text}]`), summary (`summaryIcon/Title/Text`), memberships (`membershipsIcon/Title`, optional `membershipsImage(+Alt)`, `memberships[{text}]`). Stacks to one column on phones. | About us → Layout = Profile; lists Focus points, Expertise cards, Memberships, Photo points |
+| Quote banner | `sections.ctaBanner.layout = 'quote'`, optional `decorImage` (faint, right) | Banner style → Layout = Quote |
+| Button icon | `sections.ctaBanner.btn1Icon` replaces the arrow | Banner style → Main button icon |
+| Hero tagline | `sections.heroSlider.tagline` (split / cover; ` \| ` shows as a divider), `eyebrowRule` short line beside the eyebrow | Hero → Tagline, Short line beside the eyebrow |
+| Sub-page menu bar on app-only pages | `subPageNav` also treats the page as a sub-page when the URL's last segment is a `config.pages` slug | — |
+
+The AI composer does not offer `aboutUs: profile` or `ctaBanner: quote` (NOT_OFFERED).
+First used by Pam Connor & Associates (`/about-dr-connor`, built from apps: heroSlider, aboutUs, ctaBanner).
