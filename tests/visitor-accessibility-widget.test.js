@@ -23,7 +23,7 @@ function el(tag) {
     id: '',
     className: '',
     hidden: false,
-    style: { fontSize: '' },
+    style: { fontSize: '', _p: {}, setProperty(k, v) { this._p[k] = String(v); }, removeProperty(k) { delete this._p[k]; }, getPropertyValue(k) { return this._p[k] || ''; } },
     dataset: {},
     parentNode: null,
     get parentElement() { return node.parentNode; },
@@ -463,7 +463,7 @@ test('every preference feature applies html data attributes', () => {
   assert.equal(htmlEl.dataset.lpVisitorLinks, 'highlight');
   assert.equal(htmlEl.dataset.lpVisitorSpacing, 'comfortable');
   assert.equal(sb._lastScheme, 'brand', 'schemes forced to brand when disabled');
-  assert.equal(document.body.style.fontSize, '1.1875rem');
+  assert.equal(document.documentElement.style.getPropertyValue('--lp-visitor-zoom'), '1.12');   // bigger text = page zoom (Nov 2026)
 
   api.apply({
     textSize: 'larger',
@@ -475,7 +475,7 @@ test('every preference feature applies html data attributes', () => {
     colorScheme: 'brand'
   });
   assert.equal(htmlEl.dataset.lpVisitorText, 'larger');
-  assert.equal(document.body.style.fontSize, '1.3125rem');
+  assert.equal(document.documentElement.style.getPropertyValue('--lp-visitor-zoom'), '1.25');
   assert.equal(htmlEl.dataset.lpVisitorContrast, 'standard');
   assert.equal(htmlEl.dataset.lpVisitorMotion, 'standard');
   assert.equal(htmlEl.dataset.lpVisitorLinks, 'standard');
@@ -569,7 +569,7 @@ test('click-through: every marketing preference control works end-to-end', () =>
 
   clickGroup('textSize', 'larger');
   assert.equal(htmlEl.dataset.lpVisitorText, 'larger');
-  assert.equal(document.body.style.fontSize, '1.3125rem');
+  assert.equal(document.documentElement.style.getPropertyValue('--lp-visitor-zoom'), '1.25');
 
   clickGroup('contrast', 'high');
   assert.equal(htmlEl.dataset.lpVisitorContrast, 'high');

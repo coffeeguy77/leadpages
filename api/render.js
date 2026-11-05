@@ -1324,6 +1324,26 @@ function injectSeoJsonLd(html, cfg) {
   return scripts + html;
 }
 
+/** "How many arrows?" form check — only when the site turned it on (config.formChallenge.on). */
+function injectFormChallenge(html, cfg) {
+  if (!html || html.includes('lp-challenge.js')) return html;
+  const FC = require('../lib/form-challenge');
+  const st = FC.settings(cfg);
+  if (!st.on) return html;
+  const th = (cfg && cfg.theme) || {};
+  const hex = (v) => (/^#[0-9a-fA-F]{6}$/.test(String(v || '').trim()) ? String(v).trim() : '');
+  const fc = (cfg && cfg.formChallenge) || {};
+  const boot = {
+    style: st.style,
+    accent: hex(fc.accent) || hex(th.accent) || hex(th.pipe) || '',
+    ink: hex(fc.ink) || hex(th.steel) || '',
+    hint: String(fc.hint || '').slice(0, 160)
+  };
+  const tag = '<script>window.__LP_FORM_CHALLENGE__=' + safeJson(boot) + ';</script>'
+    + '<script src="/assets/lp-challenge.js?v=1" defer></script>\n';
+  return html.indexOf('</body>') !== -1 ? html.replace('</body>', tag + '</body>') : html + tag;
+}
+
 function injectVisitorAccessibility(html, cfg) {
   if (!html) return html;
   const va = visitorAppearanceCfg(cfg);
@@ -1337,13 +1357,13 @@ function injectVisitorAccessibility(html, cfg) {
     out = out.replace(
       '</head>',
       '<link rel="stylesheet" href="/assets/lp-visitor-themes.css">\n'
-      + '<link rel="stylesheet" href="/assets/lp-visitor-schemes.css">\n'
+      + '<link rel="stylesheet" href="/assets/lp-visitor-schemes.css?v=3">\n'
       + '<link rel="stylesheet" href="/assets/lp-logo.css">\n</head>'
     );
   }
 
   const brandAssets =
-    '<script src="/assets/lp-visitor-schemes.js" defer></script>\n'
+    '<script src="/assets/lp-visitor-schemes.js?v=3" defer></script>\n'
     + '<script src="/assets/lp-logo.js" defer></script>\n';
 
   if (!out.includes('lp-visitor-schemes.js')) {
@@ -1362,8 +1382,8 @@ function injectVisitorAccessibility(html, cfg) {
   if (widgetOn && !out.includes('lp-visitor-accessibility.js')) {
     const assets =
       boot +
-      '<link rel="stylesheet" href="/assets/lp-visitor-accessibility.css">' +
-      '<script src="/assets/lp-visitor-accessibility.js" defer></script>';
+      '<link rel="stylesheet" href="/assets/lp-visitor-accessibility.css?v=2">' +
+      '<script src="/assets/lp-visitor-accessibility.js?v=2" defer></script>';
     out = out.indexOf('</body>') !== -1
       ? out.replace('</body>', assets + '\n</body>')
       : (out + assets);
@@ -1686,6 +1706,7 @@ module.exports = async (req, res) => {
     } catch (e) { /* table may not exist yet */ }
 
     html = injectAttribution(html, cfg);
+    html = injectFormChallenge(html, cfg);
     html = injectVisitorAccessibility(html, cfg);
     html = injectSeoJsonLd(html, cfg);
     if (template === 'trade') {

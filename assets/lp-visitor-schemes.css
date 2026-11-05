@@ -109,6 +109,82 @@ html[data-lp-visitor-scheme="festive"] body {
 }
 
 /* Scheme-aware logo pulse tint */
+/* LeadPages palette — LeadPages Blue: re-themes the site's core colours (theme colours are set
+   inline on <html>, so these need !important). Opt-in: only when the visitor or owner picks it. */
+html[data-lp-visitor-scheme="leadpages"] {
+  --pipe: #1565D8 !important;
+  --pipe-deep: #0F4FB0 !important;
+  --pipe-glow: #3D8BFF !important;
+  --hivis: #1565D8 !important;
+  --hivis-600: #0F4FB0 !important;
+  --safety: #2E9BF0 !important;
+  --light: #F1F6FF !important;
+  --steel-900: #0A2463 !important;
+  --lp-logo-accent: #3D8BFF;
+  --lp-logo-ink: #0A2463;
+  --lp-scheme-accent: #1565D8;
+  --lp-scheme-accent-soft: #F1F6FF;
+  --lp-scheme-bg: #F1F6FF;
+  --lp-scheme-text: #0A2463;
+}
+
+/* LeadPages palette — Ocean: re-themes the site's core colours (theme colours are set
+   inline on <html>, so these need !important). Opt-in: only when the visitor or owner picks it. */
+html[data-lp-visitor-scheme="ocean"] {
+  --pipe: #0E8A9A !important;
+  --pipe-deep: #0A6B78 !important;
+  --pipe-glow: #2FB7C6 !important;
+  --hivis: #0E8A9A !important;
+  --hivis-600: #0A6B78 !important;
+  --safety: #F2B84B !important;
+  --light: #EEF8F9 !important;
+  --steel-900: #0B2E3F !important;
+  --lp-logo-accent: #2FB7C6;
+  --lp-logo-ink: #0B2E3F;
+  --lp-scheme-accent: #0E8A9A;
+  --lp-scheme-accent-soft: #EEF8F9;
+  --lp-scheme-bg: #EEF8F9;
+  --lp-scheme-text: #0B2E3F;
+}
+
+/* LeadPages palette — Sunset: re-themes the site's core colours (theme colours are set
+   inline on <html>, so these need !important). Opt-in: only when the visitor or owner picks it. */
+html[data-lp-visitor-scheme="sunset"] {
+  --pipe: #E2574C !important;
+  --pipe-deep: #B8413A !important;
+  --pipe-glow: #F57F6E !important;
+  --hivis: #E2574C !important;
+  --hivis-600: #B8413A !important;
+  --safety: #F6B042 !important;
+  --light: #FFF4F0 !important;
+  --steel-900: #3A1F3D !important;
+  --lp-logo-accent: #F57F6E;
+  --lp-logo-ink: #3A1F3D;
+  --lp-scheme-accent: #E2574C;
+  --lp-scheme-accent-soft: #FFF4F0;
+  --lp-scheme-bg: #FFF4F0;
+  --lp-scheme-text: #3A1F3D;
+}
+
+/* LeadPages palette — Grape: re-themes the site's core colours (theme colours are set
+   inline on <html>, so these need !important). Opt-in: only when the visitor or owner picks it. */
+html[data-lp-visitor-scheme="grape"] {
+  --pipe: #6D3FD6 !important;
+  --pipe-deep: #5229AE !important;
+  --pipe-glow: #9067F0 !important;
+  --hivis: #6D3FD6 !important;
+  --hivis-600: #5229AE !important;
+  --safety: #F2B84B !important;
+  --light: #F5F1FE !important;
+  --steel-900: #24124F !important;
+  --lp-logo-accent: #9067F0;
+  --lp-logo-ink: #24124F;
+  --lp-scheme-accent: #6D3FD6;
+  --lp-scheme-accent-soft: #F5F1FE;
+  --lp-scheme-bg: #F5F1FE;
+  --lp-scheme-text: #24124F;
+}
+
 html[data-lp-visitor-scheme]:not([data-lp-visitor-scheme="brand"]) .lp-logo-pulse {
   --lp-logo-accent: var(--lp-scheme-accent, var(--lp-logo-accent));
 }

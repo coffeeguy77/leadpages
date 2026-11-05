@@ -29,6 +29,7 @@ const { deliverConversion } = require('../lib/google-ads/conversions');
 const { detailLines, buildLeadNotifyEmail } = require('../lib/lead-notify-email');
 const { resolveLeadNotifyStyle } = require('../lib/lead-notify-style');
 const LeadFiles = require('../lib/lead-files');
+const FormChallenge = require('../lib/form-challenge');
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -148,6 +149,17 @@ module.exports = async (req, res) => {
     const message = dets.map(([k, v]) => k + ': ' + v).join(' · ');
 
     const siteRow = await resolveSite({ siteId: body.siteId, slug: body.slug, site: body.site });
+
+    // "How many arrows?" check — only when the site has it on (config.formChallenge.on).
+    // A wrong answer is a visible 400 so a real person can count again on a new picture.
+    if (siteRow && FormChallenge.settings(siteRow.config).on) {
+      const fc = await FormChallenge.verify(body.challengeToken, body.challengeAnswer, supabase);
+      if (!fc.ok) {
+        res.statusCode = 400;
+        res.setHeader('content-type', 'application/json');
+        return res.end(JSON.stringify({ ok: false, error: 'challenge', reason: fc.reason }));
+      }
+    }
 
     if (siteRow) {
       const blocked = isLeadBlocked({

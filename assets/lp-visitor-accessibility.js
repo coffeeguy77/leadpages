@@ -97,9 +97,18 @@
     root.dataset.lpVisitorMotion = p.motion === 'reduced' ? 'reduced' : 'standard';
     root.dataset.lpVisitorLinks = p.links === 'highlight' ? 'highlight' : 'standard';
     root.dataset.lpVisitorSpacing = p.spacing === 'comfortable' ? 'comfortable' : 'standard';
-    if (global.document.body) {
-      global.document.body.style.fontSize = text === 'larger' ? '1.3125rem' : text === 'large' ? '1.1875rem' : '';
+    // Bigger text scales the whole page (CSS zoom), so fixed-size text grows too. It multiplies
+    // with the site's own text size (config.textScale → --lp-zoom).
+    var vz = text === 'larger' ? 1.25 : text === 'large' ? 1.12 : 1;
+    var rs = root.style || {};
+    if (vz !== 1) {
+      if (rs.setProperty) rs.setProperty('--lp-visitor-zoom', String(vz));
+      if (root.setAttribute) root.setAttribute('data-lp-zoom', '');
+    } else {
+      if (rs.removeProperty) rs.removeProperty('--lp-visitor-zoom');
+      if (!(rs.getPropertyValue && rs.getPropertyValue('--lp-zoom')) && root.removeAttribute) root.removeAttribute('data-lp-zoom');
     }
+    if (global.document.body) global.document.body.style.fontSize = '';
     if (global.LPVisitorSchemes && global.LPVisitorSchemes.apply) {
       var scheme = allowColorSchemes()
         ? (p.colorScheme || (cfg.defaults && cfg.defaults.colorScheme) || 'brand')

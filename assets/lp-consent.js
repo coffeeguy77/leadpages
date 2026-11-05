@@ -306,6 +306,7 @@
         .then(function (j) {
           if (!j || !j.ok) {
             btn.disabled = false; btn.innerHTML = IC.send + 'Send to ' + esc(F.sendTo || 'the practice');
+            if (j && j.error === 'challenge') { msg('Please count the picture again (it has changed), then press Send.'); return; }
             msg(j && j.errors ? 'Some answers need another look — please check the highlighted fields.' : 'Sorry, the form could not be sent just now. Your answers are saved on this device — please try again shortly, or email ' + esc(F.recipientLabel || 'the practice') + '.');
             return;
           }

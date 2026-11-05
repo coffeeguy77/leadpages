@@ -6951,7 +6951,7 @@ function heroCtaCard(c){
     activityCounter:{rows:[{t:'sel',k:'style',label:'Style',opts:[['','Big counters'],['strip','Compact spec strip (icon, figure, label)']]}]},
     featureStrip:{title:'Strip layout',rows:[{t:'sel',k:'layout',label:'Layout',opts:[['','Standard'],['band','Compact band \u2014 dividers, titles as typed']]}]},
     navMenu:[{title:'Menu bar extras',lede:'For the <b>menu bar</b> placement.',rows:[{t:'sel',k:'activeStyle',label:'Current page',opts:[['','Not highlighted'],['fill','Filled with the fill colour']]},{t:'sel',k:'barMobile',label:'On phones',opts:[['','Show the menu bar'],['hamburger','Hide it \u2014 the \u2630 menu has the links']]}]},
-      {sec:'header',title:'Header contact items & button',lede:'Contact items show beside the logo on wide screens. <b>Button in the menu bar</b> moves the header button to the end of the menu bar (menu bar placement, desktop).',rows:[{t:'text',k:'btnIcon',label:'Button icon',ph:'e.g. calendar (empty = none)'},{t:'sel',k:'ctaPlace',label:'Button position',opts:[['','In the header'],['menu','In the menu bar']]},{t:'color',k:'itemsColor',label:'Contact item text colour',ph:'Header text colour'},{t:'color',k:'itemsIconColor',label:'Contact item icon colour',ph:'Brand colour'}],lists:[['headerItems','Header contact items','Icon + text (phone, email, location). A link is optional: tel:\u2026, mailto:\u2026 or /page.']]}],
+      {sec:'header',title:'Header contact items & button',lede:'Contact items show beside the logo on wide screens. <b>Button in the menu bar</b> moves the header button to the end of the menu bar (menu bar placement, desktop).',rows:[{t:'sel',k:'layout',label:'Header layout (desktop)',opts:[['','Standard'],['stack','Stacked \u2014 contact items over the menu, right of the logo']]},{t:'text',k:'btnIcon',label:'Button icon',ph:'e.g. calendar (empty = none)'},{t:'sel',k:'ctaPlace',label:'Button position',opts:[['','In the header'],['menu','In the menu bar']]},{t:'color',k:'itemsColor',label:'Contact item text colour',ph:'Header text colour'},{t:'color',k:'itemsIconColor',label:'Contact item icon colour',ph:'Brand colour'}],lists:[['headerItems','Header contact items','Icon + text (phone, email, location). A link is optional: tel:\u2026, mailto:\u2026 or /page.']]}],
     hero:{title:'Text options',lede:'Headline and eyebrow case, and whether the eyebrow (small label) sits above or below the headline.',rows:[LPL_BTN_ROW,{t:'sel',k:'textCase',label:'Headline case',opts:[['','Theme default'],['normal','As typed (no forced capitals)'],['lower','all lowercase'],['upper','ALL CAPITALS']]},
       {t:'sel',k:'eyebrowCase',label:'Eyebrow case',opts:[['','Capitals (default)'],['normal','As typed'],['lower','all lowercase']]},
       {t:'sel',k:'eyebrowPos',label:'Eyebrow position',opts:[['','Above the headline'],['below','Below the headline']]},LPL_WIDTH_ROW]},
@@ -9502,6 +9502,10 @@ function heroCtaCard(c){
     spring:{name:'Spring',description:'Fresh greens'},
     summer:{name:'Summer',description:'Bright & sunny'},
     festive:{name:'Festive',description:'Holiday season'},
+    leadpages:{name:'LeadPages Blue',description:'Vibrant LeadPages blue — re-themes the whole site'},
+    ocean:{name:'Ocean',description:'Fresh teal & navy — re-themes the whole site'},
+    sunset:{name:'Sunset',description:'Warm coral & plum — re-themes the whole site'},
+    grape:{name:'Grape',description:'Bold violet — re-themes the whole site'},
     seasonal:{name:'Seasonal',description:'Auto-changes with the season'}
   };
   var AA_SCHEME_PREVIEWS={
@@ -9513,6 +9517,10 @@ function heroCtaCard(c){
     spring:{bg:'#f3faf5',accent:'#16a34a'},
     summer:{bg:'#fffaf3',accent:'#ea580c'},
     festive:{bg:'#f8faf6',accent:'#dc2626'},
+    leadpages:{bg:'#F1F6FF',accent:'#1565D8'},
+    ocean:{bg:'#EEF8F9',accent:'#0E8A9A'},
+    sunset:{bg:'#FFF4F0',accent:'#E2574C'},
+    grape:{bg:'#F5F1FE',accent:'#6D3FD6'},
     seasonal:{bg:'#f4f6f8',accent:'#64748b'}
   };
   function _vaCfg(){
@@ -9945,7 +9953,7 @@ function heroCtaCard(c){
     var p=document.createElement('div'); p.id='aa-page';
     var workspaceThemes=['studio-light','studio-dark','classic-light','command-dark','neon-pink','electric-blue','blush','blueprint','system'];
     var siteThemes=['classic-light','command-dark','neon-pink','electric-blue','blush','blueprint','match-brand'];
-    var colorSchemes=['brand','rose','steel','autumn','winter','spring','summer','festive','seasonal'];
+    var colorSchemes=['brand','leadpages','ocean','sunset','grape','rose','steel','autumn','winter','spring','summer','festive','seasonal'];
     p.innerHTML='<div class="aa-card"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:6px;flex-wrap:wrap;">'
       +'<div><p class="eyebrow" style="margin:0 0 4px">LeadPages</p><h1 style="margin:0;font:700 26px/1.15 var(--font-display,Georgia),serif">Appearance &amp; Accessibility</h1>'
       +'<p class="sub" style="margin:8px 0 0;max-width:56ch">Workspace preferences are saved on this device. Published page settings are saved to your site config when you publish.</p></div>'
@@ -12095,7 +12103,7 @@ function heroCtaCard(c){
         +'<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0;"><input type="checkbox" id="ft-lplogo"'+(_F.leadpagesLogoInFooter===true?' checked':'')+'> LeadPages logo in footer (where Privacy / Terms sit)</label>'
         +'<p class="hint" style="margin:8px 0 0;">When ticked, the LeadPages logo replaces the Privacy / Terms slot. Privacy and Terms move beside the copyright line, separated with |. If the site Footer is off, the LeadPages strip stays in its usual place under the page.</p></div>'
         +'<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 8px;">Brand &amp; logo</h2><p class="lede" style="margin:0 0 12px;">Use the site logo, upload a footer-only logo (e.g. inverted for dark backgrounds), or text only. Size and placement are independent of the header logo.</p>'
-        +'<div class="row"><div class="f"><label>Logo source</label><select id="ft-logomode" class="tin"><option value="site"'+(_F.logoMode!=='custom'&&_F.logoMode!=='text'?' selected':'')+'>Site logo</option><option value="custom"'+(_F.logoMode==='custom'?' selected':'')+'>Custom footer logo</option><option value="text"'+(_F.logoMode==='text'?' selected':'')+'>Text / mark only</option></select></div><div class="f"></div></div>'
+        +'<div class="row"><div class="f"><label>Logo source</label><select id="ft-logomode" class="tin"><option value="site"'+(_F.logoMode!=='custom'&&_F.logoMode!=='text'&&_F.logoMode!=='none'?' selected':'')+'>Site logo</option><option value="custom"'+(_F.logoMode==='custom'?' selected':'')+'>Custom footer logo</option><option value="text"'+(_F.logoMode==='text'?' selected':'')+'>Text / mark only</option><option value="none"'+(_F.logoMode==='none'?' selected':'')+'>No logo</option></select></div><div class="f"></div></div>'
         +'<div id="ft-custom-logo" style="'+(_F.logoMode==='custom'?'':'display:none;')+'margin-top:10px;"><label style="font-weight:600;font-size:13px;">Custom logo image</label>'+cwImgHTML('id="ft-logoimg" class="tin"','https://\u2026 or upload','Inverted / light logo for dark footer')+'<input type="hidden" id="ft-logoimg-pid"></div>'
         +'<div class="f" style="margin-top:14px;"><label style="display:flex;gap:8px;align-items:center;font-weight:600;cursor:pointer;"><input type="checkbox" id="ft-tint-on"'+((/^#[0-9a-fA-F]{6}$/.test(_F.logoTint||'')?_F.logoTint:'')?' checked':'')+'> Logo colour override</label><p class="hint" style="margin:4px 0 0;">Paints the footer logo one colour (site or custom logo), separate from the header \u2014 so one transparent PNG works on a light header and a dark footer.</p><div id="ft-tint-row" style="display:'+((/^#[0-9a-fA-F]{6}$/.test(_F.logoTint||'')?_F.logoTint:'')?'flex':'none')+';gap:8px;align-items:center;margin-top:8px;max-width:360px;"><input type="color" id="ft-tint" value="'+((/^#[0-9a-fA-F]{6}$/.test(_F.logoTint||'')?_F.logoTint:'')||'#ffffff')+'" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;flex:0 0 auto;"><input type="text" id="ft-tint-tx" class="tin" value="'+((/^#[0-9a-fA-F]{6}$/.test(_F.logoTint||'')?_F.logoTint:'')||'#ffffff')+'" style="flex:1;min-width:0;"></div></div>'
         +'<div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;">'
@@ -12133,7 +12141,8 @@ function heroCtaCard(c){
         +'<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 8px;">Bottom tagline &amp; legal</h2>'
         +'<div class="row"><div class="f"><label>Tagline (lead)</label><input type="text" id="ft-taglead" class="tin" value="'+esc(_F.taglineLead||'')+'"></div>'
         +'<div class="f"><label>Tagline (accent colour)</label><input type="text" id="ft-tagacc" class="tin" value="'+esc(_F.taglineAccent||'')+'"></div></div>'
-        +'<div class="f" style="margin-top:10px;"><label>Copyright / legal line</label><textarea id="ft-legal" class="tin" rows="2">'+esc(_F.legal||'')+'</textarea></div>'
+        +'<div class="f" style="margin-top:10px;"><label>Copyright / legal line</label><textarea id="ft-legal" class="tin" rows="2">'+esc(_F.legal||'')+'</textarea><span class="hint">Type {{year}} for the current year, e.g. \u00a9 {{year}} {{businessName}}.</span></div>'
+        +'<div class="row" style="margin-top:10px;"><div class="f"><label>Footer button text</label><input id="ft-cta" class="tin" value="'+esc(_F.ctaLabel||'')+'" placeholder="e.g. Book an Appointment (empty = no button)"></div><div class="f"><label>Footer button link</label><input id="ft-ctahref" class="tin" value="'+esc(_F.ctaHref||'')+'" placeholder="/contact-us or https://\u2026"></div><div class="f"><label>Footer button icon</label><input id="ft-ctaicon" class="tin" value="'+esc(_F.ctaIcon||'')+'" placeholder="calendar"></div></div>'
         +listCard('footerLegalLinks','Legal links','Privacy, Terms, etc.')
         +listCard('footerSocial','Social links','Round outline icons under the footer logo (Facebook, Instagram, Google reviews…). Leave empty to hide.')+'<div class="card" style="margin:-10px 0 22px;"><div class="row"><div class="f"><label>Social heading</label><input type="text" id="ft-social-title" class="tin" placeholder="Follow us"></div></div></div>'
         +'</div>'
@@ -12172,14 +12181,14 @@ function heroCtaCard(c){
         var sClr=document.querySelector('#ft-support-img-wrap .cw-clr');
         if(sClr) sClr.addEventListener('click',function(){ if(sPid&&sPid.value){ cwDelete(sPid.value); sPid.value=''; } delete ens().supportImage; delete ens().supportImage_pid; if(sImg)sImg.value=''; persist(); previewApply(); });
 
-        [['ft-brandtag','brandTagline'],['ft-brandtagacc','brandTaglineAccent'],['ft-blurb','blurb'],['ft-supporttitle','supportTitle'],['ft-supporthelp','supportHelp'],['ft-taglead','taglineLead'],['ft-tagacc','taglineAccent'],['ft-legal','legal']].forEach(function(p){
+        [['ft-cta','ctaLabel'],['ft-ctahref','ctaHref'],['ft-ctaicon','ctaIcon'],['ft-brandtag','brandTagline'],['ft-brandtagacc','brandTaglineAccent'],['ft-blurb','blurb'],['ft-supporttitle','supportTitle'],['ft-supporthelp','supportHelp'],['ft-taglead','taglineLead'],['ft-tagacc','taglineAccent'],['ft-legal','legal']].forEach(function(p){
           var el=$(p[0]); if(el) el.addEventListener('input',function(){ ens()[p[1]]=el.value; persist(); previewApply(); });
         });
         function colWire(id,key){ var cEl=$(id+'-clr'), tEl=$(id+'-tx'), dEl=$(id+'-def'); if(cEl) cEl.addEventListener('input',function(){ ens()[key]=cEl.value; if(tEl)tEl.value=cEl.value; persist(); previewApply(); }); if(tEl) tEl.addEventListener('input',function(){ var v=tEl.value.trim(); if(v===''){ delete ens()[key]; } else { if(v[0]!=='#')v='#'+v; if(/^#[0-9a-fA-F]{6}$/.test(v)){ ens()[key]=v; if(cEl)cEl.value=v; } } persist(); previewApply(); }); if(dEl) dEl.addEventListener('click',function(){ delete ens()[key]; if(tEl)tEl.value=''; persist(); previewApply(); }); }
         colWire('ft-bg','bg'); colWire('ft-accent','accentColor'); colWire('ft-ink','inkColor'); colWire('ft-muted','mutedColor'); colWire('ft-map','mapColor');
 
         function _ftActOpts(sel){
-          return [['scroll','Custom app position'],['page','Landing page'],['url','URL (_blank)']].map(function(o){
+          return [['home','Home page'],['scroll','Custom app position'],['page','Landing page'],['url','URL (_blank)']].map(function(o){
             return '<option value="'+o[0]+'"'+(sel===o[0]?' selected':'')+'>'+o[1]+'</option>';
           }).join('');
         }
@@ -20971,7 +20980,21 @@ function heroCtaCard(c){
         }).join('')+'</ul>':'<p class="dash-leads-empty" style="margin:6px 0 0">None yet.</p>')
         +'</div>';
     }
-    return '<div class="dash-spam-manage">'
+    var _fc=(data&&data.formChallenge&&typeof data.formChallenge==='object')?data.formChallenge:{};
+    var _fcStyles=[['arrows','LeadPages arrows — “How many arrows?”'],['leaves','Leaves'],['stars','Stars'],['hearts','Hearts'],['houses','Houses (tradies & real estate)'],['paws','Paw prints (pets & vets)'],['mix','Mix — a different one each time']];
+    var _fcHtml='<div class="dash-block-group" style="margin:0 0 14px"><div class="dash-block-h">Form spam check</div>'
+      +'<label style="display:flex;gap:8px;align-items:center;margin:6px 0"><input type="checkbox" id="dash-fc-on"'+(_fc.on===true?' checked':'')+' onchange="window._dashFcSet&&window._dashFcSet()"> Ask visitors a quick picture question before a form sends</label>'
+      +'<label style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0">Picture <select class="tin" id="dash-fc-style" style="max-width:320px" onchange="window._dashFcSet&&window._dashFcSet()">'
+      +_fcStyles.map(function(o){ return '<option value="'+o[0]+'"'+((_fc.style||'arrows')===o[0]?' selected':'')+'>'+esc(o[1])+'</option>'; }).join('')+'</select></label>'
+      +'<p class="dash-leads-empty" style="margin:4px 0 0">Visitors tap how many arrows (or leaves, stars…) they can count among the pulsing dots. Each picture allows one try. Works on the quote form, contact/enquiry forms and the new patient form.</p></div>';
+    window._dashFcSet=function(){
+      if(!data) return;
+      var on=document.getElementById('dash-fc-on'), st=document.getElementById('dash-fc-style');
+      data.formChallenge=Object.assign({}, data.formChallenge||{}, { on: !!(on&&on.checked), style: (st&&st.value)||'arrows' });
+      _dashLeadInboxPersist();
+      if(typeof toast==='function') toast(data.formChallenge.on?'Form spam check on':'Form spam check off');
+    };
+    return '<div class="dash-spam-manage">'+_fcHtml
       +'<p class="dash-leads-empty" style="margin:0 0 12px">Spam leads are hidden from All / Website / Quote. Blocking an email (or domain / country) drops future submissions at ingest and removes the lead from this inbox.</p>'
       +'<div class="dash-block-grid">'
       +list('Blocked emails','email',inbox.blockedEmails,'name@example.com')

@@ -207,3 +207,7 @@
     width: 100%;
   }
 }
+
+/* Bigger text: the whole page scales (see lp-visitor-accessibility.js apply) */
+html[data-lp-zoom]{zoom:calc(var(--lp-zoom,1) * var(--lp-visitor-zoom,1))}
+@media(max-width:760px){html[data-lp-zoom]{zoom:calc(var(--lp-zoom-m,1) * var(--lp-visitor-zoom,1))}}

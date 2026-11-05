@@ -10,6 +10,7 @@
 const { createClient } = require('@supabase/supabase-js');
 const { limited } = require('./_rate-limit');
 const CF = require('../lib/consent-form');
+const FormChallenge = require('../lib/form-challenge');
 
 const FROM = process.env.LEADS_FROM || 'LeadPages <noreply@leadpages.com.au>';
 const MAX_BODY = 900 * 1024;
@@ -101,6 +102,10 @@ module.exports = async (req, res) => {
   const page = (Array.isArray(cfg.pages) ? cfg.pages : []).find((p) => p && p.slug === pageSlug && p.status !== 'draft');
   const form = CF.formOf(page);
   if (!form) return send(res, 404, { ok: false, error: 'form' });
+  if (FormChallenge.settings(cfg).on) {
+    const fc = await FormChallenge.verify(body.challengeToken, body.challengeAnswer, db());
+    if (!fc.ok) return send(res, 400, { ok: false, error: 'challenge', reason: fc.reason });
+  }
 
   const v = CF.validate(form, body);
   if (!v.ok) return send(res, 422, { ok: false, errors: v.errors });

@@ -8,6 +8,10 @@
 
   var SCHEMES = {
     brand: { name: 'Brand', description: 'Your site colours', emoji: '✦' },
+    leadpages: { name: 'LeadPages Blue', description: 'Vibrant LeadPages blue', emoji: '🔷', lift: true },
+    ocean: { name: 'Ocean', description: 'Fresh teal & navy', emoji: '🌊', lift: true },
+    sunset: { name: 'Sunset', description: 'Warm coral & plum', emoji: '🌅', lift: true },
+    grape: { name: 'Grape', description: 'Bold violet', emoji: '🍇', lift: true },
     rose: { name: 'Rose', description: 'Soft blush — salons & lifestyle', emoji: '🌸' },
     steel: { name: 'Steel', description: 'Navy & steel — tradies & pros', emoji: '🔩' },
     autumn: { name: 'Autumn', description: 'Warm amber tones', emoji: '🍂' },

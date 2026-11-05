@@ -2004,7 +2004,8 @@
   function menuCta(C, H, hc) {
     var NM = (C.sections && C.sections.navMenu) || {};
     var node = sec('navMenu');
-    var on = H.ctaPlace === 'menu' && NM.on === true && NM.placement === 'bar' && !!hc && H.on !== false;
+    // No button text = no menu button (never an empty icon-only button).
+    var on = H.ctaPlace === 'menu' && NM.on === true && NM.placement === 'bar' && !!hc && H.on !== false && !!txt(H.button);
     document.documentElement.classList.toggle('lpl-cta-menu', on);
     if (node) clear(node, 'mcta');
     if (!on || !node) return;
@@ -2021,6 +2022,76 @@
       if (!href || href === '#' || /^javascript:/i.test(href)) { try { ev.preventDefault(); } catch (_e) {} hc.click(); }
     });
     inner.appendChild(a);
+  }
+  /* ---------- Stacked header (Nov 2026): logo left | contact items over the menu, right-aligned ----------
+   * sections.header.layout = 'stack' with the menu bar on. Desktop (≥ 961px): the menu bar's links move
+   * into the header beside the logo, under the contact items; phones keep the normal bar / ☰ menu. */
+  /* ---------- Site text size (Nov 2026): config.textScale = 100–130 (%) scales the whole page ----------
+   * Uses CSS zoom on <html> so every size on the page grows together (text, buttons, spacing), like the
+   * browser's own zoom. Phones get half the increase. The visitor accessibility "bigger text" choice
+   * multiplies on top (--lp-visitor-zoom). */
+  function textScale(C) {
+    var de = document.documentElement;
+    var n = parseFloat(C.textScale);
+    var on = n > 100 && n <= 130;
+    if (on) {
+      var z = n / 100;
+      de.style.setProperty('--lp-zoom', String(z));
+      de.style.setProperty('--lp-zoom-m', String(1 + (z - 1) / 2));
+      de.setAttribute('data-lp-zoom', '');
+    } else {
+      de.style.removeProperty('--lp-zoom');
+      de.style.removeProperty('--lp-zoom-m');
+      if (!de.style.getPropertyValue('--lp-visitor-zoom')) de.removeAttribute('data-lp-zoom');
+    }
+  }
+  var HSTACK_MQ = '(min-width: 961px)';
+  function headerStack(C) {
+    var H = (C.sections && C.sections.header) || {};
+    var NM = (C.sections && C.sections.navMenu) || {};
+    var de = document.documentElement;
+    var bar = document.querySelector('header.site .bar');
+    var navSec = document.querySelector('[data-sec="navMenu"]');
+    var on = H.layout === 'stack' && H.on !== false && NM.on === true && NM.placement === 'bar' && !!bar && !!navSec;
+    var stack = bar ? bar.querySelector('.lpl-hstack') : null;
+    de.classList.toggle('lpl-hs-nobtn', on && !txt(H.button));
+    function putBack() {
+      // The menu section goes back where it came from (marked by a comment), items back to the bar.
+      var mark = window.__lplHsMark;
+      if (stack && navSec && navSec.parentNode === stack && mark && mark.parentNode) mark.parentNode.insertBefore(navSec, mark);
+      var hi = stack && stack.querySelector('.lpl-hitems');
+      if (hi && bar) bar.insertBefore(hi, stack);
+      if (stack && stack.parentNode) stack.parentNode.removeChild(stack);
+      stack = null;
+      de.classList.remove('lpl-hstack-on');
+    }
+    if (!on) { putBack(); return; }
+    var wide = !window.matchMedia || window.matchMedia(HSTACK_MQ).matches;
+    if (!wide) { putBack(); }
+    else {
+      if (!stack) {
+        stack = document.createElement('div');
+        stack.className = 'lpl-hstack';
+        stack.setAttribute('data-lpl', 'hstack');
+        bar.appendChild(stack);
+      }
+      var hi = bar.querySelector(':scope > .lpl-hitems');
+      if (hi) stack.insertBefore(hi, stack.firstChild);
+      if (navSec.parentNode !== stack) {
+        if (!window.__lplHsMark || !window.__lplHsMark.parentNode) {
+          window.__lplHsMark = document.createComment('lpl-hstack-menu');
+          navSec.parentNode.insertBefore(window.__lplHsMark, navSec);
+        }
+        stack.appendChild(navSec);
+      }
+      de.classList.add('lpl-hstack-on');
+    }
+    if (!window.__lplHstackMq && window.matchMedia) {
+      window.__lplHstackMq = true;
+      var mq = window.matchMedia(HSTACK_MQ);
+      var again = function () { var c = cfgOf(); if (c) headerStack(c); };
+      if (mq.addEventListener) mq.addEventListener('change', again); else if (mq.addListener) mq.addListener(again);
+    }
   }
   function navActive(C) {
     var NM = (C.sections && C.sections.navMenu) || {};
@@ -2116,6 +2187,16 @@
     var u = bgUrl(F.decorImage);
     ft.classList.toggle('lpl-f-decor', !!u);
     if (u) ft.style.setProperty('--lpl-f-decor', 'url("' + u + '")'); else ft.style.removeProperty('--lpl-f-decor');
+    // footer.logoMode = 'none': no logo in the footer (contact details stay).
+    ft.classList.toggle('lpl-f-nologo', F.logoMode === 'none');
+    // footer.ctaLabel (+ ctaHref, ctaIcon): a button in the footer's open space, top right.
+    clear(ft, 'fcta');
+    var top = ft.querySelector('.footer-top');
+    if (top && txt(F.ctaLabel)) {
+      top.insertAdjacentHTML('beforeend', '<div class="lpl-fcta" data-lpl="fcta"><a class="btn lpl-fcta-btn" ' +
+        linkAttrs(hrefOf(F.ctaHref, contactHref())) + '>' + (icon(txt(F.ctaIcon)) || '') + '<span>' + esc(F.ctaLabel) + '</span></a></div>');
+    }
+    ft.classList.toggle('lpl-f-has-cta', !!(top && txt(F.ctaLabel)));
   }
   /** pageStyle 'banner': a sub-page's H1 sits in a band at the top (eyebrow = site name), text on white. */
   function pageBanner(C) {
@@ -2332,7 +2413,7 @@
     host.__lpConsent = { site: C, page: page, form: cfgForm };
     if (window.LPConsent) { window.LPConsent.mount(host); return; }
     if (document.getElementById('lp-consent-js')) return;
-    var s = document.createElement('script'); s.id = 'lp-consent-js'; s.src = '/assets/lp-consent.js?v=1'; s.defer = true;
+    var s = document.createElement('script'); s.id = 'lp-consent-js'; s.src = '/assets/lp-consent.js?v=2'; s.defer = true;
     s.onload = function () { var h = document.querySelector('[data-lp-consent]'); if (h && window.LPConsent) window.LPConsent.mount(h); };
     document.head.appendChild(s);
   }
@@ -2357,7 +2438,9 @@
           lp_hp: v('lp_hp'), _t: f.__t, details: { job: 'Website enquiry', detail: v('detail') } }, extra);
         fetch('/api/leads', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
           .catch(function () { return null; })
-          .then(function () {
+          .then(function (r) {
+            // "How many arrows?" miscount: keep the form (lp-challenge.js shows a new picture).
+            if (r && r.status === 400 && window.LPChallenge) { btn.disabled = false; msg.textContent = ''; return; }
             f.innerHTML = '<div class="lpb-enq-done">' + icon('circle-check') + '<h2 class="lpb-enq-t">Thank you</h2><p>Your enquiry has been sent. We\u2019ll get back to you as soon as possible.</p></div>';
           });
       });
@@ -2377,7 +2460,7 @@
     lpbEnquiry(art);
   }
 
-  var STEPS = [heroSlider, heroBanners, headerCta, minimalFooter, logoTint, buttonShapes, orderLayout, featuredProjects, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, trustBar, mapHours, ctaBanner, storyTimeline, storyRows, bookingWeek, heroBooking, bookingHire, fontSet, mobileBarSpace, heroSplit, appWidths, headingBreaks, strokeIcons, siteWidth, headerItems, navActive, subPageNav, heroPortrait, featureBand, footerContact, footerDecor, pageBanner, pageBlocks];
+  var STEPS = [heroSlider, heroBanners, headerCta, minimalFooter, logoTint, buttonShapes, orderLayout, featuredProjects, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, trustBar, mapHours, ctaBanner, storyTimeline, storyRows, bookingWeek, heroBooking, bookingHire, fontSet, mobileBarSpace, heroSplit, appWidths, headingBreaks, strokeIcons, siteWidth, headerItems, navActive, subPageNav, heroPortrait, featureBand, footerContact, footerDecor, pageBanner, pageBlocks, headerStack, textScale];
 
   function run(cfg) {
     // On a landing page the template builds the page's own config (homepage + the page's
