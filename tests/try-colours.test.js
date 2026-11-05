@@ -63,3 +63,17 @@ test('picker restores the site colours and keeps text readable on light schemes'
   assert.match(css, /prefers-color-scheme:dark/);
   assert.match(css, /body:has\(#lpa-root\) \.lptc-fab/);
 });
+
+test('dark bands use a deep scheme colour; background-color is never treated as text', () => {
+  const s = read('assets/lp-try-colours.js');
+  assert.match(s, /var deep = mix\(p\.primary, p\.ink, 0\.6\);/);
+  assert.match(s, /if \(role === 'dark'\) return prop === 'color' \? r\.dark : r\.deep;/);
+  assert.match(s, /var asText = prop === 'color' \|\| \(isVar && /);
+});
+
+test('theme-coloured SVG logo (header + footer)', () => {
+  const js = read('assets/lp-layouts.js');
+  assert.match(js, /var hu = L\.themed === true && isSvg\(L\.imageUrl\) \? L\.imageUrl : '';/);
+  assert.match(js, /replace\(\/<script\[\\s\\S\]\*\?<\\\/script>\/gi, ''\)/);
+  assert.match(read('assets/lp-layouts.css'), /footer\.site \.lpl-logo-svg-f\{--lpl-logo-ink:#ffffff\}/);
+});

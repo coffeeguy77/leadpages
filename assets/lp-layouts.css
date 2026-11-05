@@ -1451,3 +1451,9 @@ html[data-lp-zoom]{zoom:calc(var(--lp-zoom,1) * var(--lp-visitor-zoom,1))}
 /* Stacked header: contact row always above the menu (sub-pages give the menu order:-1). */
 .lpl-hstack > .lpl-hitems{order:0 !important}
 .lpl-hstack > [data-sec="navMenu"]{order:1 !important}
+/* Theme-coloured SVG logo drawn over the (now invisible) logo image — see logoThemed(). */
+.lpl-logo-svg-host{position:relative;display:inline-block}
+.lpl-logo-svg-host > img.lpl-logo-svg-img{opacity:0}
+.lpl-logo-svg{position:absolute;left:0;top:0;width:100%;height:100%;display:block;pointer-events:none}
+.lpl-logo-svg > svg{display:block;width:100%;height:100%}
+footer.site .lpl-logo-svg-f{--lpl-logo-ink:#ffffff}

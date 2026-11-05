@@ -67,7 +67,12 @@
     // Links / accent text must read on the page background.
     var accentText = p.primary;
     for (var i = 0; i < 6 && contrast(accentText, p.bg) < 3.2; i++) accentText = mix(accentText, p.ink, 0.25);
+    // Dark bands (header bars, feature strips, footers) get a deep shade of the scheme colour,
+    // not the near-black ink, so the scheme shows on them; white text must still read (>= 4.8:1).
+    var deep = mix(p.primary, p.ink, 0.6);
+    for (var j = 0; j < 6 && contrast(deep, '#FFFFFF') < 4.8; j++) deep = mix(deep, p.ink, 0.3);
     return {
+      deep: deep,
       primary: p.primary,
       primaryDeep: shade(p.primary, -14),
       onPrimary: lightPrimary ? p.ink : '#FFFFFF',
@@ -88,7 +93,7 @@
     var v = {
       '--pipe': r.accentText, '--pipe-deep': shade(r.accentText, -14), '--pipe-glow': r.glow,
       '--hivis': r.primary, '--hivis-600': r.primaryDeep, '--safety': r.glow,
-      '--steel-950': r.darker, '--steel-900': r.dark, '--steel-800': r.darkCard,
+      '--steel-950': shade(r.deep, -35), '--steel-900': r.deep, '--steel-800': mix(r.deep, r.muted, 0.25),
       '--light': r.bg, '--ink': r.dark, '--muted': r.muted, '--line': r.line,
       '--lp-btn-bg': r.primary, '--lp-btn-fg': r.onPrimary, '--lp-btn-stroke': r.primary,
       '--lp-logo-accent': r.primary, '--lptc-on-primary': r.onPrimary
@@ -118,7 +123,7 @@
 
   function targetFor(role, prop, r) {
     if (role === 'primary') return prop === 'color' ? r.accentText : r.primary;
-    if (role === 'dark') return r.dark;
+    if (role === 'dark') return prop === 'color' ? r.dark : r.deep;
     if (role === 'glow') return r.glow;
     if (role === 'bg') return r.bg;
     return '';
@@ -137,7 +142,7 @@
       if (!k || !map[k]) continue;
       // Only plain colour values (not gradients / images / shorthands with other parts).
       if (!isVar && prop === 'background' && /url\(|gradient/i.test(val)) continue;
-      var asText = prop === 'color' || /(^|-)(fg|ink|text|color)$/i.test(prop) && !/bg/i.test(prop);
+      var asText = prop === 'color' || (isVar && /(^|-)(fg|ink|text|color)$/i.test(prop) && !/(bg|background)/i.test(prop));
       var to = targetFor(map[k], asText ? 'color' : 'bg', r);
       if (!to) continue;
       saved.push([el, prop, val, st.getPropertyPriority(prop)]);
@@ -194,6 +199,7 @@
     if (!p) {
       active = null;
       d.documentElement.removeAttribute('data-lp-try');
+      d.documentElement.removeAttribute('data-lp-try-light');
       if (style) style.textContent = '';
       if (persist !== false) { try { sessionStorage.removeItem(KEY); } catch (e) { /* ignore */ } }
     } else {
@@ -201,6 +207,7 @@
       if (!style) { style = d.createElement('style'); style.id = 'lptc-tokens'; d.head.appendChild(style); }
       style.textContent = tokenCss(active.r);
       d.documentElement.setAttribute('data-lp-try', p.id);
+      if (active.r.onPrimary !== '#FFFFFF') d.documentElement.setAttribute('data-lp-try-light', ''); else d.documentElement.removeAttribute('data-lp-try-light');
       remapAll();
       if (persist !== false) { try { sessionStorage.setItem(KEY, p.id); } catch (e) { /* ignore */ } }
     }

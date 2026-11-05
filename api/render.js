@@ -1335,9 +1335,9 @@ function injectTryColours(html, cfg) {
   if (!html || html.includes('lp-try-colours.js')) return html;
   const t = tryColoursCfg(cfg);
   if (!t.on) return html;
-  const tag = '<link rel="stylesheet" href="/assets/lp-try-colours.css?v=1">'
+  const tag = '<link rel="stylesheet" href="/assets/lp-try-colours.css?v=2">'
     + '<script>window.__LP_TRY_COLOURS__=' + safeJson({ schemes: t.schemes, label: t.label }) + ';</script>'
-    + '<script src="/assets/lp-try-colours.js?v=1" defer></script>\n';
+    + '<script src="/assets/lp-try-colours.js?v=2" defer></script>\n';
   return html.indexOf('</body>') !== -1 ? html.replace('</body>', tag + '</body>') : html + tag;
 }
 

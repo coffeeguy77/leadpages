@@ -59,3 +59,6 @@ html[data-lp-try] [data-lptc-onlight] :is(h1,h2,h3,h4,h5,h6,p,li,small,strong,em
   body:has(#lpa-root[data-pos="bottom-left"]) .lptc-fab{left:14px;right:auto}
   body:has(#lpa-root[data-pos="bottom-left"]) .lptc-panel{left:10px;right:10px}
 }
+/* Light schemes: the active menu item / filled menu buttons use the scheme's dark text. */
+html[data-lp-try-light] .lpl-nav-fill .nm-link.lpl-nav-on,
+html[data-lp-try-light] .lpl-nav-fill .nm-link.lpl-nav-on *{color:var(--lptc-on-primary) !important}

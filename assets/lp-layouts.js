@@ -2198,6 +2198,66 @@
     }
     ft.classList.toggle('lpl-f-has-cta', !!(top && txt(F.ctaLabel)));
   }
+  /**
+   * Theme-coloured logo (Nov 2026). logo.themed = true (header) / footer.logoThemed = true (footer)
+   * with an .svg logo: the SVG is drawn inline over the logo image, so colours it writes as
+   * var(--hivis) / var(--steel-900) / var(--lpl-logo-ink) follow the site colours and Try colours.
+   * The <img> stays (invisible) so every existing size / shrink rule still applies.
+   */
+  var _lplSvgCache = {};
+  function _lplSvgText(url) {
+    if (!_lplSvgCache[url]) {
+      _lplSvgCache[url] = fetch(url, { credentials: 'omit' }).then(function (r) { return r.ok ? r.text() : ''; }).then(function (t) {
+        t = String(t || '').replace(/<\?xml[^>]*>/i, '').trim();
+        if (!/^<svg[\s>]/i.test(t)) return '';
+        // Safety: no scripts, event handlers, foreign objects or javascript: links.
+        return t.replace(/<script[\s\S]*?<\/script>/gi, '').replace(/<foreignObject[\s\S]*?<\/foreignObject>/gi, '')
+          .replace(/\son[a-z]+\s*=\s*("[^"]*"|'[^']*')/gi, '').replace(/(href\s*=\s*["'])\s*javascript:[^"']*/gi, '$1#');
+      }).catch(function () { return ''; });
+    }
+    return _lplSvgCache[url];
+  }
+  var _lplSvgN = 0;
+  function _lplInlineSvg(img, url, cls) {
+    var host = img.parentNode; if (!host) return;
+    var cur = host.querySelector(':scope > .lpl-logo-svg');
+    if (cur && cur.getAttribute('data-src') === url) return;
+    _lplSvgText(url).then(function (t) {
+      if (!t || !img.isConnected) return;
+      var old = host.querySelector(':scope > .lpl-logo-svg'); if (old) old.parentNode.removeChild(old);
+      var n = ++_lplSvgN;
+      // Unique ids, so the header and footer copies don't share gradients / masks.
+      t = t.replace(/\bid="([^"]+)"/g, 'id="$1-l' + n + '"').replace(/url\(#([^)]+)\)/g, 'url(#$1-l' + n + ')').replace(/href="#([^"]+)"/g, 'href="#$1-l' + n + '"');
+      var span = document.createElement('span');
+      span.className = 'lpl-logo-svg ' + cls; span.setAttribute('data-lpl', 'logosvg'); span.setAttribute('data-src', url);
+      span.setAttribute('aria-hidden', 'true');
+      span.innerHTML = t;
+      host.classList.add('lpl-logo-svg-host');
+      host.appendChild(span);
+      img.classList.add('lpl-logo-svg-img');
+      // Sit exactly on the image's own box (its wrapper can be shorter than the image).
+      var fit = function () {
+        span.style.left = img.offsetLeft + 'px'; span.style.top = img.offsetTop + 'px';
+        span.style.width = img.offsetWidth + 'px'; span.style.height = img.offsetHeight + 'px';
+      };
+      fit();
+      if (window.ResizeObserver) { try { new ResizeObserver(fit).observe(img); } catch (e) { /* ignore */ } }
+      img.addEventListener('load', fit);
+    });
+  }
+  function _lplDropSvg(img) {
+    var host = img.parentNode; if (!host) return;
+    var cur = host.querySelector(':scope > .lpl-logo-svg'); if (cur) cur.parentNode.removeChild(cur);
+    img.classList.remove('lpl-logo-svg-img'); host.classList.remove('lpl-logo-svg-host');
+  }
+  function logoThemed(C) {
+    var L = C.logo || {}, F = (C.sections && C.sections.footer) || {};
+    var isSvg = function (u) { return /\.svg(\?|#|$)/i.test(String(u || '')); };
+    var hu = L.themed === true && isSvg(L.imageUrl) ? L.imageUrl : '';
+    document.querySelectorAll('header.site img.lp-logo').forEach(function (img) { if (hu) _lplInlineSvg(img, hu, 'lpl-logo-svg-h'); else _lplDropSvg(img); });
+    var fu = F.logoThemed === true ? (isSvg(F.logoImage) ? F.logoImage : (L.themed === true && isSvg(L.imageUrl) ? L.imageUrl : '')) : '';
+    document.querySelectorAll('footer.site img.foot-logo-img').forEach(function (img) { if (fu) _lplInlineSvg(img, fu, 'lpl-logo-svg-f'); else _lplDropSvg(img); });
+  }
   /** pageStyle 'banner': a sub-page's H1 sits in a band at the top (eyebrow = site name), text on white. */
   function pageBanner(C) {
     var art = document.querySelector('main#top > section.lp-page'); if (!art) return;
@@ -2460,7 +2520,7 @@
     lpbEnquiry(art);
   }
 
-  var STEPS = [heroSlider, heroBanners, headerCta, minimalFooter, logoTint, buttonShapes, orderLayout, featuredProjects, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, trustBar, mapHours, ctaBanner, storyTimeline, storyRows, bookingWeek, heroBooking, bookingHire, fontSet, mobileBarSpace, heroSplit, appWidths, headingBreaks, strokeIcons, siteWidth, headerItems, navActive, subPageNav, heroPortrait, featureBand, footerContact, footerDecor, pageBanner, pageBlocks, headerStack, textScale];
+  var STEPS = [heroSlider, heroBanners, headerCta, minimalFooter, logoTint, buttonShapes, orderLayout, featuredProjects, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, trustBar, mapHours, ctaBanner, storyTimeline, storyRows, bookingWeek, heroBooking, bookingHire, fontSet, mobileBarSpace, heroSplit, appWidths, headingBreaks, strokeIcons, siteWidth, headerItems, navActive, subPageNav, heroPortrait, featureBand, footerContact, footerDecor, pageBanner, pageBlocks, headerStack, textScale, logoThemed];
 
   function run(cfg) {
     // On a landing page the template builds the page's own config (homepage + the page's
