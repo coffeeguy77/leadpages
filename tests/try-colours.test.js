@@ -56,7 +56,9 @@ test('editor: Try Colours + Accessibility in Business Identity; LeadPages scheme
 
 test('picker restores the site colours and keeps text readable on light schemes', () => {
   const s = read('assets/lp-try-colours.js');
-  assert.match(s, /function restoreInline\(\)/);
+  assert.match(s, /function restoreAll\(\)/);
+  assert.match(s, /el\.setAttribute\('data-lptc-o', JSON\.stringify\(o\)\)/);   // originals live on the element (survive copies)
+  assert.match(s, /function rewriteCss\(css, map, r\)/);   // page <style> blocks follow the scheme too
   assert.match(s, /sessionStorage\.setItem\(KEY, p\.id\)/);
   assert.match(s, /var lightPrimary = contrast\(p\.primary, '#FFFFFF'\) < 2\.6;/);
   const css = read('assets/lp-try-colours.css');
@@ -67,8 +69,8 @@ test('picker restores the site colours and keeps text readable on light schemes'
 test('dark bands use a deep scheme colour; background-color is never treated as text', () => {
   const s = read('assets/lp-try-colours.js');
   assert.match(s, /var deep = mix\(p\.primary, p\.ink, 0\.6\);/);
-  assert.match(s, /if \(role === 'dark'\) return prop === 'color' \? r\.dark : r\.deep;/);
-  assert.match(s, /var asText = prop === 'color' \|\| \(isVar && /);
+  assert.match(s, /return prop === 'color' \|\| \(prop\.indexOf\('--'\) === 0 && /);
+  assert.match(s, /return prop === 'color' \|\| \(prop\.indexOf\('--'\) === 0 && /);
 });
 
 test('theme-coloured SVG logo (header + footer)', () => {
@@ -76,4 +78,27 @@ test('theme-coloured SVG logo (header + footer)', () => {
   assert.match(js, /var hu = L\.themed === true && isSvg\(L\.imageUrl\) \? L\.imageUrl : '';/);
   assert.match(js, /replace\(\/<script\[\\s\\S\]\*\?<\\\/script>\/gi, ''\)/);
   assert.match(read('assets/lp-layouts.css'), /footer\.site \.lpl-logo-svg-f\{--lpl-logo-ink:#ffffff\}/);
+});
+
+test('no flash: early <head> boot from the visit\'s saved scheme; observer re-colours before paint', () => {
+  const r = read('api/render.js');
+  assert.match(r, /function tryColoursEarlyMap\(\)/);
+  assert.match(r, /html\[data-lptc-boot\] body\{opacity:0\}/);
+  assert.match(r, /setTimeout\(function\(\)\{d\.removeAttribute\("data-lptc-boot"\)\},1500\)/);
+  const vm = require('vm');
+  const win = {};
+  vm.runInNewContext(read('assets/lp-try-colours.js'), { window: win, document: null });
+  const e = win.LPTryColours.early('culture');
+  assert.match(e[0], /^html\[data-lp-try\]\{--pipe:/);
+  assert.equal(e[1], 1);                                   // Culture Lime is a light scheme
+  assert.equal(win.LPTryColours.early('rivet')[1], 0);
+  assert.doesNotMatch(read('assets/lp-try-colours.js'), /moTimer/);
+});
+
+test('blocks + new patient form use tints of the site colour (follow the theme and Try colours)', () => {
+  const css = read('assets/lp-layouts.css');
+  assert.match(css, /--lpb-soft:color-mix\(in srgb,var\(--lpb-blue\) 5%,#fff\)/);
+  assert.match(css, /\.cbf-ic\{background:var\(--safety,#1d9ad6\)\}/);
+  assert.match(read('assets/lp-consent.js'), /color-mix\(in srgb,var\(--hivis,#0b5da8\)/);
+  assert.match(css, /\.nm-sub-link\.lpl-nav-on\{color:var\(--nm-sub-fg,#fff\)!important/);
 });

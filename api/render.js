@@ -1331,13 +1331,42 @@ function tryColoursCfg(cfg) {
   const schemes = Array.isArray(t.schemes) ? t.schemes.filter((id) => IDS.indexOf(id) >= 0) : [];
   return { on: t.on === true, schemes, label: String(t.label || '').trim().slice(0, 40) };
 }
+let _tryEarlyMap = null;
+/** { id: [tokenCss, light] } for every scheme, computed once from assets/lp-try-colours.js. */
+function tryColoursEarlyMap() {
+  if (_tryEarlyMap) return _tryEarlyMap;
+  const map = {};
+  try {
+    const vm = require('vm');
+    const code = require('fs').readFileSync(require('path').join(__dirname, '..', 'assets', 'lp-try-colours.js'), 'utf8');
+    const win = {};
+    vm.runInNewContext(code, { window: win, document: null });
+    (win.LPTryColours && win.LPTryColours.SCHEMES || []).forEach((s) => { map[s.id] = win.LPTryColours.early(s.id); });
+  } catch (e) { /* no early boot: the deferred script still applies the scheme */ }
+  _tryEarlyMap = map;
+  return map;
+}
 function injectTryColours(html, cfg) {
   if (!html || html.includes('lp-try-colours.js')) return html;
   const t = tryColoursCfg(cfg);
   if (!t.on) return html;
-  const tag = '<link rel="stylesheet" href="/assets/lp-try-colours.css?v=2">'
+  // Early boot in <head>: a visitor's scheme is painted from the first frame (no flash of the
+  // site colours); the page waits (max 1.5s) until inline colours are swapped too.
+  const key = 'lp-try-colours:' + String((cfg && (cfg.slug || cfg.siteId)) || 'site');
+  const allowed = t.schemes.length ? t.schemes : null;
+  const early = {};
+  Object.entries(tryColoursEarlyMap()).forEach(([id, v]) => { if (v && (!allowed || allowed.indexOf(id) >= 0)) early[id] = v; });
+  if (Object.keys(early).length && html.indexOf('</head>') !== -1) {
+    const boot = '<script>(function(){try{var m=' + safeJson(early) + ',id=sessionStorage.getItem(' + safeJson(key) + ');'
+      + 'if(!id||!m[id])return;var d=document.documentElement;d.setAttribute("data-lp-try",id);if(m[id][1])d.setAttribute("data-lp-try-light","");'
+      + 'd.setAttribute("data-lptc-boot","");var s=document.createElement("style");s.id="lptc-tokens";'
+      + 's.textContent=m[id][0]+"html[data-lptc-boot] body{opacity:0}";document.head.appendChild(s);'
+      + 'setTimeout(function(){d.removeAttribute("data-lptc-boot")},1500);}catch(e){}})();</script>\n';
+    html = html.replace('</head>', boot + '</head>');
+  }
+  const tag = '<link rel="stylesheet" href="/assets/lp-try-colours.css?v=3">'
     + '<script>window.__LP_TRY_COLOURS__=' + safeJson({ schemes: t.schemes, label: t.label }) + ';</script>'
-    + '<script src="/assets/lp-try-colours.js?v=2" defer></script>\n';
+    + '<script src="/assets/lp-try-colours.js?v=3" defer></script>\n';
   return html.indexOf('</body>') !== -1 ? html.replace('</body>', tag + '</body>') : html + tag;
 }
 

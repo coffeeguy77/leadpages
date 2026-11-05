@@ -1257,7 +1257,7 @@ section[data-sec="ctaBanner"].cb-quote.cbq-decor::after{right:-30px}
 .lp-page.lp-has-blocks .lp-body > p:empty{display:none}
 .tbx-blocks > :not(.tbk-wrap){display:none!important}
 .tbk-wrap{max-width:var(--lpl-site-w,1200px);margin:0 auto;padding:0 22px}
-.lpb{--lpb-ink:var(--ink,#0a2248);--lpb-blue:var(--hivis,#0b5da8);--lpb-soft:#f2f6fb;--lpb-line:#dbe5f1;--lpb-muted:#4a5668;display:flex;flex-direction:column;gap:30px;color:var(--lpb-ink);padding:6px 0 10px}
+.lpb{--lpb-ink:var(--ink,#0a2248);--lpb-blue:var(--hivis,#0b5da8);--lpb-soft:color-mix(in srgb,var(--lpb-blue) 5%,#fff);--lpb-line:color-mix(in srgb,var(--lpb-blue) 16%,#fff);--lpb-muted:#4a5668;display:flex;flex-direction:column;gap:30px;color:var(--lpb-ink);padding:6px 0 10px}
 .lpb p{margin:0 0 12px}.lpb p:last-child{margin-bottom:0}
 .lpb a{color:var(--lpb-blue)}
 .lpb .lp-ic{width:1em;height:1em}
@@ -1270,18 +1270,18 @@ section[data-sec="ctaBanner"].cb-quote.cbq-decor::after{right:-30px}
 .lpb-cols{display:grid;grid-template-columns:var(--lpb-cols,1fr 1fr);gap:28px;align-items:start}
 .lpb-cols-mid{align-items:center}
 .lpb-col{display:flex;flex-direction:column;gap:22px;min-width:0}
-.lpb-panel{display:flex;gap:16px;align-items:flex-start;padding:22px 24px;border-radius:12px;border:1px solid var(--lpb-line);background:linear-gradient(180deg,#f5f8fc,#eef4fb)}
+.lpb-panel{display:flex;gap:16px;align-items:flex-start;padding:22px 24px;border-radius:12px;border:1px solid var(--lpb-line);background:linear-gradient(180deg,color-mix(in srgb,var(--lpb-blue) 4%,#fff),color-mix(in srgb,var(--lpb-blue) 6%,#fff))}
 .lpb-t-white{background:#fff;box-shadow:0 6px 22px rgba(10,34,72,.06)}
 .lpb-t-plain{background:none;border:0;padding:0}
 .lpb-t-alert{background:#fdf0f0;border-color:#f3cccc}
 .lpb-panel-ic{flex:0 0 auto;color:var(--lpb-blue);display:inline-flex}
 .lpb-panel-ic .lp-ic{width:44px;height:44px;stroke-width:1.5}
-.lpb-ic-circle .lpb-panel-ic{width:76px;height:76px;border-radius:50%;background:#e4eef9;align-items:center;justify-content:center}
+.lpb-ic-circle .lpb-panel-ic{width:76px;height:76px;border-radius:50%;background:color-mix(in srgb,var(--lpb-blue) 10%,#fff);align-items:center;justify-content:center}
 .lpb-ic-circle .lpb-panel-ic .lp-ic{width:38px;height:38px}
 .lpb-panel-body{flex:1;min-width:0}
 .lpb-panel-head{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
 .lpb-panel-t{margin:0;font-size:20px;line-height:1.25;color:var(--lpb-ink)}
-.lpb-price{display:flex;flex-direction:column;align-items:center;padding:8px 16px;border-radius:8px;background:#dfeaf7;color:var(--lpb-ink)}
+.lpb-price{display:flex;flex-direction:column;align-items:center;padding:8px 16px;border-radius:8px;background:color-mix(in srgb,var(--lpb-blue) 12%,#fff);color:var(--lpb-ink)}
 .lpb-price b{font-size:18px}.lpb-price small{font-size:12.5px;color:var(--lpb-muted)}
 .lpb-panel p{font-size:15px}
 .lpb-ticks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px}
@@ -1296,12 +1296,12 @@ section[data-sec="ctaBanner"].cb-quote.cbq-decor::after{right:-30px}
 .lpb-cards-side .lpb-card,.lpb-cards-link .lpb-card{flex-direction:row;align-items:flex-start;gap:16px;padding:22px}
 .lpb-cards-side .lpb-card-ic .lp-ic{width:44px;height:44px}
 .lpb-cards-side .lpb-card-t,.lpb-cards-link .lpb-card-t{font-size:19px}
-.lpb-cards-link .lpb-card{flex-direction:column;background:linear-gradient(180deg,#fff,#f4f8fd)}
+.lpb-cards-link .lpb-card{flex-direction:column;background:linear-gradient(180deg,#fff,color-mix(in srgb,var(--lpb-blue) 4%,#fff))}
 .lpb-cards-link .lpb-card-ic{align-self:flex-start}
 .lpb-cards-link .lpb-card-body{display:flex;flex-direction:column;flex:1}
 .lpb-more{margin-top:auto;padding-top:14px;display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:14.5px;text-decoration:underline;text-underline-offset:3px}
 .lpb-more .lp-ic{width:16px;height:16px}
-.lpb-steps{list-style:none;margin:0;padding:18px 20px;display:grid;grid-template-columns:repeat(var(--lpb-n,4),minmax(0,1fr));gap:30px;border-radius:12px;border:1px solid var(--lpb-line);background:linear-gradient(180deg,#f7fafd,#eef4fb)}
+.lpb-steps{list-style:none;margin:0;padding:18px 20px;display:grid;grid-template-columns:repeat(var(--lpb-n,4),minmax(0,1fr));gap:30px;border-radius:12px;border:1px solid var(--lpb-line);background:linear-gradient(180deg,color-mix(in srgb,var(--lpb-blue) 3%,#fff),color-mix(in srgb,var(--lpb-blue) 6%,#fff))}
 .lpb-step{position:relative;display:grid;grid-template-columns:auto 1fr;column-gap:12px;row-gap:4px;align-items:start}
 .lpb-num{grid-row:1/3;width:30px;height:30px;border-radius:50%;background:var(--lpb-blue);color:#fff;display:grid;place-items:center;font-weight:600;font-size:14px;margin-top:22px}
 .lpb-step-ic{color:var(--lpb-blue)}.lpb-step-ic .lp-ic{width:28px;height:28px;stroke-width:1.6}
@@ -1311,15 +1311,15 @@ section[data-sec="ctaBanner"].cb-quote.cbq-decor::after{right:-30px}
 .lpb-step + .lpb-step::before{content:"";position:absolute;left:-24px;top:30px;width:12px;height:12px;border-top:2px solid #7b8ea8;border-right:2px solid #7b8ea8;transform:rotate(45deg)}
 .lpb-notice{display:flex;align-items:center;justify-content:center;gap:12px;padding:14px 20px;border-radius:10px;font-weight:600;font-size:15.5px;text-align:left}
 .lpb-n-alert{background:#fdeeee;border:1px solid #f3cccc;color:#b42323}
-.lpb-n-info{background:#eef4fb;border:1px solid var(--lpb-line);color:var(--lpb-ink)}
+.lpb-n-info{background:color-mix(in srgb,var(--lpb-blue) 6%,#fff);border:1px solid var(--lpb-line);color:var(--lpb-ink)}
 .lpb-notice-ic{flex:0 0 auto;display:inline-flex}.lpb-notice-ic .lp-ic{width:24px;height:24px}
 .lpb-table-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--lpb-line);background:#fff}
 .lpb-table{width:100%;border-collapse:collapse;font-size:14.5px}
-.lpb-table th{background:linear-gradient(180deg,#0f5aa6,#0a4a8c);color:#fff;text-align:left;padding:11px 16px;font-weight:600}
-.lpb-table td{padding:10px 16px;border-top:1px solid #e6edf6;vertical-align:top}
-.lpb-table tr:nth-child(even) td{background:#f7f9fc}
+.lpb-table th{background:linear-gradient(180deg,var(--lpb-blue),color-mix(in srgb,var(--lpb-blue) 70%,var(--lpb-ink)));color:#fff;text-align:left;padding:11px 16px;font-weight:600}
+.lpb-table td{padding:10px 16px;border-top:1px solid color-mix(in srgb,var(--lpb-blue) 11%,#fff);vertical-align:top}
+.lpb-table tr:nth-child(even) td{background:color-mix(in srgb,var(--lpb-blue) 3%,#fff)}
 .lpb-faq{display:flex;flex-direction:column;gap:8px}
-.lpb-faq-i{border:1px solid var(--lpb-line);border-radius:10px;background:linear-gradient(180deg,#f7fafd,#eef4fb)}
+.lpb-faq-i{border:1px solid var(--lpb-line);border-radius:10px;background:linear-gradient(180deg,color-mix(in srgb,var(--lpb-blue) 3%,#fff),color-mix(in srgb,var(--lpb-blue) 6%,#fff))}
 .lpb-faq-i summary{display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;list-style:none;font-weight:600;color:var(--lpb-ink)}
 .lpb-faq-i summary::-webkit-details-marker{display:none}
 .lpb-faq-ic{color:var(--lpb-blue);display:inline-flex}.lpb-faq-ic .lp-ic{width:22px;height:22px}
@@ -1328,12 +1328,12 @@ section[data-sec="ctaBanner"].cb-quote.cbq-decor::after{right:-30px}
 .lpb-faq-i[open] .lpb-faq-x{transform:rotate(45deg)}
 .lpb-faq-a{padding:0 16px 14px;font-size:14.5px}
 .lpb-contacts{display:flex;flex-direction:column;gap:14px}
-.lpb-contact{display:flex;gap:22px;align-items:center;padding:18px 26px;border-radius:12px;background:linear-gradient(180deg,#f4f8fc,#e9f1fa)}
+.lpb-contact{display:flex;gap:22px;align-items:center;padding:18px 26px;border-radius:12px;background:linear-gradient(180deg,color-mix(in srgb,var(--lpb-blue) 4%,#fff),color-mix(in srgb,var(--lpb-blue) 8%,#fff))}
 .lpb-contact-ic{color:var(--lpb-blue);display:inline-flex}.lpb-contact-ic .lp-ic{width:38px;height:38px;stroke-width:1.5}
 .lpb-contact h3{margin:0 0 2px;font-size:19px;color:var(--lpb-ink)}
 .lpb-contact p{margin:0;font-size:15.5px}
 .lpb-members{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
-.lpb-member{display:flex;align-items:center;gap:18px;padding:18px 20px;border-radius:12px;border:1px solid var(--lpb-line);background:linear-gradient(180deg,#f7fafd,#edf3fa)}
+.lpb-member{display:flex;align-items:center;gap:18px;padding:18px 20px;border-radius:12px;border:1px solid var(--lpb-line);background:linear-gradient(180deg,color-mix(in srgb,var(--lpb-blue) 3%,#fff),color-mix(in srgb,var(--lpb-blue) 7%,#fff))}
 .lpb-member-ic{flex:0 0 64px;height:64px;border-radius:50%;background:#fff;border:1px solid var(--lpb-line);display:grid;place-items:center;color:var(--lpb-blue)}
 .lpb-member-ic .lp-ic{width:30px;height:30px;stroke-width:1.6}
 .lpb-logo{max-width:100%;max-height:52px;object-fit:contain}
@@ -1373,14 +1373,14 @@ section[data-sec="ctaBanner"].cb-feature.cbq-decor .cbf::after{content:"";positi
 .cbf .cb-btns{position:relative;z-index:1}
 .cbf .cb-btn1{background:#fff!important;color:var(--hivis,#0b5da8)!important;border:0!important}
 @media(max-width:760px){section[data-sec="ctaBanner"].cb-feature .cbf{grid-template-columns:auto 1fr;padding:20px}.cbf-div{display:none}.cbf-img{display:none}.cbf .cb-btns{grid-column:1/-1}.cbf-ic{width:52px;height:52px}}
-.lpb-enq{position:relative;padding:26px clamp(18px,3vw,30px);border-radius:14px;border:1px solid var(--lpb-line,#dbe5f1);background:linear-gradient(180deg,#f5f9fd,#eaf2fb)}
+.lpb-enq{position:relative;padding:26px clamp(18px,3vw,30px);border-radius:14px;border:1px solid var(--lpb-line,#dbe5f1);background:linear-gradient(180deg,color-mix(in srgb,var(--lpb-blue) 3%,#fff),color-mix(in srgb,var(--lpb-blue) 7%,#fff))}
 .lpb-enq-t{margin:0 0 6px;font-size:clamp(23px,2.4vw,30px);color:var(--lpb-ink,#0a2248)}
 .lpb-enq-intro p{margin:0 0 16px}
 .lpb-enq-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 20px}
 .lpb-enq-grid label{display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600;color:var(--lpb-ink,#0a2248)}
 .lpb-enq-grid label.full{grid-column:1/-1}
 .lpb-enq-grid em{color:#c22;font-style:normal}
-.lpb-enq input,.lpb-enq textarea{font:inherit;font-size:16px;font-weight:400;padding:10px 12px;border:1px solid #c5d3e4;border-radius:8px;background:#fff;color:var(--lpb-ink,#0a2248);width:100%;box-sizing:border-box}
+.lpb-enq input,.lpb-enq textarea{font:inherit;font-size:16px;font-weight:400;padding:10px 12px;border:1px solid color-mix(in srgb,var(--lpb-blue) 27%,#fff);border-radius:8px;background:#fff;color:var(--lpb-ink,#0a2248);width:100%;box-sizing:border-box}
 .lpb-enq textarea{min-height:110px;resize:vertical}
 .lpb-enq .lpb-bad{border-color:#d04141;background:#fff6f6}
 .lpb-enq-hp{position:absolute!important;left:-9999px!important;width:1px;height:1px;overflow:hidden}
@@ -1400,7 +1400,7 @@ section[data-sec="ctaBanner"].cb-feature.cbq-decor .cbf::after{content:"";positi
 /* Blocks inside the page article: beat the article's own list / table styles */
 .lp-body .lpb ul.lpb-ticks{padding-left:0;margin:0}
 .lp-body .lpb .lpb-table{font-size:14.5px}
-.lp-body .lpb .lpb-table thead th{background:linear-gradient(180deg,#0f5aa6,#0a4a8c);color:#fff;border-bottom:0;padding:11px 16px}
+.lp-body .lpb .lpb-table thead th{background:linear-gradient(180deg,var(--lpb-blue),color-mix(in srgb,var(--lpb-blue) 70%,var(--lpb-ink)));color:#fff;border-bottom:0;padding:11px 16px}
 .lp-body .lpb .lpb-table td{padding:10px 16px;border-bottom:0;white-space:normal}
 .lp-body .lpb .lpb-table td:first-child{min-width:45%}
 section[data-sec="ctaBanner"] .cbf .cb-h{font-size:clamp(21px,2.1vw,28px)!important;line-height:1.2!important;margin:0 0 6px!important}
@@ -1457,3 +1457,13 @@ html[data-lp-zoom]{zoom:calc(var(--lp-zoom,1) * var(--lp-visitor-zoom,1))}
 .lpl-logo-svg{position:absolute;left:0;top:0;width:100%;height:100%;display:block;pointer-events:none}
 .lpl-logo-svg > svg{display:block;width:100%;height:100%}
 footer.site .lpl-logo-svg-f{--lpl-logo-ink:#ffffff}
+/* Dropdown: the current page reads clearly on any dropdown colour (it used the fill colour, which
+   is often the dropdown's own colour and made it invisible). Hover gets a soft highlight. */
+[data-sec="navMenu"].lpl-nav-fill .nm-sub-link.lpl-nav-on{color:var(--nm-sub-fg,#fff)!important;background:color-mix(in srgb,var(--nm-sub-fg,#fff) 16%,transparent)!important;border-radius:6px;font-weight:700}
+[data-sec="navMenu"] .nm-sub .nm-sub-link:hover,[data-sec="navMenu"] .nm-sub .nm-sub-link:focus-visible{background:color-mix(in srgb,var(--nm-sub-fg,#fff) 12%,transparent);border-radius:6px}
+/* Stacked header: contact row stays above the menu on sub-pages too (a sub-page rule gives the
+   menu order:-1 !important with higher specificity). */
+html body header.site .bar .lpl-hstack > .lpl-hitems{order:-10 !important}
+html body header.site .bar .lpl-hstack > [data-sec="navMenu"]{order:0 !important}
+/* CTA banner round icon follows the theme highlight colour. */
+.cbf-ic{background:var(--safety,#1d9ad6)}

@@ -34,6 +34,12 @@
     { id: 'electric-blue', name: 'Electric Blue', blurb: 'Electric blue on midnight navy.', primary: '#3B9EFF', ink: '#0A1524', bg: '#EEF5FF', surface: '#E0ECFA', muted: '#5A6B80', glow: '#5CB0FF' }
   ];
   w.LPTryColours = { SCHEMES: SCHEMES };
+  /** Token CSS + light flag for a scheme (also used by api/render.js for the early <head> boot). */
+  w.LPTryColours.early = function (id) {
+    for (var i = 0; i < SCHEMES.length; i++) if (SCHEMES[i].id === id) { var r = roles(SCHEMES[i]); return [tokenCss(r), r.onPrimary !== '#FFFFFF' ? 1 : 0]; }
+    return null;
+  };
+  if (!d) return;   // loaded on the server just for the token CSS
 
   var CFG = w.__LP_TRY_COLOURS__ || {};
   var SC = (typeof SITE_CONFIG !== 'undefined') ? SITE_CONFIG : (w.SITE_CONFIG || {});
@@ -102,10 +108,11 @@
       'html[data-lp-try] body{background-color:' + r.bg + '}';
   }
 
-  /* ---------- 2. inline colours that equal the site's theme colours ---------- */
-  var COLOUR_PROPS = ['background-color', 'color', 'border-color', 'border-top-color', 'border-bottom-color', 'border-left-color', 'border-right-color', 'fill', 'stroke', 'outline-color'];
-  var saved = [];     // [el, prop, value, priority]
-  var marked = [];    // elements given data-lptc-onlight
+  /* ---------- 2. colours on the page that equal the site's theme colours ---------- */
+  // Each element keeps its own originals in data-lptc-o, so copies the template makes (slider
+  // slides, re-drawn sections) restore and re-colour correctly, and a scheme never "sticks".
+  var COLOUR_PROPS = ['background-color', 'color', 'border-color', 'border-top-color', 'border-bottom-color', 'border-left-color', 'border-right-color', 'fill', 'stroke', 'outline-color', 'text-decoration-color'];
+  var OWN_STYLES = /^(lptc-|lpch-|lp-theme-vars$)/;
 
   /** site theme colour (lowercase hex) → which role it plays. */
   function themeRoles() {
@@ -121,80 +128,131 @@
     return out;
   }
 
-  function targetFor(role, prop, r) {
-    if (role === 'primary') return prop === 'color' ? r.accentText : r.primary;
-    if (role === 'dark') return prop === 'color' ? r.dark : r.deep;
+  function targetFor(role, asText, r) {
+    if (role === 'primary') return asText ? r.accentText : r.primary;
+    if (role === 'dark') return asText ? r.dark : r.deep;
     if (role === 'glow') return r.glow;
     if (role === 'bg') return r.bg;
     return '';
   }
+  function isTextProp(prop) {
+    return prop === 'color' || (prop.indexOf('--') === 0 && /(^|-)(fg|ink|text|color)$/i.test(prop) && !/(bg|background)/i.test(prop));
+  }
+  function isBgProp(prop) {
+    return prop === 'background-color' || prop === 'background' || (prop.indexOf('--') === 0 && !isTextProp(prop) && /(bg|background|card|fill|band)/i.test(prop));
+  }
+
+  function restoreNode(el) {
+    var raw = el.getAttribute('data-lptc-o');
+    if (raw) {
+      var o = {}; try { o = JSON.parse(raw); } catch (e) { o = {}; }
+      Object.keys(o).forEach(function (prop) {
+        // Only put back a value we changed; if the page has since set something new, keep that.
+        if (o[prop].length > 2 && rgbKey(el.style.getPropertyValue(prop)) !== rgbKey(o[prop][2]) && el.style.getPropertyValue(prop).trim() !== String(o[prop][2]).trim()) return;
+        if (o[prop][0]) el.style.setProperty(prop, o[prop][0], o[prop][1]); else el.style.removeProperty(prop);
+      });
+      el.removeAttribute('data-lptc-o');
+    }
+    if (el.hasAttribute('data-lptc-onlight')) el.removeAttribute('data-lptc-onlight');
+  }
 
   function remapNode(el, map, r) {
+    restoreNode(el);
     var st = el.style;
     if (!st || !st.length) return;
-    var bgRole = '';
-    for (var i = 0; i < st.length; i++) {
-      var prop = st[i];
+    var o = {}, bgRole = '';
+    function put(prop, to) { var pr = st.getPropertyPriority(prop); o[prop] = [st.getPropertyValue(prop), pr, to]; st.setProperty(prop, to, pr); }
+    var props = [];
+    for (var i = 0; i < st.length; i++) props.push(st[i]);
+    props.forEach(function (prop) {
       var isVar = prop.indexOf('--') === 0;
-      if (!isVar && COLOUR_PROPS.indexOf(prop) < 0 && prop !== 'background') continue;
-      var val = st.getPropertyValue(prop);
-      var k = rgbKey(val);
-      if (!k || !map[k]) continue;
-      // Only plain colour values (not gradients / images / shorthands with other parts).
-      if (!isVar && prop === 'background' && /url\(|gradient/i.test(val)) continue;
-      var asText = prop === 'color' || (isVar && /(^|-)(fg|ink|text|color)$/i.test(prop) && !/(bg|background)/i.test(prop));
-      var to = targetFor(map[k], asText ? 'color' : 'bg', r);
-      if (!to) continue;
-      saved.push([el, prop, val, st.getPropertyPriority(prop)]);
-      st.setProperty(prop, to, st.getPropertyPriority(prop));
-      if (prop === 'background-color' || prop === 'background' || (isVar && !asText && /(bg|background|card|fill)/i.test(prop))) bgRole = map[k];
-    }
+      if (!isVar && COLOUR_PROPS.indexOf(prop) < 0) return;
+      var k = rgbKey(st.getPropertyValue(prop));
+      if (!k || !map[k]) return;
+      var to = targetFor(map[k], isTextProp(prop), r);
+      if (!to) return;
+      put(prop, to);
+      if (isBgProp(prop)) bgRole = map[k];
+    });
+    // The LeadPages footer logo: its pulse rings follow the scheme.
+    if (el.classList && el.classList.contains('lp-foot-logo') && st.getPropertyValue('--lp-logo-accent')) put('--lp-logo-accent', r.glow);
     // A light scheme colour behind white text (e.g. lime buttons): switch the text to the scheme's dark.
     if (bgRole === 'primary' && r.onPrimary !== '#FFFFFF') {
       var c = rgbKey(st.getPropertyValue('color'));
-      if (c === '#ffffff' || !c) { saved.push([el, 'color', st.getPropertyValue('color'), st.getPropertyPriority('color')]); st.setProperty('color', r.onPrimary); }
-      // Headings / text inside the band follow too (CSS in lp-try-colours.css).
-      if (!el.hasAttribute('data-lptc-onlight')) { el.setAttribute('data-lptc-onlight', ''); marked.push(el); }
+      if (c === '#ffffff' || !c) put('color', r.onPrimary);
+      el.setAttribute('data-lptc-onlight', '');
     }
+    if (Object.keys(o).length) el.setAttribute('data-lptc-o', JSON.stringify(o));
   }
 
-  function restoreInline() {
-    for (var i = saved.length - 1; i >= 0; i--) {
-      var s = saved[i];
-      if (s[2]) s[0].style.setProperty(s[1], s[2], s[3]); else s[0].style.removeProperty(s[1]);
-    }
-    saved = [];
-    marked.forEach(function (el) { el.removeAttribute('data-lptc-onlight'); });
-    marked = [];
+  /** Re-colour a stylesheet's text: every theme colour in a declaration becomes the scheme's. */
+  function rewriteCss(css, map, r) {
+    return css.replace(/([\w-]+)(\s*:\s*)([^;{}]+)/g, function (all, prop, sep, val) {
+      if (!/#[0-9a-fA-F]{3,6}\b|rgba?\(/.test(val)) return all;
+      var text = isTextProp(prop.toLowerCase());
+      var nv = val.replace(/#[0-9a-fA-F]{6}\b|#[0-9a-fA-F]{3}\b|rgba?\(\s*\d+[,\s]+\d+[,\s]+\d+\s*(?:[,/]\s*[\d.]+\s*)?\)/g, function (c) {
+        if (/rgba\(/i.test(c) && !/,\s*1\s*\)$/.test(c)) return c;   // keep see-through colours
+        var k = rgbKey(c);
+        return (k && map[k]) ? (targetFor(map[k], text, r) || c) : c;
+      });
+      return prop + sep + nv;
+    });
+  }
+  function remapStyles(map, r) {
+    d.querySelectorAll('style').forEach(function (el) {
+      if (OWN_STYLES.test(el.id || '') || el.closest('[data-lptc]')) return;
+      var cur = el.textContent;
+      if (el.__lptcOut !== cur) el.__lptcOrig = cur;   // new or re-written by the page: that's the original
+      var out = rewriteCss(el.__lptcOrig, map, r);
+      if (out !== cur) el.textContent = out;
+      el.__lptcOut = out;
+    });
+  }
+  function restoreStyles() {
+    d.querySelectorAll('style').forEach(function (el) {
+      if (el.__lptcOrig != null && el.textContent === el.__lptcOut) el.textContent = el.__lptcOrig;
+      el.__lptcOrig = null; el.__lptcOut = null;
+    });
   }
 
-  var active = null, mo = null, moTimer = null;
+  function restoreAll() {
+    d.querySelectorAll('[data-lptc-o],[data-lptc-onlight]').forEach(restoreNode);
+    restoreStyles();
+  }
+
+  var active = null, mo = null, lightTimer = null;
   function remapAll() {
     if (!active) return;
     var map = themeRoles(), r = active.r;
     if (!Object.keys(map).length) return;
-    var els = d.querySelectorAll('[style]');
+    var els = d.querySelectorAll('[style],[data-lptc-o]');
     for (var i = 0; i < els.length; i++) {
       if (els[i].closest('[data-lptc]')) continue;
       remapNode(els[i], map, r);
     }
-    // Light scheme colour as a band (set through a CSS variable): mark the element that actually
-    // paints it, so its text switches to the scheme's dark.
-    if (r.onPrimary !== '#FFFFFF') {
-      var want = rgbKey(r.primary);
-      marked.slice().forEach(function (host) {
-        host.querySelectorAll('*').forEach(function (el) {
-          if (el.hasAttribute('data-lptc-onlight') || el.closest('a,button,.btn')) return;
-          if (rgbKey(getComputedStyle(el).backgroundColor) === want) { el.setAttribute('data-lptc-onlight', ''); marked.push(el); }
-        });
+    remapStyles(map, r);
+    markLightBands();
+  }
+
+  // Light scheme colour painted as a band (via a stylesheet / variable): text in it uses the dark.
+  function markLightBands() {
+    clearTimeout(lightTimer);
+    if (!active || active.r.onPrimary === '#FFFFFF') return;
+    lightTimer = setTimeout(function () {
+      if (!active) return;
+      var want = rgbKey(active.r.primary);
+      d.querySelectorAll('main *, header.site *, footer.site *, [data-sec]').forEach(function (el) {
+        if (el.hasAttribute('data-lptc-onlight') || el.closest('a,button,.btn,[data-lptc]')) return;
+        if (rgbKey(getComputedStyle(el).backgroundColor) === want) el.setAttribute('data-lptc-onlight', '');
       });
-    }
+    }, 60);
   }
 
   function apply(id, persist) {
     var p = null;
     for (var i = 0; i < SCHEMES.length; i++) if (SCHEMES[i].id === id) p = SCHEMES[i];
-    restoreInline();
+    if (mo) mo.disconnect();
+    restoreAll();
     var style = d.getElementById('lptc-tokens');
     if (!p) {
       active = null;
@@ -215,23 +273,29 @@
     watch();
   }
 
-  // Sections redraw themselves (sub-pages, slider, editor preview): re-apply to new inline colours.
+  // Sections redraw themselves (sub-pages, slider, editor preview). The observer callback runs
+  // before the browser paints, so new parts are re-coloured with no flash of the site colours.
   function watch() {
     if (!w.MutationObserver) return;
     if (!active) { if (mo) { mo.disconnect(); mo = null; } return; }
-    if (mo) return;
-    mo = new MutationObserver(function (list) {
-      var relevant = list.some(function (m) { return !(m.target.closest && m.target.closest('[data-lptc]')); });
-      if (!relevant) return;
-      clearTimeout(moTimer);
-      moTimer = setTimeout(function () {
+    if (!mo) {
+      mo = new MutationObserver(function (list) {
         if (!active) return;
+        var relevant = list.some(function (m) {
+          var t = m.target.nodeType === 1 ? m.target : m.target.parentNode;
+          return !(t && t.closest && t.closest('[data-lptc]'));
+        });
+        if (!relevant) return;
         mo.disconnect();
         remapAll();
-        mo.observe(d.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['style'] });
-      }, 150);
-    });
-    mo.observe(d.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['style'] });
+        observe();
+      });
+    }
+    observe();
+  }
+  function observe() {
+    if (!mo || !active) return;
+    mo.observe(d.documentElement, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['style'] });
   }
 
   /* ---------- UI ---------- */
@@ -311,7 +375,8 @@
     build();
     var stored = null;
     try { stored = sessionStorage.getItem(KEY); } catch (e) { stored = null; }
-    if (stored && offered().some(function (s) { return s.id === stored; })) apply(stored, false); else syncUi('');
+    if (stored && offered().some(function (s) { return s.id === stored; })) apply(stored, false); else { syncUi(''); if (d.documentElement.hasAttribute('data-lp-try')) apply('', false); }
+    d.documentElement.removeAttribute('data-lptc-boot');
   }
   if (d.readyState === 'loading') d.addEventListener('DOMContentLoaded', function () { setTimeout(boot, 0); });
   else setTimeout(boot, 0);

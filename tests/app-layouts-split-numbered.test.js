@@ -60,8 +60,8 @@ test('"#app" links scroll to the app section when no element has that id', () =>
 
 test('template loads the new asset versions', () => {
   const tpl = read('trade.template.json');
-  assert.match(tpl, /lp-layouts\.css\?v=36/);
-  assert.match(tpl, /lp-layouts\.js\?v=39/);
+  assert.match(tpl, /lp-layouts\.css\?v=37/);
+  assert.match(tpl, /lp-layouts\.js\?v=40/);
 });
 
 test('services photo cards layout: whole card links to the service, editor offers it', () => {
