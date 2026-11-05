@@ -1324,6 +1324,23 @@ function injectSeoJsonLd(html, cfg) {
   return scripts + html;
 }
 
+/** "Try colours" — visitors preview the site in the LeadPages colour schemes (config.tryColours.on). */
+function tryColoursCfg(cfg) {
+  const t = (cfg && cfg.sections && cfg.sections.tryColours) || (cfg && cfg.tryColours) || {};
+  const IDS = ['culture', 'basalt', 'rivet', 'tarmac', 'petal', 'willow', 'orchid', 'dune', 'neon-pink', 'electric-blue'];
+  const schemes = Array.isArray(t.schemes) ? t.schemes.filter((id) => IDS.indexOf(id) >= 0) : [];
+  return { on: t.on === true, schemes, label: String(t.label || '').trim().slice(0, 40) };
+}
+function injectTryColours(html, cfg) {
+  if (!html || html.includes('lp-try-colours.js')) return html;
+  const t = tryColoursCfg(cfg);
+  if (!t.on) return html;
+  const tag = '<link rel="stylesheet" href="/assets/lp-try-colours.css?v=1">'
+    + '<script>window.__LP_TRY_COLOURS__=' + safeJson({ schemes: t.schemes, label: t.label }) + ';</script>'
+    + '<script src="/assets/lp-try-colours.js?v=1" defer></script>\n';
+  return html.indexOf('</body>') !== -1 ? html.replace('</body>', tag + '</body>') : html + tag;
+}
+
 /** "How many arrows?" form check — only when the site turned it on (config.formChallenge.on). */
 function injectFormChallenge(html, cfg) {
   if (!html || html.includes('lp-challenge.js')) return html;
@@ -1353,30 +1370,32 @@ function injectVisitorAccessibility(html, cfg) {
     out = out.replace('<body>', '<body>\n<a class="lpa-skip" href="#top">Skip to content</a>');
   }
 
+  // lp-visitor-themes.css holds the accessibility rules (contrast, motion, links, spacing).
+  // Nov 2026: the old visitor colour schemes (lp-visitor-schemes.*) are no longer loaded on
+  // customer sites — the Try colours app (injectTryColours) replaces them.
   if (out.includes('</head>') && !out.includes('lp-visitor-themes.css')) {
     out = out.replace(
       '</head>',
-      '<link rel="stylesheet" href="/assets/lp-visitor-themes.css">\n'
-      + '<link rel="stylesheet" href="/assets/lp-visitor-schemes.css?v=3">\n'
+      '<link rel="stylesheet" href="/assets/lp-visitor-themes.css?v=2">\n'
       + '<link rel="stylesheet" href="/assets/lp-logo.css">\n</head>'
     );
   }
 
-  const brandAssets =
-    '<script src="/assets/lp-visitor-schemes.js?v=3" defer></script>\n'
-    + '<script src="/assets/lp-logo.js" defer></script>\n';
+  const brandAssets = '<script src="/assets/lp-logo.js" defer></script>\n';
 
-  if (!out.includes('lp-visitor-schemes.js')) {
+  if (!out.includes('/assets/lp-logo.js')) {
     out = out.indexOf('</body>') !== -1
       ? out.replace('</body>', brandAssets + '</body>')
       : (out + brandAssets);
   }
 
   const widgetOn = visitorWidgetEnabled(cfg);
+  // The accessibility button only does accessibility (same as leadpages.com.au): no theme or
+  // colour-scheme rows. Colours live in the Try colours app.
   const boot = '<script>window.__LP_VISITOR_A11Y__=' + safeJson({
     enabled: widgetOn,
     position: va.accessibilityButtonPosition,
-    defaults: va
+    defaults: Object.assign({}, va, { siteTheme: 'classic-light', colorScheme: 'brand', allowColorSchemes: false, allowThemeToggle: false })
   }) + ';</script>';
 
   if (widgetOn && !out.includes('lp-visitor-accessibility.js')) {
@@ -1707,6 +1726,7 @@ module.exports = async (req, res) => {
 
     html = injectAttribution(html, cfg);
     html = injectFormChallenge(html, cfg);
+    html = injectTryColours(html, cfg);
     html = injectVisitorAccessibility(html, cfg);
     html = injectSeoJsonLd(html, cfg);
     if (template === 'trade') {
