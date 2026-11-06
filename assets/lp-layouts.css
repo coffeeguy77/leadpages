@@ -1406,6 +1406,8 @@ section[data-sec="ctaBanner"].cb-feature.cbq-decor .cbf::after{content:"";positi
 section[data-sec="ctaBanner"] .cbf .cb-h{font-size:clamp(21px,2.1vw,28px)!important;line-height:1.2!important;margin:0 0 6px!important}
 section[data-sec="ctaBanner"] .cbf .cb-p{font-size:15px!important;max-width:none}
 .lp-page.lp-has-blocks{padding-top:44px!important;padding-bottom:60px!important}
+/* Page with the plain title band: the band already spaces the top, so no extra gap above it */
+section.lp-page.lpl-pb.lp-has-blocks{padding-top:0!important}
 .lp-body .lpb h2,.lp-body .lpb h3{margin-top:0}.lp-body .lpb .lpb-step-t{margin:0 0 4px}
 /* ---------- Stacked header (header.layout = 'stack'): logo | contact items over the menu ---------- */
 .lpl-hstack-on header.site .bar{display:flex;align-items:center;gap:24px;min-height:var(--lpl-hs-h,124px)}
