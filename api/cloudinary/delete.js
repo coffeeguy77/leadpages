@@ -2,6 +2,20 @@
 // Deletes a single asset ({ publicId }) or an entire prefix ({ prefix }) via the Cloudinary
 // Admin API. Used for overwrite cleanup, section/item removal, and full site teardown.
 // Requires a valid Supabase session; all targets are hard-scoped to leadpages/.
+//
+// Nov 2026: nothing is deleted while any site, partner page, preset or backup still uses it.
+// Copied sites (demos, duplicates, partner showcases) share the original's files, so a delete
+// that only the editing site had stopped using was wiping images off other live sites.
+// See lib/cloudinary/references.js.
+
+const { createClient } = require('@supabase/supabase-js');
+const { findReferences, siteIdsForPrefix } = require('../../lib/cloudinary/references');
+
+let _admin = null;
+function admin() {
+  if (!_admin) _admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+  return _admin;
+}
 
 async function verifyAuth(req) {
   const token = String(req.headers.authorization || '').replace(/^Bearer\s+/i, '');
@@ -54,6 +68,14 @@ module.exports = async (req, res) => {
     if (body.prefix) {
       const prefix = String(body.prefix);
       if (!/^leadpages\//.test(prefix)) return res.status(400).json({ error: 'prefix must be under leadpages/' });
+      if (!/^leadpages\/[^/]+\//.test(prefix)) return res.status(400).json({ error: 'prefix must be a site folder' });
+      // Removing a whole site: its own rows don't count, but if any other site, partner page,
+      // preset or backup still shows a file from this folder, keep the whole folder.
+      const own = await siteIdsForPrefix(admin(), prefix);
+      const check = await findReferences(admin(), prefix, { ignoreSiteIds: own });
+      if (!check.complete || check.refs.length) {
+        return res.status(409).json({ ok: false, error: 'in_use_elsewhere', kept: true, refs: check.refs.slice(0, 20), complete: check.complete });
+      }
 
       // Cloudinary deletes by prefix in batches (~100/call) and sets partial:true when
       // more remain. Each repeat clears the next batch, so loop until partial is false.
@@ -89,6 +111,13 @@ module.exports = async (req, res) => {
     if (body.publicId) {
       const pid = String(body.publicId);
       if (!/^leadpages\//.test(pid)) return res.status(400).json({ error: 'publicId must be under leadpages/' });
+      // Any site (including the one being edited, until its save lands), partner page, preset
+      // or backup that still uses the file keeps it. An unused leftover is harmless; a deleted
+      // image that another site shows is not.
+      const check = await findReferences(admin(), pid);
+      if (!check.complete || check.refs.length) {
+        return res.status(409).json({ ok: false, error: 'in_use', kept: true, refs: check.refs.slice(0, 20), complete: check.complete });
+      }
       const r = await fetch(base + '?public_ids[]=' + encodeURIComponent(pid) + '&invalidate=true', {
         method: 'DELETE', headers: { Authorization: basic() },
       });
@@ -101,3 +130,6 @@ module.exports = async (req, res) => {
     return res.status(500).json({ error: String(e.message) });
   }
 };
+
+// Tests swap in a fake database client.
+module.exports._setAdmin = function(a) { _admin = a; };

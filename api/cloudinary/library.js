@@ -12,6 +12,7 @@
 
 const { createClient } = require('@supabase/supabase-js');
 const { assertSiteAccess } = require('../../lib/site-backups/service');
+const { findReferences } = require('../../lib/cloudinary/references');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const admin = createClient(SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -162,6 +163,11 @@ module.exports = async (req, res) => {
         return send(res, 400, { ok: false, error: 'not_this_site' });
       }
       if (inUse(cfg, pid)) return send(res, 409, { ok: false, error: 'in_use', message: 'This image is used on the site. Remove it from the page first.' });
+      // Also used by another site (a copy, demo or partner page) or kept in a backup?
+      const elsewhere = await findReferences(admin, pid);
+      if (!elsewhere.complete || elsewhere.refs.length) {
+        return send(res, 409, { ok: false, error: 'in_use_elsewhere', message: 'Another site, partner page or saved backup still uses this image, so it has been kept.' });
+      }
       const base = 'https://api.cloudinary.com/v1_1/' + creds.cloud + '/resources/image/upload';
       const r = await fetch(base + '?public_ids[]=' + encodeURIComponent(pid) + '&invalidate=true', {
         method: 'DELETE', headers: { Authorization: basic(creds) }
