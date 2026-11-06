@@ -641,6 +641,26 @@ const {
   fetchPartnerProfileByPartnerId
 } = require('../lib/partner-website/profile-store');
 const { fetchPartnerShowcaseSites } = require('../lib/partner-website/fetch-showcase-sites');
+const { fetchLibraryCards } = require('../lib/partner-website/showcase-library');
+
+// "Built on LeadPages" gallery cards (sites the platform owner ticked in /manage).
+async function libraryCardsFor() {
+  try {
+    const r = await fetchLibraryCards(supabase, SHOWCASE_SUFFIXES[0] || 'leadpages.com.au');
+    return r.cards || [];
+  } catch (e) { return []; }
+}
+
+// A site shown as a live preview inside a partner page (?lp_embed=1) must not count page
+// views or send leads for the client: drop the page's own /api/events and /api/leads calls.
+const EMBED_GUARD = '<script>(function(){window.__LP_EMBED__=1;var f=window.fetch;if(f){window.fetch=function(u){try{var s=typeof u==="string"?u:(u&&u.url)||"";if(/\\/api\\/(events|leads)(\\b|\\?|$)/.test(s))return Promise.resolve(new Response("{}",{status:200,headers:{"content-type":"application/json"}}));}catch(e){}return f.apply(this,arguments);};}var b=navigator.sendBeacon;if(b){navigator.sendBeacon=function(u){try{if(/\\/api\\/events/.test(String(u)))return true;}catch(e){}return b.apply(navigator,arguments);};}})();</script><meta name="robots" content="noindex"><style>.promo-pop,.promo-fixed,.lptc-fab{display:none!important}</style>';
+function embedGuard(req, html) {
+  if (!req || !req.query || !req.query.lp_embed || typeof html !== 'string') return html;
+  const i = html.search(/<head[^>]*>/i);
+  if (i < 0) return EMBED_GUARD + html;
+  const end = html.indexOf('>', i) + 1;
+  return html.slice(0, end) + EMBED_GUARD + html.slice(end);
+}
 
 function showcaseRenderOpts(req, home) {
   const q = (req && req.query) || {};
@@ -662,6 +682,7 @@ async function showcaseRespond(req, res, prof, base) {
   res.setHeader('CDN-Cache-Control', 'max-age=0, must-revalidate');
   const renderOpts = showcaseRenderOpts(req, home);
   renderOpts.directory = directory;
+  renderOpts.library = await libraryCardsFor();
   return res.status(200).send(buildPartnerLandingHtml(prof, partner, demos, base, renderOpts));
 }
 
@@ -1569,6 +1590,7 @@ module.exports = async (req, res) => {
       const partnerRow = partner || { display_name: site.business_name || 'Web Studio' };
       const homeOpts = showcaseRenderOpts(req, site);
       homeOpts.directory = directory;
+      homeOpts.library = await libraryCardsFor();
       return sendPartnerLandingHtml(res, buildPartnerLandingHtml(mergedProf, partnerRow, _demos, SHOWCASE_SUFFIXES[0] || 'leadpages.com.au', homeOpts), isLive);
     }
 
@@ -1599,7 +1621,7 @@ module.exports = async (req, res) => {
       let html = injectLiteral(brokerApp.html, '__BROKERAPP_CONFIG__', safeJson(cfg));
       html = injectLiteral(html, '<!--DEMO_BAR-->', demoBar);
       html = injectVisitorAccessibility(html, cfg);
-      return sendHtml(res, html, isLive, { slug: site.slug, siteId: site.id });
+      return sendHtml(res, embedGuard(req, html), isLive, { slug: site.slug, siteId: site.id });
     }
 
     // ---- token templates: broker-leads / trade ----
@@ -1783,7 +1805,7 @@ module.exports = async (req, res) => {
       } catch (_co2) { /* never break live render */ }
     }
 
-    return sendHtml(res, html, isLive, { slug: site.slug, siteId: site.id });
+    return sendHtml(res, embedGuard(req, html), isLive, { slug: site.slug, siteId: site.id });
   } catch (e) {
     console.error('render error:', e);
     return res.status(500).send('Server error');

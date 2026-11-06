@@ -41,7 +41,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/lp-themes.css?v=editor-chips-2">
+<link rel="stylesheet" href="/assets/lp-themes.css?v=editor-chips-3">
 <link rel="stylesheet" href="/assets/lp-ui.css?v=2">
 <link rel="stylesheet" href="/assets/lp-messages-embed.css">
 <link rel="stylesheet" href="/assets/lp-admin-responsive.css?v=hero-editor-mobile-1">
@@ -4312,6 +4312,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     var __pa=document.getElementById('lp-partneradmin-top'); if(__pa) __pa.style.display=(role==='super')?'':'none';
     var __mt=document.getElementById('lp-mode-toggle'); if(__mt) __mt.style.display=(role==='super'||role==='broker')?'':'none';
     await loadSitesFromDB();
+    lplLoadLibrary();
     if(window.LPMobileMenu&&LPMobileMenu.load){ try{ await LPMobileMenu.load(); }catch(_e){} }
     applyRoleGating();
     initEditorMode();
@@ -4436,7 +4437,53 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     return '<span class="lpl-dom-icon'+(on?' on':'')+'" title="'+(on?'Domain connected':'Domain not connected')+'" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>';
   }
   function _lplMetaInline(s){ var bits=[]; if(s.updated_at) bits.push(anaAgo(s.updated_at)); return bits.join(' \u00b7 '); }
-  function _lplCard(s){ return '<div class="lpl-card2"><div class="lpl-body"><div class="lpl-title"><span class="lpl-name">'+esc(s.business_name||s.slug)+'</span>'+_lplStatus(s)+_lplDomainIcon(s)+'<button type="button" class="lpl-fav2'+(s.is_favorite?' on':'')+'" title="Favourite" data-fav="'+s.id+'">'+(s.is_favorite?'\u2605':'\u2606')+'</button></div><div class="lpl-subline"><span class="lpl-slug2">'+esc(s.slug||'')+'</span>'+(_lplMetaInline(s)?'<span class="lpl-dot">\u00b7</span><span class="lpl-meta-inline">'+_lplMetaInline(s)+'</span>':'')+'</div></div><div class="lpl-manage"><button type="button" class="lpl-btn-manage" data-edit="'+s.id+'">Manage</button></div></div>'; }
+  /* Partner showcase library (Nov 2026): super admin ticks which of their own sites partners may show
+     on their partner pages ("Built on LeadPages"). Stored server-side via /api/partner/showcase-library. */
+  function _lplLibEligible(s){
+    if(currentRole!=='super'||!s||s.is_partner_home) return false;
+    var mine=LPL.libOwnPid||'';
+    var other=[s.servicing_partner_id,s.referring_partner_id].filter(function(p){ return p && String(p)!==String(mine); });
+    return !other.length;
+  }
+  function _lplLibBtn(s){
+    if(!LPL.libLoaded||!_lplLibEligible(s)) return '';
+    var on=!!(LPL.libIds&&LPL.libIds[s.id]);
+    var live=String(s.status||'').toLowerCase()==='live';
+    var tip=on?(live?'Shown to partners as a LeadPages showcase site \u2014 click to remove':'In the partner showcase, but partners only see it once the site is live'):'Allow partners to show this site on their partner page';
+    return '<button type="button" class="lpl-sc2'+(on?' on':'')+(on&&!live?' wait':'')+'" title="'+esc(tip)+'" aria-pressed="'+(on?'true':'false')+'" data-libsite="'+s.id+'"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(on?'<path d="m5 12.5 4.2 4.2L19 7"/>':'<rect x="3" y="4" width="18" height="14" rx="2"/><path d="M3 8h18"/>')+'</svg><span>Partner showcase</span></button>';
+  }
+  async function lplLoadLibrary(){
+    if(currentRole!=='super') return;
+    try{
+      var se=await sb.auth.getSession(); var tok=se&&se.data&&se.data.session&&se.data.session.access_token; if(!tok) return;
+      var uid=se.data.session.user&&se.data.session.user.id;
+      try{ var pr=await sb.from('partners').select('id').eq('user_id',uid).maybeSingle(); LPL.libOwnPid=(pr.data&&pr.data.id)||''; }catch(_p){}
+      var r=await fetch('/api/partner/showcase-library?scope=admin',{headers:{Authorization:'Bearer '+tok}});
+      var d=await r.json().catch(function(){return {};});
+      if(!r.ok||!d.ok) return;
+      LPL.libReady=!!d.ready; LPL.libIds={}; (d.siteIds||[]).forEach(function(id){ LPL.libIds[id]=true; });
+      LPL.libLoaded=true;
+      try{ renderLanding(); }catch(_r){}
+    }catch(e){}
+  }
+  async function lplToggleLibrary(id){
+    if(!LPL.libReady){ toast('Run the partner showcase SQL in Supabase first (db/migrations/20261107_partner_showcase_library.sql).'); return; }
+    var on=!(LPL.libIds&&LPL.libIds[id]);
+    LPL.libIds[id]=on; if(!on) delete LPL.libIds[id];
+    renderLanding();
+    try{
+      var se=await sb.auth.getSession(); var tok=se&&se.data&&se.data.session&&se.data.session.access_token;
+      var r=await fetch('/api/partner/showcase-library',{method:'POST',headers:{'content-type':'application/json',Authorization:'Bearer '+tok},body:JSON.stringify({site_id:id,on:on})});
+      var d=await r.json().catch(function(){return {};});
+      if(!r.ok||!d.ok) throw new Error(d.message||d.error||'Could not update');
+      var s=allSites.find(function(x){return x.id===id;});
+      toast(on?((s&&s.business_name)||'Site')+' added to the partner showcase':'Removed from the partner showcase');
+    }catch(e){
+      if(on) delete LPL.libIds[id]; else LPL.libIds[id]=true;
+      renderLanding(); toast(e.message||'Could not update the partner showcase');
+    }
+  }
+  function _lplCard(s){ return '<div class="lpl-card2"><div class="lpl-body"><div class="lpl-title"><span class="lpl-name">'+esc(s.business_name||s.slug)+'</span>'+_lplStatus(s)+_lplDomainIcon(s)+_lplLibBtn(s)+'<button type="button" class="lpl-fav2'+(s.is_favorite?' on':'')+'" title="Favourite" data-fav="'+s.id+'">'+(s.is_favorite?'\u2605':'\u2606')+'</button></div><div class="lpl-subline"><span class="lpl-slug2">'+esc(s.slug||'')+'</span>'+(_lplMetaInline(s)?'<span class="lpl-dot">\u00b7</span><span class="lpl-meta-inline">'+_lplMetaInline(s)+'</span>':'')+'</div></div><div class="lpl-manage"><button type="button" class="lpl-btn-manage" data-edit="'+s.id+'">Manage</button></div></div>'; }
   function _lplCanCreateSite(){ return currentRole==='super'; }
   function _lplSyncHelp(){
     var help=document.getElementById('lpl-help'); if(!help) return;
@@ -4462,6 +4509,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   function _lplWire(list){
     list.querySelectorAll('[data-edit]').forEach(function(b){ b.onclick=function(){ var s=allSites.find(function(x){return x.id===b.getAttribute('data-edit');}); if(s){ hideLanding(); loadSite(s); } }; });
     list.querySelectorAll('[data-fav]').forEach(function(b){ b.onclick=function(e){ e.stopPropagation(); lplToggleFav(b.getAttribute('data-fav')); }; });
+    list.querySelectorAll('[data-libsite]').forEach(function(b){ b.onclick=function(e){ e.stopPropagation(); lplToggleLibrary(b.getAttribute('data-libsite')); }; });
     var nc=document.getElementById('lpl-newcard');
     if(nc) nc.onclick=function(){ hideLanding(); openCreateSite(); };
     var lc=document.getElementById('lpl-layout-composer');

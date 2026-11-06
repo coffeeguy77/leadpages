@@ -16,7 +16,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/lp-themes.css">
 <link rel="stylesheet" href="/assets/lp-logo.css">
-<link rel="stylesheet" href="/assets/lp-partner-shell.css">
+<link rel="stylesheet" href="/assets/lp-partner-shell.css?v=pws1">
 <link rel="stylesheet" href="/assets/lp-messages-embed.css">
 <link rel="stylesheet" href="/assets/lp-super-admin.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -30,7 +30,7 @@
 <script src="/assets/lp-messages-embed.js" defer></script>
 <script src="/assets/lp-quote-tags.js" defer></script>
 <script src="/assets/lp-busy-overlay.js" defer></script>
-<script src="/assets/partner-website-admin.js" defer></script>
+<script src="/assets/partner-website-admin.js?v=pws1" defer></script>
 <link rel="stylesheet" href="/assets/lp-ui.css?v=2">
 </head>
 <body class="lp-partner-page">
@@ -307,35 +307,32 @@
 
       <!-- My page -->
       <section class="panel lp-p-panel" data-panel="mypage" data-w="form">
-        <h2>Partner Website</h2>
-        <p class="sub">Your public partner page — brand, URL, and showcase settings.</p>
-        <div class="lp-stack" style="max-width:720px">
-          <div class="card" style="padding:20px">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:14px">
-              <div>
-                <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 4px">Public page</h3>
-                <p class="muted" style="margin:0;font-size:13px">Your live address and visibility on LeadPages.</p>
-              </div>
-              <span id="sc-status-badge"></span>
-            </div>
-            <div class="field">
-              <label for="sc-slug">Your address</label>
-              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-                <span class="muted">leadpages.com.au/</span>
-                <input id="sc-slug" type="text" placeholder="your-name" style="max-width:200px">
-                <button class="btn" id="sc-check" style="padding:8px 14px;font-size:14px">Check</button>
-                <span id="sc-slug-msg" style="font-size:13px;font-weight:600"></span>
-              </div>
-            </div>
-            <label style="display:inline-flex;align-items:center;gap:8px;font-weight:600;margin:0"><input type="checkbox" id="sc-enabled" style="width:auto"> Make my page live</label>
-            <p class="muted" style="margin:12px 0 0;font-size:13.5px">Your page: <a id="sc-link" href="#" target="_blank" rel="noopener">—</a></p>
+        <div class="pws-head">
+          <div>
+            <h2>Partner Website</h2>
+            <p class="sub">Your public partner page: its design, your words and the sites you show. One <strong>Save changes</strong> button saves everything.</p>
           </div>
+          <div class="pws-head-actions">
+            <span id="sc-status-badge"></span>
+            <a class="btn" id="pws-view" href="#" target="_blank" rel="noopener">View my page <span aria-hidden="true">&#8599;</span></a>
+          </div>
+        </div>
 
-          <div class="card" style="padding:20px">
-            <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 6px">Page template</h3>
-            <p class="muted" style="margin:0 0 14px;font-size:13px">Choose the public partner page design. All designs use the same content; Studio, Studio Plus and Presence also have their own words and pictures under <strong>Design text</strong> below.</p>
-            <div class="field" style="max-width:420px">
-              <label for="sc-template">Template</label>
+        <nav class="pws-nav" role="tablist" aria-label="Partner website settings">
+          <button type="button" class="pws-nav-btn is-active" role="tab" aria-selected="true" data-pws-go="design"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.7-.8 1.7-1.6 0-.5-.2-.8-.5-1.1-.3-.3-.5-.7-.5-1.1 0-.9.7-1.6 1.6-1.6H16a5 5 0 0 0 5-5C21 6.4 17 3 12 3z"/><circle cx="7.5" cy="11" r="1.2"/><circle cx="10.5" cy="7" r="1.2"/><circle cx="15" cy="7.5" r="1.2"/></svg><span>Design</span></button>
+          <button type="button" class="pws-nav-btn" role="tab" aria-selected="false" data-pws-go="content"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>Content</span></button>
+          <button type="button" class="pws-nav-btn" role="tab" aria-selected="false" data-pws-go="showcase"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M3 8h18"/></svg><span>Showcase</span></button>
+          <button type="button" class="pws-nav-btn" role="tab" aria-selected="false" data-pws-go="contact"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H8l-4 4z"/></svg><span>Contact &amp; SEO</span></button>
+          <button type="button" class="pws-nav-btn" role="tab" aria-selected="false" data-pws-go="address"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg><span>Address &amp; domain</span></button>
+        </nav>
+
+        <div class="lp-stack pws-body">
+          <div class="card pws-card" data-pws="design">
+            <h3 class="pws-h">Choose your design</h3>
+            <p class="muted pws-lede">Every design uses the same content, so you can switch at any time and your words come with you.</p>
+            <div id="sc-template-cards" class="pws-designs" role="radiogroup" aria-label="Page design"></div>
+            <div class="field pws-select-fallback">
+              <label for="sc-template">Design</label>
               <select id="sc-template">
                 <option value="webculture">Culture</option>
                 <option value="localwebsiteco">Studio (orange, portfolio)</option>
@@ -343,10 +340,13 @@
                 <option value="presence">Presence (navy &amp; lime)</option>
               </select>
             </div>
-            <p id="sc-template-desc" class="muted" style="margin:-4px 0 10px;font-size:12.5px;max-width:62ch"></p>
-            <p style="margin:0 0 4px;font-size:13.5px"><a id="sc-template-preview" href="#" target="_blank" rel="noopener">Preview this design on your page &rarr;</a> <span class="muted" style="font-size:12px">Opens your live page in this design without changing it.</span></p>
-            <div id="sc-culture-colour-ui" style="margin-top:18px">
-              <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 6px">Culture page colours</h3>
+            <p id="sc-template-desc" class="muted" style="margin:12px 0 6px;font-size:12.5px;max-width:62ch"></p>
+            <p style="margin:0;font-size:13.5px"><a id="sc-template-preview" href="#" target="_blank" rel="noopener">Preview this design on your page &rarr;</a> <span class="muted" style="font-size:12px">Opens your page in this design without changing it.</span></p>
+          </div>
+
+          <div class="card pws-card" data-pws="design" id="sc-culture-card">
+            <div id="sc-culture-colour-ui">
+              <h3 class="pws-h">Culture colours</h3>
               <p class="muted" style="margin:0 0 14px;font-size:13px">Pick a Culture colour way, or override with your own custom theme. Colours apply to your live partner page immediately after you save.</p>
               <div id="sc-culture-presets" class="lp-sc-culture-presets" role="radiogroup" aria-label="Culture colour theme"></div>
               <div id="sc-culture-custom" class="lp-sc-culture-custom" hidden>
@@ -361,13 +361,13 @@
                 </div>
               </div>
             </div>
-            <div class="row2" style="margin-top:14px">
-              <div class="field"><label for="sc-headline">Headline</label><input id="sc-headline" type="text" placeholder="e.g. Canberra websites that get you booked"></div>
-              <div class="field" style="display:none"><label for="sc-accent">Accent override</label><input id="sc-accent" type="text" placeholder="#C5E13F"></div>
-            </div>
-            <div class="field"><label for="sc-intro">Intro text</label><textarea id="sc-intro" rows="3" placeholder="A short pitch prospects see at the top of your page."></textarea></div>
+          </div>
+
+          <div class="card pws-card" data-pws="design">
+            <h3 class="pws-h">Logo</h3>
+            <p class="muted pws-lede">Shown at the top of your page in every design.</p>
             <div class="field">
-              <label>Logo</label>
+              <label class="sr-only">Logo</label>
               <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
                 <div id="sc-logo-preview" class="lp-sc-logo-preview" aria-label="Logo preview" hidden>
                   <img id="sc-logo-prev" alt="Uploaded logo preview">
@@ -386,38 +386,63 @@
             </div>
           </div>
 
-          <div class="card" style="padding:20px">
-            <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 6px">Page content &amp; sections</h3>
-            <p class="muted" style="margin:0 0 10px;font-size:13px">Edit copy, turn sections on or off, choose industry-demo tabs, and fine-tune your Culture page. Starts filled with current Culture demo content — change anything you do not want. LeadPages platform credit stays on.</p>
+          <div class="card pws-card" data-pws="content">
+            <h3 class="pws-h">Headline &amp; intro</h3>
+            <p class="muted pws-lede">The first words visitors read. Studio, Studio Plus and Presence also have their own headline under <strong>Design &rarr; Design text</strong>.</p>
+            <div class="row2">
+              <div class="field"><label for="sc-headline">Headline</label><input id="sc-headline" type="text" placeholder="e.g. Canberra websites that get you booked"></div>
+              <div class="field" style="display:none"><label for="sc-accent">Accent override</label><input id="sc-accent" type="text" placeholder="#C5E13F"></div>
+            </div>
+            <div class="field"><label for="sc-intro">Intro text</label><textarea id="sc-intro" rows="3" placeholder="A short pitch prospects see at the top of your page."></textarea></div>
+          </div>
+
+          <div class="card pws-card" data-pws="design content showcase contact" id="pws-editor-card">
+            <h3 class="pws-h" id="pws-editor-title">Page content</h3>
+            <p class="muted pws-lede" id="pws-editor-lede"></p>
             <p class="muted" id="pwp-seed-note" style="display:none;margin:0 0 14px;font-size:12.5px;color:var(--success,#0a7d33)">Starter Culture content loaded — review and save when you are happy.</p>
             <div id="pwp-editor"></div>
           </div>
 
-          <div class="card" style="padding:20px">
-            <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 6px">Custom domain</h3>
-            <p class="muted" style="margin:0 0 14px;font-size:13px">Optional — point your own domain at your partner page.</p>
+          <div class="card pws-card pws-row" data-pws="showcase">
+            <div>
+              <h3 class="pws-h">Your own client sites</h3>
+              <p class="muted" style="margin:0;font-size:13px;max-width:56ch">Sites you tick <strong>Show on showcase</strong> in the <strong>Demos</strong> tab always appear first. You can also edit your partner homepage in the builder.</p>
+            </div>
+            <button class="btn" id="sc-design" style="white-space:nowrap">Edit in builder</button>
+          </div>
+
+          <div class="card pws-card" data-pws="address">
+            <h3 class="pws-h">Your page address</h3>
+            <p class="muted pws-lede">Your live address and whether the page is public.</p>
+            <div class="field">
+              <label for="sc-slug">Your address</label>
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                <span class="muted">leadpages.com.au/</span>
+                <input id="sc-slug" type="text" placeholder="your-name" style="max-width:200px">
+                <button class="btn" id="sc-check" style="padding:8px 14px;font-size:14px">Check</button>
+                <span id="sc-slug-msg" style="font-size:13px;font-weight:600"></span>
+              </div>
+            </div>
+            <label style="display:inline-flex;align-items:center;gap:8px;font-weight:600;margin:0"><input type="checkbox" id="sc-enabled" style="width:auto"> Make my page live</label>
+            <p class="muted" style="margin:12px 0 0;font-size:13.5px">Your page: <a id="sc-link" href="#" target="_blank" rel="noopener">—</a></p>
+          </div>
+
+          <div class="card pws-card" data-pws="address">
+            <h3 class="pws-h">Custom domain</h3>
+            <p class="muted pws-lede">Optional — point your own domain at your partner page.</p>
             <div class="field" style="margin-bottom:0">
               <label for="sc-domain">Your own domain</label>
               <input id="sc-domain" type="text" placeholder="e.g. yourstudio.com.au">
               <div class="muted" style="font-size:12.5px;margin-top:6px">After saving, add a CNAME record at your registrar pointing to <strong>cname.vercel-dns.com</strong>, then let us know so we can connect it. Your <strong>leadpages.com.au/your-name</strong> address keeps working either way.</div>
             </div>
           </div>
+        </div>
 
-          <div class="card" style="padding:20px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap">
-            <div>
-              <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 4px">Homepage &amp; showcase</h3>
-              <p class="muted" style="margin:0;font-size:13px;max-width:52ch">Edit your homepage in the builder — hero, services, your pitch. Enabled demos appear automatically at the bottom. Choose which demos show from the <strong>Demos</strong> tab (“Show on showcase”).</p>
-            </div>
-            <button class="btn btn-brand" id="sc-design" style="white-space:nowrap">Edit in builder</button>
-          </div>
-
-          <div class="card" style="padding:20px">
-            <div class="save-row" style="margin:0">
-              <button class="btn btn-brand" id="sc-save">Save my page</button>
-              <span class="saved" id="sc-saved">Saved ✓</span>
-              <span class="notice bad hidden" id="sc-err" style="margin:0;padding:8px 12px"></span>
-            </div>
-          </div>
+        <div class="pws-savebar" role="region" aria-label="Save">
+          <span class="pws-dirty" id="pws-dirty" hidden>Unsaved changes</span>
+          <span class="saved" id="sc-saved">Saved ✓</span>
+          <span class="notice bad hidden" id="sc-err" style="margin:0;padding:8px 12px"></span>
+          <button class="btn btn-brand" id="sc-save">Save changes</button>
         </div>
       </section>
 
@@ -1869,6 +1894,21 @@
     });
     var _scTemplate=document.getElementById('sc-template');
     if(_scTemplate) _scTemplate.addEventListener('change', updateScTemplateUi);
+    var _pwsPanel=document.querySelector('[data-panel="mypage"]');
+    if(_pwsPanel){
+      _pwsPanel.addEventListener('click',function(e){
+        var go=e.target.closest('[data-pws-go]'); if(go){ showPwsSection(go.getAttribute('data-pws-go')); return; }
+        var dc=e.target.closest('[data-pws-design]');
+        if(dc){ var sel=document.getElementById('sc-template'); if(sel&&sel.value!==dc.getAttribute('data-pws-design')){ sel.value=dc.getAttribute('data-pws-design'); sel.dispatchEvent(new Event('change',{bubbles:true})); setPwsDirty(true); } return; }
+        var b=e.target.closest('.pws-body button');
+        if(b&&!b.closest('[data-pwp-tab],#sc-check,#sc-design,#sc-logo-btn,[data-pwp-dc-group]')) setPwsDirty(true);
+      });
+      _pwsPanel.addEventListener('input',function(e){ if(e.target&&e.target.closest('.pws-body')) setPwsDirty(true); });
+      _pwsPanel.addEventListener('change',function(e){ if(e.target&&e.target.closest('.pws-body')) setPwsDirty(true); });
+      var _pwsSlug=document.getElementById('sc-slug'); if(_pwsSlug) _pwsSlug.addEventListener('input',updatePwsView);
+      window.addEventListener('beforeunload',function(ev){ var d=document.getElementById('pws-dirty'); if(d&&!d.hidden){ ev.preventDefault(); ev.returnValue=''; } });
+      showPwsSection('design');
+    }
     ['sc-c-primary','sc-c-ink','sc-c-bg','sc-c-surface'].forEach(function(id){
       var el=document.getElementById(id);
       if(el) el.addEventListener('input', function(){ setCultureColorPreset('custom'); });
@@ -1878,7 +1918,7 @@
       var slug=(document.getElementById('sc-slug').value||'').trim().toLowerCase(); var btn=this; btn.disabled=true;
       if(window.LPBusy) window.LPBusy.show({
         title:'Saving your page',
-        message:'Saving showcase settings…',
+        message:'Saving your design, content and showcase…',
         detail:'Please wait — do not close this tab.'
       });
       try{
@@ -1907,6 +1947,7 @@
         }catch(_e2){}
       }
       loadMyPage();
+      setPwsDirty(false);
       var sv=document.getElementById('sc-saved'); sv.classList.add('show'); setTimeout(function(){ sv.classList.remove('show'); },1700); updateScLink(); updateScStatusBadge();
       } finally {
         if(window.LPBusy) window.LPBusy.hide();
@@ -2432,6 +2473,46 @@
     sel.value=current;
     updateScTemplateUi();
   }
+  /* Partner website page (Nov 2026): visual design picker, five sections, one Save. */
+  function renderScTemplateCards(){
+    var box=document.getElementById('sc-template-cards'); if(!box) return;
+    var cur=scTemplateValue();
+    box.innerHTML=(scTemplates||[]).map(function(t){
+      var id=normalizeScTemplateKey(t.id); var on=id===cur;
+      var thumb=t.thumb?'<img src="'+esc(t.thumb)+'" alt="" loading="lazy">':'<span class="pws-design-swatch" style="background:'+esc(t.preview||'var(--panel-soft)')+'"></span>';
+      return '<button type="button" class="pws-design'+(on?' is-on':'')+'" role="radio" aria-checked="'+(on?'true':'false')+'" data-pws-design="'+esc(id)+'">'
+        +'<span class="pws-design-thumb">'+thumb+(on?'<span class="pws-design-tick" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.2 4.2L19 7"/></svg></span>':'')+'</span>'
+        +'<span class="pws-design-name">'+esc(t.short||t.label||id)+'</span>'
+        +'<span class="pws-design-tag">'+esc(t.tagline||'')+'</span>'
+        +'</button>';
+    }).join('');
+  }
+  function updatePwsView(){
+    var a=document.getElementById('pws-view'); if(!a) return;
+    var slug=((document.getElementById('sc-slug')||{}).value||'').trim().toLowerCase();
+    if(slug){ a.href='https://'+scBase()+'/'+encodeURIComponent(slug); a.classList.remove('is-disabled'); a.removeAttribute('aria-disabled'); }
+    else { a.href='#'; a.classList.add('is-disabled'); a.setAttribute('aria-disabled','true'); }
+  }
+  var PWS_EDITOR_COPY={
+    design:['Design text','Words and pictures that belong to this design only. Leave a box blank to use the design\u2019s own wording.'],
+    content:['Page content','Your story, services, testimonials and FAQs. These follow you to whichever design you choose.'],
+    showcase:['Sites on your page','Show real LeadPages websites next to your own work while you build your portfolio.'],
+    contact:['Contact & SEO','How people reach you, your social links and how your page appears in Google.']
+  };
+  var pwsSection='design';
+  function showPwsSection(id){
+    pwsSection=id||'design';
+    document.querySelectorAll('[data-pws-go]').forEach(function(b){ var on=b.getAttribute('data-pws-go')===pwsSection; b.classList.toggle('is-active',on); b.setAttribute('aria-selected',on?'true':'false'); });
+    document.querySelectorAll('[data-pws]').forEach(function(c){ var list=(c.getAttribute('data-pws')||'').split(/\s+/); c.classList.toggle('pws-hide', list.indexOf(pwsSection)<0); });
+    var copy=PWS_EDITOR_COPY[pwsSection];
+    if(copy){ var t=document.getElementById('pws-editor-title'); if(t) t.textContent=copy[0]; var l=document.getElementById('pws-editor-lede'); if(l) l.textContent=copy[1]; }
+    if(window.LPPartnerWebsiteAdmin&&window.LPPartnerWebsiteAdmin.setGroup) window.LPPartnerWebsiteAdmin.setGroup(pwsSection);
+  }
+  function setPwsDirty(on){
+    var d=document.getElementById('pws-dirty'); if(d) d.hidden=!on;
+    var bar=document.querySelector('.pws-savebar'); if(bar) bar.classList.toggle('is-dirty',!!on);
+  }
+  window.LPPwsDirty=setPwsDirty;
   function updateScTemplateUi(){
     var isCulture=scTemplateValue()==='webculture';
     var meta=(scTemplates||[]).filter(function(t){ return t.id===scTemplateValue(); })[0]||null;
@@ -2445,6 +2526,10 @@
     }
     var panel=document.getElementById('sc-culture-colour-ui');
     if(panel) panel.hidden=!isCulture;
+    var ccard=document.getElementById('sc-culture-card');
+    if(ccard) ccard.classList.toggle('pws-off', !isCulture);
+    renderScTemplateCards();
+    updatePwsView();
     ['sc-c-primary','sc-c-ink','sc-c-bg','sc-c-surface'].forEach(function(id){
       var el=document.getElementById(id);
       if(el) el.disabled=!isCulture;

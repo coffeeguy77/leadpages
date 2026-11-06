@@ -17,5 +17,5 @@ test('enabled app buttons are outline-only; the active one is filled', () => {
   assert.ok(act, 'active rule');
   assert.match(act[1], /background: var\(--accent\);/);
   assert.ok(css.indexOf('.lp-sec-editonly[data-active="1"]') > css.indexOf('.lp-sec-editonly[data-on="1"]'), 'active wins');
-  assert.match(fs.readFileSync(path.join(__dirname, '..', 'manage.html'), 'utf8'), /lp-themes\.css\?v=editor-chips-2/);
+  assert.match(fs.readFileSync(path.join(__dirname, '..', 'manage.html'), 'utf8'), /lp-themes\.css\?v=editor-chips-3/);
 });

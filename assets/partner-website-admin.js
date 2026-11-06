@@ -15,6 +15,9 @@
     activeTab: 'overview',
     templates: [],
     dcDraft: {},
+    library: { ready: false, loaded: false, items: [], max: 9 },
+    libDraft: null,
+    group: null,
     dirty: false,
     loading: false
   };
@@ -26,6 +29,7 @@
     { id: 'biography', label: 'Biography' },
     { id: 'location', label: 'Service area' },
     { id: 'services', label: 'Services' },
+    { id: 'showcase', label: 'LeadPages showcase' },
     { id: 'industryDemos', label: 'Industry demos' },
     { id: 'testimonials', label: 'Testimonials' },
     { id: 'caseStudies', label: 'Case studies' },
@@ -35,6 +39,19 @@
     { id: 'seo', label: 'SEO' },
     { id: 'visibility', label: 'Sections' }
   ];
+
+  // Which editor tabs show under each section of the partner website page (Nov 2026).
+  var TAB_GROUPS = {
+    design: ['design'],
+    content: ['overview', 'positioning', 'biography', 'location', 'services', 'testimonials', 'caseStudies', 'faqs', 'visibility'],
+    showcase: ['showcase', 'industryDemos'],
+    contact: ['contact', 'social', 'seo']
+  };
+
+  function groupTabs() {
+    var ids = state.group && TAB_GROUPS[state.group];
+    return ids ? TABS.filter(function(t) { return ids.indexOf(t.id) >= 0; }) : TABS;
+  }
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) {
@@ -85,8 +102,9 @@
   }
 
   function tabNav() {
-    return '<nav class="pwp-tabs" role="tablist" aria-label="Website profile sections">'
-      + TABS.map(function(t) {
+    var list = groupTabs();
+    return '<nav class="pwp-tabs' + (list.length < 2 ? ' pwp-tabs-single' : '') + '" role="tablist" aria-label="Website profile sections">'
+      + list.map(function(t) {
         var on = t.id === state.activeTab ? ' is-active' : '';
         return '<button type="button" class="pwp-tab' + on + '" role="tab" data-pwp-tab="' + t.id + '" aria-selected="' + (on ? 'true' : 'false') + '">' + esc(t.label) + '</button>';
       }).join('')
@@ -115,13 +133,174 @@
   function panelOverview() {
     var c = state.completion || {};
     return '<div class="pwp-panel" data-pwp-panel="overview">'
-      + '<p class="muted" style="margin:0 0 16px;font-size:14px">Personalise your public partner page — biography, services, testimonials, and enquiry form. All seven page designs use this same content.</p>'
+      + '<p class="muted" style="margin:0 0 16px;font-size:14px">Personalise your public partner page — biography, services, testimonials, and enquiry form. Every design uses this same content, so it follows you when you switch design.</p>'
       + completionHtml()
       + '<div class="pwp-overview-grid">'
       + field('Agency / trading name', 'pwp-agency', wp().identity && wp().identity.agencyName, { hint: 'Shown in hero, footer, and SEO.' })
       + headshotField()
       + '</div>'
       + '</div>';
+  }
+
+  /* ---------- LeadPages showcase: real LeadPages sites on the partner's page (Nov 2026) ---------- */
+  var LIB_MODES = [
+    { id: 'random', title: 'Random mix', text: 'A fresh mix on every visit.' },
+    { id: 'all', title: 'Show all', text: 'Every showcase site, newest first. Updates itself.' },
+    { id: 'selected', title: 'Hand-picked', text: 'Only the sites you tick below.' },
+    { id: 'off', title: 'Off', text: 'Show only your own sites.' }
+  ];
+
+  function libCfg() {
+    if (!state.libDraft) {
+      var src = wp().showcaseLibrary || {};
+      var d = {
+        mode: src.mode || 'random',
+        count: src.count || 3,
+        autoAdd: src.autoAdd !== false,
+        selected: (src.selected || []).slice(),
+        seen: (src.seen || []).slice(),
+        title: src.title || '',
+        sub: src.sub || ''
+      };
+      // Sites added since the last save: with auto-add on they are already showing, so they start ticked.
+      if (d.mode === 'selected' && d.autoAdd) {
+        (state.library.items || []).forEach(function(it) {
+          if (d.seen.indexOf(it.id) < 0 && d.selected.indexOf(it.id) < 0) d.selected.push(it.id);
+        });
+      }
+      state.libDraft = d;
+    }
+    return state.libDraft;
+  }
+
+  function ownShowcaseCount() {
+    return (state.showcaseSites || []).filter(function(x) { return x.show_on_showcase; }).length;
+  }
+
+  function libSiteCard(it, cfg) {
+    var isNew = (cfg.seen || []).indexOf(it.id) < 0 && (wp().showcaseLibrary || {}).seen && (wp().showcaseLibrary.seen || []).length;
+    var on = cfg.selected.indexOf(it.id) >= 0;
+    var pick = cfg.mode === 'selected';
+    var mark = it.logo
+      ? '<img src="' + esc(it.logo) + '" alt="" loading="lazy">'
+      : '<b style="color:' + esc(it.color || 'var(--accent)') + '">' + esc(String(it.name || '?').charAt(0).toUpperCase()) + '</b>';
+    return '<label class="pwp-lib-site' + (pick ? '' : ' is-info') + (pick && on ? ' is-on' : '') + '"' + (it.color ? ' style="--pwp-lib-c:' + esc(it.color) + '"' : '') + '>'
+      + (pick ? '<input type="checkbox" data-pwp-lib-site="' + esc(it.id) + '"' + (on ? ' checked' : '') + '>' : '')
+      + '<span class="pwp-lib-logo">' + mark + '</span>'
+      + '<span class="pwp-lib-txt"><strong>' + esc(it.name) + '</strong><small>' + esc(it.industry || it.host || '') + '</small></span>'
+      + (isNew ? '<span class="pwp-lib-new">New</span>' : '')
+      + '<a class="pwp-lib-view" href="' + esc(it.url) + '" target="_blank" rel="noopener" title="Open ' + esc(it.name) + '" aria-label="Open ' + esc(it.name) + '">'
+      + '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg></a>'
+      + '</label>';
+  }
+
+  function panelShowcase() {
+    var lib = state.library || {};
+    var cfg = libCfg();
+    var items = lib.items || [];
+    var own = ownShowcaseCount();
+    var max = lib.max || 9;
+    var html = '<div class="pwp-panel" data-pwp-panel="showcase">';
+    html += '<div class="pwp-lib-hero">'
+      + '<div><p class="pwp-lib-kicker">Built on LeadPages</p>'
+      + '<h4>Real websites, working for real businesses</h4>'
+      + '<p>Building your portfolio? Show live LeadPages sites on your page while you do. Your own client sites always come first'
+      + (own ? ' &mdash; you have <strong>' + own + '</strong> on show.' : '.') + ' Up to ' + max + ' sites show in total.</p></div>'
+      + '<div class="pwp-lib-count"><strong>' + items.length + '</strong><span>showcase site' + (items.length === 1 ? '' : 's') + ' available</span></div>'
+      + '</div>';
+    if (!lib.loaded) {
+      html += '<p class="muted" style="font-size:13px">Loading showcase sites…</p></div>';
+      return html;
+    }
+    html += '<div class="pwp-lib-modes" role="radiogroup" aria-label="What to show">'
+      + LIB_MODES.map(function(m) {
+        var on = cfg.mode === m.id;
+        return '<button type="button" class="pwp-lib-mode' + (on ? ' is-on' : '') + '" role="radio" aria-checked="' + (on ? 'true' : 'false') + '" data-pwp-lib-mode="' + m.id + '">'
+          + '<strong>' + esc(m.title) + '</strong><span>' + esc(m.text) + '</span></button>';
+      }).join('')
+      + '</div>';
+    if (cfg.mode === 'random') {
+      var opts = '';
+      for (var n = 1; n <= max; n++) opts += '<option value="' + n + '"' + (n === Number(cfg.count) ? ' selected' : '') + '>' + n + '</option>';
+      html += '<div class="field pwp-lib-inline"><label for="pwp-lib-count">How many to show</label><select id="pwp-lib-count">' + opts + '</select>'
+        + '<span class="muted">sites, mixed up on every visit</span></div>';
+    }
+    if (cfg.mode === 'selected') {
+      html += '<label class="pwp-lib-switch"><input type="checkbox" id="pwp-lib-auto"' + (cfg.autoAdd ? ' checked' : '') + '>'
+        + '<span><strong>Add new showcase sites automatically</strong><small>When LeadPages adds a site, it appears on your page straight away. You can untick it here at any time. Turn this off to choose each new site yourself.</small></span></label>';
+    }
+    if (!lib.ready) {
+      html += '<p class="notice" style="margin:14px 0 0">The LeadPages showcase isn&rsquo;t switched on yet. Your page shows your own sites until it is.</p>';
+    } else if (!items.length) {
+      html += '<p class="notice" style="margin:14px 0 0">No LeadPages showcase sites yet. As they&rsquo;re added they&rsquo;ll appear here.</p>';
+    } else {
+      html += '<div class="pwp-lib-head"><h4>' + (cfg.mode === 'selected' ? 'Tick the sites to show' : 'Sites in the showcase') + '</h4>'
+        + (cfg.mode === 'selected' ? '<span class="muted" id="pwp-lib-picked">' + cfg.selected.filter(function(id) { return items.some(function(it) { return it.id === id; }); }).length + ' ticked</span>' : '')
+        + '</div>'
+        + '<div class="pwp-lib-sites">' + items.map(function(it) { return libSiteCard(it, cfg); }).join('') + '</div>';
+    }
+    html += '<details class="pwp-dc-group pwp-lib-words"><summary>Section heading</summary><div class="pwp-dc-fields">'
+      + field('Heading', 'pwp-lib-title', cfg.title, { hint: 'Leave blank for “Real websites, live right now”.' })
+      + field('Text under the heading', 'pwp-lib-sub', cfg.sub, { type: 'textarea', rows: 2, hint: 'Leave blank for the standard line.' })
+      + '</div></details>';
+    html += '</div>';
+    return html;
+  }
+
+  function rerenderShowcasePanel() {
+    var old = document.querySelector('[data-pwp-panel="showcase"]');
+    if (!old) return;
+    var t = val('pwp-lib-title'), sub = val('pwp-lib-sub');
+    if (state.libDraft) { state.libDraft.title = t; state.libDraft.sub = sub; }
+    var wrap = document.createElement('div');
+    wrap.innerHTML = panelShowcase();
+    var fresh = wrap.firstChild;
+    var hidden = old.classList.contains('hidden');
+    old.parentNode.replaceChild(fresh, old);
+    fresh.classList.toggle('hidden', hidden);
+  }
+
+  function collectShowcase() {
+    var cfg = libCfg();
+    var out = {
+      mode: cfg.mode,
+      count: Number(cfg.count) || 3,
+      autoAdd: !!cfg.autoAdd,
+      selected: cfg.selected.slice(),
+      // Everything listed now counts as seen, so only sites added after this save are "new".
+      seen: state.library.loaded && state.library.ready
+        ? (state.library.items || []).map(function(it) { return it.id; })
+        : (cfg.seen || []).slice(),
+      title: $('pwp-lib-title') ? val('pwp-lib-title') : cfg.title,
+      sub: $('pwp-lib-sub') ? val('pwp-lib-sub') : cfg.sub
+    };
+    return out;
+  }
+
+  async function loadLibrary() {
+    try {
+      var r = await fetch('/api/partner/showcase-library', { headers: await state.authHeader() });
+      var j = await r.json();
+      if (j && j.ok) state.library = { ready: !!j.ready, loaded: true, items: j.items || [], max: j.max || 9 };
+      else state.library = { ready: false, loaded: true, items: [], max: 9 };
+    } catch (_e) {
+      state.library = { ready: false, loaded: true, items: [], max: 9 };
+    }
+    state.libDraft = null;
+    rerenderShowcasePanel();
+  }
+
+  function setGroup(group) {
+    state.group = TAB_GROUPS[group] ? group : null;
+    var root = $('pwp-editor');
+    if (!root || !state.websiteProfile) return;
+    var nav = root.querySelector('.pwp-tabs');
+    if (nav) {
+      var wrap = document.createElement('div');
+      wrap.innerHTML = tabNav();
+      nav.parentNode.replaceChild(wrap.firstChild, nav);
+    }
+    showTab(state.activeTab);
   }
 
   /* ---------- Design text: words and pictures of the Studio / Studio Plus / Presence designs ---------- */
@@ -165,7 +344,7 @@
     var html = head
       + '<p class="muted" style="margin:0 0 6px;font-size:14px">Every word and picture of the <strong>' + esc(meta.label) + '</strong> design. '
       + 'Leave a box empty to keep the design\u2019s own wording (shown faintly). <code>{firstName}</code>, <code>{region}</code>, <code>{brand}</code> and <code>{state}</code> fill in from your profile.</p>'
-      + '<p class="muted" style="margin:0 0 16px;font-size:12.5px">Press Enter in a larger box for a new line. Save with <strong>Save page content</strong> below.</p>';
+      + '<p class="muted" style="margin:0 0 16px;font-size:12.5px">Press Enter in a larger box for a new line. Save with <strong>Save changes</strong> at the bottom of the page.</p>';
     groups.forEach(function(g) {
       html += '<details class="pwp-dc-group"' + (g === 'Hero' || groups.length === 1 ? ' open' : '') + '><summary>' + esc(g) + '</summary><div class="pwp-dc-fields">';
       byGroup[g].forEach(function(sl) {
@@ -549,6 +728,7 @@
       + panelBiography()
       + panelLocation()
       + panelServices()
+      + panelShowcase()
       + panelIndustryDemos()
       + panelTestimonials()
       + panelCaseStudies()
@@ -557,18 +737,15 @@
       + panelSocial()
       + panelSeo()
       + panelVisibility()
-      + '</div>'
-      + '<div class="save-row" style="margin-top:20px">'
-      + '<button type="button" class="btn btn-brand" id="pwp-save">Save page content</button>'
-      + '<span class="saved" id="pwp-saved">Saved ✓</span>'
-      + '<span class="notice bad hidden" id="pwp-err" style="margin:0;padding:8px 12px"></span>'
-      + '<p class="muted" style="margin:8px 0 0;font-size:12px;width:100%">Logo, URL, and template are saved with <strong>Save my page</strong> at the bottom of this screen.</p>'
       + '</div>';
+    // Nov 2026: one Save for the whole partner website page (#sc-save in partner.html).
     showTab(state.activeTab);
     wireEditor();
   }
 
   function showTab(id) {
+    var allowed = groupTabs().map(function(t) { return t.id; });
+    if (allowed.indexOf(id) < 0) id = allowed[0] || id;
     state.activeTab = id;
     document.querySelectorAll('.pwp-tab').forEach(function(btn) {
       var on = btn.getAttribute('data-pwp-tab') === id;
@@ -759,6 +936,7 @@
       },
       visibility: visibility,
       designCopy: collectDesignCopy(),
+      showcaseLibrary: collectShowcase(),
       serviceSelections: serviceSelections,
       testimonials: testimonials,
       caseStudies: caseStudies,
@@ -885,6 +1063,18 @@
     root.addEventListener('click', function(e) {
       var tab = e.target.closest('[data-pwp-tab]');
       if (tab) { showTab(tab.getAttribute('data-pwp-tab')); return; }
+      var libMode = e.target.closest('[data-pwp-lib-mode]');
+      if (libMode) {
+        var lc = libCfg();
+        var nm = libMode.getAttribute('data-pwp-lib-mode');
+        if (nm === 'selected' && lc.mode !== 'selected' && !lc.selected.length) {
+          // Start hand-picking from what is in the showcase now.
+          lc.selected = (state.library.items || []).slice(0, 3).map(function(it) { return it.id; });
+        }
+        lc.mode = nm;
+        rerenderShowcasePanel();
+        return;
+      }
       if (e.target.id === 'pwp-headshot-upload' || e.target.closest('#pwp-headshot-upload')) {
         var fileInput = $('pwp-headshot-file');
         if (fileInput) fileInput.click();
@@ -987,6 +1177,18 @@
       state.dcDraft[t][k] = e.target.value;
     });
     root.addEventListener('change', function(e) {
+      if (e.target.id === 'pwp-lib-count') { libCfg().count = Number(e.target.value) || 3; return; }
+      if (e.target.id === 'pwp-lib-auto') { libCfg().autoAdd = !!e.target.checked; return; }
+      var libSite = e.target.getAttribute && e.target.getAttribute('data-pwp-lib-site');
+      if (libSite) {
+        var sc = libCfg();
+        var at = sc.selected.indexOf(libSite);
+        if (e.target.checked && at < 0) sc.selected.push(libSite);
+        if (!e.target.checked && at >= 0) sc.selected.splice(at, 1);
+        var row = e.target.closest('.pwp-lib-site'); if (row) row.classList.toggle('is-on', !!e.target.checked);
+        var pc = $('pwp-lib-picked'); if (pc) pc.textContent = sc.selected.filter(function(id) { return (state.library.items || []).some(function(it) { return it.id === id; }); }).length + ' ticked';
+        return;
+      }
       if (e.target.id === 'pwp-dc-file') {
         var f = e.target.files && e.target.files[0];
         var key = e.target.getAttribute('data-key');
@@ -1059,11 +1261,13 @@
       state.industryTabDefaults = j.industryTabDefaults || [];
       var seedNote = document.getElementById('pwp-seed-note');
       if (seedNote) seedNote.style.display = j.seededFromCultureDemo ? '' : 'none';
+      state.libDraft = null;
       renderEditor();
+      loadLibrary();
     } catch (_e) {
       root.innerHTML = '<p class="notice bad" style="margin:0">Could not load page content editor.</p>';
     }
   }
 
-  global.LPPartnerWebsiteAdmin = { load: load, collectProfile: collectProfile };
+  global.LPPartnerWebsiteAdmin = { load: load, collectProfile: collectProfile, setGroup: setGroup };
 })(typeof window !== 'undefined' ? window : global);

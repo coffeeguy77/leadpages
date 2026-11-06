@@ -1561,6 +1561,42 @@ html[data-lp-site-theme="electric-blue"] #site-label .lp-sitepick-sel{
 .lpl-fav2.on {
   color: var(--warning);
 }
+/* Partner showcase tick (super admin) — Nov 2026 */
+.lpl-sc2 {
+  flex: 0 0 auto;
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1;
+  padding: 5px 9px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--text-soft) 35%, transparent);
+  background: transparent;
+  color: var(--text-soft);
+  white-space: nowrap;
+}
+.lpl-sc2:hover { border-color: var(--accent); color: var(--accent-hover); }
+.lpl-sc2.on {
+  background: color-mix(in srgb, var(--success) 16%, transparent);
+  border-color: color-mix(in srgb, var(--success) 60%, transparent);
+  color: var(--success);
+}
+.lpl-sc2.on.wait {
+  background: color-mix(in srgb, var(--warning) 14%, transparent);
+  border-color: color-mix(in srgb, var(--warning) 55%, transparent);
+  color: var(--warning);
+}
+.lpl-sc2 svg { display: block; flex: 0 0 auto; }
+.lpl-sc2 + .lpl-fav2 { margin-left: 4px; }
+@media (max-width: 640px) {
+  .lpl-sc2 { padding: 5px 7px; }
+  .lpl-sc2 span { display: none; }
+}
 .lpl-manage {
   flex: 0 0 auto;
 }
