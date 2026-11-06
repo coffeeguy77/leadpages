@@ -27,50 +27,35 @@ const partner = {
   phone: '0414 631 463'
 };
 
-test('registry — has Culture first and Local Website Co. second', function() {
-  assert.equal(PARTNER_TEMPLATES.length, 2);
-  assert.equal(PARTNER_TEMPLATES[0].id, 'webculture');
-  assert.equal(PARTNER_TEMPLATES[1].id, 'localwebsiteco');
+test('registry — Culture first, then the Studio designs (localwebsiteco keeps its id)', function() {
+  assert.deepEqual(PARTNER_TEMPLATES.map(function(t) { return t.id; }), ['webculture', 'localwebsiteco', 'studioplus', 'presence']);
   assert.equal(normalizeTemplateKey('localwebsiteco'), 'localwebsiteco');
   assert.equal(normalizeTemplateKey('unknown-template'), 'webculture');
 });
 
-test('buildPartnerLandingHtml — renders Local Website Co. template at partners1 scale', function() {
+// Nov 2026: the "localwebsiteco" key now draws the orange Studio design. The previous Local
+// Website Co. layout is kept in lib/partner-templates/localwebsiteco.js and still builds.
+test('buildPartnerLandingHtml — localwebsiteco renders the orange Studio design', function() {
   const html = buildPartnerLandingHtml(localProfile('localwebsiteco'), partner, [], 'leadpages.com.au', { showTemplateSwitcher: false });
-  assert.ok(html.includes('lwc-body'));
+  assert.ok(html.includes('st-body'));
   assert.ok(html.includes('data-pt-template="localwebsiteco"'));
-  assert.ok(html.includes('DM+Serif+Display'));
-  assert.ok(html.includes('family=Inter'));
-  assert.ok(html.includes('A better'));
-  assert.ok(html.includes('Websites powered by LeadPages'));
-  assert.ok(html.includes("Let's build a website"));
-  assert.ok(html.includes('Tell me about your business'));
-  assert.ok(html.includes('Look professional'));
-  assert.ok(html.includes('Always open'));
-  assert.ok(html.includes('Local knowledge'));
-  assert.ok(html.includes('Call 0414 631 463'));
-  assert.ok(html.includes('Flow Pro Plumbing'));
-  assert.ok(html.includes('Brightline Electrical'));
-  assert.ok(html.includes('Green Space Landscapes'));
-  assert.ok(html.includes('Harvest Café') || html.includes('Harvest Caf'));
-  assert.ok(html.includes('Clear Path Consulting'));
-  assert.ok(html.includes('Bloom Beauty Studio'));
-  assert.ok(html.includes('MOST POPULAR'));
-  assert.ok(html.includes('Grow my business'));
-  assert.ok(html.includes('>Luke<'));
-  assert.ok(html.includes('>Megan<'));
-  assert.ok(html.includes('>David<'));
-  assert.ok(html.includes('Powered by LeadPages Australia'));
-  assert.ok(html.includes('lwc-final-photo'));
-  assert.ok(html.includes('lwc-about-photo'));
-  assert.ok(html.includes('/assets/partner-templates/localwebsiteco/about-shaun.jpg'));
-  assert.ok(html.includes('/assets/partner-templates/localwebsiteco/tech-strip.jpg'));
-  assert.ok(html.includes('/assets/partner-templates/localwebsiteco/contact-meeting.jpg'));
-  assert.ok(html.includes('data-lwc-faq'));
-  assert.ok(html.includes('--lwc-max:1240px') || html.includes('calc(100% - 64px)') || html.includes('lwc-shell'));
+  assert.ok(html.includes('family=Manrope'));
+  assert.ok(html.includes('Impossible to ignore.'));
+  assert.ok(html.includes('/assets/partner-templates/studio.css'));
+  assert.ok(html.includes('/assets/lp-try-colours.js'));
   assert.ok(!/\sclass="[^"]*\bwc-body\b/.test(html));
   assert.ok(!html.includes('/assets/partner-templates/webculture.css'));
   assert.ok(!html.includes('headshot-sv8msu50.svg'));
+});
+
+test('previous Local Website Co. layout still builds directly', function() {
+  const { resolvePartnerThemeContent } = require('../../lib/partner-website/resolver');
+  const prof = localProfile('localwebsiteco');
+  const themeContent = resolvePartnerThemeContent({ prof: prof, partner: partner, demos: [], base: 'leadpages.com.au' });
+  themeContent.meta.templateKey = 'localwebsiteco';
+  const html = require('../../lib/partner-templates/localwebsiteco').build(prof, partner, [], 'leadpages.com.au', { themeContent: themeContent });
+  assert.ok(html.includes('lwc-body'));
+  assert.ok(html.includes('Flow Pro Plumbing'));
 });
 
 test('buildLocalWebsiteCoCopy — rejects SVG headshot and prefers curated demos', function() {
@@ -109,12 +94,12 @@ test('buildPartnerLandingHtml — default still renders Web Culture', function()
   assert.ok(!html.includes('lwc-body'));
 });
 
-test('buildPartnerLandingHtml — templateOverride selects Local Website Co.', function() {
+test('buildPartnerLandingHtml — templateOverride selects a Studio design and shows the preview switcher', function() {
   const html = buildPartnerLandingHtml(localProfile('webculture'), partner, [], 'leadpages.com.au', {
     templateOverride: 'localwebsiteco',
     showTemplateSwitcher: true
   });
-  assert.ok(html.includes('lwc-body'));
+  assert.ok(html.includes('st-body'));
   assert.ok(html.includes('data-pt-template="localwebsiteco"'));
   assert.ok(html.includes('pt-tpl-bar'));
 });

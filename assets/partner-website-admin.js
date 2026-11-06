@@ -13,12 +13,15 @@
     showcaseSites: [],
     industryTabDefaults: [],
     activeTab: 'overview',
+    templates: [],
+    dcDraft: {},
     dirty: false,
     loading: false
   };
 
   var TABS = [
     { id: 'overview', label: 'Overview' },
+    { id: 'design', label: 'Design text' },
     { id: 'positioning', label: 'Hero & pitch' },
     { id: 'biography', label: 'Biography' },
     { id: 'location', label: 'Service area' },
@@ -119,6 +122,99 @@
       + headshotField()
       + '</div>'
       + '</div>';
+  }
+
+  /* ---------- Design text: words and pictures of the Studio / Studio Plus / Presence designs ---------- */
+  function currentTemplateId() {
+    var sel = document.getElementById('sc-template');
+    var v = sel && sel.value ? String(sel.value) : '';
+    if (!v) {
+      var pf = state.profile || {};
+      v = (pf.showcase_config && pf.showcase_config.templateKey) || 'webculture';
+    }
+    return v;
+  }
+  function templateMeta(id) {
+    var list = state.templates || [];
+    for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+    return null;
+  }
+  function designValue(tpl, key) {
+    var d = state.dcDraft[tpl];
+    if (d && Object.prototype.hasOwnProperty.call(d, key)) return d[key];
+    var stored = (wp().designCopy && wp().designCopy[tpl]) || {};
+    return stored[key] || '';
+  }
+  function panelDesign() {
+    var tpl = currentTemplateId();
+    var meta = templateMeta(tpl);
+    var slots = (meta && meta.slots) || [];
+    var head = '<div class="pwp-panel" data-pwp-panel="design">';
+    if (!slots.length) {
+      return head + '<p class="muted" style="margin:0;font-size:14px">'
+        + (meta ? esc(meta.label) : 'This design') + ' is written from the other tabs (Hero &amp; pitch, Services, FAQs and so on). '
+        + 'Choose <strong>Studio</strong>, <strong>Studio Plus</strong> or <strong>Presence</strong> under <strong>Page template</strong> above to edit every heading, line and picture of that design here.</p></div>';
+    }
+    var groups = [];
+    var byGroup = {};
+    slots.forEach(function(sl) {
+      var g = sl.group || 'Page';
+      if (!byGroup[g]) { byGroup[g] = []; groups.push(g); }
+      byGroup[g].push(sl);
+    });
+    var html = head
+      + '<p class="muted" style="margin:0 0 6px;font-size:14px">Every word and picture of the <strong>' + esc(meta.label) + '</strong> design. '
+      + 'Leave a box empty to keep the design\u2019s own wording (shown faintly). <code>{firstName}</code>, <code>{region}</code>, <code>{brand}</code> and <code>{state}</code> fill in from your profile.</p>'
+      + '<p class="muted" style="margin:0 0 16px;font-size:12.5px">Press Enter in a larger box for a new line. Save with <strong>Save page content</strong> below.</p>';
+    groups.forEach(function(g) {
+      html += '<details class="pwp-dc-group"' + (g === 'Hero' || groups.length === 1 ? ' open' : '') + '><summary>' + esc(g) + '</summary><div class="pwp-dc-fields">';
+      byGroup[g].forEach(function(sl) {
+        var id = 'pwp-dc-' + sl.k.replace(/[^a-z0-9]+/gi, '-');
+        var v = designValue(tpl, sl.k);
+        var attrs = ' data-pwp-dc="' + esc(sl.k) + '" placeholder="' + esc(sl.def || '') + '"';
+        if (sl.type === 'image') {
+          var shown = v || sl.def || '';
+          html += '<div class="field pwp-dc-img"><label for="' + id + '">' + esc(sl.label) + '</label>'
+            + '<div class="pwp-dc-img-row">'
+            + (shown ? '<img class="pwp-dc-thumb" src="' + esc(shown) + '" alt="" data-pwp-dc-thumb="' + esc(sl.k) + '">' : '<span class="pwp-dc-thumb" data-pwp-dc-thumb="' + esc(sl.k) + '"></span>')
+            + '<div style="flex:1;min-width:0"><input id="' + id + '" type="url" value="' + esc(v) + '"' + attrs + '>'
+            + '<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;align-items:center">'
+            + '<button type="button" class="btn" data-pwp-dc-upload="' + esc(sl.k) + '" style="padding:6px 12px;font-size:13px">Upload picture</button>'
+            + (v ? '<button type="button" class="btn" data-pwp-dc-clear="' + esc(sl.k) + '" style="padding:6px 12px;font-size:13px">Use design picture</button>' : '')
+            + '<span class="muted" data-pwp-dc-msg="' + esc(sl.k) + '" style="font-size:12.5px"></span></div></div></div></div>';
+        } else if (sl.type === 'area') {
+          html += '<div class="field"><label for="' + id + '">' + esc(sl.label) + '</label><textarea id="' + id + '" rows="' + (String(sl.def || '').length > 140 ? 4 : 2) + '"' + attrs + '>' + esc(v) + '</textarea></div>';
+        } else {
+          html += '<div class="field"><label for="' + id + '">' + esc(sl.label) + '</label><input id="' + id + '" type="text" value="' + esc(v) + '"' + attrs + '></div>';
+        }
+      });
+      html += '</div></details>';
+    });
+    html += '<input type="file" id="pwp-dc-file" accept="image/*" hidden></div>';
+    return html;
+  }
+  function rerenderDesignPanel() {
+    var old = document.querySelector('[data-pwp-panel="design"]');
+    if (!old) return;
+    var wrap = document.createElement('div');
+    wrap.innerHTML = panelDesign();
+    var fresh = wrap.firstChild;
+    if (state.activeTab !== 'design') fresh.classList.add('hidden');
+    old.parentNode.replaceChild(fresh, old);
+  }
+  function collectDesignCopy() {
+    var tpl = currentTemplateId();
+    var out = {};
+    var drafts = state.dcDraft || {};
+    Object.keys(drafts).forEach(function(t) {
+      var stored = Object.assign({}, (wp().designCopy && wp().designCopy[t]) || {});
+      Object.keys(drafts[t]).forEach(function(k) { stored[k] = drafts[t][k]; });
+      var clean = {};
+      Object.keys(stored).forEach(function(k) { if (String(stored[k] || '').trim() !== '') clean[k] = stored[k]; });
+      out[t] = clean;
+    });
+    if (!out[tpl]) out[tpl] = Object.assign({}, (wp().designCopy && wp().designCopy[tpl]) || {});
+    return out;
   }
 
   function panelPositioning() {
@@ -448,6 +544,7 @@
     root.innerHTML = tabNav()
       + '<div class="pwp-panels">'
       + panelOverview()
+      + panelDesign()
       + panelPositioning()
       + panelBiography()
       + panelLocation()
@@ -661,6 +758,7 @@
         ogImage: val('pwp-seo-og')
       },
       visibility: visibility,
+      designCopy: collectDesignCopy(),
       serviceSelections: serviceSelections,
       testimonials: testimonials,
       caseStudies: caseStudies,
@@ -696,13 +794,14 @@
     }
   }
 
-  async function uploadHeadshot(file) {
+  async function uploadHeadshot(file, opts) {
+    opts = opts || {};
     if (!state.authHeader || !state.partnerId) throw new Error('Not signed in.');
     var headers = await state.authHeader();
     var token = headers.Authorization && headers.Authorization.replace(/^Bearer\s+/i, '');
     if (!token) throw new Error('Not signed in.');
-    var folder = 'leadpages/partners/' + state.partnerId + '/profile';
-    var pid = folder + '/headshot-' + Math.random().toString(36).slice(2, 10);
+    var folder = 'leadpages/partners/' + state.partnerId + '/' + (opts.folder || 'profile');
+    var pid = folder + '/' + (opts.prefix || 'headshot') + '-' + Math.random().toString(36).slice(2, 10);
     var sr = await fetch('/api/cloudinary/sign', {
       method: 'POST',
       headers: Object.assign({ 'content-type': 'application/json' }, headers),
@@ -763,6 +862,7 @@
       state.websiteProfile = j.websiteProfile;
       state.completion = j.completion;
       if (j.profile) state.profile = j.profile;
+      state.dcDraft = {};
       var sv = $('pwp-saved');
       if (sv) { sv.classList.add('show'); setTimeout(function() { sv.classList.remove('show'); }, 1700); }
       renderEditor();
@@ -795,6 +895,21 @@
         return;
       }
       if (e.target.id === 'pwp-save' || e.target.closest('#pwp-save')) { saveProfile(); return; }
+      var dcUp = e.target.closest('[data-pwp-dc-upload]');
+      if (dcUp) {
+        var dcFile = $('pwp-dc-file');
+        if (dcFile) { dcFile.setAttribute('data-key', dcUp.getAttribute('data-pwp-dc-upload')); dcFile.click(); }
+        return;
+      }
+      var dcClear = e.target.closest('[data-pwp-dc-clear]');
+      if (dcClear) {
+        var ck = dcClear.getAttribute('data-pwp-dc-clear');
+        var ct = currentTemplateId();
+        state.dcDraft[ct] = state.dcDraft[ct] || {};
+        state.dcDraft[ct][ck] = '';
+        rerenderDesignPanel();
+        return;
+      }
       if (e.target.id === 'pwp-add-testimonial') {
         var box = $('pwp-testimonials');
         var i = box.querySelectorAll('[data-pwp-testimonial]').length;
@@ -864,7 +979,31 @@
       var rmF = e.target.getAttribute('data-pwp-remove-faq');
       if (rmF != null) { var fr = e.target.closest('[data-pwp-faq]'); if (fr) fr.remove(); return; }
     });
+    root.addEventListener('input', function(e) {
+      var k = e.target.getAttribute && e.target.getAttribute('data-pwp-dc');
+      if (!k) return;
+      var t = currentTemplateId();
+      state.dcDraft[t] = state.dcDraft[t] || {};
+      state.dcDraft[t][k] = e.target.value;
+    });
     root.addEventListener('change', function(e) {
+      if (e.target.id === 'pwp-dc-file') {
+        var f = e.target.files && e.target.files[0];
+        var key = e.target.getAttribute('data-key');
+        e.target.value = '';
+        if (!f || !key) return;
+        var m = document.querySelector('[data-pwp-dc-msg="' + key + '"]');
+        if (m) m.textContent = 'Uploading…';
+        uploadHeadshot(f, { folder: 'design', prefix: key.replace(/[^a-z0-9]+/gi, '-') }).then(function(url) {
+          var t = currentTemplateId();
+          state.dcDraft[t] = state.dcDraft[t] || {};
+          state.dcDraft[t][key] = url;
+          rerenderDesignPanel();
+        }).catch(function(err) {
+          if (m) m.textContent = (err && err.message) || 'Upload failed';
+        });
+        return;
+      }
       if (e.target.id !== 'pwp-headshot-file') return;
       var file = e.target.files && e.target.files[0];
       e.target.value = '';
@@ -885,6 +1024,7 @@
     });
   }
 
+  var wiredTemplateSelect = false;
   async function load(opts) {
     opts = opts || {};
     state.authHeader = opts.authHeader;
@@ -902,6 +1042,17 @@
         return;
       }
       state.websiteProfile = j.websiteProfile;
+      state.profile = j.profile || state.profile || null;
+      state.dcDraft = {};
+      try {
+        var tr = await fetch('/api/partner/template-registry');
+        var tj = await tr.json();
+        if (tj && tj.ok && Array.isArray(tj.templates)) state.templates = tj.templates;
+      } catch (_t) { /* design text tab explains itself without the list */ }
+      if (!wiredTemplateSelect) {
+        wiredTemplateSelect = true;
+        document.addEventListener('change', function(ev) { if (ev.target && ev.target.id === 'sc-template') rerenderDesignPanel(); });
+      }
       state.platform = j.platform;
       state.completion = j.completion;
       state.showcaseSites = j.showcaseSites || [];

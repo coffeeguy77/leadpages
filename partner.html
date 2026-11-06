@@ -333,14 +333,18 @@
 
           <div class="card" style="padding:20px">
             <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 6px">Page template</h3>
-            <p class="muted" style="margin:0 0 14px;font-size:13px">Choose the public partner page design. Culture remains the default.</p>
-            <div class="field" style="max-width:360px">
+            <p class="muted" style="margin:0 0 14px;font-size:13px">Choose the public partner page design. All designs use the same content; Studio, Studio Plus and Presence also have their own words and pictures under <strong>Design text</strong> below.</p>
+            <div class="field" style="max-width:420px">
               <label for="sc-template">Template</label>
               <select id="sc-template">
                 <option value="webculture">Culture</option>
-                <option value="localwebsiteco">Local Website Co.</option>
+                <option value="localwebsiteco">Studio (orange, portfolio)</option>
+                <option value="studioplus">Studio Plus (orange, more content)</option>
+                <option value="presence">Presence (navy &amp; lime)</option>
               </select>
             </div>
+            <p id="sc-template-desc" class="muted" style="margin:-4px 0 10px;font-size:12.5px;max-width:62ch"></p>
+            <p style="margin:0 0 4px;font-size:13.5px"><a id="sc-template-preview" href="#" target="_blank" rel="noopener">Preview this design on your page &rarr;</a> <span class="muted" style="font-size:12px">Opens your live page in this design without changing it.</span></p>
             <div id="sc-culture-colour-ui" style="margin-top:18px">
               <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 6px">Culture page colours</h3>
               <p class="muted" style="margin:0 0 14px;font-size:13px">Pick a Culture colour way, or override with your own custom theme. Colours apply to your live partner page immediately after you save.</p>
@@ -2404,11 +2408,14 @@
   var scCulturePreset='culture';
   var scTemplates=[
     { id:'webculture', label:'Culture' },
-    { id:'localwebsiteco', label:'Local Website Co.' }
+    { id:'localwebsiteco', label:'Studio (orange, portfolio)' },
+    { id:'studioplus', label:'Studio Plus (orange, more content)' },
+    { id:'presence', label:'Presence (navy & lime)' }
   ];
   function normalizeScTemplateKey(v){
     v=String(v||'webculture').trim().toLowerCase();
-    return v==='localwebsiteco'?'localwebsiteco':'webculture';
+    var ids=(scTemplates||[]).map(function(t){ return t.id; });
+    return ids.indexOf(v)>=0?v:'webculture';
   }
   function scTemplateValue(){
     var el=document.getElementById('sc-template');
@@ -2419,7 +2426,7 @@
     var current=normalizeScTemplateKey(sel.value||((state.profile&&state.profile.showcase_config&&state.profile.showcase_config.templateKey)||'webculture'));
     sel.innerHTML=(scTemplates||[]).map(function(t){
       var id=normalizeScTemplateKey(t.id);
-      var label=t.label || (id==='localwebsiteco'?'Local Website Co.':'Culture');
+      var label=t.label || id;
       return '<option value="'+esc(id)+'">'+esc(label)+'</option>';
     }).join('');
     sel.value=current;
@@ -2427,6 +2434,15 @@
   }
   function updateScTemplateUi(){
     var isCulture=scTemplateValue()==='webculture';
+    var meta=(scTemplates||[]).filter(function(t){ return t.id===scTemplateValue(); })[0]||null;
+    var desc=document.getElementById('sc-template-desc');
+    if(desc) desc.textContent=(meta&&meta.description)||'';
+    var pv=document.getElementById('sc-template-preview');
+    if(pv){
+      var slug=((document.getElementById('sc-slug')||{}).value||'').trim().toLowerCase();
+      if(slug){ pv.href='https://'+scBase()+'/'+encodeURIComponent(slug)+'?tpl='+encodeURIComponent(scTemplateValue()); pv.parentNode.style.display=''; }
+      else pv.parentNode.style.display='none';
+    }
     var panel=document.getElementById('sc-culture-colour-ui');
     if(panel) panel.hidden=!isCulture;
     ['sc-c-primary','sc-c-ink','sc-c-bg','sc-c-surface'].forEach(function(id){
