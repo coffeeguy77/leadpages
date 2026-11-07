@@ -157,3 +157,24 @@ function realPng() {
   return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==' +
     '';
 }
+
+test('blocks: tabs (first content tab open, link tab, #id) and list steps', () => {
+  const B = blocksRenderer();
+  const out = B.render([
+    ':::tabs',
+    ':::tab id=one icon=user title="Tab One"', 'First **panel**', ':::',
+    ':::tab id=two title="Tab Two"', 'Second panel', ':::',
+    ':::tab title="Elsewhere" href=/other', ':::',
+    ':::',
+    ':::steps layout=list', 'users | Step A | Detail A', 'file | Step B | Detail B', ':::'
+  ].join('\n'));
+  assert.match(out, /<div class="lpb-tabs" data-lpb-tabs>/);
+  assert.match(out, /class="lpb-tab is-on"[^>]*aria-selected="true" data-lpb-tab="one"/);
+  assert.match(out, /data-lpb-tab="two"/);
+  assert.match(out, /<a class="lpb-tab lpb-tab-link" href="\/acme\/other">/);
+  assert.match(out, /<div class="lpb-tabpanel" role="tabpanel" id="lpbp-one" aria-labelledby="lpbt-one"><p>First <strong>panel<\/strong>/);
+  assert.match(out, /id="lpbp-two" aria-labelledby="lpbt-two" hidden>/);
+  assert.doesNotMatch(out, /lpbp-t3/);
+  assert.match(out, /<ol class="lpb-steps lpb-steps-list">/);
+  assert.match(out, /<div class="lpb-step-card">.*Step A.*Detail A/);
+});

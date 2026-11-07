@@ -2408,8 +2408,26 @@
             '<div class="lpb-card-body">' + (r[1] ? '<h3 class="lpb-card-t">' + lpbInline(r[1]) + '</h3>' : '') + (r[2] ? '<p>' + lpbInline(r[2]) + '</p>' : '') +
             (href ? '<a class="lpb-more" ' + linkAttrs(href) + '>' + esc(r[4] || a.more || 'Learn more') + ARROW + '</a>' : '') + '</div></div>';
         }).join('') + '</div>';
+      case 'tabs':
+        // :::tabs > :::tab id=x icon=y title="..." (href=/page makes a tab that links to another page).
+        var tabs = n.kids.filter(function (k) { return k.type === 'tab'; });
+        var tid = function (t, i) { return (txt((t.a || {}).id).replace(/[^\w-]/g, '') || 't' + (i + 1)); };
+        var first = -1; tabs.forEach(function (t, i) { if (first < 0 && !txt((t.a || {}).href)) first = i; });
+        return '<div class="lpb-tabs" data-lpb-tabs><div class="lpb-tablist" role="tablist" style="--lpb-n:' + Math.max(1, tabs.length) + '">' + tabs.map(function (t, i) {
+          var ta = t.a || {}, label = lpbInline(ta.title || ta._title || ''), ic = lpbIcon(ta.icon);
+          var inner = (ic ? '<span class="lpb-tab-ic">' + ic + '</span>' : '') + '<span class="lpb-tab-t">' + label + '</span>';
+          if (txt(ta.href)) return '<a class="lpb-tab lpb-tab-link" ' + linkAttrs(hrefOf(ta.href, '#')) + '>' + inner + '<span class="lpb-tab-go" aria-hidden="true">' + ARROW + '</span></a>';
+          return '<button type="button" class="lpb-tab' + (i === first ? ' is-on' : '') + '" role="tab" id="lpbt-' + tid(t, i) + '" aria-controls="lpbp-' + tid(t, i) + '" aria-selected="' + (i === first) + '" data-lpb-tab="' + tid(t, i) + '">' + inner + '</button>';
+        }).join('') + '</div>' + tabs.map(function (t, i) {
+          if (txt((t.a || {}).href)) return '';
+          return '<div class="lpb-tabpanel" role="tabpanel" id="lpbp-' + tid(t, i) + '" aria-labelledby="lpbt-' + tid(t, i) + '"' + (i === first ? '' : ' hidden') + '>' + lpbKids(t) + '</div>';
+        }).join('') + '</div>';
       case 'steps':
         var st = lpbRows(n);
+        if (a.layout === 'list') return '<ol class="lpb-steps lpb-steps-list">' + st.map(function (r, i) {
+          return '<li class="lpb-step"><span class="lpb-num">' + (i + 1) + '</span><div class="lpb-step-card">' + (lpbIcon(r[0]) ? '<span class="lpb-step-ic">' + lpbIcon(r[0]) + '</span>' : '') +
+            '<div class="lpb-step-body"><h3 class="lpb-step-t">' + lpbInline(r[1] || '') + '</h3>' + (r[2] ? '<p>' + lpbInline(r.slice(2).join(' | ')) + '</p>' : '') + '</div></div></li>';
+        }).join('') + '</ol>';
         return '<ol class="lpb-steps" style="--lpb-n:' + Math.max(1, st.length) + '">' + st.map(function (r, i) {
           return '<li class="lpb-step"><span class="lpb-num">' + (i + 1) + '</span>' + (lpbIcon(r[0]) ? '<span class="lpb-step-ic">' + lpbIcon(r[0]) + '</span>' : '') +
             '<div class="lpb-step-body"><h3 class="lpb-step-t">' + lpbInline(r[1] || '') + '</h3>' + (r[2] ? '<p>' + lpbInline(r[2]) + '</p>' : '') + '</div></li>';
@@ -2518,6 +2536,35 @@
     art.classList.add('lp-has-blocks');
     lpbConsent(C, p);
     lpbEnquiry(art);
+    lpbTabs(art);
+  }
+  /** Tabs block: click to switch; a #id link (or the page URL's #id) opens that tab. */
+  function lpbShowTab(box, id, scroll) {
+    var btn = box.querySelector('[data-lpb-tab="' + id + '"]'); if (!btn) return false;
+    Array.prototype.forEach.call(box.querySelectorAll('[data-lpb-tab]'), function (b) { var on = b === btn; b.classList.toggle('is-on', on); b.setAttribute('aria-selected', on ? 'true' : 'false'); });
+    Array.prototype.forEach.call(box.querySelectorAll('.lpb-tabpanel'), function (p) { p.hidden = p.id !== 'lpbp-' + id; });
+    if (scroll) try { box.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_s) {}
+    return true;
+  }
+  function lpbHashTab(scroll) {
+    var id = String(location.hash || '').replace(/^#/, '').replace(/[^\w-]/g, ''); if (!id) return false;
+    var hit = false;
+    Array.prototype.forEach.call(document.querySelectorAll('[data-lpb-tabs]'), function (box) { if (lpbShowTab(box, id, scroll)) hit = true; });
+    return hit;
+  }
+  function lpbTabs(root) {
+    if (!(root || document).querySelector('[data-lpb-tabs]')) return;
+    lpbHashTab(false);
+    if (lpbTabs.__bound) return; lpbTabs.__bound = true;
+    document.addEventListener('click', function (e) {
+      var b = e.target.closest && e.target.closest('[data-lpb-tab]');
+      if (b) { lpbShowTab(b.closest('[data-lpb-tabs]'), b.getAttribute('data-lpb-tab'), false); return; }
+      var a = e.target.closest && e.target.closest('.lpb a[href^="#"]');
+      if (a) { var id = a.getAttribute('href').slice(1).replace(/[^\w-]/g, ''); var hit = false;
+        Array.prototype.forEach.call(document.querySelectorAll('[data-lpb-tabs]'), function (box) { if (lpbShowTab(box, id, true)) hit = true; });
+        if (hit) { e.preventDefault(); try { history.replaceState(null, '', '#' + id); } catch (_h) {} } }
+    });
+    window.addEventListener('hashchange', function () { lpbHashTab(true); });
   }
 
   var STEPS = [heroSlider, heroBanners, headerCta, minimalFooter, logoTint, buttonShapes, orderLayout, featuredProjects, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, trustBar, mapHours, ctaBanner, storyTimeline, storyRows, bookingWeek, heroBooking, bookingHire, fontSet, mobileBarSpace, heroSplit, appWidths, headingBreaks, strokeIcons, siteWidth, headerItems, navActive, subPageNav, heroPortrait, featureBand, footerContact, footerDecor, pageBanner, pageBlocks, headerStack, textScale, logoThemed];
