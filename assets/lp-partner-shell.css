@@ -1970,3 +1970,15 @@ html[data-lp-reduced-motion="true"] .lp-p-appear-sheet {
   .pwp-lib-hero { padding: 14px; }
   .pwp-lib-count { text-align: left; display: flex; align-items: baseline; gap: 8px; }
 }
+.pwp-lib-row2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 16px; margin: 0 0 6px; }
+.pwp-lib-row2 select { width: 100%; }
+.pwp-lib-star {
+  flex: 0 0 auto; width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center;
+  appearance: none; border: 0; background: transparent; cursor: pointer; position: relative; z-index: 1;
+}
+.pwp-lib-star svg { fill: none; stroke: var(--text-soft); stroke-width: 1.8; stroke-linejoin: round; }
+.pwp-lib-star:hover svg { stroke: var(--warning); }
+.pwp-lib-star.is-on svg { fill: var(--warning); stroke: var(--warning); }
+.pwp-lib-pick { flex: 0 0 auto; font-size: 10.5px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; padding: 3px 7px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--accent); }
+@media (max-width: 760px) { .pwp-lib-row2 { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 480px) { .pwp-lib-pick { display: none; } }

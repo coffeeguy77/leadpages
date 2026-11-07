@@ -11,13 +11,12 @@
     if (!view) return;
     var w = view.clientWidth, h = view.clientHeight;
     if (!w || !h) return;
-    var base = w < 400 ? 430 : 1280;          // phone-width cards show the site's mobile layout
+    // Phones show each site's mobile layout; everything else shows the desktop site.
+    var base = (window.innerWidth || w) < 640 ? 430 : 1280;
     var s = w / base;
-    var fullH = Math.ceil(h / s);
     frame.style.width = base + 'px';
-    frame.style.height = (fullH + 900) + 'px';
+    frame.style.height = Math.ceil(h / s) + 'px';
     frame.style.setProperty('--lpsl-s', String(s));
-    frame.style.setProperty('--lpsl-scroll', (-Math.round(700 * s)) + 'px');
   }
 
   function load(frame) {

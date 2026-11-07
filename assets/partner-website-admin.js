@@ -160,7 +160,10 @@
         selected: (src.selected || []).slice(),
         seen: (src.seen || []).slice(),
         title: src.title || '',
-        sub: src.sub || ''
+        sub: src.sub || '',
+        mix: src.mix || 'theirs-first',
+        starred: (src.starred || []).slice(),
+        scroll: src.scroll || 'site'
       };
       // Sites added since the last save: with auto-add on they are already showing, so they start ticked.
       if (d.mode === 'selected' && d.autoAdd) {
@@ -188,7 +191,11 @@
       + (pick ? '<input type="checkbox" data-pwp-lib-site="' + esc(it.id) + '"' + (on ? ' checked' : '') + '>' : '')
       + '<span class="pwp-lib-logo">' + mark + '</span>'
       + '<span class="pwp-lib-txt"><strong>' + esc(it.name) + '</strong><small>' + esc(it.industry || it.host || '') + '</small></span>'
+      + (it.featured ? '<span class="pwp-lib-pick">LeadPages pick</span>' : '')
       + (isNew ? '<span class="pwp-lib-new">New</span>' : '')
+      + '<button type="button" class="pwp-lib-star' + (cfg.starred.indexOf(it.id) >= 0 ? ' is-on' : '') + '" data-pwp-lib-star="' + esc(it.id) + '"'
+      + ' aria-pressed="' + (cfg.starred.indexOf(it.id) >= 0 ? 'true' : 'false') + '" title="Favourite: shown first, and the only ones used in Random mix" aria-label="Favourite ' + esc(it.name) + '">'
+      + '<svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="m12 3.6 2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/></svg></button>'
       + '<a class="pwp-lib-view" href="' + esc(it.url) + '" target="_blank" rel="noopener" title="Open ' + esc(it.name) + '" aria-label="Open ' + esc(it.name) + '">'
       + '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg></a>'
       + '</label>';
@@ -219,11 +226,26 @@
           + '<strong>' + esc(m.title) + '</strong><span>' + esc(m.text) + '</span></button>';
       }).join('')
       + '</div>';
+    var MIX = [
+      ['theirs-first', 'My sites first, then LeadPages'],
+      ['ours-first', 'LeadPages first, then my sites'],
+      ['theirs', 'Only my sites'],
+      ['ours', 'Only LeadPages sites']
+    ];
+    var SCROLL = [['site', 'As set by LeadPages'], ['all', 'Every site'], ['off', 'Never']];
+    html += '<div class="pwp-lib-row2">'
+      + '<div class="field"><label for="pwp-lib-mix">Which sites</label><select id="pwp-lib-mix">'
+      + MIX.map(function(m) { return '<option value="' + m[0] + '"' + (cfg.mix === m[0] ? ' selected' : '') + '>' + esc(m[1]) + '</option>'; }).join('')
+      + '</select><p class="muted" style="font-size:12px;margin:6px 0 0">The Culture design keeps your own sites in its industry tabs.</p></div>'
+      + '<div class="field"><label for="pwp-lib-scroll">Auto-scrolling previews</label><select id="pwp-lib-scroll">'
+      + SCROLL.map(function(m) { return '<option value="' + m[0] + '"' + (cfg.scroll === m[0] ? ' selected' : '') + '>' + esc(m[1]) + '</option>'; }).join('')
+      + '</select><p class="muted" style="font-size:12px;margin:6px 0 0">Scrolling previews slowly move down the live site to catch the eye.</p></div>'
+      + '</div>';
     if (cfg.mode === 'random') {
       var opts = '';
       for (var n = 1; n <= max; n++) opts += '<option value="' + n + '"' + (n === Number(cfg.count) ? ' selected' : '') + '>' + n + '</option>';
       html += '<div class="field pwp-lib-inline"><label for="pwp-lib-count">How many to show</label><select id="pwp-lib-count">' + opts + '</select>'
-        + '<span class="muted">sites, mixed up on every visit</span></div>';
+        + '<span class="muted">sites, mixed up on every visit' + (cfg.starred.length ? ' &mdash; from your <strong>' + cfg.starred.length + '</strong> starred favourite' + (cfg.starred.length === 1 ? '' : 's') : ' &mdash; star favourites below to rotate only those') + '</span></div>';
     }
     if (cfg.mode === 'selected') {
       html += '<label class="pwp-lib-switch"><input type="checkbox" id="pwp-lib-auto"' + (cfg.autoAdd ? ' checked' : '') + '>'
@@ -234,7 +256,7 @@
     } else if (!items.length) {
       html += '<p class="notice" style="margin:14px 0 0">No LeadPages showcase sites yet. As they&rsquo;re added they&rsquo;ll appear here.</p>';
     } else {
-      html += '<div class="pwp-lib-head"><h4>' + (cfg.mode === 'selected' ? 'Tick the sites to show' : 'Sites in the showcase') + '</h4>'
+      html += '<div class="pwp-lib-head"><h4>' + (cfg.mode === 'selected' ? 'Tick the sites to show' : 'Sites in the showcase') + ' <span class="muted" style="font-weight:400;font-size:12.5px">&middot; &#9733; favourites show first</span></h4>'
         + (cfg.mode === 'selected' ? '<span class="muted" id="pwp-lib-picked">' + cfg.selected.filter(function(id) { return items.some(function(it) { return it.id === id; }); }).length + ' ticked</span>' : '')
         + '</div>'
         + '<div class="pwp-lib-sites">' + items.map(function(it) { return libSiteCard(it, cfg); }).join('') + '</div>';
@@ -272,7 +294,10 @@
         ? (state.library.items || []).map(function(it) { return it.id; })
         : (cfg.seen || []).slice(),
       title: $('pwp-lib-title') ? val('pwp-lib-title') : cfg.title,
-      sub: $('pwp-lib-sub') ? val('pwp-lib-sub') : cfg.sub
+      sub: $('pwp-lib-sub') ? val('pwp-lib-sub') : cfg.sub,
+      mix: cfg.mix,
+      starred: cfg.starred.slice(),
+      scroll: cfg.scroll
     };
     return out;
   }
@@ -1063,6 +1088,16 @@
     root.addEventListener('click', function(e) {
       var tab = e.target.closest('[data-pwp-tab]');
       if (tab) { showTab(tab.getAttribute('data-pwp-tab')); return; }
+      var star = e.target.closest('[data-pwp-lib-star]');
+      if (star) {
+        e.preventDefault();
+        var sc2 = libCfg();
+        var sid = star.getAttribute('data-pwp-lib-star');
+        var at2 = sc2.starred.indexOf(sid);
+        if (at2 >= 0) sc2.starred.splice(at2, 1); else sc2.starred.push(sid);
+        rerenderShowcasePanel();
+        return;
+      }
       var libMode = e.target.closest('[data-pwp-lib-mode]');
       if (libMode) {
         var lc = libCfg();
@@ -1179,6 +1214,8 @@
     root.addEventListener('change', function(e) {
       if (e.target.id === 'pwp-lib-count') { libCfg().count = Number(e.target.value) || 3; return; }
       if (e.target.id === 'pwp-lib-auto') { libCfg().autoAdd = !!e.target.checked; return; }
+      if (e.target.id === 'pwp-lib-mix') { libCfg().mix = e.target.value; return; }
+      if (e.target.id === 'pwp-lib-scroll') { libCfg().scroll = e.target.value; return; }
       var libSite = e.target.getAttribute && e.target.getAttribute('data-pwp-lib-site');
       if (libSite) {
         var sc = libCfg();

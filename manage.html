@@ -4466,6 +4466,17 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       try{ renderLanding(); }catch(_r){}
     }catch(e){}
   }
+  function lplOpenShowcaseManager(){
+    if(!window.LPShowcaseManager){ toast('Showcase manager is still loading \u2014 try again in a moment'); return; }
+    var sites=(allSites||[]).filter(_lplLibEligible).map(function(x){ return {id:x.id,name:x.business_name||x.slug,slug:x.slug,status:String(x.status||'').toLowerCase()}; })
+      .sort(function(a,b){ return a.name.localeCompare(b.name); });
+    window.LPShowcaseManager.open({
+      token: async function(){ var se=await sb.auth.getSession(); return se&&se.data&&se.data.session&&se.data.session.access_token; },
+      toast: toast,
+      sites: sites,
+      onChange: function(){ lplLoadLibrary(); }
+    });
+  }
   async function lplToggleLibrary(id){
     if(!LPL.libReady){ toast('Run the partner showcase SQL in Supabase first (db/migrations/20261107_partner_showcase_library.sql).'); return; }
     var on=!(LPL.libIds&&LPL.libIds[id]);
@@ -9189,6 +9200,7 @@ function heroCtaCard(c){
       +ownershipCard
       +seoGaRow
       +(currentRole==='super'?'<div class="card" style="margin-bottom:20px;"><h2 style="margin:0 0 4px;">Mobile command menu</h2><p class="lede" style="margin:0 0 12px;">Design the phone mega menu for the command centre — section order, layouts, separators, button styles, and which roles see each item (super admin, partner, client).</p><button type="button" class="btn" id="open-mobile-menu">Edit mobile menu</button></div>':'')
+      +(currentRole==='super'?'<div class="card" style="margin-bottom:20px;"><h2 style="margin:0 0 4px;">Partner showcase</h2><p class="lede" style="margin:0 0 12px;">LeadPages sites partners can show on their partner pages. Add feature pictures, turn on auto-scroll, pick your best and set the order.</p><button type="button" class="btn" id="open-showcase-mgr">Manage partner showcase</button></div>':'')
       +(currentRole==='super'?'<div class="card" style="margin-bottom:20px;"><h2 style="margin:0 0 4px;">Hosting plans &amp; billing</h2><p class="lede" style="margin:0 0 12px;">Build the subscription plans customers can be placed on \u2014 free, paid, or volume-priced. The suspended page is what the public sees when a site is paused for non-payment.</p><button type="button" class="btn" id="open-plans">Manage hosting plans</button> <button type="button" class="btn ghost" id="open-susp">Edit suspended page</button></div>':'')
       +window.__tradeStarterCard()
       +platformSeoCard
@@ -9206,6 +9218,7 @@ function heroCtaCard(c){
     var dmo=$('set-demo'); if(dmo) dmo.addEventListener('change',function(){ if(currentSiteId) lplToggleDemo(currentSiteId); });
     var csid=$('set-copy-site-id'); if(csid) csid.addEventListener('click',function(){ if(currentSiteId) lpCopyText(currentSiteId,'Site ID'); });
     var opb=$('open-plans'); if(opb) opb.addEventListener('click',openPlansPage);
+    var osm=$('open-showcase-mgr'); if(osm) osm.addEventListener('click',lplOpenShowcaseManager);
     var osp=$('open-susp'); if(osp) osp.addEventListener('click',openSuspendedEditor);
     var omm=$('open-mobile-menu'); if(omm) omm.addEventListener('click',function(){ closeSettingsPage(); if(typeof openMobileMenuBuilder==='function') openMobileMenuBuilder(); });
     if(currentRole==='super'){ wireAssignPartnerCard(); wireManualOwnershipCard(); }
@@ -21477,5 +21490,6 @@ function heroCtaCard(c){
 <link rel="stylesheet" href="/assets/lp-scrolling-sponsor-banner.css">
 <script src="/assets/lp-scrolling-sponsor-banner.js"></script>
 <script src="/assets/js/marketplace/scrolling-sponsor-banner-manage.js"></script>
+<script src="/assets/lp-showcase-manager.js?v=1" defer></script>
 </body>
 </html>

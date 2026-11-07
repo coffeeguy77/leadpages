@@ -2,8 +2,10 @@
 //
 // GET                 signed-in partner (or super admin): the library sites partners can pick
 //                     from, newest first. { ok, ready, items:[card], max }
-// GET ?scope=admin    super admin: ids of the sites in the library. { ok, ready, siteIds }
+// GET ?scope=admin    super admin: the library with its settings. { ok, ready, siteIds, items }
 // POST {site_id, on}  super admin: add (on:true) or remove (on:false) a site.
+// POST {action:'update', site_id, image_url?, image_pid?, auto_scroll?, featured?}
+// POST {action:'reorder', order:[site_id,…]}
 //
 // Only sites on the platform owner's own account can be added: no other partner may be the
 // site's servicing or referring partner, and partner homepages / system sites are refused.
@@ -75,7 +77,8 @@ module.exports = async (req, res) => {
         if (tableMissing(r.error)) return res.status(200).json({ ok: true, ready: false, siteIds: [] });
         return res.status(500).json({ ok: false, error: 'Could not load the library.' });
       }
-      return res.status(200).json({ ok: true, ready: true, siteIds: (r.data || []).map(function(x) { return x.site_id; }) });
+      const full = await fetchLibraryCards(admin, BASE, { includeUnpublished: true });
+      return res.status(200).json({ ok: true, ready: true, siteIds: (r.data || []).map(function(x) { return x.site_id; }), items: full.cards });
     }
     if (!superAdmin) {
       const pid = await ownPartnerId(user.id);
@@ -89,8 +92,39 @@ module.exports = async (req, res) => {
   if (!superAdmin) return res.status(403).json({ ok: false, error: 'forbidden' });
 
   const body = await readBody(req);
+  if (body.action === 'reorder') {
+    const order = (Array.isArray(body.order) ? body.order : []).map(String).filter(function(x) { return UUID.test(x); }).slice(0, 300);
+    if (!order.length) return res.status(400).json({ ok: false, error: 'order required' });
+    for (let i = 0; i < order.length; i++) {
+      const r = await admin.from('partner_showcase_library').update({ sort_order: i + 1 }).eq('site_id', order[i]);
+      if (r.error) return res.status(500).json({ ok: false, error: 'Could not save the order.' });
+    }
+    return res.status(200).json({ ok: true });
+  }
   const siteId = String(body.site_id || body.siteId || '').trim();
   if (!UUID.test(siteId)) return res.status(400).json({ ok: false, error: 'site_id required' });
+  const action = String(body.action || 'toggle');
+
+  if (action === 'update') {
+    const patch = {};
+    if ('image_url' in body) {
+      const u = String(body.image_url || '').trim();
+      if (u && !/^https:\/\/[^\s"'<>]{4,600}$/i.test(u)) return res.status(400).json({ ok: false, error: 'Picture must be an https link.' });
+      patch.image_url = u || null;
+      patch.image_pid = u ? (String(body.image_pid || '').trim().slice(0, 300) || null) : null;
+    }
+    if ('auto_scroll' in body) patch.auto_scroll = !!body.auto_scroll;
+    if ('featured' in body) patch.featured = !!body.featured;
+    if (!Object.keys(patch).length) return res.status(400).json({ ok: false, error: 'Nothing to change.' });
+    const up = await admin.from('partner_showcase_library').update(patch).eq('site_id', siteId).select('site_id');
+    if (up.error) {
+      if (tableMissing(up.error)) return res.status(409).json(NOT_READY);
+      return res.status(500).json({ ok: false, error: 'Could not save.' });
+    }
+    if (!(up.data || []).length) return res.status(404).json({ ok: false, error: 'That site is not in the showcase.' });
+    return res.status(200).json({ ok: true, site_id: siteId });
+  }
+
   const on = body.on !== false;
 
   if (!on) {
