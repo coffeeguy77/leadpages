@@ -1879,7 +1879,7 @@ html[data-lp-reduced-motion="true"] .lp-p-appear-sheet {
 .pws-lede { margin: 0 0 14px; font-size: 13px; }
 .pws-row { display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; }
 .pws-select-fallback { display: none; }
-.pws-designs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.pws-designs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .pws-design {
   appearance: none; font: inherit; text-align: left; cursor: pointer; padding: 0 0 12px; overflow: hidden;
   display: flex; flex-direction: column; gap: 3px;

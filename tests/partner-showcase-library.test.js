@@ -197,3 +197,35 @@ test('page editor: edit mode marks words/pictures/sections; public page stays cl
   assert.equal(editMode.applyEditMarkers('<img src="' + editMode.markImage('p', '/x.jpg') + '">'), '<img src="/x.jpg" data-lpe-img="p">');
   assert.equal(editMode.applyEditMarkers('<script>var a="' + editMode.markText('a', 'Hi') + '"</script>'), '<script>var a="Hi"</script>');
 });
+
+test('Plum and Forest designs render, edit and use the gallery', () => {
+  const { PARTNER_TEMPLATES } = require('../lib/partner-templates/registry');
+  assert.ok(PARTNER_TEMPLATES.some(function(t) { return t.id === 'plum'; }));
+  assert.ok(PARTNER_TEMPLATES.some(function(t) { return t.id === 'forest'; }));
+  ['plum', 'forest'].forEach(function(k) {
+    const html = page(k, { mode: 'all' });
+    assert.match(html, new RegExp('data-pt-template="' + k + '"'));
+    assert.match(html, /studio-2\.css/);
+    assert.match(html, /family=Fraunces/);
+    assert.match(html, /data-pl-lead-form/);
+    assert.match(html, /data-lpsl-card/);
+    assert.doesNotMatch(html, /[-]/);
+    assert.doesNotMatch(html, /\{(firstName|region|brand|state)\}/);
+  });
+  assert.match(page('plum', { mode: 'all' }), /data-lpsl-chip=/);
+  assert.match(page('plum', { mode: 'all' }), /class="lpsl-build"/);
+  assert.match(page('plum', { mode: 'off' }), /plum-demo-1\.webp/, 'examples show when there are no live sites');
+});
+
+test('Culture: words are editable on the page and overrides apply', () => {
+  const wp = validateWebsiteProfile(Object.assign(buildLocalWebsiteCoWebsiteProfile(), {
+    designCopy: { webculture: { 'copy.hero.headline': 'Websites that win more work.' } }
+  }));
+  const prof = { partner_id: 'p1', showcase_slug: 'x', showcase_config: { templateKey: 'webculture', websiteProfile: wp } };
+  const pub = buildPartnerLandingHtml(prof, { id: 'p1', display_name: 'Pat' }, [], 'leadpages.com.au', {});
+  assert.match(pub, /Websites that win more work\./);
+  const ed = buildPartnerLandingHtml(JSON.parse(JSON.stringify(prof)), { id: 'p1', display_name: 'Pat' }, [], 'leadpages.com.au', { editMode: true });
+  assert.match(ed, /data-lpe="wc:copy\.hero\.headline"/);
+  assert.match(ed, /"fieldMap":\{"biography\.shortIntro"/);
+  assert.doesNotMatch(ed, /[-]/);
+});

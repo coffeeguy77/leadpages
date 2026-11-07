@@ -55,6 +55,33 @@
     t = setTimeout(function () { frames.forEach(function (f) { if (f.getAttribute('src')) fit(f); }); }, 150);
   });
 
+  // Industry chips: show only cards of that trade (all of them, including "See more" ones).
+  roots.forEach(function (root) {
+    var chips = root.querySelectorAll('[data-lpsl-chip]');
+    if (!chips.length) return;
+    var grid = root.querySelector('.lpsl-grid');
+    var more = root.querySelector('.lpsl-foot');
+    chips.forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        var want = chip.getAttribute('data-lpsl-chip');
+        chips.forEach(function (c) { var on = c === chip; c.classList.toggle('is-on', on); c.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+        root.querySelectorAll('[data-lpsl-card]').forEach(function (card) {
+          card.hidden = !!want && card.getAttribute('data-lpsl-ind') !== want;
+        });
+        root.classList.toggle('is-filtered', !!want);
+        if (grid) {
+          if (want) grid.removeAttribute('hidden'); else grid.setAttribute('hidden', '');
+          grid.querySelectorAll('iframe[data-lpsl-src]').forEach(function (f) { if (!f.closest('[hidden]')) watch(f); });
+        }
+        if (more) {
+          more.hidden = !!want;
+          var mb = more.querySelector('[data-lpsl-more]');
+          if (mb && !want) { mb.setAttribute('aria-expanded', 'false'); mb.textContent = mb.getAttribute('data-more'); }
+        }
+      });
+    });
+  });
+
   roots.forEach(function (root) {
     var btn = root.querySelector('[data-lpsl-more]');
     if (!btn) return;

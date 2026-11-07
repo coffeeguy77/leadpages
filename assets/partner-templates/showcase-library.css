@@ -160,3 +160,7 @@
   .lpsl--culture .lpsl-go { box-shadow: none; padding: 0; }
   .lpsl-logo:has(img) { max-width: 64px; padding: 0 6px; }
 }
+/* Feature pictures are 16:10 desktop shots: keep that shape on phones (live previews use 4:3). */
+@media (max-width: 640px) {
+  .lpsl-view:has(.lpsl-shot), .lpsl-card--lead .lpsl-view:has(.lpsl-shot) { aspect-ratio: 16 / 10; }
+}

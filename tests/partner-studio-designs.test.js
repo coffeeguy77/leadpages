@@ -14,7 +14,7 @@ const { SLOTS, slotDefaults } = require('../lib/partner-templates/studio-family'
 const { validateWebsiteProfile, mergeWebsiteProfilePatch } = require('../lib/partner-website/validate');
 const { buildLocalWebsiteCoWebsiteProfile } = require('../lib/partner-website/local-website-co-profile');
 
-const IDS = ['localwebsiteco', 'studioplus', 'presence'];
+const IDS = ['localwebsiteco', 'studioplus', 'presence', 'plum', 'forest'];
 
 function render(id, wpPatch, opts) {
   const wp = validateWebsiteProfile(Object.assign(buildLocalWebsiteCoWebsiteProfile(), wpPatch || {}));
@@ -25,7 +25,7 @@ function render(id, wpPatch, opts) {
 }
 
 test('registry lists Culture first plus the three new designs', () => {
-  assert.deepEqual(PARTNER_TEMPLATES.map((t) => t.id), ['webculture', 'localwebsiteco', 'studioplus', 'presence']);
+  assert.deepEqual(PARTNER_TEMPLATES.map((t) => t.id), ['webculture', 'localwebsiteco', 'studioplus', 'presence', 'plum', 'forest']);
   IDS.forEach((id) => assert.equal(normalizeTemplateKey(id), id));
   assert.equal(normalizeTemplateKey('converge'), 'webculture');
 });

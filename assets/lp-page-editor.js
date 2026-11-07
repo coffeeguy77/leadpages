@@ -222,7 +222,25 @@
     var shared = Object.assign({}, dc.shared || {});
     var own = Object.assign({}, dc[B.template] || {});
     var lines = {};
+    var patch = {};
+    var culture = Object.assign({}, dc.webculture || {});
+    var cultureTouched = false;
+    var fmap = B.fieldMap || {};
     Object.keys(st.edits).forEach(function (k) {
+      // Culture words: profile fields go back to the profile; the rest are Culture overrides.
+      if (k.indexOf('wc:') === 0) {
+        var path = k.slice(3);
+        var val = String(st.edits[k] || '').replace(/\n{3,}/g, '\n\n').trim();
+        if (fmap[path]) {
+          var bits = fmap[path].split('.');
+          patch[bits[0]] = patch[bits[0]] || {};
+          patch[bits[0]][bits[1]] = val;
+        } else {
+          if (val) culture[path] = val; else delete culture[path];
+          cultureTouched = true;
+        }
+        return;
+      }
       var m = /^(.+)#(\d+)$/.exec(k);
       if (m) { lines[m[1]] = true; return; }
       var v = String(st.edits[k] || '').replace(/\n{3,}/g, '\n\n').trim();
@@ -236,10 +254,13 @@
       if (items.length) shared[base] = items.join('\n'); else delete shared[base];
     });
     var designCopy = { shared: shared };
-    designCopy[B.template] = own;
+    if (B.template !== 'webculture') designCopy[B.template] = own;
+    if (cultureTouched) designCopy.webculture = culture;
     var designHidden = {};
     designHidden[B.template] = Object.keys(st.hidden);
-    return { designCopy: designCopy, designHidden: designHidden };
+    patch.designCopy = designCopy;
+    patch.designHidden = designHidden;
+    return patch;
   }
 
   async function save(opts) {
@@ -334,7 +355,7 @@
     }
     setEditing(true);
     previewNote();
-    status(B.textEditing ? 'Click any words or picture to change them' : 'Hide sections or switch design. Culture\u2019s words are edited in Partner Website \u2192 Content.');
+    status('Click any words or picture to change them');
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
