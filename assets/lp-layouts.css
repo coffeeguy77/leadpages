@@ -1320,7 +1320,7 @@ section[data-sec="ctaBanner"].cb-quote.cbq-decor::after{right:-30px}
 .lpb-tab.is-on{background:var(--lpb-blue);border-color:var(--lpb-blue);color:#fff;box-shadow:0 8px 22px color-mix(in srgb,var(--lpb-blue) 28%,transparent)}
 .lpb-tab.is-on .lpb-tab-ic{color:#fff}
 .lpb-tab.is-on::after{content:"";position:absolute;left:50%;bottom:-9px;width:18px;height:18px;margin-left:-9px;background:var(--lpb-blue);transform:rotate(45deg);border-radius:0 0 3px 0}
-.lpb-tab-link{color:var(--lpb-ink)}
+.lpb a.lpb-tab-link{color:var(--lpb-ink);text-decoration:none}
 .lpb-tab-go{display:inline-flex;color:var(--lpb-blue)}.lpb-tab-go .lp-ic{width:16px;height:16px}
 .lpb-tabpanel{display:flex;flex-direction:column;gap:26px;min-width:0}
 .lpb-tabpanel[hidden]{display:none}
