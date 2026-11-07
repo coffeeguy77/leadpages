@@ -16,7 +16,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/lp-themes.css">
 <link rel="stylesheet" href="/assets/lp-logo.css">
-<link rel="stylesheet" href="/assets/lp-partner-shell.css?v=pws5">
+<link rel="stylesheet" href="/assets/lp-partner-shell.css?v=pws6">
 <link rel="stylesheet" href="/assets/lp-messages-embed.css">
 <link rel="stylesheet" href="/assets/lp-super-admin.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -345,6 +345,12 @@
             </div>
             <p id="sc-template-desc" class="muted" style="margin:12px 0 6px;font-size:12.5px;max-width:62ch"></p>
             <p style="margin:0;font-size:13.5px"><a id="sc-template-preview" href="#" target="_blank" rel="noopener">Preview this design on your page &rarr;</a> <span class="muted" style="font-size:12px">Opens your page in this design without changing it.</span></p>
+          </div>
+
+          <div class="card pws-card" data-pws="design showcase">
+            <h3 class="pws-h">Your industry pages</h3>
+            <p class="muted pws-lede">Ten ready-made pages, one per industry, each with a live example your prospect can try. Send the link that matches who you’re talking to. They use your logo, contact details and showcase sites. Edit any of them on the page.</p>
+            <div id="pws-industry-list" class="pws-ind-list"></div>
           </div>
 
           <div class="card pws-card" data-pws="design" id="sc-culture-card">
@@ -1901,6 +1907,8 @@
     if(_pwsPanel){
       _pwsPanel.addEventListener('click',function(e){
         var go=e.target.closest('[data-pws-go]'); if(go){ showPwsSection(go.getAttribute('data-pws-go')); return; }
+        var cp=e.target.closest('[data-pws-copy]');
+        if(cp){ var u=cp.getAttribute('data-pws-copy'); (navigator.clipboard?navigator.clipboard.writeText(u):Promise.reject()).then(function(){ cp.textContent='Copied ✓'; setTimeout(function(){ cp.textContent='Copy link'; },1500); }).catch(function(){ window.prompt('Copy this link', u); }); return; }
         var dc=e.target.closest('[data-pws-design]');
         if(dc){ var sel=document.getElementById('sc-template'); if(sel&&sel.value!==dc.getAttribute('data-pws-design')){ sel.value=dc.getAttribute('data-pws-design'); sel.dispatchEvent(new Event('change',{bubbles:true})); setPwsDirty(true); } return; }
         var b=e.target.closest('.pws-body button');
@@ -1908,7 +1916,7 @@
       });
       _pwsPanel.addEventListener('input',function(e){ if(e.target&&e.target.closest('.pws-body')) setPwsDirty(true); });
       _pwsPanel.addEventListener('change',function(e){ if(e.target&&e.target.closest('.pws-body')) setPwsDirty(true); });
-      var _pwsSlug=document.getElementById('sc-slug'); if(_pwsSlug) _pwsSlug.addEventListener('input',updatePwsView);
+      var _pwsSlug=document.getElementById('sc-slug'); if(_pwsSlug){ _pwsSlug.addEventListener('input',updatePwsView); _pwsSlug.addEventListener('change',renderIndustryPages); }
       window.addEventListener('beforeunload',function(ev){ var d=document.getElementById('pws-dirty'); if(d&&!d.hidden){ ev.preventDefault(); ev.returnValue=''; } });
       showPwsSection('design');
     }
@@ -2480,7 +2488,11 @@
   function renderScTemplateCards(){
     var box=document.getElementById('sc-template-cards'); if(!box) return;
     var cur=scTemplateValue();
-    box.innerHTML=(scTemplates||[]).map(function(t){
+    // Every design needs an option in the (hidden) select so it can be chosen and saved.
+    var selEl=document.getElementById('sc-template');
+    if(selEl){ (scTemplates||[]).forEach(function(t){ if(!selEl.querySelector('option[value="'+t.id+'"]')){ var o=document.createElement('option'); o.value=t.id; o.textContent=t.label||t.id; selEl.appendChild(o); } }); if(selEl.value!==cur) selEl.value=cur; }
+    var mainT=(scTemplates||[]).filter(function(t){ return !t.industry; }), indT=(scTemplates||[]).filter(function(t){ return t.industry; });
+    function cardHtml(t){
       var id=normalizeScTemplateKey(t.id); var on=id===cur;
       var thumb=t.thumb?'<img src="'+esc(t.thumb)+'" alt="" loading="lazy">':'<span class="pws-design-swatch" style="background:'+esc(t.preview||'var(--panel-soft)')+'"></span>';
       return '<button type="button" class="pws-design'+(on?' is-on':'')+'" role="radio" aria-checked="'+(on?'true':'false')+'" data-pws-design="'+esc(id)+'">'
@@ -2488,6 +2500,28 @@
         +'<span class="pws-design-name">'+esc(t.short||t.label||id)+'</span>'
         +'<span class="pws-design-tag">'+esc(t.tagline||'')+'</span>'
         +'</button>';
+    }
+    box.innerHTML=mainT.map(function(t){ return cardHtml(t); }).join('')
+      +(indT.length?'<p class="pws-designs-sub">Industry designs <span class="muted">— made for one industry, each with a live example prospects can try</span></p>'+indT.map(function(t){ return cardHtml(t); }).join(''):'');
+    renderIndustryPages();
+  }
+  /* Industry pages (Nov 2026): every partner has one page per industry to send to prospects. */
+  function renderIndustryPages(){
+    var box=document.getElementById('pws-industry-list'); if(!box) return;
+    var slug=((document.getElementById('sc-slug')||{}).value||'').trim().toLowerCase();
+    var indT=(scTemplates||[]).filter(function(t){ return t.industry; });
+    if(!slug){ box.innerHTML='<p class="muted" style="margin:0;font-size:13px">Set your page address first (Address &amp; domain).</p>'; return; }
+    var base='https://'+scBase()+'/'+encodeURIComponent(slug);
+    box.innerHTML=indT.map(function(t){
+      var url=base+'?industry='+encodeURIComponent(t.id);
+      return '<div class="pws-ind">'
+        +'<img src="'+esc(t.thumb||'')+'" alt="" loading="lazy">'
+        +'<div class="pws-ind-txt"><strong>'+esc(t.industryName||t.short)+'</strong><span>'+esc(url.replace(/^https:\/\//,''))+'</span></div>'
+        +'<div class="pws-ind-acts">'
+        +'<a class="btn" href="'+esc(url)+'" target="_blank" rel="noopener">Open</a>'
+        +'<a class="btn" href="'+esc(url)+'&edit=1" target="_blank" rel="noopener">Edit</a>'
+        +'<button type="button" class="btn" data-pws-copy="'+esc(url)+'">Copy link</button>'
+        +'</div></div>';
     }).join('');
   }
   function updatePwsView(){

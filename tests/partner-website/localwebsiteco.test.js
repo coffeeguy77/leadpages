@@ -28,7 +28,7 @@ const partner = {
 };
 
 test('registry — Culture first, then the Studio designs (localwebsiteco keeps its id)', function() {
-  assert.deepEqual(PARTNER_TEMPLATES.map(function(t) { return t.id; }), ['webculture', 'localwebsiteco', 'studioplus', 'presence', 'plum', 'forest']);
+  assert.deepEqual(PARTNER_TEMPLATES.map(function(t) { return t.id; }), ['webculture', 'localwebsiteco', 'studioplus', 'presence', 'plum', 'forest'].concat(require('../../lib/partner-templates/niche-family').NICHE_IDS));
   assert.equal(normalizeTemplateKey('localwebsiteco'), 'localwebsiteco');
   assert.equal(normalizeTemplateKey('unknown-template'), 'webculture');
 });

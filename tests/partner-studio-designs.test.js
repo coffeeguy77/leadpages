@@ -25,7 +25,7 @@ function render(id, wpPatch, opts) {
 }
 
 test('registry lists Culture first plus the three new designs', () => {
-  assert.deepEqual(PARTNER_TEMPLATES.map((t) => t.id), ['webculture', 'localwebsiteco', 'studioplus', 'presence', 'plum', 'forest']);
+  assert.deepEqual(PARTNER_TEMPLATES.map((t) => t.id), ['webculture', 'localwebsiteco', 'studioplus', 'presence', 'plum', 'forest'].concat(require('../lib/partner-templates/niche-family').NICHE_IDS));
   IDS.forEach((id) => assert.equal(normalizeTemplateKey(id), id));
   assert.equal(normalizeTemplateKey('converge'), 'webculture');
 });

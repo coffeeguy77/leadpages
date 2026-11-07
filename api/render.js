@@ -667,6 +667,13 @@ function showcaseRenderOpts(req, home) {
   const tpl = q.tpl || q.template || '';
   const opts = { home: home || null, showTemplateSwitcher: true };
   if (tpl) opts.templateOverride = String(tpl).trim();
+  // ?industry=<id> → the partner's industry page (Nov 2026): that industry design, no preview bar.
+  const ind = String(q.industry || '').trim().toLowerCase();
+  if (ind && require('../lib/partner-templates/niche-family').NICHE_IDS.indexOf(ind) >= 0) {
+    opts.templateOverride = ind;
+    opts.showTemplateSwitcher = false;
+    opts.industryPage = true;
+  }
   // ?edit=1 → click-and-edit mode. The page only carries edit markers and the editor script;
   // the editor checks the visitor is signed in as this partner before anything can be saved.
   if (q.edit === '1' || q.edit === 'true') opts.editMode = true;

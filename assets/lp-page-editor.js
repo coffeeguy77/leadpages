@@ -39,7 +39,7 @@
       + '<span class="lpe-status" id="lpe-status" aria-live="polite">Checking you\u2019re signed in\u2026</span>'
       + '<span class="lpe-spacer"></span>'
       + '<button type="button" class="lpe-btn lpe-ghost" id="lpe-toggle" title="See the page without editing outlines">Preview</button>'
-      + '<a class="lpe-btn lpe-ghost" id="lpe-exit" href="' + esc(location.pathname) + '">Exit</a>'
+      + '<a class="lpe-btn lpe-ghost" id="lpe-exit" href="' + esc(location.pathname + (B.industryPage ? '?industry=' + encodeURIComponent(B.template) : '')) + '">Exit</a>'
       + '<button type="button" class="lpe-btn lpe-primary" id="lpe-save" disabled>Save</button>'
       + '</div>';
     document.body.appendChild(el);
@@ -301,6 +301,11 @@
 
   function previewNote() {
     var n = $('#lpe-preview-note'); if (!n) return;
+    if (B.industryPage) {
+      n.hidden = false;
+      n.textContent = 'Industry page: changes here only affect this industry page';
+      return;
+    }
     if (st.savedTemplate && st.savedTemplate !== B.template) {
       var cur = (B.designs || []).filter(function (d) { return d.id === B.template; })[0];
       n.hidden = false;
@@ -319,6 +324,7 @@
 
     $('#lpe-save').addEventListener('click', function () { save(); });
     $('#lpe-toggle').addEventListener('click', function () { setEditing(!st.editing); });
+    if (B.industryPage) { var dsel = $('#lpe-design'); if (dsel && dsel.parentNode) dsel.parentNode.style.display = 'none'; }
     $('#lpe-design').addEventListener('change', async function (e) {
       var id = e.target.value;
       if (st.dirty) { var ok = await save(); if (!ok) { e.target.value = B.template; return; } }
