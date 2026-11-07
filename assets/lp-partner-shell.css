@@ -1856,7 +1856,7 @@ html[data-lp-reduced-motion="true"] .lp-p-appear-sheet {
 .pws-head h2 { margin-bottom: 4px; }
 .pws-head .sub { margin: 0; max-width: 60ch; }
 .pws-head-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-#pws-view.is-disabled { opacity: .5; pointer-events: none; }
+#pws-view.is-disabled, #pws-edit.is-disabled { opacity: .5; pointer-events: none; }
 .pws-nav {
   position: sticky; top: var(--lp-partner-header-h, 0px); z-index: 5;
   display: flex; gap: 6px; max-width: 860px; margin: 18px 0 16px; padding: 6px;

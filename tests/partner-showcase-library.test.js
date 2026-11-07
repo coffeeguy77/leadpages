@@ -169,3 +169,31 @@ test('pictures and auto-scroll: picture replaces the live preview unless it scro
   const every = page('presence', { mode: 'all', scroll: 'all' });
   assert.match(every, /lp_scroll=1/);
 });
+
+test('page editor: edit mode marks words/pictures/sections; public page stays clean and hides sections', () => {
+  const editMode = require('../lib/partner-templates/edit-mode');
+  const e = page('studioplus', { mode: 'off' });
+  assert.doesNotMatch(e, /[-]/);
+  assert.doesNotMatch(e, /data-lpe/);
+  assert.match(e, /data-lp-sec="/);
+  const wp = validateWebsiteProfile(Object.assign(buildLocalWebsiteCoWebsiteProfile(), {
+    designHidden: { presence: ['s2'] },
+    designCopy: { shared: { 'hero.sub': 'Shared words travel' } }
+  }));
+  const prof = { partner_id: 'p1', showcase_slug: 'x', showcase_config: { templateKey: 'presence', websiteProfile: wp } };
+  const pub = buildPartnerLandingHtml(prof, { id: 'p1', display_name: 'Pat' }, [], 'leadpages.com.au', {});
+  assert.match(pub, /\[data-lp-sec="s2"\]\{display:none!important\}/);
+  assert.match(pub, /Shared words travel/);
+  prof.showcase_config.templateKey = 'localwebsiteco';
+  assert.match(buildPartnerLandingHtml(prof, { id: 'p1' }, [], 'leadpages.com.au', {}), /Shared words travel/, 'shared words follow to another design');
+  const ed = buildPartnerLandingHtml(prof, { id: 'p1' }, [], 'leadpages.com.au', { editMode: true });
+  assert.match(ed, /<span data-lpe="hero\.sub">Shared words travel<\/span>/);
+  assert.match(ed, /data-lpe-img="hero\.image"/);
+  assert.match(ed, /lp-page-editor\.js/);
+  assert.match(ed, /noindex,nofollow/);
+  assert.doesNotMatch(ed, /[-]/);
+  // markers inside attributes are dropped, not turned into spans
+  assert.equal(editMode.applyEditMarkers('<img alt="' + editMode.markText('a', 'Hi') + '">'), '<img alt="Hi">');
+  assert.equal(editMode.applyEditMarkers('<img src="' + editMode.markImage('p', '/x.jpg') + '">'), '<img src="/x.jpg" data-lpe-img="p">');
+  assert.equal(editMode.applyEditMarkers('<script>var a="' + editMode.markText('a', 'Hi') + '"</script>'), '<script>var a="Hi"</script>');
+});

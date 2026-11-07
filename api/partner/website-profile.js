@@ -140,6 +140,16 @@ module.exports = async (req, res) => {
     if (!logoUp.error && logoUp.data) saved.profile = logoUp.data;
   }
 
+  // The page editor's design drop-down (Nov 2026) can switch design in the same save.
+  if (body.templateKey) {
+    const { normalizeTemplateKey } = require('../../lib/partner-templates/registry');
+    const tk = normalizeTemplateKey(String(body.templateKey));
+    const cur2 = await admin.from('partner_profiles').select('showcase_config').eq('partner_id', partner.id).maybeSingle();
+    const cfg2 = Object.assign({}, (cur2.data && cur2.data.showcase_config) || {}, { templateKey: tk });
+    const tkUp = await admin.from('partner_profiles').update({ showcase_config: cfg2, updated_at: now }).eq('partner_id', partner.id).select('*').single();
+    if (!tkUp.error && tkUp.data) saved.profile = tkUp.data;
+  }
+
   const content = resolvePartnerThemeContent({ prof: saved.profile, partner, directory, demos: [], base: 'leadpages.com.au', home: null });
   return res.status(200).json({
     ok: true,

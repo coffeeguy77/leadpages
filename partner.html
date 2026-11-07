@@ -16,7 +16,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/lp-themes.css">
 <link rel="stylesheet" href="/assets/lp-logo.css">
-<link rel="stylesheet" href="/assets/lp-partner-shell.css?v=pws3">
+<link rel="stylesheet" href="/assets/lp-partner-shell.css?v=pws4">
 <link rel="stylesheet" href="/assets/lp-messages-embed.css">
 <link rel="stylesheet" href="/assets/lp-super-admin.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -30,7 +30,7 @@
 <script src="/assets/lp-messages-embed.js" defer></script>
 <script src="/assets/lp-quote-tags.js" defer></script>
 <script src="/assets/lp-busy-overlay.js" defer></script>
-<script src="/assets/partner-website-admin.js?v=pws2" defer></script>
+<script src="/assets/partner-website-admin.js?v=pws3" defer></script>
 <link rel="stylesheet" href="/assets/lp-ui.css?v=2">
 </head>
 <body class="lp-partner-page">
@@ -314,6 +314,7 @@
           </div>
           <div class="pws-head-actions">
             <span id="sc-status-badge"></span>
+            <a class="btn btn-brand" id="pws-edit" href="#" target="_blank" rel="noopener" title="Click any words or picture on your page to change them">Edit on page <span aria-hidden="true">&#9998;</span></a>
             <a class="btn" id="pws-view" href="#" target="_blank" rel="noopener">View my page <span aria-hidden="true">&#8599;</span></a>
           </div>
         </div>
@@ -2492,6 +2493,11 @@
     var slug=((document.getElementById('sc-slug')||{}).value||'').trim().toLowerCase();
     if(slug){ a.href='https://'+scBase()+'/'+encodeURIComponent(slug); a.classList.remove('is-disabled'); a.removeAttribute('aria-disabled'); }
     else { a.href='#'; a.classList.add('is-disabled'); a.setAttribute('aria-disabled','true'); }
+    var ed=document.getElementById('pws-edit');
+    if(ed){
+      if(slug){ ed.href='https://'+scBase()+'/'+encodeURIComponent(slug)+'?edit=1'; ed.classList.remove('is-disabled'); ed.removeAttribute('aria-disabled'); }
+      else { ed.href='#'; ed.classList.add('is-disabled'); ed.setAttribute('aria-disabled','true'); }
+    }
   }
   var PWS_EDITOR_COPY={
     design:['Design text','Words and pictures that belong to this design only. Leave a box blank to use the design\u2019s own wording.'],

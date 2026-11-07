@@ -347,7 +347,8 @@
     var d = state.dcDraft[tpl];
     if (d && Object.prototype.hasOwnProperty.call(d, key)) return d[key];
     var stored = (wp().designCopy && wp().designCopy[tpl]) || {};
-    return stored[key] || '';
+    var shared = (wp().designCopy && wp().designCopy.shared) || {};
+    return stored[key] || shared[key] || '';
   }
   function panelDesign() {
     var tpl = currentTemplateId();
@@ -369,7 +370,7 @@
     var html = head
       + '<p class="muted" style="margin:0 0 6px;font-size:14px">Every word and picture of the <strong>' + esc(meta.label) + '</strong> design. '
       + 'Leave a box empty to keep the design\u2019s own wording (shown faintly). <code>{firstName}</code>, <code>{region}</code>, <code>{brand}</code> and <code>{state}</code> fill in from your profile.</p>'
-      + '<p class="muted" style="margin:0 0 16px;font-size:12.5px">Press Enter in a larger box for a new line. Save with <strong>Save changes</strong> at the bottom of the page.</p>';
+      + '<p class="muted" style="margin:0 0 16px;font-size:12.5px">Words you change here are shared with your other designs that have the same box. Press Enter in a larger box for a new line. Save with <strong>Save changes</strong> at the bottom of the page.</p>';
     groups.forEach(function(g) {
       html += '<details class="pwp-dc-group"' + (g === 'Hero' || groups.length === 1 ? ' open' : '') + '><summary>' + esc(g) + '</summary><div class="pwp-dc-fields">';
       byGroup[g].forEach(function(sl) {
@@ -406,18 +407,23 @@
     if (state.activeTab !== 'design') fresh.classList.add('hidden');
     old.parentNode.replaceChild(fresh, old);
   }
+  // Nov 2026: words are shared by every design with the same box (designCopy.shared), so
+  // switching design keeps them. Saving a box here moves it into the shared set.
   function collectDesignCopy() {
-    var tpl = currentTemplateId();
+    var dc = wp().designCopy || {};
     var out = {};
+    var shared = Object.assign({}, dc.shared || {});
     var drafts = state.dcDraft || {};
     Object.keys(drafts).forEach(function(t) {
-      var stored = Object.assign({}, (wp().designCopy && wp().designCopy[t]) || {});
-      Object.keys(drafts[t]).forEach(function(k) { stored[k] = drafts[t][k]; });
-      var clean = {};
-      Object.keys(stored).forEach(function(k) { if (String(stored[k] || '').trim() !== '') clean[k] = stored[k]; });
-      out[t] = clean;
+      var own = Object.assign({}, dc[t] || {});
+      Object.keys(drafts[t]).forEach(function(k) {
+        var v = String(drafts[t][k] || '');
+        delete own[k];
+        if (v.trim() !== '') shared[k] = drafts[t][k]; else delete shared[k];
+      });
+      out[t] = own;
     });
-    if (!out[tpl]) out[tpl] = Object.assign({}, (wp().designCopy && wp().designCopy[tpl]) || {});
+    out.shared = shared;
     return out;
   }
 

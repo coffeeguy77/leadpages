@@ -1,0 +1,86 @@
+/* LeadPages click-and-edit (partner pages, Nov 2026). The editor's own chrome uses fixed
+   neutral colours so it reads on any design (light or dark) and never borrows page tokens. */
+html.lpe-on body { padding-top: 58px !important; }
+#lpe-bar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 2147483000;
+  background: #12151c; color: #eef1f6; border-bottom: 1px solid rgba(255,255,255,.12);
+  box-shadow: 0 8px 24px -12px rgba(0,0,0,.6);
+  font: 500 14px/1.3 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+#lpe-bar * { box-sizing: border-box; }
+.lpe-bar-in { display: flex; align-items: center; gap: 12px; padding: 10px 16px; min-height: 58px; flex-wrap: wrap; }
+.lpe-brand { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+.lpe-dot { width: 9px; height: 9px; border-radius: 50%; background: #34d399; box-shadow: 0 0 0 4px rgba(52,211,153,.18); }
+.lpe-design { display: inline-flex; align-items: center; gap: 8px; color: #aab3c2; font-size: 13px; }
+.lpe-design select {
+  font: inherit; font-size: 13.5px; color: #eef1f6; background: #1d222c; border: 1px solid rgba(255,255,255,.18);
+  border-radius: 8px; padding: 6px 28px 6px 10px; cursor: pointer;
+}
+.lpe-status { color: #aab3c2; font-size: 13px; min-width: 0; }
+.lpe-status.is-bad { color: #fca5a5; }
+.lpe-status a { color: #93c5fd; }
+.lpe-preview-note { font-size: 13px; color: #fde68a; display: inline-flex; align-items: center; gap: 8px; }
+.lpe-preview-note[hidden] { display: none; }
+.lpe-spacer { flex: 1 1 auto; }
+.lpe-btn {
+  appearance: none; font: inherit; font-size: 13.5px; font-weight: 650; border-radius: 9px; padding: 8px 14px; cursor: pointer;
+  border: 1px solid rgba(255,255,255,.2); background: transparent; color: #eef1f6; text-decoration: none; white-space: nowrap;
+}
+.lpe-btn:hover { background: rgba(255,255,255,.08); }
+.lpe-primary { background: #34d399; border-color: #34d399; color: #062016; }
+.lpe-primary:hover { background: #4ee0ad; }
+.lpe-primary:disabled { opacity: .45; cursor: default; }
+.lpe-sm { padding: 4px 10px; font-size: 12.5px; }
+
+/* Editable words */
+html.lpe-editing [data-lpe] { outline: 1.5px dashed transparent; outline-offset: 3px; border-radius: 3px; cursor: text; transition: outline-color .15s ease, background .15s ease; }
+html.lpe-editing [data-lpe]:hover { outline-color: rgba(52,211,153,.9); }
+html.lpe-editing [data-lpe]:focus { outline: 2px solid #34d399; background: rgba(52,211,153,.08); }
+html.lpe-editing [data-lpe]:empty::before { content: "Type here"; opacity: .5; }
+
+/* Pictures */
+html.lpe-editing [data-lpe-img] { cursor: pointer; }
+html.lpe-editing img[data-lpe-img]:hover, html.lpe-editing [data-lpe-img]:hover { outline: 2px dashed rgba(52,211,153,.9); outline-offset: -2px; }
+.lpe-pic {
+  position: fixed; z-index: 2147482999; display: inline-flex; align-items: center; gap: 6px;
+  font: 650 12.5px/1 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; padding: 8px 11px; border-radius: 999px;
+  border: 0; background: #12151c; color: #eef1f6; box-shadow: 0 6px 18px rgba(0,0,0,.35); cursor: pointer;
+}
+.lpe-pic[hidden] { display: none; }
+.lpe-pic svg, .lpe-eye svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Sections: eye to hide; hidden ones fold into a slim bar */
+.lpe-rel { position: relative; }
+.lpe-secbar { display: none; }
+html.lpe-editing .lpe-secbar { display: flex; position: absolute; top: 10px; right: 10px; z-index: 50; }
+.lpe-eye {
+  appearance: none; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+  font: 650 12.5px/1 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; padding: 7px 11px; border-radius: 999px;
+  background: rgba(18,21,28,.88); color: #eef1f6; border: 1px solid rgba(255,255,255,.2); box-shadow: 0 4px 14px rgba(0,0,0,.3);
+}
+.lpe-eye:hover { background: #12151c; }
+html.lpe-editing .lpe-sec-off > *:not(.lpe-secbar) { display: none !important; }
+html.lpe-editing section.lpe-sec-off {
+  min-height: 0 !important; height: auto !important; padding: 0 !important; margin: 10px 16px !important;
+  background: repeating-linear-gradient(135deg, #1a1e27 0 12px, #1d222c 12px 24px) !important;
+  border: 1px dashed rgba(255,255,255,.25); border-radius: 12px; overflow: visible;
+}
+html.lpe-editing .lpe-sec-off > .lpe-secbar {
+  position: static; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px;
+}
+.lpe-sec-name { color: #eef1f6; font: 600 13.5px/1.3 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lpe-sec-name em { font-style: normal; font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #fbbf24; margin-left: 10px; }
+/* Not signed in: show the page, no editing chrome */
+html.lpe-locked .lpe-secbar, html.lpe-locked .lpe-pic { display: none !important; }
+
+@media (max-width: 760px) {
+  html.lpe-on body { padding-top: 0 !important; padding-bottom: 120px !important; }
+  #lpe-bar { top: auto; bottom: 0; border-top: 1px solid rgba(255,255,255,.12); border-bottom: 0; }
+  .lpe-bar-in { gap: 8px 10px; padding: 10px 12px; }
+  .lpe-brand strong { font-size: 13px; }
+  .lpe-design span { display: none; }
+  .lpe-status { order: 10; flex-basis: 100%; font-size: 12.5px; }
+  .lpe-spacer { display: none; }
+  .lpe-btn { padding: 8px 11px; }
+  #lpe-save { margin-left: auto; }
+}

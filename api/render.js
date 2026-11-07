@@ -667,6 +667,9 @@ function showcaseRenderOpts(req, home) {
   const tpl = q.tpl || q.template || '';
   const opts = { home: home || null, showTemplateSwitcher: true };
   if (tpl) opts.templateOverride = String(tpl).trim();
+  // ?edit=1 → click-and-edit mode. The page only carries edit markers and the editor script;
+  // the editor checks the visitor is signed in as this partner before anything can be saved.
+  if (q.edit === '1' || q.edit === 'true') opts.editMode = true;
   return opts;
 }
 
