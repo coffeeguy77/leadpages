@@ -1,4 +1,4 @@
-/* Partner showcase manager (super admin, /manage → Settings → Partner showcase). Nov 2026.
+/* Partner showcase manager (super admin, /manage \u2192 Settings \u2192 Partner showcase). Nov 2026.
    Lists the LeadPages sites partners can show on their pages and, per site: a feature picture,
    auto-scroll, "LeadPages pick", order and removal. Talks to /api/partner/showcase-library.
    window.LPShowcaseManager.open({ token: async () => jwt, toast: fn, sites: [{id,name,slug,status}], onChange: fn }) */
@@ -73,26 +73,26 @@
       ? '<img src="' + esc(it.image) + '" alt="">'
       : (it.logo ? '<img src="' + esc(it.logo) + '" alt="" style="object-fit:contain;padding:18px;background:#fff">' : '<b>' + esc(String(it.name || '?').charAt(0).toUpperCase()) + '</b>');
     return '<div class="sm-row" data-id="' + esc(it.id) + '"' + (it.color ? ' style="--sm-c:' + esc(it.color) + '"' : '') + '>'
-      + '<div class="sm-pic">' + pic + '<span class="sm-live">' + (it.image ? (it.autoScroll ? 'Picture · scrolls live' : 'Feature picture') : (it.autoScroll ? 'Live · auto-scroll' : 'Live preview')) + '</span></div>'
+      + '<div class="sm-pic">' + pic + '<span class="sm-live">' + (it.image ? (it.autoScroll ? 'Picture \u00b7 scrolls live' : 'Feature picture') : (it.autoScroll ? 'Live \u00b7 auto-scroll' : 'Live preview')) + '</span></div>'
       + '<div class="sm-main">'
       + '<div class="sm-head"><div><div class="sm-name">' + esc(it.name)
-      + (live ? '<span class="sm-badge live">Live</span>' : '<span class="sm-badge wait">Not live — hidden</span>')
+      + (live ? '<span class="sm-badge live">Live</span>' : '<span class="sm-badge wait">Not live \u2014 hidden</span>')
       + (it.featured ? '<span class="sm-badge pick">LeadPages pick</span>' : '') + '</div>'
-      + '<div class="sm-sub">' + esc(it.industry ? it.industry + ' · ' : '') + '<a href="' + esc(it.url) + '" target="_blank" rel="noopener">' + esc(it.host) + '</a></div></div>'
+      + '<div class="sm-sub">' + esc(it.industry ? it.industry + ' \u00b7 ' : '') + '<a href="' + esc(it.url) + '" target="_blank" rel="noopener">' + esc(it.host) + '</a></div></div>'
       + '<div class="sm-order">'
       + '<button type="button" class="btn ghost sm-sm" data-sm="up"' + (i === 0 ? ' disabled' : '') + ' title="Move up" aria-label="Move up">&uarr;</button>'
       + '<button type="button" class="btn ghost sm-sm" data-sm="down"' + (i === n - 1 ? ' disabled' : '') + ' title="Move down" aria-label="Move down">&darr;</button>'
       + '<button type="button" class="btn ghost sm-sm" data-sm="remove" style="color:var(--danger,#b42318)">Remove</button>'
       + '</div></div>'
       + '<div class="sm-picrow">'
-      + '<input type="text" data-sm-link placeholder="Feature picture link (https://…) — or upload" value="' + esc(it.image || '') + '">'
+      + '<input type="text" data-sm-link placeholder="Feature picture link (https://\u2026) \u2014 or upload" value="' + esc(it.image || '') + '">'
       + '<label class="btn ghost sm-sm" style="position:relative;overflow:hidden;cursor:pointer">Upload<input type="file" accept="image/*" data-sm-file style="position:absolute;inset:0;opacity:0;cursor:pointer"></label>'
       + '<button type="button" class="btn ghost sm-sm" data-sm="savelink">Use link</button>'
       + (it.image ? '<button type="button" class="btn ghost sm-sm" data-sm="clearpic">Remove picture</button>' : '')
       + '</div>'
       + '<div class="sm-opts">'
       + '<label><input type="checkbox" data-sm-opt="auto_scroll"' + (it.autoScroll ? ' checked' : '') + '><span><strong>Auto-scroll</strong><small>The live site slowly scrolls on partner pages to catch the eye.</small></span></label>'
-      + '<label><input type="checkbox" data-sm-opt="featured"' + (it.featured ? ' checked' : '') + '><span><strong>LeadPages pick</strong><small>Listed first, and marked as a pick in partners’ Showcase tab.</small></span></label>'
+      + '<label><input type="checkbox" data-sm-opt="featured"' + (it.featured ? ' checked' : '') + '><span><strong>LeadPages pick</strong><small>Listed first, and marked as a pick in partners\u2019 Showcase tab.</small></span></label>'
       + '</div>'
       + '<div class="sm-msg" aria-live="polite"></div>'
       + '</div></div>';
@@ -105,11 +105,11 @@
     var addable = (S.opts.sites || []).filter(function (s) { return !inLib[String(s.id).toLowerCase()] && !inLib[s.id]; });
     var add = $('lpsm-add-sel');
     if (add) {
-      add.innerHTML = '<option value="">Add a site to the showcase…</option>' + addable.map(function (s) {
-        return '<option value="' + esc(s.id) + '">' + esc(s.name) + ' (' + esc(s.slug) + ')' + (s.status === 'live' ? '' : ' — not live') + '</option>';
+      add.innerHTML = '<option value="">Add a site to the showcase\u2026</option>' + addable.map(function (s) {
+        return '<option value="' + esc(s.id) + '">' + esc(s.name) + ' (' + esc(s.slug) + ')' + (s.status === 'live' ? '' : ' \u2014 not live') + '</option>';
       }).join('');
     }
-    if (!S.ready) { box.innerHTML = '<div class="sm-empty hint">The showcase table isn’t set up yet.</div>'; return; }
+    if (!S.ready) { box.innerHTML = '<div class="sm-empty hint">The showcase table isn\u2019t set up yet.</div>'; return; }
     if (!S.items.length) { box.innerHTML = '<div class="sm-empty hint">No sites in the showcase yet. Add one above, or tick <strong>Partner showcase</strong> on a site in the Site Switcher.</div>'; return; }
     box.innerHTML = S.items.map(function (it, i) { return rowHtml(it, i, S.items.length); }).join('');
   }
@@ -131,12 +131,12 @@
   }
 
   async function update(id, patch, row) {
-    rowMsg(row, 'Saving…');
+    rowMsg(row, 'Saving\u2026');
     try {
       await call('POST', Object.assign({ action: 'update', site_id: id }, patch));
       await load();
       var fresh = document.querySelector('#lpsm .sm-row[data-id="' + id + '"]');
-      rowMsg(fresh, 'Saved ✓');
+      rowMsg(fresh, 'Saved \u2713');
       if (S.opts.onChange) S.opts.onChange();
     } catch (e) { rowMsg(row, e.message, true); }
   }
@@ -204,7 +204,7 @@
       if (e.target.hasAttribute('data-sm-file') && e.target.files && e.target.files[0]) {
         var f = e.target.files[0];
         if (f.size > 8 * 1024 * 1024) { rowMsg(row, 'Please use an image under 8 MB.', true); return; }
-        rowMsg(row, 'Uploading…');
+        rowMsg(row, 'Uploading\u2026');
         try { var up = await upload(f, id); update(id, { image_url: up.url, image_pid: up.publicId }, row); }
         catch (err) { rowMsg(row, err.message, true); }
       }
@@ -227,9 +227,9 @@
     p.setAttribute('aria-label', 'Partner showcase');
     p.innerHTML = '<div class="sm-card">'
       + '<div class="sm-top"><h1>Partner showcase</h1><button type="button" class="btn ghost" id="lpsm-close">Close</button></div>'
-      + '<p class="lede" style="margin:0;max-width:70ch">LeadPages sites partners can show on their pages (“Built on LeadPages”). Only live sites appear. Give a site a feature picture, make its live preview scroll, mark your best as a <strong>LeadPages pick</strong>, and set the order partners see.</p>'
-      + '<div class="sm-add"><select id="lpsm-add-sel" aria-label="Add a site"><option value="">Loading…</option></select><button type="button" class="btn" id="lpsm-add-btn">Add</button></div>'
-      + '<div id="lpsm-list"><div class="hint">Loading…</div></div>'
+      + '<p class="lede" style="margin:0;max-width:70ch">LeadPages sites partners can show on their pages (\u201cBuilt on LeadPages\u201d). Only live sites appear. Give a site a feature picture, make its live preview scroll, mark your best as a <strong>LeadPages pick</strong>, and set the order partners see.</p>'
+      + '<div class="sm-add"><select id="lpsm-add-sel" aria-label="Add a site"><option value="">Loading\u2026</option></select><button type="button" class="btn" id="lpsm-add-btn">Add</button></div>'
+      + '<div id="lpsm-list"><div class="hint">Loading\u2026</div></div>'
       + '</div>';
     document.body.appendChild(p);
     wire(p);
