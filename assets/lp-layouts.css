@@ -1598,3 +1598,5 @@ section[data-sec="services"].svp-plain .svp-media{aspect-ratio:2/1}
 .lpb-img.lpb-img-plain{background:none;box-shadow:none;border:0;border-radius:0}
 .lpb-img.lpb-img-plain img{object-fit:contain}
 @media (max-width:760px){ .lpb-img.lpb-img-nophone{display:none} }
+html.lpl-head-line section:not(.svcs-story) .section-head{max-width:none!important;width:100%}
+html.lpl-head-line section:not(.svcs-story) .section-head h2{width:100%;max-width:none}
