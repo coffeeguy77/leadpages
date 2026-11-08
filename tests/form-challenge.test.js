@@ -90,7 +90,7 @@ test('LeadPages palettes in the visitor colour picker', () => {
 
 test('header stack, footer CTA, no-logo footer, text size, {{year}}', () => {
   const js = read('assets/lp-layouts.js');
-  assert.match(js, /pageBlocks, headerStack, textScale, logoThemed, darkSections, footerTextCols, editorialLooks\]/);
+  assert.match(js, /pageBlocks, headerStack, textScale, logoThemed, darkSections, footerTextCols, editorialLooks, subPageAnchors\]/);
   assert.match(js, /F\.logoMode === 'none'|F\.logoMode==='none'/);
   const css = read('assets/lp-layouts.css');
   assert.match(css, /\.lpl-hstack > \[data-sec="navMenu"\]\{order:1 !important\}/);

@@ -84,7 +84,7 @@ test('page CSS for tables, numbered and nested lists', () => {
 });
 
 test('lp-layouts: every new option is registered and opt-in', () => {
-  assert.match(js, /siteWidth, headerItems, navActive, subPageNav, heroPortrait, featureBand, footerContact, footerDecor, pageBanner, pageBlocks, headerStack, textScale, logoThemed, darkSections, footerTextCols, editorialLooks\];/);
+  assert.match(js, /siteWidth, headerItems, navActive, subPageNav, heroPortrait, featureBand, footerContact, footerDecor, pageBanner, pageBlocks, headerStack, textScale, logoThemed, darkSections, footerTextCols, editorialLooks, subPageAnchors\];/);
   assert.match(js, /if \(w >= 960 && w <= 1600\) de\.style\.setProperty\('--maxw', w \+ 'px'\); else de\.style\.removeProperty\('--maxw'\);/);
   assert.match(js, /var on = H\.ctaPlace === 'menu' && NM\.on === true && NM\.placement === 'bar'/);
   assert.match(js, /var on = NM\.activeStyle === 'fill';/);

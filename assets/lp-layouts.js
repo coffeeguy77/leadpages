@@ -871,8 +871,22 @@
     var on = AU.layout === 'location';
     node.classList.toggle('au-is-location', on);
     node.classList.toggle('au-is-profile', AU.layout === 'profile');
+    node.classList.toggle('au-is-ticks', AU.layout === 'ticks');
     clear(node, 'au');
     if (AU.layout === 'profile') { aboutProfile(node, C, AU); return; }
+    if (AU.layout === 'ticks') {
+      // Ticks: picture | eyebrow, heading, intro | a tick list (ticks: ['…'] or ticks: [{text}]).
+      var tk = (Array.isArray(AU.ticks) ? AU.ticks : []).map(function (t) { return txt(t && typeof t === 'object' ? t.text : t); }).filter(Boolean);
+      var ti = bgUrl(AU.image);
+      node.insertAdjacentHTML('afterbegin', '<div class="wrap aut" data-lpl="au">' +
+        (ti ? '<div class="aut-media"><img src="' + esc(ti) + '" alt="' + esc(AU.imageAlt || '') + '" loading="lazy"></div>' : '') +
+        '<div class="aut-text">' + (txt(AU.eyebrow) ? '<span class="eyebrow aut-eyebrow" data-lpe="eyebrow">' + esc(AU.eyebrow) + '</span>' : '') +
+        (txt(AU.heading) ? '<h2 class="aut-h" data-lpe="heading">' + esc(AU.heading) + '</h2>' : '') +
+        (txt(AU.intro) ? '<p class="aut-intro" data-lpe="intro">' + esc(AU.intro).replace(/\n/g, '<br>') + '</p>' : '') + '</div>' +
+        (tk.length ? '<ul class="aut-ticks">' + tk.map(function (t) { return '<li><span class="aut-tick" aria-hidden="true">' + icon('check') + '</span>' + esc(t) + '</li>'; }).join('') + '</ul>' : '') +
+        '</div>');
+      return;
+    }
     if (!on) return;
     var addr = txt(AU.address);
     var hours = txt(AU.hours);
@@ -2613,6 +2627,55 @@
       node.classList.toggle('lpl-on-dark', l >= 0 && l < 0.12);
     });
   }
+  function textBoxBand(TB) {
+    // textBox bleed: diagonal photo edge and an optional picture on the far side (decorImage).
+    var n = sec('textBox'); if (!n) return;
+    n.classList.toggle('tbx-diag', TB.layout === 'bleed' && TB.bleedEdge === 'diagonal');
+    var old = n.querySelector('[data-lpl="tbd"]'); if (old) old.parentNode.removeChild(old);
+    var di = TB.layout === 'bleed' ? bgUrl(TB.decorImage) : '';
+    n.classList.toggle('tbx-has-decor', !!di);
+    var tl = n.querySelector('.tbl'); if (di && tl) tl.insertAdjacentHTML('beforeend', '<div class="tbx-decor" data-lpl="tbd" aria-hidden="true"><img src="' + esc(di) + '" alt=""></div>');
+  }
+  function ctaExtras(M) {
+    // Feature/strip CTA: eyebrow line, sub text, a leading icon and a picture on the far side.
+    var n = sec('ctaBanner'); if (!n) return;
+    Array.prototype.forEach.call(n.querySelectorAll('[data-lpl="cbx"]'), function (e) { e.parentNode.removeChild(e); });
+    if (M.on !== true) return;
+    var cb = n.querySelector('.cb'); if (!cb) return;
+    var h = cb.querySelector('.cb-h');
+    var ok = M.layout === 'feature' || M.layout === 'strip';
+    n.classList.toggle('cbx-inset', M.layout === 'strip' && M.width !== 'full');
+    if (!ok || !h) return;
+    if (txt(M.eyebrow)) h.insertAdjacentHTML('beforebegin', '<span class="cbx-eyebrow" data-lpl="cbx">' + esc(M.eyebrow) + '</span>');
+    if (M.layout === 'strip' && txt(M.text)) h.insertAdjacentHTML('afterend', '<p class="cbx-sub" data-lpl="cbx">' + esc(M.text) + '</p>');
+    if (M.layout === 'strip' && txt(M.icon) && icon(M.icon)) cb.insertAdjacentHTML('afterbegin', '<span class="cbx-ic" data-lpl="cbx" aria-hidden="true">' + icon(M.icon) + '</span>');
+    var di = M.layout === 'feature' ? bgUrl(M.sideImage) : '';
+    n.classList.toggle('cbx-has-decor', !!di);
+    if (di) cb.insertAdjacentHTML('beforeend', '<span class="cbx-decor" data-lpl="cbx" aria-hidden="true"><img src="' + esc(di) + '" alt=""></span>');
+    // Group the heading lines so eyebrow / heading / sub stack together.
+    if (M.layout === 'strip' && !cb.querySelector('.cbx-tx')) {
+      var wrapT = document.createElement('div'); wrapT.className = 'cbx-tx'; wrapT.setAttribute('data-lpl', 'cbx');
+      h.parentNode.insertBefore(wrapT, h);
+      [].slice.call(cb.querySelectorAll('.cbx-eyebrow, .cb-h, .cbx-sub')).forEach(function (e) { wrapT.appendChild(e); });
+    }
+  }
+  function subPageAnchors() {
+    // On a landing page, "#section" menu/footer links point at sections that only exist on the
+    // home page: send them to the home page's section instead.
+    // Sections can be linked as "#services", "#reviews"… (their app name), unless that id is taken.
+    Array.prototype.forEach.call(document.querySelectorAll('[data-sec]'), function (n) {
+      var k = n.getAttribute('data-sec');
+      if (k && !n.id && !document.getElementById(k)) n.id = k;
+    });
+    var footer = document.querySelector('footer.site'); if (footer && !footer.id && !document.getElementById('footer')) footer.id = 'footer';
+    var path = String(location.pathname || '').replace(/\/+$/, ''), base = siteBase();
+    if (path === base || path === '') return;
+    Array.prototype.forEach.call(document.querySelectorAll('header.site a[href^="#"], footer.site a[href^="#"], .nm-drawer a[href^="#"], [data-sec="navMenu"] a[href^="#"]'), function (a) {
+      var id = a.getAttribute('href').slice(1);
+      if (!id || id === 'top' || id === 'quote' || document.getElementById(id)) return;
+      a.setAttribute('href', (base || '') + '/#' + id);
+    });
+  }
   function footerTextCols(C) {
     // Footer columns set to "text" show their lines (an address, hours) instead of links.
     var F = (C && C.sections && C.sections.footer) || {};
@@ -2635,11 +2698,27 @@
       sp.classList.add('svst-paras');
     }
     var rv = sec('reviews'); if (rv) rv.classList.toggle('rv-qserif', (S.reviews || {}).layout === 'quotes' && (S.reviews || {}).quoteLook === 'serif');
-    var tb = sec('trustBar'); if (tb) tb.classList.toggle('tbs-serif', (S.trustBar || {}).stackFont === 'heading');
+    var tb = sec('trustBar'); if (tb) { tb.classList.toggle('tbs-serif', (S.trustBar || {}).stackFont === 'heading'); tb.classList.toggle('tbs-iconside', (S.trustBar || {}).stackIconSide === true); }
+    if (sv) sv.classList.toggle('svp-overlay', (S.services || {}).photoCard === 'overlay');
+    var de = document.documentElement;
+    de.classList.toggle('lpl-head-italic', C && C.headingItalic === true);     // italic headings site-wide
+    de.classList.toggle('lpl-eyebrow-lines', C && C.eyebrowLines === true);    // centred eyebrows get a line each side
+    Object.keys(S).forEach(function (k) {                                       // per-section heading alignment
+      var n = sec(k); if (n) n.classList.toggle('lpl-head-center', (S[k] || {}).headAlign === 'center');
+    });
+    var fs = sec('featureStrip'); if (fs) fs.classList.toggle('fstr-fit', (S.featureStrip || {}).bandFit === true);
+    var wy = sec('why'), W = S.why || {};
+    if (wy) { wy.classList.toggle('why-row', W.layout === 'row'); }
+    var rvs = sec('reviews'); if (rvs) rvs.classList.toggle('rv-headside', (S.reviews || {}).headSide === true);
+    var hs = sec('heroSlider'); if (hs) hs.classList.toggle('hsl-hl-swoosh', (S.heroSlider || {}).highlightSwoosh === true);
+    var hd = document.querySelector('header.site'); if (hd) hd.classList.toggle('lpl-phone-pill', (S.header || {}).phoneStyle === 'button');
+    de.classList.toggle('lpl-nav-normal', (S.navMenu || {}).textCase === 'normal');   // menu links in normal case
+    textBoxBand(S.textBox || {});
+    ctaExtras(S.ctaBanner || {});
     document.documentElement.classList.toggle('lpl-head-line', C && C.sectionHeadLine === true);
   }
 
-  var STEPS = [heroSlider, heroBanners, headerCta, minimalFooter, logoTint, buttonShapes, orderLayout, featuredProjects, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, trustBar, mapHours, ctaBanner, storyTimeline, storyRows, bookingWeek, heroBooking, bookingHire, fontSet, mobileBarSpace, heroSplit, appWidths, headingBreaks, strokeIcons, siteWidth, headerItems, navActive, subPageNav, heroPortrait, featureBand, footerContact, footerDecor, pageBanner, pageBlocks, headerStack, textScale, logoThemed, darkSections, footerTextCols, editorialLooks];
+  var STEPS = [heroSlider, heroBanners, headerCta, minimalFooter, logoTint, buttonShapes, orderLayout, featuredProjects, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, trustBar, mapHours, ctaBanner, storyTimeline, storyRows, bookingWeek, heroBooking, bookingHire, fontSet, mobileBarSpace, heroSplit, appWidths, headingBreaks, strokeIcons, siteWidth, headerItems, navActive, subPageNav, heroPortrait, featureBand, footerContact, footerDecor, pageBanner, pageBlocks, headerStack, textScale, logoThemed, darkSections, footerTextCols, editorialLooks, subPageAnchors];
 
   function run(cfg) {
     // On a landing page the template builds the page's own config (homepage + the page's

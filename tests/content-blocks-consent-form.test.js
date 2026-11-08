@@ -212,3 +212,20 @@ test('editorial section options are opt-in (hero highlight line, strip banner, d
   assert.ok(F.ORDER.includes('editorial'));
   assert.match(F.css('editorial'), /--lp-font-head:"Source Serif 4"/);
 });
+
+test('bold trade options are opt-in (italic headings, centred heads, overlay cards, band picture, why row, side heading reviews, About ticks, CTA extras, nav case, section anchors)', () => {
+  const fs = require('fs');
+  const js = fs.readFileSync(require('path').join(__dirname, '../assets/lp-layouts.js'), 'utf8');
+  assert.match(js, /de\.classList\.toggle\('lpl-head-italic', C && C\.headingItalic === true\)/);
+  assert.match(js, /\(S\[k\] \|\| \{\}\)\.headAlign === 'center'/);
+  assert.match(js, /\(S\.services \|\| \{\}\)\.photoCard === 'overlay'/);
+  assert.match(js, /TB\.layout === 'bleed' && TB\.bleedEdge === 'diagonal'/);
+  assert.match(js, /wy\.classList\.toggle\('why-row', W\.layout === 'row'\)/);
+  assert.match(js, /\(S\.reviews \|\| \{\}\)\.headSide === true/);
+  assert.match(js, /node\.classList\.toggle\('au-is-ticks', AU\.layout === 'ticks'\);/);
+  assert.match(js, /bgUrl\(M\.sideImage\)/);
+  assert.match(js, /\(S\.navMenu \|\| \{\}\)\.textCase === 'normal'/);
+  assert.match(js, /if \(k && !n\.id && !document\.getElementById\(k\)\) n\.id = k;/);
+  const F = require('../assets/lp-fonts.js');
+  assert.match(F.css('montserrat'), /Montserrat/);
+});
