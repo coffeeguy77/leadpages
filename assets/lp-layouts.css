@@ -1794,9 +1794,9 @@ section[data-sec="reviews"].rv-headside .review .who{font-size:13px}
 section[data-sec="reviews"].rv-headside .stars{font-size:18px;letter-spacing:2px}
 @media (max-width:760px){section[data-sec="ctaBanner"].cb-feature.cbx-has-decor .cb-text,section[data-sec="ctaBanner"].cb-feature.cbx-has-decor .cb-btns{grid-column:1/-1}}
 @media (min-width:761px){
-  section[data-sec="textBox"].tbx-bleed.lpl-pad-compact .tbl{height:clamp(250px,24vw,340px);min-height:0}
-  section[data-sec="textBox"].tbx-bleed.lpl-pad-compact .tbl-media{height:100%;overflow:hidden}
-  section[data-sec="textBox"].tbx-bleed.lpl-pad-compact .tbl-media img{width:100%;height:100%;object-fit:cover}
+  section[data-sec="textBox"].tbx-bleed.lpl-pad-compact .tbl{height:auto;min-height:clamp(250px,24vw,340px)}
+  section[data-sec="textBox"].tbx-bleed.lpl-pad-compact .tbl-media{position:relative;overflow:hidden;min-height:100%}
+  section[data-sec="textBox"].tbx-bleed.lpl-pad-compact .tbl-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
   section[data-sec="textBox"].tbx-bleed.lpl-pad-compact .tbl-text{display:flex;align-items:center}
 }
 @media (min-width:761px) and (max-width:1199px){
@@ -1809,7 +1809,7 @@ header.site.lpl-phone-pill .head-call{flex-shrink:0;gap:10px}
 header.site .head-nav,header.site .nm-inner{min-width:0}
 html.lpl-nav-normal header.site .nm-parent svg,html.lpl-nav-normal [data-sec="navMenu"] .nm-parent svg{width:10px!important;height:10px!important;margin:0 0 0 1px!important}
 html.lpl-nav-normal header.site .nm-link,html.lpl-nav-normal [data-sec="navMenu"] .nm-link{gap:2px!important}
-@media (min-width:761px) and (max-width:1099px){header.site .lp-logo{max-height:56px}}
+@media (min-width:761px) and (max-width:1099px){header.site:has(.head-nav .nm-link,.head-nav .hn-link) .lp-logo{max-height:56px}}
 header.site.lpl-phone-pill .head-call .btn{padding:10px 16px!important;font-size:15px!important;min-height:0}
 header.site.lpl-phone-pill .head-phone{padding:8px 14px}
 header.site.lpl-phone-pill .head-phone-num{font-size:16px}
@@ -1817,4 +1817,9 @@ header.site.lpl-phone-pill .head-phone-num{font-size:16px}
 @media (min-width:761px) and (max-width:1099px){
   header.site.lpl-phone-pill .head-phone{padding:9px;position:relative}
   header.site.lpl-phone-pill .head-phone-num{position:absolute;inset:0;font-size:0!important;color:transparent!important}
+}
+@media (min-width:761px){
+  section[data-sec="textBox"].tbx-bleed.lpl-pad-compact .tbl-text{padding-top:10px!important;padding-bottom:10px!important}
+  section[data-sec="textBox"].tbx-bleed.lpl-pad-compact .tbl-in{padding-top:12px;padding-bottom:12px}
+  section[data-sec="textBox"].tbx-bleed.lpl-pad-compact .tbx-cta{margin-top:12px}
 }
