@@ -1677,14 +1677,14 @@
     var badges = live(HS.badges).map(function (b) { return txt(b.title) || txt(b.text); }).filter(Boolean);
     var headTag = h1 ? 'h2' : 'h1';
     var head = (txt(S.heading) || txt(S.highlightText)) ? '<' + headTag + ' class="hsp-h">' +
-      (txt(S.heading) ? '<span data-lpe="' + L('heading') + '">' + esc(S.heading) + '</span>' : '') +
+      (txt(S.heading) ? '<span data-lpe="' + L('heading') + '">' + esc(S.heading).replace(/\n/g, '<br>') + '</span>' : '') +
       (txt(S.highlightText) ? ' <span class="hl" data-lpe="' + L('highlightText') + '">' + esc(S.highlightText) + '</span>' : '') +
       '</' + headTag + '>' : '';
     var html = '<div class="hsp" data-lpl="hsp"><div class="wrap hsp-grid"><div class="hsp-text">' +
       (txt(S.eyebrow) ? '<span class="eyebrow hsp-eyebrow" data-lpe="' + L('eyebrow') + '">' + esc(S.eyebrow) + '</span>' : '') +
       (h1 ? '<h1 class="hsp-h1" data-lpe="splitH1">' + esc(h1) + '</h1>' : '') + head +
       (txt(HS.tagline) ? '<p class="hsp-tagline" data-lpe="tagline">' + esc(HS.tagline).replace(/\s+\|\s+/g, '<i aria-hidden="true">|</i>') + '</p>' : '') +
-      (txt(S.subText) ? '<p class="hsp-sub" data-lpe="' + L('subText') + '">' + esc(S.subText) + '</p>' : '') +
+      (txt(S.subText) ? '<p class="hsp-sub" data-lpe="' + L('subText') + '">' + esc(S.subText).replace(/\n/g, '<br>') + '</p>' : '') +
       '<div class="hsp-cta"></div>' +
       (badges.length ? '<p class="hsp-line" data-lpe="list:heroSliderBadges:0:title">' + badges.map(esc).join('<i aria-hidden="true">\u2022</i>') + '</p>' : '') +
       '</div>' +
@@ -2016,7 +2016,8 @@
       var html = '<div class="lpl-hitems" data-lpl="hitems">' + items.map(function (it) {
         var h = txt(it.href) ? hrefOf(it.href, '') : '';
         var inner = (icon(it.icon) ? '<span class="lpl-hi-ic">' + icon(it.icon) + '</span>' : '') + '<span>' + esc(it.text) + '</span>';
-        return h ? '<a class="lpl-hi" ' + linkAttrs(h) + '>' + inner + '</a>' : '<span class="lpl-hi">' + inner + '</span>';
+        var cls = 'lpl-hi' + (it.style === 'button' ? ' lpl-hi-btn' : '');   // style 'button': a filled pill (e.g. the phone number)
+        return h ? '<a class="' + cls + '" ' + linkAttrs(h) + '>' + inner + '</a>' : '<span class="' + cls + '">' + inner + '</span>';
       }).join('') + '</div>';
       var call = bar.querySelector('.head-call');
       if (call) call.insertAdjacentHTML('beforebegin', html); else bar.insertAdjacentHTML('beforeend', html);
@@ -2713,6 +2714,23 @@
     var hs = sec('heroSlider'); if (hs) hs.classList.toggle('hsl-hl-swoosh', (S.heroSlider || {}).highlightSwoosh === true);
     var hd = document.querySelector('header.site'); if (hd) hd.classList.toggle('lpl-phone-pill', (S.header || {}).phoneStyle === 'button');
     de.classList.toggle('lpl-nav-normal', (S.navMenu || {}).textCase === 'normal');   // menu links in normal case
+    de.classList.toggle('lpl-btn-normal', C && C.buttonCase === 'normal');            // buttons in normal case
+    if (hs) hs.classList.toggle('hsl-curve', (S.heroSlider || {}).bottomCurve === 'swoosh');
+    if (hs) hs.classList.toggle('hsl-xl', (S.heroSlider || {}).headingSize === 'xl');
+    // Split/cover hero: the slide's highlight colour.
+    var s0 = ((S.heroSlider || {}).slides || []).filter(function (x) { return x && x.on !== false; })[0] || {};
+    var eb = hs && hs.querySelector('.hsp-eyebrow'); if (eb) { if (txt(s0.eyebrowColor)) eb.style.setProperty('color', txt(s0.eyebrowColor), 'important'); else eb.style.removeProperty('color'); }
+    var hl = hs && hs.querySelector('.hsp-h .hl'); if (hl) { if (txt(s0.highlightColor)) hl.style.setProperty('color', txt(s0.highlightColor), 'important'); else hl.style.removeProperty('color'); }   // white curve + brand line along the bottom
+    Object.keys(S).forEach(function (k) {                                                     // compact section spacing
+      var n = sec(k); if (n) n.classList.toggle('lpl-pad-compact', (S[k] || {}).pad === 'compact');
+    });
+    // Overlay photo cards: the service's icon before its title.
+    if (sv) Array.prototype.forEach.call(sv.querySelectorAll('.svc.svp'), function (card, i) {
+      var h = card.querySelector('h3'); if (!h) return;
+      var old = h.querySelector('[data-lpl="svi"]'); if (old) old.parentNode.removeChild(old);
+      var it = (Array.isArray(C.services) ? C.services : []).filter(function (x) { return x && x.on !== false; })[i] || {};
+      if ((S.services || {}).photoCard === 'overlay' && icon(it.icon)) h.insertAdjacentHTML('afterbegin', '<span class="svp-tic" data-lpl="svi" aria-hidden="true">' + icon(it.icon) + '</span>');
+    });
     textBoxBand(S.textBox || {});
     ctaExtras(S.ctaBanner || {});
     document.documentElement.classList.toggle('lpl-head-line', C && C.sectionHeadLine === true);
