@@ -183,6 +183,9 @@
     var HS = (C.sections && C.sections.heroSlider) || {};
     node.classList.toggle('hsl-case-normal', HS.textCase === 'normal');
     node.classList.toggle('hsl-half', HS.layout === 'half');
+    // Highlight on its own line in italics, headline colour ("Property moves. / Made personal.").
+    node.classList.toggle('hsl-hl-break', HS.highlightBreak === true);
+    node.classList.toggle('hsl-sub-lead', HS.subLead === true);   // intro as an italic serif standfirst
     // Half banner: choose which text shows (eyebrow, title and intro all on by default).
     var half = HS.layout === 'half';
     node.classList.toggle('hsl-half-noeb', half && HS.halfEyebrow === false);
@@ -1231,7 +1234,7 @@
     var tint = cbBoxTint(M);
     if (tint) node.style.setProperty('--cbx-tint', tint); else node.style.removeProperty('--cbx-tint');
     node.classList.toggle('cbx-tinted', !!tint);
-    if (M.on !== true) { node.classList.remove('cb-notice'); node.classList.remove('cb-quote'); node.classList.remove('cb-feature'); return; }
+    if (M.on !== true) { node.classList.remove('cb-notice'); node.classList.remove('cb-quote'); node.classList.remove('cb-feature'); node.classList.remove('cb-strip'); return; }
     var boxesOn = M.layout === 'boxes';
     node.classList.toggle('cb-boxes', boxesOn);
     if (boxesOn) { ctaBoxes(node, C, M); return; }
@@ -1248,6 +1251,17 @@
       node.insertAdjacentHTML('afterbegin', '<div class="wrap cb-wrap cbq-wrap" data-lpl="cb"><div class="cbq">' +
         '<blockquote class="cbq-q"><span class="cbq-mark" aria-hidden="true">\u201C</span><p data-lpe="text">' + esc(M.text).replace(/\n/g, '<br>') + '\u201D</p></blockquote>' +
         (qb ? '<div class="cbq-btn">' + qb + '</div>' : '') + '</div></div>');
+      return;
+    }
+    // Strip: one slim band — heading | phone number | button.
+    var stripOn = M.layout === 'strip';
+    node.classList.toggle('cb-strip', stripOn);
+    if (stripOn) {
+      var sph = phoneOf(C), sb = ctaBtn(C, M, 1);
+      node.insertAdjacentHTML('afterbegin', '<div class="wrap cb-wrap" data-lpl="cb"><div class="cb cbs">' +
+        (txt(M.heading) ? '<h2 class="cb-h" data-lpe="heading">' + esc(M.heading) + '</h2>' : '') +
+        (sph && M.stripPhone !== false ? '<span class="cbs-div" aria-hidden="true"></span><a class="cbs-ph" href="' + esc(sph.href) + '">' + icon('phone') + '<span>' + esc(sph.text || sph.label || '') + '</span></a>' : '') +
+        (sb ? '<span class="cbs-div" aria-hidden="true"></span><div class="cb-btns">' + sb + '</div>' : '') + '</div></div>');
       return;
     }
     var featOn = M.layout === 'feature';
@@ -1701,7 +1715,7 @@
     if (window.LP_FONTS) { go(); return; }
     if (!FONTS_P) {
       FONTS_P = new Promise(function (resolve) {
-        var sc = document.createElement('script'); sc.src = '/assets/lp-fonts.js?v=5'; sc.async = true;
+        var sc = document.createElement('script'); sc.src = '/assets/lp-fonts.js?v=6'; sc.async = true;
         sc.onload = resolve; sc.onerror = function () { FONTS_P = null; resolve(); };
         document.head.appendChild(sc);
       });
@@ -2383,7 +2397,7 @@
     switch (n.type) {
       case 'md': return lpbMd(n.text);
       case 'heading':
-        return '<div class="lpb-head"><h2 class="lpb-h2"><span class="lpb-rule" aria-hidden="true"></span>' + lpbInline(a._title) + '</h2>' +
+        return '<div class="lpb-head' + (a.rule === 'under' ? ' lpb-head-under' : '') + '"><h2 class="lpb-h2"><span class="lpb-rule" aria-hidden="true"></span>' + lpbInline(a._title) + '</h2>' +
           (n.kids.length ? '<div class="lpb-intro">' + lpbKids(n) + '</div>' : '') + '</div>';
       case 'cols':
         var fr = txt(a.ratio).split(':').map(function (x) { return parseFloat(x); }).filter(function (x) { return x > 0; });
@@ -2424,6 +2438,11 @@
         }).join('') + '</div>';
       case 'steps':
         var st = lpbRows(n);
+        if (a.layout === 'rows') return '<ol class="lpb-rows">' + st.map(function (r, i) {
+          var no = txt(r[0]) && !lpbIcon(r[0]) ? txt(r[0]) : (i < 9 ? '0' : '') + (i + 1);
+          var body = r.slice(2).join(' | ').split(/\\n/).map(function (x) { return '<p>' + lpbInline(txt(x)) + '</p>'; }).join('');
+          return '<li class="lpb-row"><span class="lpb-row-no" aria-hidden="true">' + esc(no) + '</span><h3 class="lpb-row-t">' + lpbInline(r[1] || '') + '</h3><div class="lpb-row-b">' + body + '</div></li>';
+        }).join('') + '</ol>';
         if (a.layout === 'list') return '<ol class="lpb-steps lpb-steps-list">' + st.map(function (r, i) {
           return '<li class="lpb-step"><span class="lpb-num">' + (i + 1) + '</span><div class="lpb-step-card">' + (lpbIcon(r[0]) ? '<span class="lpb-step-ic">' + lpbIcon(r[0]) + '</span>' : '') +
             '<div class="lpb-step-body"><h3 class="lpb-step-t">' + lpbInline(r[1] || '') + '</h3>' + (r[2] ? '<p>' + lpbInline(r.slice(2).join(' | ')) + '</p>' : '') + '</div></div></li>';
@@ -2436,6 +2455,14 @@
         var nt = a.tone === 'info' ? 'info' : 'alert';
         return '<div class="lpb-notice lpb-n-' + nt + '" role="note"><span class="lpb-notice-ic">' + (lpbIcon(a.icon) || (nt === 'alert' ? LPB_WARN : icon('info'))) + '</span>' +
           '<div>' + n.kids.map(function (k) { return k.type === 'md' ? lpbInline(txt(k.text).replace(/\n+/g, ' ')) : ''; }).join('') + '</div></div>';
+      case 'lead':
+        // :::lead — a standfirst: one larger italic paragraph in the heading font.
+        return '<p class="lpb-lead">' + lpbInline(n.kids.map(function (k) { return k.type === 'md' ? txt(k.text) : ''; }).join(' ').replace(/\s+/g, ' ')) + '</p>';
+      case 'quote':
+        // :::quote cite="..." — a large italic quote with a short brand line and a caption.
+        var qt = n.kids.map(function (k) { return k.type === 'md' ? txt(k.text) : ''; }).join(' ').replace(/\s+/g, ' ');
+        return '<figure class="lpb-quote"><blockquote>' + lpbInline(qt) + '</blockquote><span class="lpb-rule" aria-hidden="true"></span>' +
+          (txt(a.cite) ? '<figcaption>' + lpbInline(a.cite) + '</figcaption>' : '') + '</figure>';
       case 'faq':
         var qs = [], cur = null;
         n.kids.filter(function (k) { return k.type === 'md'; }).forEach(function (k) {
@@ -2444,6 +2471,10 @@
             if (q) { cur = { q: q[1], a: [] }; qs.push(cur); } else if (cur) cur.a.push(l);
           });
         });
+        if (a.layout === 'list') return '<div class="lpb-faql">' + qs.map(function (x) {
+          var p2 = x.q.split('|'), qt2 = p2.length > 1 ? p2.slice(1).join('|') : x.q;
+          return '<div class="lpb-faql-i"><h3 class="lpb-faql-q">' + lpbInline(txt(qt2)) + '</h3><div class="lpb-faql-a">' + lpbMd(x.a.join('\n')) + '</div></div>';
+        }).join('') + '</div>';
         return '<div class="lpb-faq">' + qs.map(function (x) {
           var p = x.q.split('|'), qi = p.length > 1 ? lpbIcon(p[0]) : '', qt = p.length > 1 ? p.slice(1).join('|') : x.q;
           return '<details class="lpb-faq-i"><summary>' + (qi ? '<span class="lpb-faq-ic">' + qi + '</span>' : '') + '<span class="lpb-faq-q">' + lpbInline(txt(qt)) + '</span><span class="lpb-faq-x" aria-hidden="true">' + icon('plus') + '</span></summary>' +
@@ -2459,7 +2490,7 @@
         }).join('') + '</div>';
       case 'image':
         var src = bgUrl(a.src);
-        return src ? '<figure class="lpb-img"' + (txt(a.ratio) ? ' style="aspect-ratio:' + esc(a.ratio.replace(':', '/')) + '"' : '') + '><img src="' + esc(src) + '" alt="' + esc(a.alt || '') + '" loading="lazy"></figure>' : '';
+        return src ? '<figure class="lpb-img' + (a.phone === 'hide' ? ' lpb-img-nophone' : '') + (a.frame === 'none' ? ' lpb-img-plain' : '') + '"' + (txt(a.ratio) ? ' style="aspect-ratio:' + esc(a.ratio.replace(':', '/')) + '"' : '') + '><img src="' + esc(src) + '" alt="' + esc(a.alt || '') + '" loading="lazy"></figure>' : '';
       case 'consent': return '<div class="lpb-consent" data-lp-consent></div>';
       case 'enquiry':
         // Contact form for the site's normal lead inbox (/api/leads: same spam checks, CRM and email).
@@ -2567,7 +2598,48 @@
     window.addEventListener('hashchange', function () { lpbHashTab(true); });
   }
 
-  var STEPS = [heroSlider, heroBanners, headerCta, minimalFooter, logoTint, buttonShapes, orderLayout, featuredProjects, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, trustBar, mapHours, ctaBanner, storyTimeline, storyRows, bookingWeek, heroBooking, bookingHire, fontSet, mobileBarSpace, heroSplit, appWidths, headingBreaks, strokeIcons, siteWidth, headerItems, navActive, subPageNav, heroPortrait, featureBand, footerContact, footerDecor, pageBanner, pageBlocks, headerStack, textScale, logoThemed];
+  /* ---------- Dark section colours, footer text columns, plain photo cards, serif quotes ---------- */
+  function hexLum(h) {
+    var m = /^#?([0-9a-f]{6})$/i.exec(txt(h)); if (!m) return -1;
+    var n = parseInt(m[1], 16), c = [n >> 16 & 255, n >> 8 & 255, n & 255].map(function (v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  }
+  function darkSections(C) {
+    // A section given a dark background (Section container style) gets light content text.
+    var S = (C && C.sections) || {};
+    Object.keys(S).forEach(function (k) {
+      var node = sec(k); if (!node) return;
+      var ap = S[k] && S[k].appearance, l = ap && ap.custom ? hexLum(ap.containerBg) : -1;
+      node.classList.toggle('lpl-on-dark', l >= 0 && l < 0.12);
+    });
+  }
+  function footerTextCols(C) {
+    // Footer columns set to "text" show their lines (an address, hours) instead of links.
+    var F = (C && C.sections && C.sections.footer) || {};
+    var cols = (Array.isArray(F.columns) ? F.columns : []).filter(function (c) { return c && c.on !== false; });
+    var els = document.querySelectorAll('footer.site .f-nav > .f-col');
+    cols.forEach(function (c, i) {
+      var el = els[i]; if (!el) return;
+      var old = el.querySelector('[data-lpl="ftx"]'); if (old) old.parentNode.removeChild(old);
+      if (c.mode !== 'text' || !txt(c.text)) return;
+      el.insertAdjacentHTML('beforeend', '<p class="f-text" data-lpl="ftx">' + esc(txt(c.text)).replace(/\n/g, '<br>') + '</p>');
+    });
+  }
+  function editorialLooks(C) {
+    var S = (C && C.sections) || {};
+    var sv = sec('services'); if (sv) sv.classList.toggle('svp-plain', (S.services || {}).photoCard === 'plain');
+    // Story layout: blank lines in the intro start new paragraphs.
+    var SV = S.services || {}, sp = sv && SV.mode === 'story' ? sv.querySelector('.section-head > p') : null;
+    if (sp && /\n\s*\n/.test(txt(SV.intro))) {
+      sp.innerHTML = txt(SV.intro).split(/\n\s*\n/).map(function (x) { return esc(txt(x)); }).join('<span class="svst-gap"></span>');
+      sp.classList.add('svst-paras');
+    }
+    var rv = sec('reviews'); if (rv) rv.classList.toggle('rv-qserif', (S.reviews || {}).layout === 'quotes' && (S.reviews || {}).quoteLook === 'serif');
+    var tb = sec('trustBar'); if (tb) tb.classList.toggle('tbs-serif', (S.trustBar || {}).stackFont === 'heading');
+    document.documentElement.classList.toggle('lpl-head-line', C && C.sectionHeadLine === true);
+  }
+
+  var STEPS = [heroSlider, heroBanners, headerCta, minimalFooter, logoTint, buttonShapes, orderLayout, featuredProjects, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, trustBar, mapHours, ctaBanner, storyTimeline, storyRows, bookingWeek, heroBooking, bookingHire, fontSet, mobileBarSpace, heroSplit, appWidths, headingBreaks, strokeIcons, siteWidth, headerItems, navActive, subPageNav, heroPortrait, featureBand, footerContact, footerDecor, pageBanner, pageBlocks, headerStack, textScale, logoThemed, darkSections, footerTextCols, editorialLooks];
 
   function run(cfg) {
     // On a landing page the template builds the page's own config (homepage + the page's

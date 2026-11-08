@@ -178,3 +178,37 @@ test('blocks: tabs (first content tab open, link tab, #id) and list steps', () =
   assert.match(out, /<ol class="lpb-steps lpb-steps-list">/);
   assert.match(out, /<div class="lpb-step-card">.*Step A.*Detail A/);
 });
+
+test('blocks: editorial looks — heading rule under, numbered rows, open FAQ, quote, lead, image options', () => {
+  const B = blocksRenderer();
+  const out = B.render([
+    ':::heading Your journey rule=under', ':::',
+    ':::steps layout=rows', '01 | Before | **Buying:** first\\n**Selling:** second', '02 | After | Done', ':::',
+    ':::faq layout=list', '? Question one', 'Answer one', ':::',
+    ':::quote cite="From clients"', '“Easy!”', ':::',
+    ':::lead', 'A standfirst.', ':::',
+    ':::image src="/a.jpg" alt="" ratio=3:4 phone=hide frame=none'
+  ].join('\n'));
+  assert.match(out, /<div class="lpb-head lpb-head-under"><h2 class="lpb-h2">/);
+  assert.match(out, /<li class="lpb-row"><span class="lpb-row-no" aria-hidden="true">01<\/span><h3 class="lpb-row-t">Before<\/h3><div class="lpb-row-b"><p><strong>Buying:<\/strong> first<\/p><p><strong>Selling:<\/strong> second<\/p><\/div><\/li>/);
+  assert.match(out, /<div class="lpb-faql"><div class="lpb-faql-i"><h3 class="lpb-faql-q">Question one<\/h3>/);
+  assert.match(out, /<figure class="lpb-quote"><blockquote>“Easy!”<\/blockquote>.*<figcaption>From clients<\/figcaption>/);
+  assert.match(out, /<p class="lpb-lead">A standfirst.<\/p>/);
+  assert.match(out, /<figure class="lpb-img lpb-img-nophone lpb-img-plain"/);
+  assert.doesNotMatch(out, /<details/);
+});
+
+test('editorial section options are opt-in (hero highlight line, strip banner, dark sections, footer text, plain cards, serif quotes, font set)', () => {
+  const fs = require('fs');
+  const js = fs.readFileSync(require('path').join(__dirname, '../assets/lp-layouts.js'), 'utf8');
+  assert.match(js, /node\.classList\.toggle\('hsl-hl-break', HS\.highlightBreak === true\);/);
+  assert.match(js, /var stripOn = M\.layout === 'strip';/);
+  assert.match(js, /node\.classList\.toggle\('lpl-on-dark', l >= 0 && l < 0\.12\);/);
+  assert.match(js, /if \(c\.mode !== 'text' \|\| !txt\(c\.text\)\) return;/);
+  assert.match(js, /\(S\.services \|\| \{\}\)\.photoCard === 'plain'/);
+  assert.match(js, /quoteLook === 'serif'/);
+  assert.match(js, /C\.sectionHeadLine === true/);
+  const F = require('../assets/lp-fonts.js');
+  assert.ok(F.ORDER.includes('editorial'));
+  assert.match(F.css('editorial'), /--lp-font-head:"Source Serif 4"/);
+});

@@ -84,7 +84,7 @@ test('page CSS for tables, numbered and nested lists', () => {
 });
 
 test('lp-layouts: every new option is registered and opt-in', () => {
-  assert.match(js, /siteWidth, headerItems, navActive, subPageNav, heroPortrait, featureBand, footerContact, footerDecor, pageBanner, pageBlocks, headerStack, textScale, logoThemed\];/);
+  assert.match(js, /siteWidth, headerItems, navActive, subPageNav, heroPortrait, featureBand, footerContact, footerDecor, pageBanner, pageBlocks, headerStack, textScale, logoThemed, darkSections, footerTextCols, editorialLooks\];/);
   assert.match(js, /if \(w >= 960 && w <= 1600\) de\.style\.setProperty\('--maxw', w \+ 'px'\); else de\.style\.removeProperty\('--maxw'\);/);
   assert.match(js, /var on = H\.ctaPlace === 'menu' && NM\.on === true && NM\.placement === 'bar'/);
   assert.match(js, /var on = NM\.activeStyle === 'fill';/);
@@ -134,7 +134,7 @@ test('Source Serif Clinical font set: menu and buttons as typed', () => {
   assert.match(c, /\.nm-link,\.nm-sub-link/);
   // Other sets don't get the new rules.
   assert.doesNotMatch(F.css('jost'), /\.nm-link/);
-  assert.match(read('manage.html'), /lp-fonts\.js\?v=5/);
+  assert.match(read('manage.html'), /lp-fonts\.js\?v=6/);
 });
 
 test('About profile layout, quote banner, hero tagline: opt-in and editable', () => {

@@ -84,9 +84,16 @@
       body: { family: 'Source Sans 3', fallback: 'system-ui,sans-serif' },
       eyebrow: { family: 'Source Sans 3', fallback: 'system-ui,sans-serif', weight: 600, spacing: '.18em', button: '.01em', labelCase: 'none' },
       google: 'Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&family=Source+Sans+3:wght@400;500;600;700'
+    },
+    editorial: {
+      label: 'Source Serif Editorial', note: 'Bold Source Serif 4 headings (with italics) + Source Sans 3 body',
+      head: { family: 'Source Serif 4', fallback: 'Georgia,serif', weight: 700, transform: 'none', spacing: '-.015em' },
+      body: { family: 'Source Sans 3', fallback: 'system-ui,sans-serif' },
+      eyebrow: { family: 'Source Sans 3', fallback: 'system-ui,sans-serif', weight: 600, spacing: '.18em', button: '.01em', labelCase: 'none' },
+      google: 'Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400;1,8..60,700&family=Source+Sans+3:wght@400;500;600;700'
     }
   };
-  var ORDER = ['classic', 'archivo', 'oswald', 'bebas', 'montserrat', 'poppins', 'space', 'playfair', 'heritage', 'jost', 'clinical'];
+  var ORDER = ['classic', 'archivo', 'oswald', 'bebas', 'montserrat', 'poppins', 'space', 'playfair', 'heritage', 'jost', 'clinical', 'editorial'];
 
   function get(key) { return (key && SETS[key] && key !== 'classic') ? SETS[key] : null; }
   function q(f) { return '"' + String(f).replace(/["\\<>]/g, '') + '"'; }

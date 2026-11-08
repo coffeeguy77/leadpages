@@ -1501,3 +1501,100 @@ html body header.site .bar .lpl-hstack > .lpl-hitems{order:-10 !important}
 html body header.site .bar .lpl-hstack > [data-sec="navMenu"]{order:0 !important}
 /* CTA banner round icon follows the theme highlight colour. */
 .cbf-ic{background:var(--safety,#1d9ad6)}
+
+/* ===== Editorial looks (Nov 2026): general options first used by the Brian Curtis design ===== */
+/* Hero: highlight on its own line, italic, in the headline colour (heroSlider.highlightBreak) */
+section[data-sec="heroSlider"].hsl-hl-break .hl{display:block;font-style:italic;color:inherit!important;font-weight:inherit;background:none!important;-webkit-text-fill-color:currentColor}
+/* Sections given a dark background: light content text */
+.lpl-on-dark .lpb{--lpb-ink:#fff;--lpb-muted:rgba(255,255,255,.82);--lpb-line:rgba(255,255,255,.22);--lpb-soft:rgba(255,255,255,.06);color:rgba(255,255,255,.88)}
+.lpl-on-dark .lpb p,.lpl-on-dark .lpb li{color:rgba(255,255,255,.86)}
+.lpl-on-dark .lpb .lpb-h2,.lpl-on-dark .lpb h3,.lpl-on-dark .lpb strong{color:#fff}
+.lpl-on-dark .lpb .lpb-image,.lpl-on-dark .lpb .lpb-img{background:none;box-shadow:none;border:0}
+/* Heading with a short brand line underneath (:::heading … rule=under) */
+.lpb-head-under .lpb-h2{flex-direction:column-reverse;align-items:flex-start;gap:14px;font-size:clamp(28px,3.4vw,46px);line-height:1.08;letter-spacing:-.01em}
+.lpb-head-under .lpb-rule{flex:0 0 auto;width:64px;height:3px}
+.lpb-head-under .lpb-intro{margin-top:4px}
+/* Numbered rows (:::steps layout=rows) */
+.lpb-rows{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;counter-reset:none}
+.lpb-row{position:relative;display:grid;grid-template-columns:96px minmax(0,.9fr) 1px minmax(0,1.6fr);gap:0 28px;align-items:center;padding:26px 28px;background:color-mix(in srgb,var(--hivis,#d32f14) 4%,var(--light,#fbf3ea))}
+.lpb-row:nth-child(even){background:transparent}
+.lpb-row::after{content:"";grid-column:3;grid-row:1;align-self:stretch;background:var(--lpb-line);width:1px}
+.lpb-row:not(:last-child)::before{content:"";position:absolute;left:62px;top:calc(50% + 34px);bottom:calc(-50% + 34px);width:2px;background:var(--lpb-blue);opacity:.85}
+.lpb-row-no{grid-column:1;font-family:var(--lp-font-head,Georgia),serif;font-style:italic;font-weight:700;font-size:clamp(44px,5vw,64px);line-height:1;color:var(--lpb-blue);letter-spacing:-.02em}
+.lpb-row-t{grid-column:2;margin:0;font-size:clamp(22px,2.4vw,32px);line-height:1.12;font-weight:700;color:var(--lpb-ink)}
+.lpb-row-b{grid-column:4;display:flex;flex-direction:column;gap:8px}
+.lpb-row-b p{margin:0;font-size:17px;line-height:1.55;color:var(--lpb-ink)}
+/* Open FAQ list (:::faq layout=list) */
+.lpb-faql{display:flex;flex-direction:column}
+.lpb-faql-i{padding:22px 0;border-bottom:1px solid var(--lpb-line)}
+.lpb-faql-i:first-child{padding-top:0}
+.lpb-faql-i:last-child{border-bottom:0}
+.lpb-faql-q{margin:0 0 10px;font-size:clamp(22px,2.3vw,30px);line-height:1.15;font-weight:700;color:var(--lpb-ink)}
+.lpb-faql-a p{margin:0 0 8px;font-size:17px;line-height:1.55}
+.lpb-faql-a p:last-child{margin-bottom:0}
+/* Quote block (:::quote cite="…") */
+.lpb-quote{margin:0;display:flex;flex-direction:column;gap:16px}
+.lpb-quote blockquote{margin:0;font-family:var(--lp-font-head,Georgia),serif;font-style:italic;font-size:clamp(32px,3.6vw,52px);line-height:1.05;color:var(--lpb-ink)}
+.lpb-quote .lpb-rule{width:64px;height:3px;flex:none}
+.lpb-quote figcaption{font-size:17px;color:var(--lpb-muted)}
+/* CTA strip: heading | phone | button */
+section[data-sec="ctaBanner"].cb-strip{padding:0!important}
+section[data-sec="ctaBanner"].cb-strip .cb-wrap{max-width:none;padding:0}
+section[data-sec="ctaBanner"].cb-strip .cbs{display:flex;align-items:center;justify-content:space-between;gap:26px;padding:22px max(24px,calc((100vw - var(--maxw,1240px)) / 2));background:var(--cb-card,var(--steel-900,#03182c));border-radius:0;color:#fff;flex-wrap:wrap}
+section[data-sec="ctaBanner"].cb-strip .cb-h{flex:1 1 auto;margin:0;color:var(--cb-ink,#fff);font-size:clamp(21px,2.2vw,28px);line-height:1.2}
+section[data-sec="ctaBanner"].cb-strip .cbs-div{width:1px;align-self:stretch;min-height:44px;background:rgba(255,255,255,.35)}
+section[data-sec="ctaBanner"].cb-strip .cbs-ph{display:inline-flex;align-items:center;gap:10px;color:#fff;text-decoration:none;font-size:clamp(18px,1.8vw,23px);font-weight:600;white-space:nowrap}
+section[data-sec="ctaBanner"].cb-strip .cbs-ph .lp-ic{width:22px;height:22px}
+section[data-sec="ctaBanner"].cb-strip .cb-btns{margin:0}
+/* Services photo cards without a card box (services.photoCard = 'plain') */
+section[data-sec="services"].svp-plain .svc.svp{background:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;overflow:visible}
+section[data-sec="services"].svp-plain .svp-media{border-radius:0}
+section[data-sec="services"].svp-plain .svp-body{position:relative;padding:16px 0 18px;border-bottom:1px solid color-mix(in srgb,var(--ink,#111) 18%,transparent)}
+section[data-sec="services"].svp-plain .svp-body h3{font-size:clamp(24px,2.3vw,32px);line-height:1.1;font-weight:700;padding-right:44px;margin:0 0 8px}
+section[data-sec="services"].svp-plain .svp-more{position:absolute;right:0;top:18px;color:var(--hivis,#d32f14)}
+section[data-sec="services"].svp-plain .svp-more .lp-ic{width:28px;height:28px;stroke-width:1.8}
+/* Large serif quotes (reviews.layout = 'quotes', quoteLook = 'serif') */
+section[data-sec="reviews"].rv-qserif .reviews{gap:0}
+section[data-sec="reviews"].rv-qserif .review{border-top:0!important;padding:0 36px!important}
+section[data-sec="reviews"].rv-qserif .review:first-child{padding-left:0!important}
+section[data-sec="reviews"].rv-qserif .review + .review{border-left:1px solid color-mix(in srgb,var(--ink,#111) 18%,transparent)!important}
+section[data-sec="reviews"].rv-qserif .review > p{font-family:var(--lp-font-head,Georgia),serif;font-size:clamp(23px,2.4vw,32px);line-height:1.18;color:var(--ink,#111)}
+section[data-sec="reviews"].rv-qserif .review > p::before{content:"\201C";display:block;font-family:var(--lp-font-head,Georgia),serif;font-weight:700;font-size:72px;line-height:.7;height:34px;color:var(--hivis,#d32f14)}
+section[data-sec="reviews"].rv-qserif .review > p::after{content:"\201D"}
+/* Trust bar items in the heading font (trustBar.stackFont = 'heading') */
+section[data-sec="trustBar"].tbs-serif .tbs-t{font-family:var(--lp-font-head,Georgia),serif;font-size:clamp(17px,1.6vw,21px);letter-spacing:0;text-transform:none;font-weight:500}
+/* Footer text columns */
+footer.site .f-col .f-text{margin:0;line-height:1.6;color:var(--mkt-foot-muted,rgba(255,255,255,.8))}
+@media (max-width:760px){
+  .lpb-row{grid-template-columns:58px minmax(0,1fr);gap:6px 16px;padding:22px 16px}
+  .lpb-row::after{display:none}
+  .lpb-row:not(:last-child)::before{left:36px;top:76px;bottom:-14px}
+  .lpb-row-no{grid-row:1/span 2;align-self:start;font-size:40px}
+  .lpb-row-t{font-size:22px}
+  .lpb-row-b{grid-column:2}
+  section[data-sec="ctaBanner"].cb-strip .cbs{flex-direction:column;align-items:flex-start;gap:14px;padding:24px 20px}
+  section[data-sec="ctaBanner"].cb-strip .cbs-div{display:none}
+  section[data-sec="reviews"].rv-qserif .review{padding:0 0 24px!important}
+  section[data-sec="reviews"].rv-qserif .review + .review{border-left:0!important;border-top:1px solid color-mix(in srgb,var(--ink,#111) 18%,transparent)!important;padding-top:24px!important}
+}
+/* Section headings with a thin line running to the right (config.sectionHeadLine) */
+html.lpl-head-line section .section-head h2{display:flex;align-items:center;gap:28px}
+html.lpl-head-line section .section-head h2::after{content:"";flex:1 1 auto;min-width:40px;height:1px;background:currentColor;opacity:.25}
+html.lpl-head-line section .section-head:empty{display:none}
+/* Block titles: keep their editorial sizes inside page articles */
+.lpb .lpb-rows .lpb-row-t{font-size:clamp(22px,2.4vw,32px);line-height:1.12}
+.lpb .lpb-faql .lpb-faql-q{font-size:clamp(22px,2.3vw,30px);line-height:1.15}
+/* Standfirst (:::lead) and hero intro as a standfirst (heroSlider.subLead) */
+.lpb-lead{margin:0;font-family:var(--lp-font-head,Georgia),serif;font-style:italic;font-size:clamp(20px,2vw,26px);line-height:1.3;color:var(--lpb-ink)}
+section[data-sec="heroSlider"].hsl-sub-lead .hsp-sub,section[data-sec="heroSlider"].hsl-sub-lead .hsl-sub,section[data-sec="heroSlider"].hsl-sub-lead .hs-sub,section[data-sec="heroSlider"].hsl-sub-lead .hsl-inner p:not([class*="eyebrow"]){font-family:var(--lp-font-head,Georgia),serif;font-style:italic;font-size:clamp(19px,1.9vw,25px);line-height:1.3}
+/* Story intro paragraphs; no heading line on the story layout */
+section[data-sec="services"] .section-head > p.svst-paras .svst-gap{display:block;height:14px}
+html.lpl-head-line section.svcs-story .section-head h2::after{display:none}
+.lpb-head-under .lpb-intro{padding-left:0;margin-left:0}
+/* Plain photo cards use a wider photo (as in the design) */
+section[data-sec="services"].svp-plain .svp-media{aspect-ratio:2/1}
+@media (max-width:760px){ html.lpl-head-line section .section-head h2::after{display:none} }
+/* Image block: no frame (frame=none) / hidden on phones (phone=hide) */
+.lpb-img.lpb-img-plain{background:none;box-shadow:none;border:0;border-radius:0}
+.lpb-img.lpb-img-plain img{object-fit:contain}
+@media (max-width:760px){ .lpb-img.lpb-img-nophone{display:none} }
