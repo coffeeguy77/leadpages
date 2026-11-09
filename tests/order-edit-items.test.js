@@ -60,3 +60,20 @@ test('orders.html includes edit-order item hooks', function () {
   assert.match(html, /data-om-add>Add<\/button>/);
   assert.match(html, /data-om-piece=/);
 });
+
+test('set_item_quantity: reprices from the stored price and scales the estimated weight', () => {
+  const { quantityPatch } = require('../lib/order/order-item-mutations');
+  const ham = { quantity: 1, pricing_method: 'per_weight', unit_price_cents: 3080, requested_weight_kg: 4, options_snapshot: { selected: [] } };
+  const p = quantityPatch(ham, 3);
+  assert.equal(p.quantity, 3);
+  assert.equal(p.requested_weight_kg, 12);
+  assert.equal(p.line_known_cents, 36960);
+  assert.equal(p.actual_weight_kg, null);
+  const fixed = { quantity: 2, pricing_method: 'fixed', unit_price_cents: 1250, options_snapshot: { selected: [{ price_cents: 250 }] } };
+  assert.equal(quantityPatch(fixed, 5).line_known_cents, 6250);
+  assert.throws(() => quantityPatch(fixed, 0), /bad_quantity/);
+  const src = require('fs').readFileSync(require('path').join(__dirname, '../orders.html'), 'utf8');
+  assert.match(src, /action: 'set_item_quantity'/);
+  assert.match(src, /data-fast-wqty/);
+  assert.match(src, /body\.requested_weight_kg = Math\.round\(kg \* wq \* 1000\) \/ 1000;/);
+});

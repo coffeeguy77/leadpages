@@ -305,6 +305,19 @@ module.exports = async function (req, res) {
         return json(res, 200, out);
       }
 
+      if (action === 'set_item_quantity') {
+        if (!body.order_item_id) return json(res, 400, { error: 'order_item_id_required' });
+        const { setOrderItemQuantity } = require('../../lib/order/order-item-mutations');
+        const out = await setOrderItemQuantity({
+          order_item_id: body.order_item_id,
+          quantity: body.quantity,
+          site_id: siteId,
+          system: system,
+          actor: actor
+        });
+        return json(res, 200, out);
+      }
+
       if (action === 'remove_order_item') {
         if (!body.order_item_id) return json(res, 400, { error: 'order_item_id_required' });
         const { removeOrderItem } = require('../../lib/order/order-item-mutations');

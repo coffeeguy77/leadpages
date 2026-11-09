@@ -572,6 +572,9 @@ html[data-theme="command-dark"] .led-warn,html[data-theme="neon-pink"] .led-warn
 .od-table th{background:var(--ink);color:var(--surface);font-weight:600;font-size:12.5px;padding:8px;text-align:left}
 .od-table td{border-top:1px solid var(--line-strong);padding:10px 8px;vertical-align:top}
 .od-table .od-q{width:56px;font-weight:700;text-align:center}
+.od-table .od-q{width:70px}
+.od-qty-in{width:58px;padding:7px 6px;border-radius:8px;border:1px solid var(--line-strong);background:var(--input-bg,transparent);color:var(--ink);font:inherit;font-weight:700;text-align:center}
+.od-qty-in:focus{outline:2px solid var(--accent, #ff4fa3);outline-offset:1px}
 .od-table .od-r{text-align:right;white-space:nowrap}
 .od-table .od-act{width:1%;white-space:nowrap;text-align:right}
 .od-table tbody.item-block{border:0;border-radius:0;padding:0;margin:0}
@@ -3910,8 +3913,10 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       h += '<div class="no-fast-line"><div class="no-fast-info"><strong title="' + esc(p.name) + '">' + esc(p.name) + '</strong><div class="meta">' + esc(meta) + '</div></div>';
       if (!stockInfo) {
         if (needsW) {
-          h += '<label class="no-fast-field" title="Weight"><span class="sr-only">Weight</span>' +
-            noStepperHtml({ min: minK || 0.1, step: 0.1, value: formatKgDefault(p), dataAttr: 'data-om-weight' }) + '<span aria-hidden="true">kg</span></label>';
+          h += '<label class="no-fast-field" title="Quantity"><span class="sr-only">Quantity</span>' +
+            noStepperHtml({ min: 1, step: 1, value: 1, dataAttr: 'data-om-qty' }) + '<span aria-hidden="true">QTY</span></label>';
+          h += '<label class="no-fast-field" title="Weight kg each"><span class="sr-only">Weight kg each</span>' +
+            noStepperHtml({ min: minK || 0.1, step: 0.1, value: formatKgDefault(p), dataAttr: 'data-om-weight' }) + '<span aria-hidden="true">kg ea</span></label>';
         } else {
           h += '<label class="no-fast-field" title="Quantity"><span class="sr-only">Quantity</span>' +
             noStepperHtml({ min: 1, step: 1, value: 1, dataAttr: 'data-om-qty' }) + '<span aria-hidden="true">QTY</span></label>';
@@ -3984,7 +3989,9 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
         var minK = minimumKgForProduct(product);
         if (!isFinite(kg) || kg <= 0) { toast('Enter weight (kg) for this product', 'err'); return; }
         if (minK != null && kg + 0.0001 < minK) { toast('Minimum weight is ' + minK + ' kg', 'err'); return; }
-        body.requested_weight_kg = kg;
+        var wq = Math.max(1, Math.round(Number((row.querySelector('[data-om-qty]') || {}).value) || 1));
+        body.quantity = wq;
+        body.requested_weight_kg = Math.round(kg * wq * 1000) / 1000;   // kg each × quantity
       } else {
         var qty = Number((row.querySelector('[data-om-qty]') || {}).value) || 0;
         if (qty < 1) { toast('Enter a quantity', 'err'); return; }
@@ -4198,7 +4205,11 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
         ? '<strong>' + esc(odKg(it.actual_weight_kg)) + '</strong>'
         : (it.requested_weight_kg != null ? '~' + esc(odKg(it.requested_weight_kg)) : '<span class="od-muted">when weighed</span>');
       html += '<tbody class="item-block" data-item="' + esc(it.id) + '"><tr>';
-      html += '<td class="od-q">' + esc(Number(it.quantity)) + '</td>';
+      var qtyEditable = canEditItems && !(it.product_snapshot && it.product_snapshot.stock_piece);
+      html += '<td class="od-q">' + (qtyEditable
+        ? '<input class="od-qty-in" type="number" min="1" max="999" step="1" inputmode="numeric" value="' + esc(Number(it.quantity)) + '" data-qty-item="' + esc(it.id) + '" data-qty-was="' + esc(Number(it.quantity)) + '"' +
+          (it.actual_weight_kg != null ? ' data-qty-weighed="1"' : '') + ' aria-label="Quantity of ' + esc(it.product_name) + '">'
+        : esc(Number(it.quantity))) + '</td>';
       var sp = it.special;
       html += '<td><strong>' + esc(it.product_name) + '</strong> ' + priceBadge(it) +
         (sp ? ' <span class="pill-special pill-sm">Special price</span>' : '') +
@@ -4467,6 +4478,29 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
           btn.disabled = false;
         }
       });
+    });
+
+    // Quantity: change it on the line; the amount (and estimated weight) follow.
+    $('om-body').querySelectorAll('[data-qty-item]').forEach(function(inp){
+      async function commit(){
+        var was = Number(inp.getAttribute('data-qty-was'));
+        var q = Math.round(Number(inp.value));
+        if (!isFinite(q) || q < 1) { inp.value = String(was); return; }
+        if (q === was) return;
+        if (inp.getAttribute('data-qty-weighed') === '1' && !confirm('This line has already been weighed. Changing the quantity clears its weight so it can be weighed again. Continue?')) { inp.value = String(was); return; }
+        inp.disabled = true;
+        try {
+          await api('/api/order/orders', { method: 'POST', body: { site_id: state.siteId, action: 'set_item_quantity', order_item_id: inp.getAttribute('data-qty-item'), quantity: q } });
+          toast('Quantity updated', 'ok');
+          await openOrderDetail(o.id);
+        } catch (e) {
+          toast((e && e.message) || String(e), 'err');
+          inp.value = String(was);
+          inp.disabled = false;
+        }
+      }
+      inp.addEventListener('change', commit);
+      inp.addEventListener('keydown', function(ev){ if (ev.key === 'Enter') { ev.preventDefault(); inp.blur(); } });
     });
 
     $('om-body').querySelectorAll('[data-remove-item]').forEach(function(btn){
@@ -5012,6 +5046,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       if (!id) return;
       drafts[id] = {
         qty: (row.querySelector('[data-fast-qty]') || {}).value,
+        wqty: (row.querySelector('[data-fast-wqty]') || {}).value,
         kg: (row.querySelector('[data-fast-kg]') || {}).value,
         notes: (row.querySelector('[data-fast-notes]') || {}).value,
         touched: row.getAttribute('data-touched') === '1',
@@ -5177,8 +5212,14 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       notes = (draft.notes && String(draft.notes).trim()) || '';
       answers = draft.answers || {};
     }
-    var line = { product_id: product_id, quantity: needsW ? 1 : qty, answers: answers };
-    if (wRaw !== '' && wRaw != null && isFinite(Number(wRaw))) line.requested_weight_kg = Number(wRaw);
+    var wq = 1;
+    if (needsW) {
+      var wqEl = row && row.querySelector('[data-fast-wqty]');
+      wq = Math.max(1, Math.round(Number(row ? (wqEl && wqEl.value) : draft.wqty) || 1));
+    }
+    var line = { product_id: product_id, quantity: needsW ? wq : qty, answers: answers };
+    // Weighed: the kg box is per piece, so the line's weight is kg × quantity.
+    if (wRaw !== '' && wRaw != null && isFinite(Number(wRaw))) line.requested_weight_kg = needsW ? Math.round(Number(wRaw) * wq * 1000) / 1000 : Number(wRaw);
     if (notes) line.notes = notes;
     var ovr = fastSpecialToOverride(row ? readFastSpecial(row, draft.special) : draft.special);
     if (ovr) line.price_override = ovr;
@@ -5276,6 +5317,8 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       var notesEl = row.querySelector('[data-fast-notes]');
       if (kgEl && patch.kg != null) kgEl.value = patch.kg;
       if (qtyEl && patch.qty != null) qtyEl.value = patch.qty;
+      var wqEl2 = row.querySelector('[data-fast-wqty]');
+      if (wqEl2 && patch.wqty != null) wqEl2.value = patch.wqty;
       if (notesEl && patch.notes != null) notesEl.value = patch.notes;
     }
     syncNoOrderSurfaces();
@@ -5303,8 +5346,12 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       if (ent.mode === 'fast') {
         if (productNeedsWeight(p)) {
           var minK = minimumKgForProduct(p);
-          var kgVal = kg !== '' && kg != null ? kg : (minK || 0.1);
-          controls += '<label class="no-full-cart-field"><span>kg</span>' +
+          var dft = (state.noFastDrafts || {})[p.id] || {};
+          var kgVal = dft.kg !== '' && dft.kg != null ? dft.kg : (kg !== '' && kg != null ? kg : (minK || 0.1));
+          controls += '<label class="no-full-cart-field"><span>Qty</span>' +
+            noStepperHtml({ min: 1, step: 1, value: qty || 1, dataAttr: 'data-no-cart-wqty="' + esc(p.id) + '"' }) +
+            '</label>';
+          controls += '<label class="no-full-cart-field"><span>kg each</span>' +
             noStepperHtml({ min: minK != null ? minK : 0.1, step: 0.1, value: kgVal, dataAttr: 'data-no-cart-kg="' + esc(p.id) + '"' }) +
             '</label>';
         } else if (productShowsQuantity(p)) {
@@ -5316,7 +5363,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
           '<input type="text" value="' + esc(note) + '" data-no-cart-note="' + esc(p.id) + '" placeholder="Optional"></label>';
       } else if (ent.mode === 'extra') {
         var bits = [];
-        if (kg !== '' && kg != null) bits.push(String(kg) + ' kg');
+        if (kg !== '' && kg != null) bits.push((qty > 1 ? qty + ' × ' + String(Math.round(kg / qty * 1000) / 1000) + ' kg' : String(kg) + ' kg'));
         else if (productShowsQuantity(p)) bits.push('Qty ' + (qty || 1));
         if (note) bits.push(note);
         if (bits.length) controls += '<span class="meta">' + esc(bits.join(' · ')) + '</span>';
@@ -5340,6 +5387,13 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       }
       inp.addEventListener('input', commit);
       inp.addEventListener('change', commit);
+    });
+    list.querySelectorAll('[data-no-cart-wqty]').forEach(function(inp){
+      function commitW(){
+        applyCartDraftField(inp.getAttribute('data-no-cart-wqty'), { wqty: String(Math.max(1, Math.round(Number(inp.value) || 1))) });
+      }
+      inp.addEventListener('input', commitW);
+      inp.addEventListener('change', commitW);
     });
     list.querySelectorAll('[data-no-cart-kg]').forEach(function(inp){
       inp.addEventListener('input', function(){
@@ -5976,7 +6030,11 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
         if (pack) html += '<span class="no-fast-packchip" title="Fixed pack size">' + esc(pack) + '</span>';
       }
       if (needsW) {
-        var kgTitle = kgFieldLabelForProduct(p);
+        // Weighed products: how many pieces, then the weight of each.
+        html += '<label class="no-fast-field" title="Quantity"><span class="sr-only">Quantity</span>' +
+          noStepperHtml({ min: 1, step: 1, value: draft.wqty || 1, dataAttr: 'data-fast-wqty' }) +
+          '<span aria-hidden="true">QTY</span></label>';
+        var kgTitle = kgFieldLabelForProduct(p) + ' each';
         html += '<label class="no-fast-field" title="' + esc(kgTitle) + '"><span class="sr-only">' + esc(kgTitle) + '</span>' +
           noStepperHtml({ min: minK || 0.1, step: 0.1, value: kgVal, dataAttr: 'data-fast-kg' }) +
           '<span aria-hidden="true">kg</span></label>';
