@@ -574,6 +574,27 @@ html[data-theme="command-dark"] .led-warn,html[data-theme="neon-pink"] .led-warn
 .od-table .od-q{width:56px;font-weight:700;text-align:center}
 .od-table .od-q{width:70px}
 .od-qty-in{width:58px;padding:7px 6px;border-radius:8px;border:1px solid var(--line-strong);background:var(--input-bg,transparent);color:var(--ink);font:inherit;font-weight:700;text-align:center}
+/* Pieces panel (Expand): one row per ham / turkey */
+.od-pieces td{padding-top:0!important}
+.od-pc-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--bg-soft,var(--surface))}
+.od-pc{display:flex;align-items:center;gap:8px;min-width:0;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.od-pc-n{font-weight:700;color:var(--ink);white-space:nowrap}
+.od-pc-w{flex:1;display:flex;align-items:center;gap:4px;min-width:0;color:var(--ink)}
+.od-pc-w input{width:76px;padding:6px 7px;border-radius:7px;border:1px solid var(--line-strong);background:var(--input-bg,transparent);color:var(--ink);font:inherit}
+.od-pc-rm{min-width:30px;font-weight:800}
+.od-pc-foot{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:8px}
+.od-pc-sum{color:var(--ink-soft)}
+.od-pick{grid-column:1/-1;padding:10px;border:1px dashed var(--line-strong);border-radius:10px}
+.od-pick-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;color:var(--ink)}
+.od-pick-modes{display:flex;flex-wrap:wrap;gap:6px}
+.btn.od-mini.on{border-color:var(--accent,currentColor)}
+@media (max-width:640px){
+  .od-pc-list{grid-template-columns:1fr}
+  /* The order table scrolls sideways on phones: keep the piece list inside the visible part */
+  .od-pieces > td:first-child{display:none}
+  .od-pieces > td{padding-left:0!important;padding-right:0!important}
+  .od-pieces .od-pc-list,.od-pieces .od-pc-foot{position:sticky;left:0;box-sizing:border-box;width:var(--od-vis,100%);max-width:var(--od-vis,100%)}
+}
 .od-qty-in:focus{outline:2px solid var(--accent, #ff4fa3);outline-offset:1px}
 .od-table .od-r{text-align:right;white-space:nowrap}
 .od-table .od-act{width:1%;white-space:nowrap;text-align:right}
@@ -4155,6 +4176,82 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     });
   }
 
+  /* ---- Pieces on a line (hams / turkeys): one row per piece, typed weight or a stock piece ---- */
+  function odExpanded(id){ return !!(state.odOpenPieces && state.odOpenPieces[id]); }
+  function odSetExpanded(id, on){ state.odOpenPieces = state.odOpenPieces || {}; state.odOpenPieces[id] = !!on; }
+  function odPiecesUi(it, needsWeight, canEdit){
+    if (!canEdit || !it || (it.product_snapshot && it.product_snapshot.stock_piece)) return false;
+    var weighed = needsWeight || it.pricing_method === 'per_weight';
+    return weighed && (Number(it.quantity) > 1 || it.stock_tracked || (it.stock_pieces || []).length > 0);
+  }
+  function odPieceNoun(it){ return /turkey/i.test(it.product_name || '') ? 'Turkey' : /ham/i.test(it.product_name || '') ? 'Ham' : 'Piece'; }
+  function odPiecesSummary(it){
+    var q = Number(it.quantity) || 1;
+    var sp = it.stock_pieces || [];
+    var pw = (it.piece_weights || []).filter(function(w){ return w != null; });
+    var n = sp.length || pw.length;
+    if (!n || q < 1) return '';
+    var kg = sp.length ? sp.reduce(function(t, x){ return t + Number(x.weight_kg); }, 0) : pw.reduce(function(t, w){ return t + Number(w); }, 0);
+    return '<span class="od-line-sub od-pc-sum">' + n + ' of ' + q + (sp.length ? ' given from stock' : ' weighed') + ' · ' + esc(odKg(Math.round(kg * 1000) / 1000)) + '</span>';
+  }
+  function odPiecesRowHtml(it){
+    var q = Number(it.quantity) || 1, noun = odPieceNoun(it);
+    var sp = it.stock_pieces || [], pw = it.piece_weights || [];
+    var stockMode = !!it.stock_tracked || sp.length > 0;
+    var h = '<tr class="od-pieces" data-pieces-row="' + esc(it.id) + '"><td></td><td colspan="5"><div class="od-pc-list">';
+    for (var i = 0; i < q; i++) {
+      h += '<div class="od-pc"><span class="od-pc-n">' + esc(noun) + ' ' + (i + 1) + '</span>';
+      if (stockMode) {
+        var pc = sp[i];
+        if (pc) h += '<span class="od-pc-w"><strong>' + esc(odKg(pc.weight_kg)) + '</strong>' + (pc.tag ? ' · #' + esc(pc.tag) : '') + '</span>' +
+          '<button type="button" class="btn ghost od-mini od-pc-rm" data-pc-remove-piece="' + esc(pc.id) + '" data-item="' + esc(it.id) + '" title="Remove this ' + esc(noun.toLowerCase()) + ' (goes back to stock)">−</button>';
+        else h += '<span class="od-pc-w od-muted">not chosen</span>' +
+          '<button type="button" class="btn ghost od-mini" data-pc-pick="' + esc(it.id) + '" data-slot="' + i + '">Choose from stock</button>' +
+          '<button type="button" class="btn ghost od-mini od-pc-rm" data-pc-drop-empty="' + esc(it.id) + '" title="Remove this ' + esc(noun.toLowerCase()) + '">−</button>';
+      } else {
+        h += '<label class="od-pc-w"><input type="number" min="0" step="0.01" inputmode="decimal" placeholder="kg" value="' + esc(pw[i] != null ? pw[i] : '') + '" data-pc-weight="' + esc(it.id) + '" data-index="' + i + '"><span>kg</span></label>' +
+          '<button type="button" class="btn ghost od-mini od-pc-rm" data-pc-remove-index="' + i + '" data-item="' + esc(it.id) + '" title="Remove this ' + esc(noun.toLowerCase()) + '">−</button>';
+      }
+      h += '</div>';
+      if (stockMode && state.odPick && state.odPick.item === it.id && state.odPick.slot === i) h += odStockPickerHtml(it);
+    }
+    h += '</div><div class="od-pc-foot"><button type="button" class="btn ghost od-mini" data-pc-add="' + esc(it.id) + '">+ Add another ' + esc(noun.toLowerCase()) + '</button>' +
+      (stockMode ? '' : '<span class="od-muted">Type each weight; the price is final once every ' + esc(noun.toLowerCase()) + ' is weighed.</span>') + '</div></td></tr>';
+    return h;
+  }
+  function odStockPickerHtml(it){
+    var info = (state.noStock || {})[it.product_id] || { pieces: [] };
+    var target = Number(it.target_kg) || null;
+    var list = (info.pieces || []).slice();
+    if (target) list.sort(function(a, b){ return Math.abs(a.weight_kg - target) - Math.abs(b.weight_kg - target); });
+    var mode = state.odPick.mode || 'closest';
+    if (mode === 'closest' && target) {
+      var below = list.filter(function(x){ return x.weight_kg <= target; }).slice(0, 3);
+      var above = list.filter(function(x){ return x.weight_kg > target; }).slice(0, 3);
+      list = below.concat(above).sort(function(a, b){ return a.weight_kg - b.weight_kg; });
+    } else {
+      list.sort(function(a, b){ return a.weight_kg - b.weight_kg; });
+    }
+    var h = '<div class="od-pick"><div class="od-pick-head"><strong>' + (target ? 'Closest to ' + esc(odKg(Math.round(target * 100) / 100)) : 'In stock') + '</strong>' +
+      '<span class="od-pick-modes"><button type="button" class="btn ghost od-mini' + (mode === 'closest' ? ' on' : '') + '" data-pick-mode="closest">Closest either side</button>' +
+      '<button type="button" class="btn ghost od-mini' + (mode === 'all' ? ' on' : '') + '" data-pick-mode="all">All in stock</button>' +
+      '<button type="button" class="btn ghost od-mini" data-pick-close>Cancel</button></span></div>';
+    h += list.length ? '<div class="stk-chips">' + list.map(function(x){
+      var cents = it.unit_price_cents != null ? Math.round(Number(x.weight_kg) * it.unit_price_cents) : null;
+      return '<button type="button" class="btn ghost no-piece" data-pick-piece="' + esc(x.id) + '" data-item="' + esc(it.id) + '">' + esc(odKg(x.weight_kg)) + (x.tag ? ' #' + esc(x.tag) : '') + (cents != null ? ' · ' + esc(formatAud(cents)) : '') + '</button>';
+    }).join('') + '</div>' : '<p class="od-muted" style="margin:6px 0 0">Nothing left in stock for this product.</p>';
+    return h + '</div>';
+  }
+  var OD_PIECE_ERRORS = {
+    choose_pieces_to_remove: 'Some are already weighed — press − on the ones to remove.',
+    last_piece_remove_line: 'That’s the last one — use Remove to take the line off.',
+    line_uses_stock: 'This line uses stock pieces — choose them from stock.',
+    invalid_weight: 'Enter a weight in kg.',
+    piece_taken: 'That piece has just gone to another order — pick another.',
+    line_full: 'This line already has all its pieces.'
+  };
+  function odPieceError(e){ var m = (e && e.message) || String(e); return OD_PIECE_ERRORS[m] || m; }
+
   function renderOrderDetail(data){
     var o = data.order || {};
     var items = data.items || [];
@@ -4208,7 +4305,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       var qtyEditable = canEditItems && !(it.product_snapshot && it.product_snapshot.stock_piece);
       html += '<td class="od-q">' + (qtyEditable
         ? '<input class="od-qty-in" type="number" min="1" max="999" step="1" inputmode="numeric" value="' + esc(Number(it.quantity)) + '" data-qty-item="' + esc(it.id) + '" data-qty-was="' + esc(Number(it.quantity)) + '"' +
-          (it.actual_weight_kg != null ? ' data-qty-weighed="1"' : '') + ' aria-label="Quantity of ' + esc(it.product_name) + '">'
+          (it.actual_weight_kg != null && Number(it.quantity) > 1 && !(it.piece_weights || []).some(function(w){ return w != null; }) && !(it.stock_pieces || []).length ? ' data-qty-weighed="1"' : '') + ' aria-label="Quantity of ' + esc(it.product_name) + '">'
         : esc(Number(it.quantity))) + '</td>';
       var sp = it.special;
       html += '<td><strong>' + esc(it.product_name) + '</strong> ' + priceBadge(it) +
@@ -4220,6 +4317,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
           (sp.set_by_label ? ' · ' + esc(sp.set_by_label) : '') + '</span>' : '') +
         (stockInfo ? ' <span class="badge info">' + (stockInfo.finalised ? 'stock given' : stockInfo.pieces + ' of ' + Number(it.quantity) + ' given') + '</span>' : '') +
         (optTxt ? '<span class="od-line-sub">' + esc(optTxt) + '</span>' : '') +
+        odPiecesSummary(it) +
         (it.notes ? '<span class="od-line-sub">“' + esc(it.notes) + '”</span>' : '') +
         (it.cooking_cents ? '<span class="od-line-sub">Includes cooking ' + esc(formatAud(it.cooking_cents)) + (it.actual_weight_kg == null ? ' (est.)' : '') + '</span>'
           : (it.est_range && it.est_range.per_kg_extra_high_cents ? '<span class="od-line-sub">Includes cooking est. ' + esc(formatAud(it.est_range.per_kg_extra_low_cents)) + '–' + esc(formatAud(it.est_range.per_kg_extra_high_cents)) + '</span>' : '')) + '</td>';
@@ -4232,7 +4330,10 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
         ? esc(formatAud(er.low_cents)) + '–' + esc(formatAud(er.high_cents)) + '<span class="od-line-sub">estimate (' + esc(er.low_kg) + '–' + esc(er.high_kg) + ' kg)</span>'
         : amount != null ? esc(formatAud(amount)) + (it.price_status === 'estimated' ? '<span class="od-line-sub">estimate</span>' : '') : '<span class="od-muted">TBC</span>') + '</td>';
       html += '<td class="od-act">';
-      if (needsWeight && it.price_status !== 'final' && !isVoided) {
+      var piecesUi = odPiecesUi(it, needsWeight, canEditItems);
+      if (piecesUi) {
+        html += '<button class="btn ghost od-mini' + (odExpanded(it.id) ? ' on' : '') + '" type="button" data-pieces-toggle="' + esc(it.id) + '">' + (odExpanded(it.id) ? 'Collapse' : 'Expand') + '</button>';
+      } else if (needsWeight && it.price_status !== 'final' && !isVoided) {
         html += '<button class="btn ghost od-mini" type="button" data-weigh-toggle="' + esc(it.id) + '">' + (it.price_status === 'finalised' ? 'Re-weigh' : 'Weigh') + '</button>';
       }
       if (!isVoided && ['refunded', 'archived'].indexOf(o.status) < 0) {
@@ -4242,6 +4343,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
         html += '<button class="btn ghost od-mini" type="button" data-remove-item="' + esc(it.id) + '" title="Remove line">Remove</button>';
       }
       html += '</td></tr>';
+      if (piecesUi && odExpanded(it.id)) html += odPiecesRowHtml(it);
       if (!isVoided) html += specialPriceRowHtml(it);
       if (needsWeight && it.price_status !== 'final' && !isVoided) {
         html += '<tr class="od-weigh hide" data-weigh-row="' + esc(it.id) + '"><td></td><td colspan="5"><div class="od-weigh-grid">' +
@@ -4494,13 +4596,100 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
           toast('Quantity updated', 'ok');
           await openOrderDetail(o.id);
         } catch (e) {
-          toast((e && e.message) || String(e), 'err');
+          var code = (e && e.message) || String(e);
+          toast(odPieceError(e), 'err');
           inp.value = String(was);
           inp.disabled = false;
+          if (code === 'choose_pieces_to_remove') { odSetExpanded(inp.getAttribute('data-qty-item'), true); await openOrderDetail(o.id); }
         }
       }
       inp.addEventListener('change', commit);
       inp.addEventListener('keydown', function(ev){ if (ev.key === 'Enter') { ev.preventDefault(); inp.blur(); } });
+    });
+
+    // Pieces panel (Expand)
+    function odFitPieces(){
+      $('om-body').querySelectorAll('.od-table-wrap').forEach(function(w){ w.style.setProperty('--od-vis', w.clientWidth + 'px'); });
+    }
+    odFitPieces();
+    if (!state.odFitWired) { state.odFitWired = true; window.addEventListener('resize', function(){ var b = $('om-body'); if (b) b.querySelectorAll('.od-table-wrap').forEach(function(w){ w.style.setProperty('--od-vis', w.clientWidth + 'px'); }); }); }
+    async function odPieceCall(body, msg){
+      try {
+        await api('/api/order/orders', { method: 'POST', body: Object.assign({ site_id: state.siteId }, body) });
+        if (msg) toast(msg, 'ok');
+      } catch (e) { toast(odPieceError(e), 'err'); }
+      await openOrderDetail(o.id);
+    }
+    $('om-body').querySelectorAll('[data-pieces-toggle]').forEach(function(btn){
+      btn.addEventListener('click', async function(){
+        var id = btn.getAttribute('data-pieces-toggle');
+        odSetExpanded(id, !odExpanded(id));
+        await openOrderDetail(o.id);
+      });
+    });
+    $('om-body').querySelectorAll('[data-pc-weight]').forEach(function(inp){
+      inp.addEventListener('change', function(){
+        var v = inp.value.trim();
+        odPieceCall({ action: 'set_piece_weight', order_item_id: inp.getAttribute('data-pc-weight'), index: Number(inp.getAttribute('data-index')), weight_kg: v === '' ? null : Number(v) });
+      });
+      inp.addEventListener('keydown', function(ev){ if (ev.key === 'Enter') { ev.preventDefault(); inp.blur(); } });
+    });
+    $('om-body').querySelectorAll('[data-pc-remove-index]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        btn.disabled = true;
+        odPieceCall({ action: 'remove_piece', order_item_id: btn.getAttribute('data-item'), index: Number(btn.getAttribute('data-pc-remove-index')) }, 'Removed');
+      });
+    });
+    $('om-body').querySelectorAll('[data-pc-remove-piece]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        btn.disabled = true;
+        odPieceCall({ action: 'remove_piece', order_item_id: btn.getAttribute('data-item'), piece_id: btn.getAttribute('data-pc-remove-piece') }, 'Removed — piece back in stock');
+      });
+    });
+    $('om-body').querySelectorAll('[data-pc-drop-empty]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var id = btn.getAttribute('data-pc-drop-empty');
+        var it = items.find(function(x){ return x.id === id; });
+        if (!it) return;
+        btn.disabled = true;
+        if (Number(it.quantity) <= 1) { toast(OD_PIECE_ERRORS.last_piece_remove_line, 'err'); btn.disabled = false; return; }
+        odPieceCall({ action: 'set_item_quantity', order_item_id: id, quantity: Number(it.quantity) - 1 }, 'Removed');
+      });
+    });
+    $('om-body').querySelectorAll('[data-pc-add]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var id = btn.getAttribute('data-pc-add');
+        var it = items.find(function(x){ return x.id === id; });
+        if (!it) return;
+        btn.disabled = true;
+        odPieceCall({ action: 'set_item_quantity', order_item_id: id, quantity: Number(it.quantity) + 1 }, 'Added');
+      });
+    });
+    $('om-body').querySelectorAll('[data-pc-pick]').forEach(function(btn){
+      btn.addEventListener('click', async function(){
+        btn.disabled = true;
+        await loadNoStock();
+        state.odPick = { item: btn.getAttribute('data-pc-pick'), slot: Number(btn.getAttribute('data-slot')), mode: 'closest' };
+        await openOrderDetail(o.id);
+      });
+    });
+    $('om-body').querySelectorAll('[data-pick-mode]').forEach(function(btn){
+      btn.addEventListener('click', async function(){ if (state.odPick) state.odPick.mode = btn.getAttribute('data-pick-mode'); await openOrderDetail(o.id); });
+    });
+    $('om-body').querySelectorAll('[data-pick-close]').forEach(function(btn){
+      btn.addEventListener('click', async function(){ state.odPick = null; await openOrderDetail(o.id); });
+    });
+    $('om-body').querySelectorAll('[data-pick-piece]').forEach(function(btn){
+      btn.addEventListener('click', async function(){
+        btn.disabled = true;
+        try {
+          await api('/api/order/stock', { method: 'POST', body: { site_id: state.siteId, action: 'allocate', piece_id: btn.getAttribute('data-pick-piece'), order_item_id: btn.getAttribute('data-item') } });
+          toast('Given from stock', 'ok');
+          state.odPick = null;
+        } catch (e) { toast(odPieceError(e), 'err'); }
+        await loadNoStock();
+        await openOrderDetail(o.id);
+      });
     });
 
     $('om-body').querySelectorAll('[data-remove-item]').forEach(function(btn){

@@ -77,3 +77,41 @@ test('set_item_quantity: reprices from the stored price and scales the estimated
   assert.match(src, /data-fast-wqty/);
   assert.match(src, /body\.requested_weight_kg = Math\.round\(kg \* wq \* 1000\) \/ 1000;/);
 });
+
+test('pieceWeights pads to quantity and treats a single weighed piece as piece 1', function () {
+  const { pieceWeights } = require('../lib/order/order-item-mutations');
+  assert.deepEqual(pieceWeights({ quantity: 3, options_snapshot: { piece_weights: [4.1, null] } }), [4.1, null, null]);
+  assert.deepEqual(pieceWeights({ quantity: 2, options_snapshot: { piece_weights: [4.1234, '', -1, 9] } }), [4.123, null]);
+  assert.deepEqual(pieceWeights({ quantity: 1, actual_weight_kg: 4.4, options_snapshot: {} }), [4.4]);
+  assert.deepEqual(pieceWeights({ quantity: 2, actual_weight_kg: 8.4, options_snapshot: {} }), [null, null]);
+});
+
+test('patchForWeights keeps the estimate until every piece is weighed, then finalises', function () {
+  const { patchForWeights } = require('../lib/order/order-item-mutations');
+  const ham = { quantity: 3, pricing_method: 'per_weight', unit_price_cents: 3080, requested_weight_kg: 12, options_snapshot: { selected: [] } };
+  const part = patchForWeights(ham, [4.1, null, 4.2]);
+  assert.equal(part.quantity, 3);
+  assert.notEqual(part.price_status, 'finalised');
+  assert.equal(part.actual_weight_kg, null);
+  assert.deepEqual(part.options_snapshot.piece_weights, [4.1, null, 4.2]);
+  assert.deepEqual(part.options_snapshot.selected, []);
+  const full = patchForWeights(ham, [4.1, 4.3, 4.2]);
+  assert.equal(full.price_status, 'finalised');
+  assert.equal(full.actual_weight_kg, 12.6);
+  assert.equal(full.line_final_cents, 38808);
+  const none = patchForWeights(Object.assign({}, ham, { options_snapshot: { piece_weights: [4.1] } }), [null, null]);
+  assert.equal('piece_weights' in none.options_snapshot, false);
+  assert.equal(none.quantity, 2);
+});
+
+test('reducing below the weighed pieces asks staff to choose which to remove', function () {
+  const src = require('fs').readFileSync(require('path').join(__dirname, '../lib/order/order-item-mutations.js'), 'utf8');
+  assert.match(src, /if \(q < filled\.length\) throw Object\.assign\(new Error\('choose_pieces_to_remove'\), \{ code: 409 \}\)/);
+  assert.match(src, /if \(q < ctx\.pieces\.length\) throw Object\.assign\(new Error\('choose_pieces_to_remove'\), \{ code: 409 \}\)/);
+  const api = require('fs').readFileSync(require('path').join(__dirname, '../api/order/orders.js'), 'utf8');
+  assert.match(api, /action === 'set_piece_weight' \|\| action === 'remove_piece'/);
+  const html = require('fs').readFileSync(require('path').join(__dirname, '../orders.html'), 'utf8');
+  assert.match(html, /if \(code === 'choose_pieces_to_remove'\) \{ odSetExpanded/);
+  assert.match(html, /data-pc-pick/);
+  assert.match(html, /data-pieces-toggle/);
+});

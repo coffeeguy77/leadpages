@@ -72,6 +72,13 @@ module.exports = async function (req, res) {
           .order('created_at', { ascending: false })
           .limit(100);
         const itemIds = (items || []).map(function (it) { return it.id; });
+        // Stock pieces on each line, and which lines are stock-tracked (hams / turkeys).
+        const linePieces = {};
+        if (itemIds.length) {
+          const lp = await admin.from('order_stock_pieces').select('id,weight_kg,tag,order_item_id').in('order_item_id', itemIds).eq('status', 'allocated');
+          (lp.data || []).forEach(function (pc) { (linePieces[pc.order_item_id] = linePieces[pc.order_item_id] || []).push({ id: pc.id, weight_kg: Number(pc.weight_kg), tag: pc.tag || null }); });
+        }
+        const trackedCats = require('../../lib/order/stock').trackedCategoryIds(system);
         let itemAnswers = [];
         if (itemIds.length) {
           const ans = await admin
@@ -87,7 +94,11 @@ module.exports = async function (req, res) {
             return Object.assign({}, it, {
               est_range: require('../../lib/order/price-override').estimateRange(it),
               cooking_cents: P.lineCookingCents(it),
-              special: require('../../lib/order/price-override').describe(it)
+              special: require('../../lib/order/price-override').describe(it),
+              stock_pieces: linePieces[it.id] || [],
+              stock_tracked: !!(it.product_snapshot && it.product_snapshot.category_id && trackedCats.indexOf(String(it.product_snapshot.category_id)) >= 0),
+              piece_weights: require('../../lib/order/order-item-mutations').pieceWeights(it),
+              target_kg: require('../../lib/order/stock').targetWeightKg ? require('../../lib/order/stock').targetWeightKg(it, null) : null
             });
           })),
           payments: payments || [],
@@ -315,6 +326,14 @@ module.exports = async function (req, res) {
           system: system,
           actor: actor
         });
+        return json(res, 200, out);
+      }
+
+      if (action === 'set_piece_weight' || action === 'remove_piece') {
+        if (!body.order_item_id) return json(res, 400, { error: 'order_item_id_required' });
+        const M = require('../../lib/order/order-item-mutations');
+        const args = { order_item_id: body.order_item_id, index: body.index, weight_kg: body.weight_kg, piece_id: body.piece_id || null, site_id: siteId, system: system, actor: actor };
+        const out = action === 'set_piece_weight' ? await M.setPieceWeight(args) : await M.removePiece(args);
         return json(res, 200, out);
       }
 
