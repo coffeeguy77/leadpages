@@ -1997,3 +1997,16 @@ html[data-lp-reduced-motion="true"] .lp-p-appear-sheet {
   .pws-ind img { width: 52px; }
   .pws-ind-acts { grid-column: 1 / -1; justify-content: flex-start; }
 }
+
+/* New website from a design (Nov 2026) — theme tokens only, so it reads in light and dark */
+.ns-designs { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+.ns-design { display: flex; flex-direction: column; border: 1.5px solid var(--border); border-radius: 12px; background: var(--panel); overflow: hidden; transition: border-color .15s ease; }
+.ns-design:hover { border-color: var(--border-strong, var(--accent)); }
+.ns-design.is-on { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft, transparent); }
+.ns-design-pick { appearance: none; font: inherit; text-align: left; cursor: pointer; background: none; border: 0; padding: 0; color: var(--text); display: flex; flex-direction: column; }
+.ns-design-thumb { display: block; aspect-ratio: 16 / 10; background: var(--panel-soft); border-bottom: 1px solid var(--border); }
+.ns-design-thumb img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+.ns-design-name { padding: 10px 12px 4px; font-weight: 700; font-size: 13.5px; line-height: 1.3; }
+.ns-design-prev { padding: 2px 12px 11px; font-size: 13px; font-weight: 700; color: var(--accent); text-decoration: none; }
+.ns-design-prev:hover { text-decoration: underline; }
+@media (max-width: 560px) { .ns-designs { grid-template-columns: 1fr 1fr; gap: 10px; } .ns-design-name { font-size: 13px; } }

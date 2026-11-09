@@ -603,6 +603,7 @@ label{font-weight:600;font-size:11.5px;color:var(--ink-soft);display:block;margi
         + '<div class="grow"><label>Email</label><input type="email" data-email value="'+esc(p.email||'')+'"></div>'
         + '<div><label>Phone</label><input type="tel" data-phone value="'+esc(p.phone||'')+'"></div>'
         + '<div><label>Status</label>'+statusSelect(p.status,PARTNER_STATUSES,'data-status')+'</div>'
+        + '<label style="display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:13px;cursor:pointer" title="Shows a New website button: draft sites from their designs, no Buy Now bar"><input type="checkbox" data-cancreate'+(p.can_create_sites?' checked':'')+' style="width:auto"> Can create websites</label>'
         + '<button class="btn btn-sm btn-brand" data-save>Save</button>'
         + '<button class="btn btn-sm" data-welcome type="button"'+(p.email?'':' disabled title="Add an email first"')+'>Send welcome</button>'
         + (bankLocked ? '<button class="btn btn-sm" data-unlock-bank type="button">Unlock bank details</button>' : '')
@@ -691,6 +692,7 @@ label{font-weight:600;font-size:11.5px;color:var(--ink-soft);display:block;margi
       status:card.querySelector('[data-status]').value,
       updated_at:new Date().toISOString()
     };
+    var cc=card.querySelector('[data-cancreate]'); if(cc) patch.can_create_sites=!!cc.checked;
     var r=await sb.from('partners').update(patch).eq('id',id).select('*');
     btn.disabled=false;
     if(r.error||!r.data||!r.data.length){ alert('Could not save: '+((r.error&&r.error.message)||'no permission')); return; }

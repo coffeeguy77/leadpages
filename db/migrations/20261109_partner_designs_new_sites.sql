@@ -1,5 +1,5 @@
 -- Partner designs & new sites (9 Nov 2026)
--- STATUS: written, not yet applied to Supabase (awaiting approval, 9 Nov 2026).
+-- STATUS: applied to Supabase 10 Nov 2026.
 --
 -- 1. partners.can_create_sites: a super-admin switch. When on, the partner gets a
 --    "New website" button that makes a draft client site from one of their designs
