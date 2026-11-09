@@ -6,6 +6,7 @@
 --    (no Buy Now bar, no paid-quote step). Only super admins can change it
 --    (partners has no partner UPDATE policy).
 -- 2. Partners can no longer delete saved designs (partner_themes). Only super admins can.
+--    SUPERSEDED by 20261110_partner_themes_locked.sql: only LeadPages-made (locked) designs are protected.
 --    Partners keep select / insert / update on their own designs.
 
 alter table public.partners add column if not exists can_create_sites boolean not null default false;

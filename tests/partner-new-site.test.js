@@ -63,9 +63,11 @@ test("another partner's private design is refused", async () => {
   assert.equal(inserted.length, 0);
 });
 
-test('partner dashboard has no design delete button and has preview / new website', () => {
+test('partner dashboard: LeadPages-made (locked) designs have no Delete for partners; preview / new website', () => {
   const html = require('fs').readFileSync(path.join(__dirname, '../partner.html'), 'utf8');
-  assert.doesNotMatch(html, /data-deltheme/);
+  assert.match(html, /var del=\(!t\.locked \|\| state\.asAdmin\)/);
+  assert.match(html, /Made by LeadPages/);
+  assert.match(html, /t\.partner_id===mine \|\| !!t\.shared_with_partners/);
   assert.match(html, /data-newfrom=/);
   assert.match(html, /\/api\/partner\/new-site/);
   assert.match(html, /\?preview=1" target="_blank" rel="noopener" style="padding:6px 11px;font-size:13px">Preview</);

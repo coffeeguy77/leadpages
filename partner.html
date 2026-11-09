@@ -312,7 +312,7 @@
 
           <div class="card" style="padding:18px 20px">
             <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 6px">Your designs <span class="muted" style="font-weight:500;font-size:13px">(saved themes)</span></h3>
-            <p class="muted" style="margin:0 0 12px;font-size:13px">Reusable designs you can preview and apply to any demo or client build. Only LeadPages can remove a design.</p>
+            <p class="muted" style="margin:0 0 12px;font-size:13px">Reusable designs you can preview and apply to any demo or client build. Designs marked “Made by LeadPages” can only be removed by LeadPages.</p>
             <div id="themes-list"></div>
           </div>
         </div>
@@ -1723,6 +1723,14 @@
         alert('Theme applied. Open the builder to see it.');
       }
     });
+    document.getElementById('themes-list').addEventListener('click', async function(e){
+      var b=e.target.closest('[data-deltheme]'); if(!b) return; var id=b.getAttribute('data-deltheme');
+      var t=themes.find(function(x){ return x.id===id; }); if(!t) return;
+      if(!confirm(t.locked?'Delete this LeadPages design from '+((state.partner&&state.partner.display_name)||'this partner')+'\u2019s account? This cannot be undone.':'Delete this design? This cannot be undone.')) return;
+      var r=await sb.from('partner_themes').delete().eq('id',id).select('id');
+      if(r.error||!r.data||!r.data.length){ alert('Could not delete: '+((r.error&&r.error.message)||'only LeadPages can remove this design')); return; }
+      themes=themes.filter(function(x){return x.id!==id;}); renderThemes(); fillThemeSelects(); renderMockups(); nsRender();
+    });
     document.getElementById('training-list').addEventListener('change', async function(e){
       var sel=e.target.closest('select[data-mod]'); if(!sel) return;
       var mid=sel.getAttribute('data-mod'); var st=sel.value;
@@ -2435,11 +2443,14 @@
       return '<div class="card" style="padding:13px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">'
         +'<div style="display:flex;gap:12px;align-items:center">'+(t.thumb_url?('<img src="'+esc(t.thumb_url)+'" style="width:72px;height:50px;object-fit:cover;border-radius:8px;border:1px solid var(--line)">'):'')+'<div><div style="font-weight:700">'+esc(t.name)+' <span class="statusbadge s-active">Shared by LeadPages</span></div><div class="muted" style="font-size:12.5px">Available in your theme picker</div></div></div></div>';
     }
+    var del=(!t.locked || state.asAdmin)
+      ? '<button type="button" class="btn" data-deltheme="'+esc(t.id)+'" style="padding:6px 11px;font-size:13px"'+(t.locked?' title="Only you (LeadPages) can see this — the partner can’t delete it"':'')+'>Delete</button>' : '';
     var acts=(t._slug?('<a class="btn" href="/'+encodeURIComponent(t._slug)+'?preview=1" target="_blank" rel="noopener" style="padding:6px 11px;font-size:13px">Preview</a>'):'')
-      +(canCreateSites()?('<button type="button" class="btn btn-brand" data-newfrom="'+esc(t.id)+'" style="padding:6px 11px;font-size:13px">New website from this</button>'):'');
+      +(canCreateSites()?('<button type="button" class="btn btn-brand" data-newfrom="'+esc(t.id)+'" style="padding:6px 11px;font-size:13px">New website from this</button>'):'')
+      +del;
     return '<div class="card" style="padding:13px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">'
       +'<div style="display:flex;gap:12px;align-items:center;min-width:0">'+(t.thumb_url?('<img src="'+esc(t.thumb_url)+'" alt="" style="width:72px;height:50px;object-fit:cover;border-radius:8px;border:1px solid var(--line);flex:0 0 auto">'):'')
-      +'<div style="min-width:0"><div style="font-weight:700">'+esc(t.name)+'</div><div class="muted" style="font-size:12.5px">Saved '+esc(when)+'</div></div></div>'
+      +'<div style="min-width:0"><div style="font-weight:700">'+esc(t.name)+(t.locked?' <span class="statusbadge s-active" style="font-size:11px">Made by LeadPages</span>':'')+'</div><div class="muted" style="font-size:12.5px">Saved '+esc(when)+'</div></div></div>'
       +(acts?'<div style="display:flex;gap:8px;flex-wrap:wrap">'+acts+'</div>':'')+'</div>';
   }
   function renderThemes(){
@@ -2448,9 +2459,10 @@
       : '<div class="card empty"><p class="muted">No saved themes yet. Build a demo, then \u201cSave as theme\u201d to reuse the design.</p></div>';
   }
   async function loadThemes(){
-    var r=await sb.from('partner_themes').select('id,name,created_at,source_site_id,partner_id,shared_with_partners,thumb_url').order('created_at',{ascending:false});
+    var r=await sb.from('partner_themes').select('id,name,created_at,source_site_id,partner_id,shared_with_partners,thumb_url,locked').order('created_at',{ascending:false});
     var mine=state.partner?state.partner.id:null;
-    themes=(r.data||[]).map(function(t){ t._shared = !!t.shared_with_partners && t.partner_id!==mine; return t; });
+    // Only this partner's designs plus LeadPages-shared ones (a super admin can read every partner's).
+    themes=(r.data||[]).filter(function(t){ return t.partner_id===mine || !!t.shared_with_partners; }).map(function(t){ t._shared = !!t.shared_with_partners && t.partner_id!==mine; return t; });
     try{
       var srcIds=themes.map(function(t){ return t.source_site_id; }).filter(Boolean);
       if(srcIds.length){
