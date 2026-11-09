@@ -12147,11 +12147,11 @@ function heroCtaCard(c){
         +reqFieldsCard(c)
         +showFieldsCard(c)
         +listCard('quoteExtraFields','Extra fields','Optional extra questions on the form. Each has a custom title and sample text. Answers are included in the lead email to the shop owner. Styling follows the form colour settings above.')
-        +secCard(c,'quote','In-field placeholders & under-button line',false,[['namePh','Name field placeholder'],['phonePh','Phone field placeholder'],['suburbPh','Suburb field placeholder'],['detailPh','Message field placeholder','ta'],['fineText','Line shown under the button','ta'],['callText','Call-link wording (e.g. call us now)']])
+        +secCard(c,'quote','In-field placeholders & under-button line',false,[['namePh','Name field placeholder'],['phonePh','Phone field placeholder'],['emailPh','Email field placeholder (card layout)'],['jobPh','Problem dropdown placeholder (card layout)'],['suburbPh','Suburb field placeholder'],['detailPh','Message field placeholder','ta'],['fineText','Line shown under the button','ta'],['callText','Call-link wording (e.g. call us now)']])
         +'<div class="card" style="margin-bottom:22px;"><label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 8px;"><input type="checkbox" id="q-callon"> Make the phone link in that line clickable</label><p class="hint" style="margin:0;">It dials your business phone (from the Details tab) and counts as a call in your stats. Turn it off to show the line as plain text.</p></div>'
         +'<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Lead email notifications</h2><p class="hint" style="margin:0 0 12px;">Every submission is saved to Captured Leads and emailed in real time.</p><div class="f"><label>Send lead emails to</label><select id="q-notifymode" class="tin"><option value="onfile">The contact email on file</option><option value="custom">A custom email address</option></select></div><div class="f" id="q-notifyemail-row"><label>Custom email address</label><input type="email" id="q-notifyemail" placeholder="leads@yourbusiness.com.au"></div></div>'
         +listCard('jobOptions','Problem options','The dropdown choices under \u201cWhat\u2019s the problem?\u201d. Edit, hide or remove each.');
-      wireSec(c,'quote',true,[['eyebrow'],['heading'],['sub'],['button'],['formTitle'],['lblName'],['lblPhone'],['lblJob'],['lblSuburb'],['lblDetail'],['successTitle'],['successSub'],['namePh'],['phonePh'],['suburbPh'],['detailPh'],['fineText'],['callText']]); listEditor($('le-quotePoints'),c,'quotePoints'); listEditor($('le-quoteExtraFields'),c,'quoteExtraFields'); wireQuoteStyle(c); wireReqFields(c); wireShowFields(c); (function(){ function ens(){ if(!c.sections)c.sections={}; if(!c.sections.quote)c.sections.quote={}; return c.sections.quote; } var qc=(c.sections&&c.sections.quote)||{}; var fs=$('q-formstyle'); if(fs){ fs.value=(qc.formStyle==='feature')?'feature':'default'; fs.addEventListener('change',function(){ ens().formStyle=fs.value; persist(); previewApply(); }); } var co=$('q-callon'); if(co){ co.checked=(qc.callOn!==false); co.addEventListener('change',function(){ ens().callOn=co.checked; persist(); previewApply(); }); } var nm=$('q-notifymode'), nrow=$('q-notifyemail-row'), ne=$('q-notifyemail'); if(nm){ nm.value=(qc.notifyMode==='custom')?'custom':'onfile'; if(nrow) nrow.style.display=(nm.value==='custom')?'':'none'; nm.addEventListener('change',function(){ ens().notifyMode=nm.value; if(nrow) nrow.style.display=(nm.value==='custom')?'':'none'; persist(); previewApply(); }); } if(ne){ ne.value=qc.notifyEmail||''; ne.addEventListener('input',function(){ ens().notifyEmail=ne.value.trim(); persist(); previewApply(); }); } })();
+      wireSec(c,'quote',true,[['eyebrow'],['heading'],['sub'],['button'],['formTitle'],['lblName'],['lblPhone'],['lblJob'],['lblSuburb'],['lblDetail'],['successTitle'],['successSub'],['namePh'],['phonePh'],['emailPh'],['jobPh'],['suburbPh'],['detailPh'],['fineText'],['callText']]); listEditor($('le-quotePoints'),c,'quotePoints'); listEditor($('le-quoteExtraFields'),c,'quoteExtraFields'); wireQuoteStyle(c); wireReqFields(c); wireShowFields(c); (function(){ function ens(){ if(!c.sections)c.sections={}; if(!c.sections.quote)c.sections.quote={}; return c.sections.quote; } var qc=(c.sections&&c.sections.quote)||{}; var fs=$('q-formstyle'); if(fs){ fs.value=(qc.formStyle==='feature')?'feature':'default'; fs.addEventListener('change',function(){ ens().formStyle=fs.value; persist(); previewApply(); }); } var co=$('q-callon'); if(co){ co.checked=(qc.callOn!==false); co.addEventListener('change',function(){ ens().callOn=co.checked; persist(); previewApply(); }); } var nm=$('q-notifymode'), nrow=$('q-notifyemail-row'), ne=$('q-notifyemail'); if(nm){ nm.value=(qc.notifyMode==='custom')?'custom':'onfile'; if(nrow) nrow.style.display=(nm.value==='custom')?'':'none'; nm.addEventListener('change',function(){ ens().notifyMode=nm.value; if(nrow) nrow.style.display=(nm.value==='custom')?'':'none'; persist(); previewApply(); }); } if(ne){ ne.value=qc.notifyEmail||''; ne.addEventListener('input',function(){ ens().notifyEmail=ne.value.trim(); persist(); previewApply(); }); } })();
       wireSec(c,'quote',false,[['lblName'],['lblPhone'],['lblJob'],['lblSuburb'],['lblDetail'],['successTitle'],['successSub']]); listEditor($('le-jobOptions'),c,'jobOptions');
         } else if(sub==='footer'){
       (function(){
@@ -12342,16 +12342,43 @@ function heroCtaCard(c){
           var box=$('ft-cols'); if(!box) return;
           var cols=ens().columns||[];
           box.innerHTML=cols.map(function(col,ci){
-            var mode=(col.mode==='card'||col.mode==='textbox')?'card':'links';
+            var mode=(col.mode==='card'||col.mode==='textbox')?'card':(['text','contact','social'].indexOf(col.mode)>=0?col.mode:'links');
             var span=(+col.span===2||col.span==='2'||col.colSpan===2)?'2':'1';
             var head='<div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap;">'
               +'<label style="display:flex;gap:6px;align-items:center;font-weight:600;font-size:13px;"><input type="checkbox" class="ft-col-on" data-ci="'+ci+'"'+(col.on===false?'':' checked')+'> Shown</label>'
               +'<label style="display:flex;gap:6px;align-items:center;font-weight:600;font-size:13px;"><input type="checkbox" class="ft-col-showm" data-ci="'+ci+'"'+(col.hideOnMobile===true?'':' checked')+'> Show on phones</label>'
               +'<input type="text" class="tin ft-col-title" data-ci="'+ci+'" value="'+esc(col.title||'')+'" placeholder="Column title" style="flex:1;min-width:140px;">'
-              +'<select class="tin ft-col-mode" data-ci="'+ci+'" style="min-width:150px;"><option value="links"'+(mode==='links'?' selected':'')+'>List with links</option><option value="card"'+(mode==='card'?' selected':'')+'>Text-box card</option></select>'
+              +'<select class="tin ft-col-mode" data-ci="'+ci+'" style="min-width:150px;"><option value="links"'+(mode==='links'?' selected':'')+'>List with links</option><option value="card"'+(mode==='card'?' selected':'')+'>Text-box card</option><option value="text"'+(mode==='text'?' selected':'')+'>Plain text lines</option><option value="contact"'+(mode==='contact'?' selected':'')+'>Lines with icons (+ button)</option><option value="social"'+(mode==='social'?' selected':'')+'>Social icons</option></select>'
               +'<select class="tin ft-col-span" data-ci="'+ci+'" style="min-width:130px;" title="Column width"><option value="1"'+(span==='1'?' selected':'')+'>1 column wide</option><option value="2"'+(span==='2'?' selected':'')+'>2 columns wide</option></select>'
               +'<button type="button" class="btn ghost sm ft-col-rm" data-ci="'+ci+'">Remove</button></div>'
               +'<p class="hint" style="margin:0 0 10px;">2 columns wide gives a roomier text card (capped ~420px on desktop). On phones the footer stacks; untick Show on phones to hide this column there.</p>';
+            if(mode==='text'){
+              return '<div class="ft-col-ed" style="border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px;background:var(--panel,#fff);color:var(--text,inherit);">'
+                +head+'<div class="f" style="margin:0;"><label>Text (each line on its own line)</label><textarea class="tin ft-col-text" data-ci="'+ci+'" rows="4" placeholder="e.g. an address or opening hours">'+esc(col.text||'')+'</textarea></div></div>';
+            }
+            if(mode==='contact'){
+              var lines=Array.isArray(col.lines)?col.lines:[];
+              var lineRows=lines.map(function(l,li){
+                return '<div class="ft-line-ed" style="border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:8px;background:var(--input-bg,#f7f5f1);">'
+                  +'<div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;">'
+                  +'<label style="display:flex;gap:4px;align-items:center;font-weight:600;font-size:13px;margin-top:10px;"><input type="checkbox" class="ft-line-on" data-ci="'+ci+'" data-li="'+li+'"'+(l.on===false?'':' checked')+'> On</label>'
+                  +'<div class="iconctl" style="flex:0 0 auto;"><button type="button" class="icon-pick" tabindex="-1" title="Choose an icon" style="width:42px;height:42px;">'+iconBtnInner(l.icon||'')+'</button><input type="hidden" class="icon-input ft-line-icon" data-ci="'+ci+'" data-li="'+li+'" value="'+esc(l.icon||'')+'"></div>'
+                  +'<textarea class="tin ft-line-text" data-ci="'+ci+'" data-li="'+li+'" rows="2" placeholder="Text (new line = line break)" style="flex:1;min-width:150px;">'+esc(l.text||'')+'</textarea>'
+                  +'<button type="button" class="btn ghost sm ft-line-rm" data-ci="'+ci+'" data-li="'+li+'">\u00d7</button></div>'
+                  +'<div class="f" style="margin:6px 0 0;"><label>Link (optional: web address, mailto: or tel:)</label><input type="text" class="tin ft-line-href" data-ci="'+ci+'" data-li="'+li+'" value="'+esc(l.href||'')+'" placeholder="e.g. https://… or mailto:you@…"></div>'
+                  +'</div>';
+              }).join('');
+              return '<div class="ft-col-ed" style="border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px;background:var(--panel,#fff);color:var(--text,inherit);">'
+                +head+lineRows
+                +'<button type="button" class="btn ghost sm ft-line-add" data-ci="'+ci+'">+ Add line</button>'
+                +'<p style="margin:14px 0 6px;font-weight:700;font-size:13px;">Button under the lines (optional)</p>'
+                +'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">'
+                +'<div class="f" style="margin:0;flex:0 0 auto;"><label>Icon</label><div class="iconctl"><button type="button" class="icon-pick" tabindex="-1" title="Choose an icon" style="width:42px;height:42px;">'+iconBtnInner(col.btnIcon||'')+'</button><input type="hidden" class="icon-input ft-cbtn-icon" data-ci="'+ci+'" value="'+esc(col.btnIcon||'')+'"></div></div>'
+                +'<div class="f" style="margin:0;flex:1 1 120px;"><label>Button text</label><input type="text" class="tin ft-cbtn-label" data-ci="'+ci+'" value="'+esc(col.btnLabel||'')+'" placeholder="e.g. On Call (empty = no button)"></div>'
+                +'<div class="f" style="margin:0;flex:0 1 100px;"><label>Accent word</label><input type="text" class="tin ft-cbtn-accent" data-ci="'+ci+'" value="'+esc(col.btnAccent||'')+'" placeholder="e.g. 24/7"></div>'
+                +'<div class="f" style="margin:0;flex:1 1 160px;"><label>Button link</label><input type="text" class="tin ft-cbtn-href" data-ci="'+ci+'" value="'+esc(col.btnHref||'')+'" placeholder="e.g. tel:0262545678"></div>'
+                +'</div></div>';
+            }
             if(mode==='card'){
               var strokeOn=col.cardStroke!==false;
               var linkOn=col.cardLinkOn===true;
@@ -12396,7 +12423,7 @@ function heroCtaCard(c){
                 +'</div>';
             }).join('');
             return '<div class="ft-col-ed" style="border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px;background:var(--panel,#fff);color:var(--text,inherit);">'
-              +head+linkRows
+              +head+(mode==='social'?'<p class="hint" style="margin:0 0 10px;">Each link shows as an icon, picked from its address (Facebook, Instagram, LinkedIn, YouTube, X, TikTok\u2026). The label is read out by screen readers.</p>':'')+linkRows
               +'<button type="button" class="btn ghost sm ft-link-add" data-ci="'+ci+'">+ Add link</button></div>';
           }).join('');
           _ftSyncColLinkVis(box);
@@ -12410,6 +12437,12 @@ function heroCtaCard(c){
             var cols=ens().columns||[]; if(!cols[ci]) return;
             var col=cols[ci];
             if(t.classList.contains('ft-col-title')){ col.title=t.value; persist(); previewApply(); }
+            else if(t.classList.contains('ft-col-text')){ col.text=t.value; persist(); previewApply(); }
+            else if(t.classList.contains('ft-line-text')||t.classList.contains('ft-line-href')||t.classList.contains('ft-line-icon')){ if(!col.lines||!col.lines[li]) return; col.lines[li][t.classList.contains('ft-line-text')?'text':(t.classList.contains('ft-line-href')?'href':'icon')]=t.value; persist(); previewApply(); }
+            else if(t.classList.contains('ft-cbtn-label')){ col.btnLabel=t.value; persist(); previewApply(); }
+            else if(t.classList.contains('ft-cbtn-accent')){ col.btnAccent=t.value; persist(); previewApply(); }
+            else if(t.classList.contains('ft-cbtn-href')){ col.btnHref=t.value; persist(); previewApply(); }
+            else if(t.classList.contains('ft-cbtn-icon')){ col.btnIcon=t.value; persist(); previewApply(); }
             else if(t.classList.contains('ft-link-label')){ if(!col.links||!col.links[li]) return; col.links[li].label=t.value; persist(); previewApply(); }
             else if(t.classList.contains('ft-link-url')){ if(!col.links||!col.links[li]) return; col.links[li].href=t.value; col.links[li].action=col.links[li].action||'url'; persist(); previewApply(); }
             else if(t.classList.contains('ft-link-page')){ if(!col.links||!col.links[li]) return; col.links[li].page=t.value.trim(); persist(); previewApply(); }
@@ -12430,7 +12463,8 @@ function heroCtaCard(c){
             var col=cols[ci];
             if(t.classList.contains('ft-col-on')){ col.on=t.checked; persist(); previewApply(); }
             else if(t.classList.contains('ft-col-showm')){ col.hideOnMobile=!t.checked; persist(); previewApply(); }
-            else if(t.classList.contains('ft-col-mode')){ col.mode=t.value==='card'?'card':'links'; if(col.mode==='card'&&!col.cardText&&col.body) col.cardText=col.body; persist(); previewApply(); drawCols(); }
+            else if(t.classList.contains('ft-col-mode')){ col.mode=(['card','text','contact','social'].indexOf(t.value)>=0)?t.value:'links'; if(col.mode==='card'&&!col.cardText&&col.body) col.cardText=col.body; if(col.mode==='contact'&&!Array.isArray(col.lines)) col.lines=[]; persist(); previewApply(); drawCols(); }
+            else if(t.classList.contains('ft-line-on')){ if(!col.lines||!col.lines[li]) return; col.lines[li].on=t.checked; persist(); previewApply(); }
             else if(t.classList.contains('ft-col-span')){ col.span=+t.value===2?2:1; persist(); previewApply(); }
             else if(t.classList.contains('ft-link-on')){ if(!col.links||!col.links[li]) return; col.links[li].on=t.checked; persist(); previewApply(); }
             else if(t.classList.contains('ft-link-act')){ if(!col.links||!col.links[li]) return; col.links[li].action=t.value; _ftSyncColLinkVis(colsHost); persist(); previewApply(); }
@@ -12451,6 +12485,8 @@ function heroCtaCard(c){
             var t=e.target; if(!t.classList) return;
             var cols=ens().columns||[];
             if(t.classList.contains('ft-col-rm')){ cols.splice(+t.getAttribute('data-ci'),1); ens().columns=cols; persist(); previewApply(); drawCols(); }
+            else if(t.classList.contains('ft-line-add')){ var lci=+t.getAttribute('data-ci'); if(!cols[lci]) return; if(!Array.isArray(cols[lci].lines)) cols[lci].lines=[]; cols[lci].lines.push({on:true,icon:'',text:'',href:''}); persist(); previewApply(); drawCols(); }
+            else if(t.classList.contains('ft-line-rm')){ var rci=+t.getAttribute('data-ci'), rli=+t.getAttribute('data-li'); if(!cols[rci]||!Array.isArray(cols[rci].lines)) return; cols[rci].lines.splice(rli,1); persist(); previewApply(); drawCols(); }
             else if(t.classList.contains('ft-link-add')){ var ci=+t.getAttribute('data-ci'); if(!cols[ci].links) cols[ci].links=[]; cols[ci].links.push({on:true,label:'New link',action:'url',href:'#'}); persist(); previewApply(); drawCols(); }
             else if(t.classList.contains('ft-link-rm')){ var ci2=+t.getAttribute('data-ci'), li=+t.getAttribute('data-li'); cols[ci2].links.splice(li,1); persist(); previewApply(); drawCols(); }
             else if(t.classList.contains('ft-card-def')){ var ci3=+t.getAttribute('data-ci'), k=t.getAttribute('data-k'); if(!cols[ci3]) return; delete cols[ci3][k]; var tx=colsHost.querySelector('.ft-card-tx[data-ci="'+ci3+'"][data-k="'+k+'"]'); if(tx) tx.value=''; persist(); previewApply(); }

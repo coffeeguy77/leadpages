@@ -1676,17 +1676,26 @@
     var h1 = txt(HS.splitH1);
     var badges = live(HS.badges).map(function (b) { return txt(b.title) || txt(b.text); }).filter(Boolean);
     var headTag = h1 ? 'h2' : 'h1';
+    var hlIn = HS.highlightInline === true && txt(S.heading) && txt(S.highlightText) && String(S.heading).indexOf(txt(S.highlightText)) >= 0;
     var head = (txt(S.heading) || txt(S.highlightText)) ? '<' + headTag + ' class="hsp-h">' +
-      (txt(S.heading) ? '<span data-lpe="' + L('heading') + '">' + esc(S.heading).replace(/\n/g, '<br>') + '</span>' : '') +
-      (txt(S.highlightText) ? ' <span class="hl" data-lpe="' + L('highlightText') + '">' + esc(S.highlightText) + '</span>' : '') +
+      (hlIn
+        ? '<span data-lpe="' + L('heading') + '">' + String(S.heading).split(txt(S.highlightText)).map(function (part) { return esc(part).replace(/\n/g, '<br>'); })
+            .join('<span class="hl">' + esc(txt(S.highlightText)) + '</span>') + '</span>'
+        : (txt(S.heading) ? '<span data-lpe="' + L('heading') + '">' + esc(S.heading).replace(/\n/g, '<br>') + '</span>' : '') +
+          (txt(S.highlightText) ? ' <span class="hl" data-lpe="' + L('highlightText') + '">' + esc(S.highlightText) + '</span>' : '')) +
       '</' + headTag + '>' : '';
     var html = '<div class="hsp" data-lpl="hsp"><div class="wrap hsp-grid"><div class="hsp-text">' +
       (txt(S.eyebrow) ? '<span class="eyebrow hsp-eyebrow" data-lpe="' + L('eyebrow') + '">' + esc(S.eyebrow) + '</span>' : '') +
       (h1 ? '<h1 class="hsp-h1" data-lpe="splitH1">' + esc(h1) + '</h1>' : '') + head +
       (txt(HS.tagline) ? '<p class="hsp-tagline" data-lpe="tagline">' + esc(HS.tagline).replace(/\s+\|\s+/g, '<i aria-hidden="true">|</i>') + '</p>' : '') +
-      (txt(S.subText) ? '<p class="hsp-sub" data-lpe="' + L('subText') + '">' + esc(S.subText).replace(/\n/g, '<br>') + '</p>' : '') +
+      (txt(S.subText) ? '<p class="hsp-sub" data-lpe="' + L('subText') + '">' + esc(S.subText).replace(/\n/g, ' <br>') + '</p>' : '') +
       '<div class="hsp-cta"></div>' +
-      (badges.length ? '<p class="hsp-line" data-lpe="list:heroSliderBadges:0:title">' + badges.map(esc).join('<i aria-hidden="true">\u2022</i>') + '</p>' : '') +
+      (badges.length ? (HS.badgeStyle === 'icons'
+        ? '<ul class="hsp-ibadges">' + live(HS.badges).filter(function (b) { return txt(b.title) || txt(b.text); }).map(function (b, i) {
+            return '<li data-lpe="list:heroSliderBadges:' + i + ':title">' + (icon(b.icon) ? '<span class="hsp-ib-ic">' + icon(b.icon) + '</span>' : '') +
+              '<span class="hsp-ib-tx">' + esc(txt(b.title) || txt(b.text)).replace(/\n/g, '<br>') + '</span></li>';
+          }).join('') + '</ul>'
+        : '<p class="hsp-line" data-lpe="list:heroSliderBadges:0:title">' + badges.map(esc).join('<i aria-hidden="true">\u2022</i>') + '</p>') : '') +
       '</div>' +
       '<figure class="hsp-media" data-lpe="' + L('imageUrl') + '">' + (img ? '<img src="' + esc(img) + '" alt="' + esc(txt(HS.imageAlt) || txt(S.heading) || txt(h1)) + '">' : '<span class="hsp-ph"></span>') + '</figure>' +
       '</div></div>';
@@ -2127,8 +2136,9 @@
     // Phones: the menu bar hides when the header's ☰ menu holds the same links.
     document.documentElement.classList.toggle('lpl-bar-ham', NM.on === true && NM.placement === 'bar' && NM.barMobile === 'hamburger' && NM.mobileHamburger !== false);
     var node = sec('navMenu');
-    var on = NM.activeStyle === 'fill';
-    document.documentElement.classList.toggle('lpl-nav-fill', on);
+    var on = NM.activeStyle === 'fill' || NM.activeStyle === 'bar';   // 'bar': accent bar under the current page's link
+    document.documentElement.classList.toggle('lpl-nav-fill', NM.activeStyle === 'fill');
+    document.documentElement.classList.toggle('lpl-nav-bar', NM.activeStyle === 'bar');
     var links = document.querySelectorAll('[data-sec="navMenu"] .nm-link, header.site .head-nav .hn-link, [data-sec="navMenu"] .nm-sub-link');
     var here = location.pathname.replace(/\/+$/, '') || '/';
     for (var i = 0; i < links.length; i++) {
@@ -2143,7 +2153,7 @@
       var p = parents[j].querySelector('.nm-parent');
       if (p) p.classList.toggle('lpl-nav-on', on && !!parents[j].querySelector('.nm-sub-link.lpl-nav-on'));
     }
-    if (node) node.classList.toggle('lpl-nav-fill', on);
+    if (node) node.classList.toggle('lpl-nav-fill', NM.activeStyle === 'fill');
   }
   /** Sub-pages: the menu bar (placement 'bar') stays first and keeps its own background. */
   function subPageNav(C) {
@@ -2186,9 +2196,22 @@
       var nx = parseFloat(HS.nameCardX), ny = parseFloat(HS.nameCardY);
       if (!isNaN(nx) && nx >= 0 && nx <= 95) pos += 'left:' + nx + '%;right:auto;';
       if (!isNaN(ny) && ny >= 0 && ny <= 95) pos += 'top:' + ny + '%;bottom:auto;';
-      fig.insertAdjacentHTML('beforeend', '<div class="hsp-namecard" data-lpl="hnc"' + (pos ? ' style="' + pos + '"' : '') + '>' +
-        (ncT ? '<strong data-lpe="nameCardTitle">' + esc(ncT) + '</strong>' : '') +
-        (ncS ? '<span data-lpe="nameCardText">' + esc(ncS) + '</span>' : '') + '<i aria-hidden="true"></i></div>');
+      if (HS.nameCardLook === 'call') {
+        // "On call" card: phone icon, title (text after "·" in the accent colour) and two lines;
+        // the whole card calls the site's phone number.
+        var ncPh = txt(C.phone) || txt(C.phoneText), ncH = ncPh ? 'tel:' + ncPh.replace(/[^\d+]/g, '') : '';
+        var ncTag = ncH ? 'a' : 'div';
+        var tParts = String(ncT || '').split(/\s*\u00b7\s*/);
+        fig.insertAdjacentHTML('beforeend', '<' + ncTag + ' class="hsp-namecard hnc-call" data-lpl="hnc"' + (ncH ? ' href="' + esc(ncH) + '"' : '') + (pos ? ' style="' + pos + '"' : '') + '>' +
+          '<span class="hnc-ic">' + icon('phone-call') + '</span>' +
+          '<span class="hnc-tx">' + (ncT ? '<strong data-lpe="nameCardTitle">' + esc(tParts[0]) +
+            (tParts.length > 1 ? '<i aria-hidden="true">\u00b7</i><em>' + esc(tParts.slice(1).join(' \u00b7 ')) + '</em>' : '') + '</strong>' : '') +
+          (ncS ? '<span class="hnc-sub" data-lpe="nameCardText">' + esc(ncS).replace(/\n/g, '<br>') + '</span>' : '') + '</span></' + ncTag + '>');
+      } else {
+        fig.insertAdjacentHTML('beforeend', '<div class="hsp-namecard" data-lpl="hnc"' + (pos ? ' style="' + pos + '"' : '') + '>' +
+          (ncT ? '<strong data-lpe="nameCardTitle">' + esc(ncT) + '</strong>' : '') +
+          (ncS ? '<span data-lpe="nameCardText">' + esc(ncS) + '</span>' : '') + '<i aria-hidden="true"></i></div>');
+      }
     }
   }
   function featureBand(C) {
@@ -2729,14 +2752,143 @@
       var h = card.querySelector('h3'); if (!h) return;
       var old = h.querySelector('[data-lpl="svi"]'); if (old) old.parentNode.removeChild(old);
       var it = (Array.isArray(C.services) ? C.services : []).filter(function (x) { return x && x.on !== false; })[i] || {};
-      if ((S.services || {}).photoCard === 'overlay' && icon(it.icon)) h.insertAdjacentHTML('afterbegin', '<span class="svp-tic" data-lpl="svi" aria-hidden="true">' + icon(it.icon) + '</span>');
+      var pcard = (S.services || {}).photoCard;
+      if ((pcard === 'overlay' || pcard === 'bar') && icon(it.icon)) {
+        var icc = hexOk(it.iconColor) || (pcard === 'bar' ? hexOk((S.services || {}).iconColor) : '');
+        h.insertAdjacentHTML('afterbegin', '<span class="svp-tic" data-lpl="svi" aria-hidden="true"' + (icc ? ' style="color:' + icc + '"' : '') + '>' + icon(it.icon) + '</span>');
+      }
     });
     textBoxBand(S.textBox || {});
     ctaExtras(S.ctaBanner || {});
     document.documentElement.classList.toggle('lpl-head-line', C && C.sectionHeadLine === true);
   }
 
-  var STEPS = [heroSlider, heroBanners, headerCta, minimalFooter, logoTint, buttonShapes, orderLayout, featuredProjects, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, trustBar, mapHours, ctaBanner, storyTimeline, storyRows, bookingWeek, heroBooking, bookingHire, fontSet, mobileBarSpace, heroSplit, appWidths, headingBreaks, strokeIcons, siteWidth, headerItems, navActive, subPageNav, heroPortrait, featureBand, footerContact, footerDecor, pageBanner, pageBlocks, headerStack, textScale, logoThemed, darkSections, footerTextCols, editorialLooks, subPageAnchors];
+  /**
+   * Card looks (Nov 2026, Duncan's Heating & Cooling design) — all opt-in:
+   *   sections.header.logoDivider = true          thin line between the logo and the menu
+   *   sections.navMenu.spread = true              menu links spread across the bar (menu in the header)
+   *   sections.navMenu.activeStyle = 'bar'        accent bar (fill colour) under the current page's link
+   *   sections.heroSlider.eyebrowLook = 'plain'   cover/split eyebrow as plain text (no tracking / bold)
+   *   sections.heroSlider.headingPx = 52          cover/split headline size at full width (scales down)
+   *   sections.heroSlider.coverShade = true       cover: shade behind the text on screens narrower than the photo
+   *   config.sectionHeadLine = 'under'            short accent bar under section headings
+   *   sections.services.photoCard = 'bar'         photo on top, tinted bar with icon + title + arrow
+   *   sections.textBox.bleedEdge = 'fade'         bleed photo fades into the band colour
+   *   sections.textBox.featuresLook = 'ticks'     icon list as one column of filled accent ticks
+   *   sections.quote.layout = 'card' (+ overlap)  white card: text | divider | compact form; overlap pulls
+   *     it up over the section above; emailPh / jobPh placeholders, btnIcon before the button text
+   *   sections.reviews.cardStyle = 'soft'         borderless cards with a soft shadow
+   *   sections.footer.colDividers = true          vertical lines between footer columns
+   *   sections.footer.columns[].mode = 'contact'  icon lines [{icon,text,href}] + optional pill button
+   *     (btnLabel, btnAccent, btnIcon, btnHref); mode = 'social' shows the links as icons
+   *   sections.footer.hills = true                soft hills along the bottom of the footer
+   *   sections.footer.legalRight                  text on the right of the bottom bar
+   */
+  function cardLooks(C) {
+    var S = (C && C.sections) || {}, de = document.documentElement;
+    var HD = S.header || {}, NM2 = S.navMenu || {}, HS = S.heroSlider || {};
+    var hd = document.querySelector('header.site');
+    if (hd) { hd.classList.toggle('lpl-logo-div', HD.logoDivider === true); hd.classList.toggle('lpl-nav-spread', NM2.spread === true); }
+    var hs = sec('heroSlider');
+    if (hs) {
+      hs.classList.toggle('hsp-eb-plain', HS.eyebrowLook === 'plain');
+      hs.classList.toggle('hsc-shade', HS.layout === 'cover' && HS.coverShade === true);
+      var hp = parseInt(HS.headingPx, 10);
+      if (hp >= 28 && hp <= 96) hs.style.setProperty('--hsp-hpx', hp); else hs.style.removeProperty('--hsp-hpx');
+      hs.classList.toggle('hsp-hpx', hp >= 28 && hp <= 96);
+    }
+    de.classList.toggle('lpl-head-under', C && C.sectionHeadLine === 'under');
+    var sv = sec('services'); if (sv) sv.classList.toggle('svp-bar', (S.services || {}).photoCard === 'bar');
+    var TB = S.textBox || {}, tb = sec('textBox');
+    if (tb) {
+      tb.classList.toggle('tbx-fade', TB.layout === 'bleed' && TB.bleedEdge === 'fade');
+      tb.classList.toggle('tbx-ticks', TB.featuresLook === 'ticks');
+      var tbg = hexOk(((TB.appearance || {}).containerBg));
+      if (tbg) tb.style.setProperty('--tbx-bg', tbg); else tb.style.removeProperty('--tbx-bg');
+    }
+    // Quote card
+    var Q = S.quote || {}, qs = sec('quote'), card = Q.layout === 'card';
+    if (qs) {
+      qs.classList.toggle('q-card', card);
+      qs.classList.toggle('q-overlap', card && Q.overlap === true);
+      de.classList.toggle('lpl-q-overlap', card && Q.overlap === true && Q.on !== false);
+      var qbg = card ? hexOk(Q.bg) : '';
+      if (qbg) qs.style.setProperty('--q-sec-bg', qbg); else qs.style.removeProperty('--q-sec-bg');
+      var em = qs.querySelector('#email');
+      if (em) { if (card && txt(Q.emailPh)) { em.setAttribute('placeholder', txt(Q.emailPh)); em.setAttribute('data-lpl-ph', '1'); } else if (em.getAttribute('data-lpl-ph')) { em.removeAttribute('placeholder'); em.removeAttribute('data-lpl-ph'); } }
+      var job = qs.querySelector('#job');
+      if (job) {
+        var ph = job.querySelector('option[data-lpl="qph"]');
+        if (card && txt(Q.jobPh)) {
+          if (!ph) { job.insertAdjacentHTML('afterbegin', '<option value="" data-lpl="qph" disabled hidden></option>'); ph = job.querySelector('option[data-lpl="qph"]'); if (!job.getAttribute('data-lpl-touched')) job.value = ''; }
+          ph.textContent = txt(Q.jobPh);
+          if (!job.__lplPh) { job.__lplPh = true; job.addEventListener('change', function () { job.setAttribute('data-lpl-touched', '1'); job.classList.toggle('q-ph', !job.value); }); }
+          job.classList.toggle('q-ph', !job.value);
+        } else if (ph) { ph.parentNode.removeChild(ph); job.classList.remove('q-ph'); }
+      }
+      var bi = card && txt(Q.btnIcon) && window.LP_ICONS && window.LP_ICONS[txt(Q.btnIcon)];
+      if (bi) {
+        var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' + window.LP_ICONS[txt(Q.btnIcon)] + '</svg>';
+        qs.style.setProperty('--q-btn-ic', 'url("data:image/svg+xml,' + encodeURIComponent(svg) + '")');
+      } else qs.style.removeProperty('--q-btn-ic');
+      qs.classList.toggle('q-btn-ic', !!bi);
+    }
+    var rv = sec('reviews'); if (rv) rv.classList.toggle('rv-soft', (S.reviews || {}).cardStyle === 'soft');
+    // Footer
+    var F = S.footer || {}, ft = document.querySelector('footer.site');
+    if (!ft) return;
+    ft.classList.toggle('lpl-f-dividers', F.colDividers === true);
+    // Columns that don't fit beside the logo: logo goes above them (checked again on resize).
+    var fitCheck = function () {
+      ft.classList.remove('lpl-f-stack');
+      var nav = ft.querySelector('.f-nav');
+      if (F.colDividers !== true || !nav) return;
+      var need = 0; Array.prototype.forEach.call(nav.children, function (c) { need += c.getBoundingClientRect().width; });
+      if (need > nav.clientWidth + 2) ft.classList.add('lpl-f-stack');
+    };
+    fitCheck();
+    if (!ft.__lplFit) { ft.__lplFit = true; window.addEventListener('resize', function () { clearTimeout(ft.__lplFitT); ft.__lplFitT = setTimeout(fitCheck, 120); }); }
+    ft.classList.toggle('lpl-f-hills', F.hills === true);
+    clear(ft, 'flr');
+    var meta = ft.querySelector('.f-bottom-meta');
+    if (meta && txt(F.legalRight)) meta.insertAdjacentHTML('beforeend', '<span class="lpl-f-right" data-lpl="flr" data-lpe="legalRight">' + esc(txt(F.legalRight)) + '</span>');
+    ft.classList.toggle('lpl-f-has-right', !!(meta && txt(F.legalRight)));
+    var cols = (Array.isArray(F.columns) ? F.columns : []).filter(function (c) { return c && c.on !== false; });
+    var els = ft.querySelectorAll('.f-nav > .f-col');
+    cols.forEach(function (c, i) {
+      var el = els[i]; if (!el) return;
+      clear(el, 'fcc');
+      el.classList.toggle('lpl-fc-contact', c.mode === 'contact');
+      el.classList.toggle('lpl-fc-social', c.mode === 'social');
+      if (c.mode === 'contact') {
+        var lines = live(c.lines).filter(function (l) { return txt(l.text); });
+        var html = '<ul class="lpl-fc-lines" data-lpl="fcc">' + lines.map(function (l, j) {
+          var h = txt(l.href) ? hrefOf(l.href, '') : '', t = esc(txt(l.text)).replace(/\n/g, '<br>');
+          return '<li data-lpe="list:footerColLines:' + i + ':' + j + ':text">' + '<span class="lpl-fc-ic">' + (icon(txt(l.icon)) || '') + '</span>' +
+            (h ? '<a ' + linkAttrs(h) + '>' + t + '</a>' : '<span>' + t + '</span>') + '</li>';
+        }).join('') + '</ul>';
+        if (txt(c.btnLabel) || txt(c.btnAccent)) {
+          var bh = txt(c.btnHref) ? hrefOf(c.btnHref, '') : '';
+          html += '<a class="lpl-fc-btn" data-lpl="fcc" ' + (bh ? linkAttrs(bh) : 'href="#"') + '>' + (icon(txt(c.btnIcon)) || '') +
+            '<span>' + esc(txt(c.btnLabel)) + (txt(c.btnAccent) ? ' <em>' + esc(txt(c.btnAccent)) + '</em>' : '') + '</span></a>';
+        }
+        el.insertAdjacentHTML('beforeend', html);
+      }
+      if (c.mode === 'social') {
+        var ls = live(c.links);
+        Array.prototype.forEach.call(el.querySelectorAll(':scope > a'), function (a, j) {
+          var it = ls[j] || {}, u = String(txt(it.href) || a.getAttribute('href') || '').toLowerCase();
+          var guess = /facebook\.com|fb\.com/.test(u) ? 'facebook' : /instagram\.com/.test(u) ? 'instagram' : /linkedin\.com/.test(u) ? 'linkedin' :
+            /youtube\.com|youtu\.be/.test(u) ? 'youtube' : /(twitter|x)\.com/.test(u) ? 'x-twitter' : /tiktok\.com/.test(u) ? 'tiktok' : /^mailto:/.test(u) ? 'mail' : /^tel:/.test(u) ? 'phone' : 'globe';
+          var ic = icon(txt(it.icon)) || icon(guess);
+          if (ic && !a.querySelector('.lpl-fc-soc')) { a.setAttribute('aria-label', a.textContent.trim()); a.innerHTML = '<span class="lpl-fc-soc">' + ic + '</span>'; }
+        });
+      }
+      if (F.colDividers === true) Array.prototype.forEach.call(el.querySelectorAll('a[href^="#"][target="_blank"]'), function (a) { a.removeAttribute('target'); a.removeAttribute('rel'); });
+    });
+  }
+
+  var STEPS = [heroSlider, heroBanners, headerCta, minimalFooter, logoTint, buttonShapes, orderLayout, featuredProjects, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, trustBar, mapHours, ctaBanner, storyTimeline, storyRows, bookingWeek, heroBooking, bookingHire, fontSet, mobileBarSpace, heroSplit, appWidths, headingBreaks, strokeIcons, siteWidth, headerItems, navActive, subPageNav, heroPortrait, featureBand, footerContact, footerDecor, pageBanner, pageBlocks, headerStack, textScale, logoThemed, darkSections, footerTextCols, editorialLooks, subPageAnchors, cardLooks];
 
   function run(cfg) {
     // On a landing page the template builds the page's own config (homepage + the page's

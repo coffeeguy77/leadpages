@@ -84,10 +84,11 @@ test('page CSS for tables, numbered and nested lists', () => {
 });
 
 test('lp-layouts: every new option is registered and opt-in', () => {
-  assert.match(js, /siteWidth, headerItems, navActive, subPageNav, heroPortrait, featureBand, footerContact, footerDecor, pageBanner, pageBlocks, headerStack, textScale, logoThemed, darkSections, footerTextCols, editorialLooks, subPageAnchors\];/);
+  assert.match(js, /siteWidth, headerItems, navActive, subPageNav, heroPortrait, featureBand, footerContact, footerDecor, pageBanner, pageBlocks, headerStack, textScale, logoThemed, darkSections, footerTextCols, editorialLooks, subPageAnchors, cardLooks\];/);
   assert.match(js, /if \(w >= 960 && w <= 1600\) de\.style\.setProperty\('--maxw', w \+ 'px'\); else de\.style\.removeProperty\('--maxw'\);/);
   assert.match(js, /var on = H\.ctaPlace === 'menu' && NM\.on === true && NM\.placement === 'bar'/);
-  assert.match(js, /var on = NM\.activeStyle === 'fill';/);
+  assert.match(js, /var on = NM\.activeStyle === 'fill' \|\| NM\.activeStyle === 'bar';/);
+  assert.match(js, /classList\.toggle\('lpl-nav-fill', NM\.activeStyle === 'fill'\)/);
   assert.match(js, /NM\.barMobile === 'hamburger'/);
   assert.match(js, /var cover = HS\.layout === 'cover';/);
   assert.match(js, /node\.classList\.toggle\('fstr-band', FS\.layout === 'band'\);/);
