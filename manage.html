@@ -2419,9 +2419,20 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     var handler=function(e){
       if(!secAutoSelect) return;
       var sec=e.target&&e.target.closest?e.target.closest('[data-sec]'):null;
-      if(!sec) return;
-      var key=sec.getAttribute('data-sec');
-      if(!lpEditableSec(key)) return;
+      var key=sec?sec.getAttribute('data-sec'):'';
+      if(!sec||!lpEditableSec(key)){
+        // Auto-select is on: the header (logo, menu, its button), the footer and any other link
+        // never navigate the preview away — they open their own settings where there are any.
+        var hdr=e.target&&e.target.closest?e.target.closest('header.site'):null;
+        var ftr=e.target&&e.target.closest?e.target.closest('footer.site'):null;
+        var lnk=e.target&&e.target.closest?e.target.closest('a[href],button'):null;
+        if(!hdr&&!ftr&&!lnk) return;
+        e.preventDefault(); e.stopPropagation(); if(e.stopImmediatePropagation) e.stopImmediatePropagation();
+        if(e.type!=='click') return;
+        var alt=hdr?(lpEditableSec('header')?'header':(lpEditableSec('navMenu')?'navMenu':'')):(ftr&&lpEditableSec('footer')?'footer':'');
+        if(!alt){ toast('Auto-select is on, so links in the preview don\u2019t open. Turn Auto-select off to follow them.'); return; }
+        key=alt; sec=hdr||ftr;
+      }
       e.preventDefault(); e.stopPropagation(); if(e.stopImmediatePropagation) e.stopImmediatePropagation();
       if(e.type!=='click') return;
       var hint=lpAutoSelectHint(e.target, sec);
@@ -2440,6 +2451,19 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     };
     d.addEventListener('click', handler, true);
     d.addEventListener('submit', function(e){ if(secAutoSelect){ e.preventDefault(); e.stopPropagation(); } }, true);
+    // A link to another page of this site keeps the preview pass, so a draft's other pages
+    // (e.g. /book-a-service) open in the preview instead of "This site isn't published yet".
+    d.addEventListener('click', function(e){
+      if(e.defaultPrevented) return;
+      var a=e.target&&e.target.closest?e.target.closest('a[href]'):null; if(!a) return;
+      try{
+        var u=new URL(a.getAttribute('href'), d.location.href), home='/'+(lpPrevSlug||'');
+        if(u.origin!==d.location.origin) return;
+        var path=u.pathname.replace(/\/+$/,'');
+        if(path!==home&&path.indexOf(home+'/')!==0) return;
+        if(!u.searchParams.has('preview')){ u.searchParams.set('preview', String(Date.now())); a.setAttribute('href', u.pathname+u.search+u.hash); }
+      }catch(_u){}
+    }, false);
   }
   window.lpPreviewMarkActive=lpPreviewMarkActive;
   /** Style-only Order Storefront update — keeps the live catalogue mounted while dragging colours. */

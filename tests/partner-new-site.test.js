@@ -117,3 +117,9 @@ test('editor: partners with New websites switched on create from their designs, 
   // the admin form stays admin-only
   assert.match(manage, /if\(currentRole!=='super'\)\{ toast\('Only platform admins can create new sites here\.'\); return; \}/);
 });
+
+test('editor preview: auto-select never follows links; links keep the preview pass for draft sub-pages', () => {
+  const manage = require('fs').readFileSync(path.join(__dirname, '../manage.html'), 'utf8');
+  assert.match(manage, /var alt=hdr\?\(lpEditableSec\('header'\)\?'header':\(lpEditableSec\('navMenu'\)\?'navMenu':''\)\)/);
+  assert.match(manage, /if\(!u\.searchParams\.has\('preview'\)\)\{ u\.searchParams\.set\('preview', String\(Date\.now\(\)\)\);/);
+});
