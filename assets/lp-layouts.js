@@ -2940,7 +2940,25 @@
     });
   }
 
-  var STEPS = [heroSlider, heroBanners, headerCta, minimalFooter, logoTint, buttonShapes, orderLayout, featuredProjects, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, trustBar, mapHours, ctaBanner, storyTimeline, storyRows, bookingWeek, heroBooking, bookingHire, fontSet, mobileBarSpace, heroSplit, appWidths, headingBreaks, strokeIcons, siteWidth, headerItems, navActive, subPageNav, heroPortrait, featureBand, footerContact, footerDecor, pageBanner, pageBlocks, headerStack, textScale, logoThemed, darkSections, footerTextCols, editorialLooks, subPageAnchors, cardLooks];
+  /** Logo = Home: on a sub-page the header/footer logo goes to the site's homepage (on the
+   *  homepage it keeps scrolling to the top). Only logos still pointing at "#top" are changed. */
+  function logoHome(C) {
+    var base = siteBase();
+    var path = location.pathname.replace(/\/+$/, '');
+    var onHome = path === base || (!base && path === '');
+    var home = base || '/';
+    var links = document.querySelectorAll('header.site a.brand, .footer-top a.foot-logo-link');
+    Array.prototype.forEach.call(links, function (a) {
+      var h = a.getAttribute('href') || '';
+      var ours = a.hasAttribute('data-lp-home');
+      if (!(h === '#top' || ours)) return;
+      if (onHome) { if (ours) { a.setAttribute('href', '#top'); a.removeAttribute('data-lp-home'); } return; }
+      a.setAttribute('href', home); a.setAttribute('data-lp-home', '');
+      if (!a.getAttribute('aria-label')) a.setAttribute('aria-label', 'Home');
+    });
+  }
+
+  var STEPS = [heroSlider, heroBanners, headerCta, minimalFooter, logoTint, buttonShapes, orderLayout, featuredProjects, services, activityCounter, textBox, reviews, aboutUs, specialOffer, serviceProcess, faq, trustBar, mapHours, ctaBanner, storyTimeline, storyRows, bookingWeek, heroBooking, bookingHire, fontSet, mobileBarSpace, heroSplit, appWidths, headingBreaks, strokeIcons, siteWidth, headerItems, navActive, subPageNav, heroPortrait, featureBand, footerContact, footerDecor, pageBanner, pageBlocks, headerStack, textScale, logoThemed, darkSections, footerTextCols, editorialLooks, subPageAnchors, cardLooks, logoHome];
 
   function run(cfg) {
     // On a landing page the template builds the page's own config (homepage + the page's

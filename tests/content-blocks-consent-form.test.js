@@ -230,6 +230,12 @@ test('blocks: popup — hidden dialog opened by a #popup-id link', () => {
   assert.match(css, /\.lpb-pop::backdrop/);
 });
 
+test('logo links home on sub-pages, keeps #top on the homepage, leaves custom links alone', () => {
+  assert.match(js, /function logoHome\(C\)/);
+  assert.match(js, /header\.site a\.brand, \.footer-top a\.foot-logo-link/);
+  assert.match(js, /if \(!\(h === '#top' \|\| ours\)\) return;/);
+});
+
 test('consent API: recipient comes from saved config only, nothing is stored', () => {
   const api = read('api/consent-form.js');
   assert.match(api, /Recipient comes only from the saved site config, never from the request\./);
