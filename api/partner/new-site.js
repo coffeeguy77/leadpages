@@ -5,9 +5,14 @@
 // Buy Now bar. The design's content is copied as-is (no starter pack written over it).
 // A super admin viewing a partner's dashboard ("as" partner) can create on their behalf.
 //
-// Payload: { businessName, themeId, asPartnerId? }
+// Payload: { label (friendly name only the partner sees), themeId, asPartnerId?,
+//            seedContent?, starterPack?, industry?, packSlug?, packVariant?, targetLocation? }
+// The site keeps the design's trading name (the page shows it); the friendly name is sites.site_label.
+// With seedContent + starterPack, the AI trade pack's wording goes into the design (mergePackWording):
+// layout, colours, logo and photos stay as the design.
 
 const { createClient } = require('@supabase/supabase-js');
+const { mergePackWording } = require('../../lib/trade-pack-utils');
 const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 function readBody(req) {
@@ -73,8 +78,8 @@ module.exports = async (req, res) => {
   if (partner.status !== 'active') return res.status(403).json({ ok: false, error: 'partner account is ' + partner.status });
   if (!partner.can_create_sites) return res.status(403).json({ ok: false, error: 'New websites aren’t switched on for this account. Please contact LeadPages.' });
 
-  const businessName = clean(b.businessName, 160);
-  if (!businessName) return res.status(400).json({ ok: false, error: 'Give the website a name.' });
+  const label = clean(b.label || b.businessName, 160);
+  if (!label) return res.status(400).json({ ok: false, error: 'Give the website a name.' });
   const themeId = clean(b.themeId, 80);
   if (!themeId) return res.status(400).json({ ok: false, error: 'Choose a design.' });
 
@@ -88,13 +93,23 @@ module.exports = async (req, res) => {
     if (src) { template = src.template || template; vertical = src.vertical || vertical; }
   }
 
-  const config = JSON.parse(JSON.stringify(t.config));
+  let config = JSON.parse(JSON.stringify(t.config));
   delete config._mockup;
-  config._createdFrom = { themeId: t.id, themeName: t.name || null, partnerId: partner.id, at: new Date().toISOString() };
+  // The trading name the page shows ({{businessName}}): the design's own business name.
+  const businessName = clean(config.businessName || config.name, 160) || label;
+  const targetLocation = clean(b.targetLocation, 120);
+  const industry = clean(b.industry, 80);
+  let seeded = false;
+  if (b.seedContent && b.starterPack && typeof b.starterPack === 'object') {
+    try { config = mergePackWording(config, b.starterPack, businessName, industry, targetLocation); seeded = true; } catch (_e) { /* keep the design as-is */ }
+  }
+  config._createdFrom = { themeId: t.id, themeName: t.name || null, partnerId: partner.id, at: new Date().toISOString(),
+    aiContent: seeded ? { packSlug: clean(b.packSlug, 80) || null, packVariant: parseInt(b.packVariant, 10) || 1, targetLocation: targetLocation || null } : null };
 
   const row = {
-    slug: await uniqueSlug(slugify(businessName)),
+    slug: await uniqueSlug(slugify(label)),
     business_name: businessName,
+    site_label: label,
     template,
     vertical,
     status: 'draft',
@@ -105,7 +120,7 @@ module.exports = async (req, res) => {
     servicing_status: 'partner_serviced',
   };
   try {
-    const ins = await admin.from('sites').insert(row).select('id,slug,business_name,status,is_mockup,created_at').single();
+    const ins = await admin.from('sites').insert(row).select('id,slug,business_name,site_label,status,is_mockup,created_at').single();
     if (ins.error || !ins.data) return res.status(500).json({ ok: false, error: 'Could not create the website. Please try again.' });
     return res.status(200).json({ ok: true, site: ins.data });
   } catch (_e) {

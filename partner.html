@@ -217,18 +217,6 @@
             <button type="button" class="btn btn-brand hidden" id="ns-open">+ New website</button>
           </div>
         </div>
-        <div class="card hidden" id="ns-box" style="margin-top:14px;padding:18px 20px">
-          <h3 style="font-family:var(--font-display);font-size:17px;margin:0 0 4px">New website</h3>
-          <p class="muted" style="margin:0 0 14px;font-size:13px">Pick one of your designs, give the website a name, and it opens in the editor as a draft. Preview a design first if you’re not sure which one to use.</p>
-          <div class="field"><label for="ns-name">Website name</label><input id="ns-name" type="text" placeholder="e.g. Duncan’s Plumbing – Hot water"></div>
-          <label style="display:block;font-weight:700;font-size:13px;margin:4px 0 8px">Design</label>
-          <div id="ns-designs" class="ns-designs" role="radiogroup" aria-label="Design"></div>
-          <div class="save-row" style="margin:14px 0 0;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-            <button type="button" class="btn btn-brand" id="ns-create">Create website</button>
-            <button type="button" class="btn" id="ns-cancel">Cancel</button>
-            <span class="notice bad hidden" id="ns-err" style="margin:0;padding:8px 12px"></span>
-          </div>
-        </div>
         <div id="clients-list" style="margin-top:14px"><div class="card empty"><p class="muted">Loading your clients…</p></div></div>
       </section>
 
@@ -237,6 +225,38 @@
         <h2>Demos</h2>
         <p class="sub">Build demos for prospects, save themes, and turn wins into clients.</p>
         <div class="lp-demos-stack">
+          <div class="card hidden" id="ns-box" style="padding:18px 20px">
+            <h3 style="font-family:var(--font-display);font-size:17px;margin:0 0 4px">New website</h3>
+            <p class="muted" style="margin:0 0 14px;font-size:13px">Pick one of your designs and give the website a name only you see. It opens in the editor as a draft. Preview a design first if you’re not sure which one to use.</p>
+            <div class="field"><label for="ns-name">Your name for this website</label><input id="ns-name" type="text" placeholder="e.g. Blocked drains page"></div>
+            <label style="display:block;font-weight:700;font-size:13px;margin:4px 0 8px">Design</label>
+            <div id="ns-designs" class="ns-designs" role="radiogroup" aria-label="Design"></div>
+            <label style="display:flex;gap:10px;align-items:flex-start;margin:16px 0 0;font-weight:600;font-size:14px;cursor:pointer">
+              <input type="checkbox" id="ns-seed" style="width:auto;margin-top:3px">
+              <span>Fill with AI trade content<span class="muted" style="display:block;font-weight:500;font-size:12.5px;margin-top:2px">Writes the headline, services, intro and quote-form wording for a trade and area. The design’s layout, colours, logo and photos stay as they are.</span></span>
+            </label>
+            <div id="ns-ai" class="hidden" style="margin-top:12px">
+              <div class="field"><label for="ns-location">Target area</label><input id="ns-location" type="text" placeholder="e.g. Canberra, Belconnen, Queanbeyan"></div>
+              <label style="display:block;font-weight:700;font-size:13px;margin:4px 0 6px">Trade</label>
+              <input id="ns-trade-search" type="text" autocomplete="off" placeholder="Search trades… (try blocked drains, air conditioning, hot water)">
+              <input type="hidden" id="ns-pack" value="plumber">
+              <div id="ns-picked" class="cs-picked"></div>
+              <div class="tp2-wrap"><div id="ns-cats" class="tp2-cats"></div><div id="ns-packlist" class="tp2-list"></div></div>
+            </div>
+            <div class="save-row" style="margin:16px 0 0;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+              <button type="button" class="btn btn-brand" id="ns-create">Create website</button>
+              <button type="button" class="btn" id="ns-cancel">Cancel</button>
+              <span class="notice bad hidden" id="ns-err" style="margin:0;padding:8px 12px"></span>
+            </div>
+          </div>
+          <div class="card hidden" id="ys-card" style="padding:18px 20px">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+              <div><h3 style="font-family:var(--font-display);font-size:17px;margin:0 0 4px">Your websites</h3>
+              <p class="muted" style="margin:0;font-size:13px">Your own websites (not sales demos). Open one in the editor, preview it, or rename it under More.</p></div>
+              <button type="button" class="btn btn-brand" id="ys-new">+ New website</button>
+            </div>
+            <div id="ys-list"></div>
+          </div>
           <div class="card lp-demo-create" style="padding:0;overflow:hidden">
             <div class="lp-demo-create-hero">
               <div>
@@ -1373,6 +1393,7 @@
     ) : '';
 
     var cinfo='<div data-cinfobox="'+esc(c.id)+'" style="display:none;margin-top:10px;border-top:1px solid var(--line);padding-top:10px;font-size:13.5px;color:var(--ink-soft);line-height:1.7">'
+      +(c.site_label?'<div><strong>Your name for it:</strong> '+esc(c.site_label)+'</div>':'')
       +'<div><strong>Business:</strong> '+esc(c.business_name||'\u2014')+'</div>'
       +'<div><strong>URL:</strong> '+domain+'</div>'
       +'<div><strong>Plan:</strong> '+plan+(c.monthly_amount!=null?(' ('+money(c.monthly_amount)+'/mo)'):'')+'</div>'
@@ -1383,7 +1404,7 @@
       +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">'
         +'<div style="min-width:240px;flex:1">'
           +'<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">'
-            +'<div style="font-family:var(--font-display);font-weight:650;font-size:16px">'+esc(c.business_name||c.slug)+'</div>'
+            +'<div style="font-family:var(--font-display);font-weight:650;font-size:16px">'+esc(c.site_label||c.business_name||c.slug)+(c.site_label&&c.business_name&&c.site_label!==c.business_name?'<div class="muted" style="font-family:var(--font-ui,inherit);font-weight:500;font-size:12.5px;margin-top:2px">On the website as: '+esc(c.business_name)+'</div>':'')+'</div>'
             +'<div>'+badge+'</div>'
           +'</div>'
           +'<div class="muted" style="font-size:13px;margin-top:4px;display:flex;gap:10px;flex-wrap:wrap">'
@@ -1408,16 +1429,21 @@
     if(q){
       list = clients.filter(function(c){
         return String(c.business_name||'').toLowerCase().indexOf(q)>=0
+          || String(c.site_label||'').toLowerCase().indexOf(q)>=0
           || String(c.slug||'').toLowerCase().indexOf(q)>=0
           || String(c.custom_domain||'').toLowerCase().indexOf(q)>=0;
       });
     }
+    var ysCard=document.getElementById('ys-card'), ysList=document.getElementById('ys-list');
+    if(ysCard) ysCard.classList.toggle('hidden', !canCreateSites());
+    if(ysList&&canCreateSites()) ysList.innerHTML = clients.length ? clients.map(clientCard).join('')
+      : '<p class="muted" style="margin:0;font-size:13px">No websites yet \u2014 use <strong>+ New website</strong> to start one from a design.</p>';
     box.innerHTML = list.length ? list.map(clientCard).join('')
       : '<div class="card empty">'+emptyIco('clients')+'<strong>No clients yet</strong><p class="muted" style="margin:6px auto 0;max-width:44ch">When a prospect accepts and pays a quote, their site becomes a client on your account.</p></div>';
   }
   async function loadClients(){
     var pid=state.partner&&state.partner.id;
-    var r=await sb.from('sites').select('id,slug,business_name,status,template,plan_key,monthly_amount,billing_status,servicing_status,servicing_partner_id,referring_partner_id,commission_partner_id,is_mockup,is_partner_home,show_on_showcase,preview_password,sale_price,logo_obj:config->logo,config,created_at').order('created_at',{ascending:false});
+    var r=await sb.from('sites').select('id,slug,business_name,site_label,status,template,plan_key,monthly_amount,billing_status,servicing_status,servicing_partner_id,referring_partner_id,commission_partner_id,is_mockup,is_partner_home,show_on_showcase,preview_password,sale_price,logo_obj:config->logo,config,created_at').order('created_at',{ascending:false});
     if(r.error){
       console.error('loadClients error:', r.error);
       var em='Couldn\u2019t load your sites: '+(r.error.message||'unknown error')+'. If this names a missing column, that database update hasn\u2019t been run yet (e.g. partner_phase6d.sql adds preview_password).';
@@ -1568,6 +1594,7 @@
         starterPack:starterPack,
         targetLocation:targetLocation
       };
+      if(state.asAdmin && state.partner) payload.asPartnerId=state.partner.id;
       var res;
       try{ var r=await fetch('/api/partner/add-mockup',{method:'POST',headers:Object.assign({'content-type':'application/json'},await authHeader()),body:JSON.stringify(payload)}); res=await r.json(); }catch(_e){ res={ok:false,error:'Network error.'}; }
       if(!res||!res.ok){ err.textContent=(res&&res.error)||'Could not create the demo.'; err.classList.remove('hidden'); return; }
@@ -1743,7 +1770,7 @@
       var r=resources.find(function(x){return x.id===b.getAttribute('data-copy');}); if(!r) return;
       try{ navigator.clipboard.writeText(r.body||''); var t=b.textContent; b.textContent='Copied \u2713'; setTimeout(function(){ b.textContent=t; },1500); }catch(_e){}
     });
-    document.getElementById('clients-list').addEventListener('click', async function(e){
+    var __clientsClick=async function(e){
       var _msg=e.target.closest('[data-cmsg]');
       if(_msg){ openClientMessage(_msg.getAttribute('data-cmsg')); return; }
       var _sup=e.target.closest('[data-csupport]');
@@ -1758,7 +1785,7 @@
       var _mnu=e.target.closest('[data-cmenu]');
       if(_mnu){
         var idm=_mnu.getAttribute('data-cmenu');
-        var bx=document.querySelector('[data-cmenubox="'+idm+'"]');
+        var bx=(e.currentTarget||document).querySelector('[data-cmenubox="'+idm+'"]');
         if(bx) bx.style.display=(bx.style.display==='none'||!bx.style.display)?'block':'none';
         return;
       }
@@ -1766,8 +1793,16 @@
       if(_cc){
         var cid=_cc.getAttribute('data-cinfo')||_cc.getAttribute('data-crename')||_cc.getAttribute('data-cslug');
         var cc=clients.find(function(x){return x.id===cid;}); if(!cc) return;
-        if(_cc.hasAttribute('data-cinfo')){ var bx=document.querySelector('[data-cinfobox="'+cid+'"]'); if(bx) bx.style.display=(bx.style.display==='none'||!bx.style.display)?'block':'none'; return; }
-        if(_cc.hasAttribute('data-crename')){ var nm=prompt('Rename this client site:', cc.business_name||''); if(nm===null) return; nm=nm.trim(); if(!nm) return;
+        if(_cc.hasAttribute('data-cinfo')){ var bx=(e.currentTarget||document).querySelector('[data-cinfobox="'+cid+'"]'); if(bx) bx.style.display=(bx.style.display==='none'||!bx.style.display)?'block':'none'; return; }
+        if(_cc.hasAttribute('data-crename')){
+          if(canCreateSites()){
+            // Own websites: a friendly name only the partner sees; the page keeps the business name.
+            var fn=prompt('Your name for this website (only you see it — the website still shows “'+(cc.business_name||'')+'”):', cc.site_label||cc.business_name||''); if(fn===null) return; fn=fn.trim();
+            var rf=await sb.from('sites').update({site_label:fn||null, updated_at:new Date().toISOString()}).eq('id',cid).select('id');
+            if(rf.error||!rf.data||!rf.data.length){ alert('Could not rename: '+((rf.error&&rf.error.message)||'no permission')); return; }
+            cc.site_label=fn||null; renderClients(); return;
+          }
+          var nm=prompt('Rename this client site:', cc.business_name||''); if(nm===null) return; nm=nm.trim(); if(!nm) return;
           var rr=await sb.from('sites').update({business_name:nm, updated_at:new Date().toISOString()}).eq('id',cid).select('id');
           if(rr.error||!rr.data||!rr.data.length){ alert('Could not rename: '+((rr.error&&rr.error.message)||'no permission')); return; }
           cc.business_name=nm; renderClients(); return; }
@@ -1789,7 +1824,9 @@
       btn.disabled=false; btn.textContent=was;
       if(r.error||!r.data||!r.data.length){ alert('Could not update: '+((r.error&&r.error.message)||'no permission')); return; }
       c.status=ns; renderClients(); renderOverview();
-    });
+    };
+    document.getElementById('clients-list').addEventListener('click', __clientsClick);
+    (function(){ var ys=document.getElementById('ys-list'); if(ys) ys.addEventListener('click', __clientsClick); })();
     document.getElementById('sc-design').addEventListener('click', async function(){
       var btn=this; btn.disabled=true; btn.textContent='Opening…';
       var res;
@@ -2497,35 +2534,69 @@
   function nsShow(themeId){
     if(!canCreateSites()) return;
     if(themeId) nsPick=themeId;
-    gotoPanel('clients');
+    gotoPanel('demos');
+    nsInitPicker();
     var b=document.getElementById('ns-box'); if(b) b.classList.remove('hidden');
     nsRender();
     var er=document.getElementById('ns-err'); if(er) er.classList.add('hidden');
     setTimeout(function(){ try{ b.scrollIntoView({behavior:'smooth',block:'start'}); document.getElementById('ns-name').focus(); }catch(_e){} }, 60);
   }
+  var nsPickerOn=false;
+  async function nsInitPicker(){
+    if(nsPickerOn||!window.LPTradePicker) return;
+    nsPickerOn=true;
+    try{ await loadCommunityTradePacks(); }catch(_e){}
+    window.LPTradePicker.init2({search:'ns-trade-search',hidden:'ns-pack',picked:'ns-picked',cats:'ns-cats',list:'ns-packlist',defaultSlug:'plumber'});
+  }
   async function nsCreate(){
     var btn=document.getElementById('ns-create'), er=document.getElementById('ns-err');
     var name=(document.getElementById('ns-name').value||'').trim();
+    var seed=!!(document.getElementById('ns-seed')&&document.getElementById('ns-seed').checked);
+    var loc=((document.getElementById('ns-location')||{}).value||'').trim();
     function fail(m){ er.textContent=m; er.classList.remove('hidden'); }
     er.classList.add('hidden');
     if(!name) return fail('Give the website a name.');
     if(!nsPick) return fail('Choose a design.');
+    if(seed&&!loc) return fail('Add the target area for the AI content (e.g. Canberra).');
     btn.disabled=true; var was=btn.textContent; btn.textContent='Creating…';
+    var gj=null;
     try{
-      var body={ businessName:name, themeId:nsPick };
+      var body={ label:name, themeId:nsPick };
       if(state.asAdmin && state.partner) body.asPartnerId=state.partner.id;
+      if(seed){
+        var packSlug=(document.getElementById('ns-pack')&&document.getElementById('ns-pack').value)||'plumber';
+        var picker=window.LPTradePicker;
+        var tradeLabel=picker?picker.tradeLabel(packSlug):packSlug, industry=picker?picker.tradeType(packSlug):tradeLabel, tradeCat=picker?picker.tradeCat(packSlug):'';
+        if(window.LPBusy) window.LPBusy.show({ title:'Creating website', message:'Finding '+tradeLabel+' content for '+loc+'…', detail:'This can take up to a minute when AI writes new content.' });
+        var confirmNew=false;
+        for(var at=0; at<3; at++){
+          gj=await acquireTradePack({packSlug:packSlug,tradeLabel:tradeLabel,category:tradeCat||'General',targetLocation:loc,confirmNewGeneration:confirmNew});
+          if(gj&&gj.needsConfirmation){
+            if(window.LPBusy) window.LPBusy.hide();
+            if(!window.confirm(gj.message||'Write fresh content for this area?')) throw new Error('Cancelled — nothing was created.');
+            if(window.LPBusy) window.LPBusy.show({ title:'Creating website', message:'Writing '+tradeLabel+' content with AI…', detail:'This may take a minute.' });
+            confirmNew=true; continue;
+          }
+          break;
+        }
+        if(!gj||!gj.ok||!gj.pack) throw new Error((gj&&gj.error)||'Could not load the trade content.');
+        body.seedContent=true; body.starterPack=gj.pack; body.packSlug=packSlug; body.packVariant=gj.variant||1; body.industry=industry; body.targetLocation=loc;
+        if(window.LPBusy) window.LPBusy.update({ message:'Building your website…', detail:'Putting the wording into your design.' });
+      }
       var r=await fetch('/api/partner/new-site',{ method:'POST', headers:Object.assign({'content-type':'application/json'}, await authHeader()), body:JSON.stringify(body) });
       var j=await r.json().catch(function(){ return {}; });
       if(!r.ok||!j.ok) throw new Error(j.error||('Could not create the website ('+r.status+')'));
       document.getElementById('ns-name').value='';
       document.getElementById('ns-box').classList.add('hidden');
+      if(gj&&gj.communityAdded) loadCommunityTradePacks();
       await loadClients();
       window.open('/manage?site='+encodeURIComponent(j.site.slug),'_blank','noopener');
     }catch(e){ fail(e.message||String(e)); }
-    finally{ btn.disabled=false; btn.textContent=was; }
+    finally{ if(window.LPBusy) window.LPBusy.hide(); btn.disabled=false; btn.textContent=was; }
   }
   document.addEventListener('click', function(e){
-    if(e.target.closest('#ns-open')){ nsShow(''); return; }
+    if(e.target.closest('#ns-open')||e.target.closest('#ys-new')){ nsShow(''); return; }
+    if(e.target.closest('#ns-seed')){ var ai=document.getElementById('ns-ai'); if(ai) ai.classList.toggle('hidden', !e.target.closest('#ns-seed').checked); if(e.target.closest('#ns-seed').checked) nsInitPicker(); return; }
     if(e.target.closest('#ns-cancel')){ document.getElementById('ns-box').classList.add('hidden'); return; }
     if(e.target.closest('#ns-create')){ nsCreate(); return; }
     var pk=e.target.closest('[data-nspick]'); if(pk){ nsPick=pk.getAttribute('data-nspick'); nsRender(); return; }

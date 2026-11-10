@@ -642,6 +642,19 @@
     if (a === 'scroll') return '#' + (txt(c.linkTarget).replace(/^#/, '') || 'quote');
     return '';
   }
+  /* A service's own image settings (editor: Image fit, Icon / image position, Image + icon size):
+   * honoured on photo cards when set — fit (cover / contain / fill), left / centre / right,
+   * up / down (mediaVAlign top / bottom), zoom %. */
+  function svpImgStyle(s) {
+    var st = '', f = String(s.imageFit || ''), a = String(s.mediaAlign || ''), z = parseFloat(s.mediaScale);
+    var fit = f === 'contain' ? 'contain' : (f === 'fill' || f === 'stretch') ? 'fill' : f === 'cover' ? 'cover' : '';
+    if (fit) st += 'object-fit:' + fit + ' !important;';
+    var x = a === 'left' ? '0%' : a === 'right' ? '100%' : a === 'center' ? '50%' : '';
+    var v = String(s.mediaVAlign || ''), y = v === 'top' ? '0%' : v === 'bottom' ? '100%' : '';
+    if (x || y) st += 'object-position:' + (x || '50%') + ' ' + (y || '50%') + ' !important;';
+    if (!isNaN(z) && z >= 50 && z <= 250 && z !== 100) st += 'transform:scale(' + (z / 100) + ');transform-origin:' + (x || '50%') + ' ' + (y || '50%') + ';';
+    return st;
+  }
   function servicesPhoto(node, C, SV) {
     var grid = node.querySelector('.svcs'); if (!grid) return;
     var items = siteServices(C).filter(function (s) { return txt(s.title) || txt(s.body) || txt(s.image); });
@@ -656,7 +669,7 @@
       var lab = txt(s.cta && s.cta.label) || 'Learn more';
       var tag = href ? 'a' : 'div';
       return '<' + tag + ' class="svc svp"' + (href ? ' ' + linkAttrs(href) : '') + (idx >= 0 ? ' data-lpe="list:services:' + idx + ':title"' : '') + '>' +
-        '<span class="svp-media">' + (img ? '<img src="' + esc(img) + '" alt="' + esc(s.title || '') + '" loading="lazy">' : (icon(s.icon) ? '<span class="svp-ico">' + icon(s.icon) + '</span>' : '')) + '</span>' +
+        '<span class="svp-media' + (img && svpImgStyle(s) && /scale/.test(svpImgStyle(s)) ? ' svp-zoom' : '') + '">' + (img ? '<img src="' + esc(img) + '" alt="' + esc(s.title || '') + '" loading="lazy"' + (svpImgStyle(s) ? ' style="' + svpImgStyle(s) + '"' : '') + '>' : (icon(s.icon) ? '<span class="svp-ico">' + icon(s.icon) + '</span>' : '')) + '</span>' +
         '<span class="svp-body">' + (img && SV.photoIconBadge === true && icon(s.icon) ? '<span class="svp-badge-ic" aria-hidden="true">' + icon(s.icon) + '</span>' : '') +
         (txt(s.title) ? '<h3>' + esc(s.title) + '</h3>' : '') +
         (txt(s.body) ? '<p>' + esc(s.body) + '</p>' : '') +

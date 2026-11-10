@@ -67,12 +67,20 @@ module.exports = async (req, res) => {
   const user = await getUser(req);
   if (!user) return res.status(401).json({ ok: false, error: 'unauthorized' });
 
-  const pr = await admin.from('partners').select('id,status').eq('user_id', user.id).maybeSingle();
-  const partner = pr.data;
+  const b = await readBody(req);
+  // A super admin working in a partner's desk ("view as partner") creates the demo for THAT partner.
+  let partner = null;
+  const asPartnerId = clean(b.asPartnerId, 80);
+  if (asPartnerId) {
+    const prof = (await admin.from('profiles').select('is_super_admin').eq('id', user.id).maybeSingle()).data;
+    if (!prof || !prof.is_super_admin) return res.status(403).json({ ok: false, error: 'forbidden' });
+    partner = (await admin.from('partners').select('id,status').eq('id', asPartnerId).maybeSingle()).data;
+  } else {
+    partner = (await admin.from('partners').select('id,status').eq('user_id', user.id).maybeSingle()).data;
+  }
   if (!partner) return res.status(403).json({ ok: false, error: 'not a partner' });
   if (partner.status !== 'active') return res.status(403).json({ ok: false, error: 'partner account is ' + partner.status });
 
-  const b = await readBody(req);
   const businessName = clean(b.businessName, 160) || 'Untitled demo';
   const industry = clean(b.industry, 80);
   const targetLocation = clean(b.targetLocation, 120) || clean(b.location && b.location.city, 120) || '';

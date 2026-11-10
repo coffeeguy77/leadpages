@@ -2054,3 +2054,6 @@ footer.site.lpl-f-dividers.lpl-f-stack .f-nav > .f-col:first-child{border-left:0
 html.lpl-nav-bar header.site .head-nav .hn-link.lpl-nav-on,html.lpl-nav-bar [data-sec="navMenu"] .nm-link.lpl-nav-on{position:relative}
 html.lpl-nav-bar header.site .head-nav .hn-link.lpl-nav-on::after,html.lpl-nav-bar [data-sec="navMenu"] .nm-link.lpl-nav-on::after{content:"";position:absolute;left:-12px;right:-12px;bottom:-8px;height:4px;border-radius:2px;background:var(--hn-fill,var(--hivis,#fd6a00))}
 @media(max-width:979px){ html.lpl-nav-bar header.site .head-nav .hn-link.lpl-nav-on::after{left:0;right:0;bottom:-4px} }
+/* Photo cards: a zoomed service photo stays inside its frame; "contain" photos sit on a soft tint */
+section[data-sec="services"] .svp-media{overflow:hidden}
+section[data-sec="services"] .svp-media img[style*="contain"]{background:color-mix(in srgb,var(--ink,#1a2230) 4%,transparent)}

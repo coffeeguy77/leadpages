@@ -47,6 +47,34 @@ test('partner with the switch gets a draft, non-demo site copied from their desi
   assert.deepEqual(row.config.sections, { hero: { on: true } });
   assert.equal('_mockup' in row.config, false);
   assert.equal(row.config._createdFrom.themeId, 't1');
+  // the friendly name is only for the partner; the page keeps the design's business name
+  assert.equal(row.site_label, 'Hot Water Canberra');
+  assert.equal(row.business_name, 'Duncan');
+});
+
+test('AI trade content fills the design with wording only', async () => {
+  const design = { id: 't1', name: 'D', partner_id: 'p1', shared_with_partners: false, source_site_id: null,
+    config: { name: 'Duncan', theme: { pipe: '#011C3B' }, logo: { imageUrl: 'logo.svg' },
+      services: [{ title: 'Aircon', body: '', image: 'a.jpg', icon: 'snowflake' }],
+      sections: { heroSlider: { on: true, slides: [{ eyebrow: 'E', heading: 'Old', highlightText: '', subText: 'S', imageUrl: 'h.jpg' }] },
+        services: { on: true, heading: 'Our services', intro: 'I' }, reviews: { on: true, items: [{ who: 'Real', text: 'Real review' }] } } } };
+  const { handler, inserted } = load({ partners: [{ id: 'p1', user_id: 'u1', status: 'active', can_create_sites: true }], partner_themes: [design] });
+  const pack = { tradeType: 'Drain Specialist', theme: { pipe: '#123456' },
+    sections: { hero: { eyebrow: 'Drains', title: 'Drains cleared in {location}', titleHl: 'fast', sub: 'Sub' }, services: { heading: 'Every drain sorted', intro: 'Intro' },
+      reviews: { items: [{ who: 'Fake', text: 'Fake review' }] } },
+    services: [{ title: 'Blocked toilets', body: 'Body', icon: '🚽' }] };
+  const r = await call(handler, { label: 'Drains page', themeId: 't1', seedContent: true, starterPack: pack, industry: 'Drain Specialist', targetLocation: 'Belconnen' });
+  assert.equal(r.code, 200);
+  const c = inserted[0].config;
+  assert.equal(c.sections.heroSlider.slides[0].heading, 'Drains cleared in Belconnen');
+  assert.equal(c.sections.heroSlider.slides[0].imageUrl, 'h.jpg');
+  assert.equal(c.sections.services.heading, 'Every drain sorted');
+  assert.deepEqual(c.services[0], { title: 'Blocked toilets', body: '', image: 'a.jpg', icon: 'snowflake', imageAlt: 'Blocked toilets' });
+  assert.deepEqual(c.theme, { pipe: '#011C3B' });
+  assert.equal(c.logo.imageUrl, 'logo.svg');
+  assert.equal(c.sections.reviews.items[0].who, 'Real');
+  assert.equal(c.sections.seoTokens.location, 'Belconnen');
+  assert.equal(c._createdFrom.aiContent.targetLocation, 'Belconnen');
 });
 
 test('partner without the switch is refused', async () => {
@@ -70,5 +98,12 @@ test('partner dashboard: LeadPages-made (locked) designs have no Delete for part
   assert.match(html, /t\.partner_id===mine \|\| !!t\.shared_with_partners/);
   assert.match(html, /data-newfrom=/);
   assert.match(html, /\/api\/partner\/new-site/);
+  assert.match(html, /id="ys-card"/);
+  assert.match(html, /body=\{ label:name, themeId:nsPick \}/);
+  assert.match(html, /if\(state\.asAdmin && state\.partner\) payload\.asPartnerId=state\.partner\.id;/);
+  const mock = require('fs').readFileSync(path.join(__dirname, '../api/partner/add-mockup.js'), 'utf8');
+  assert.match(mock, /if \(!prof \|\| !prof\.is_super_admin\) return res\.status\(403\)/);
+  const manage = require('fs').readFileSync(path.join(__dirname, '../manage.html'), 'utf8');
+  assert.match(manage, /return \(role === 'super' \|\| role === 'broker'\) \? 'classic' : 'standard';/);
   assert.match(html, /\?preview=1" target="_blank" rel="noopener" style="padding:6px 11px;font-size:13px">Preview</);
 });
