@@ -56,6 +56,21 @@ async function siteFor(body) {
   return null;
 }
 
+/** The practice logo for the top of the PDF (best effort: 3 s, 1.5 MB, PNG/JPEG only). */
+async function fetchLogo(url) {
+  if (!url) return null;
+  try {
+    const ctl = new AbortController();
+    const t = setTimeout(() => ctl.abort(), 3000);
+    const r = await fetch(url, { signal: ctl.signal, redirect: 'error' });
+    clearTimeout(t);
+    if (!r.ok) return null;
+    const buf = Buffer.from(await r.arrayBuffer());
+    if (buf.length > 1.5 * 1024 * 1024 || !CF.isRaster(buf)) return null;
+    return buf;
+  } catch (e) { return null; }
+}
+
 async function emailPdf({ to, business, form, name, replyTo, pdf, filename }) {
   const key = process.env.RESEND_API_KEY;
   if (!key || !to) return { sent: false, reason: !key ? 'no_key' : 'no_recipient' };
@@ -112,8 +127,9 @@ module.exports = async (req, res) => {
 
   const business = CF.clean(cfg.businessName || site.business_name, 120);
   const when = new Date();
+  const logo = await fetchLogo(CF.logoUrlOf(form, cfg));
   let pdf;
-  try { pdf = await CF.buildPdf({ business, form, data: v.data, when }); } catch (e) { return send(res, 500, { ok: false, error: 'pdf' }); }
+  try { pdf = await CF.buildPdf({ business, form, data: v.data, when, logo }); } catch (e) { return send(res, 500, { ok: false, error: 'pdf' }); }
 
   const safe = v.data.name.replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '-').slice(0, 60) || 'form';
   const filename = (CF.clean(form.fileName, 60) || 'new-patient-form').replace(/[^\w-]/g, '') + '-' + safe + '-' + CF.isoDay(when) + '.pdf';

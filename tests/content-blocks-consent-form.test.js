@@ -177,6 +177,21 @@ test('consent form: choices, tick-boxes, headings and follow-up questions', asyn
   assert.match(ui, /data-kr=/); assert.match(ui, /data-kc=/); assert.match(ui, /lpc-sub/); assert.match(ui, /function applyShow\(\)/);
 });
 
+test('consent PDF: practice logo at the top, only from our own hosts, PNG/JPEG only', async () => {
+  assert.equal(CF.logoUrlOf({ pdfLogo: '/assets/sites/pam-connor/pdf-logo.png' }, {}), 'https://www.leadpages.com.au/assets/sites/pam-connor/pdf-logo.png');
+  assert.equal(CF.logoUrlOf({}, { logo: { imageUrl: 'https://www.leadpages.com.au/assets/x.svg' } }), '');
+  assert.equal(CF.logoUrlOf({ pdfLogo: 'https://evil.example.com/a.png' }, {}), '');
+  assert.equal(CF.logoUrlOf({ pdfLogo: 'http://www.leadpages.com.au/a.png' }, {}), '');
+  const logo = fs.readFileSync(path.join(root, 'assets/sites/pam-connor/pdf-logo.png'));
+  assert.equal(CF.isRaster(logo), true);
+  assert.equal(CF.isRaster(Buffer.from('<svg></svg>')), false);
+  const v = CF.validate(FORM, Object.assign(good(), { signature: realPng() }));
+  const withLogo = await CF.buildPdf({ business: 'Acme', form: FORM, data: v.data, when: new Date('2026-11-05T01:00:00Z'), logo });
+  const without = await CF.buildPdf({ business: 'Acme', form: FORM, data: v.data, when: new Date('2026-11-05T01:00:00Z') });
+  assert.ok(withLogo.length > without.length + 5000);
+  assert.match(read('api/consent-form.js'), /fetchLogo\(CF\.logoUrlOf\(form, cfg\)\)/);
+});
+
 test('consent API: recipient comes from saved config only, nothing is stored', () => {
   const api = read('api/consent-form.js');
   assert.match(api, /Recipient comes only from the saved site config, never from the request\./);
