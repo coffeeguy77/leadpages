@@ -2573,7 +2573,7 @@
     host.__lpConsent = { site: C, page: page, form: cfgForm };
     if (window.LPConsent) { window.LPConsent.mount(host); return; }
     if (document.getElementById('lp-consent-js')) return;
-    var s = document.createElement('script'); s.id = 'lp-consent-js'; s.src = '/assets/lp-consent.js?v=4'; s.defer = true;
+    var s = document.createElement('script'); s.id = 'lp-consent-js'; s.src = '/assets/lp-consent.js?v=5'; s.defer = true;
     s.onload = function () { var h = document.querySelector('[data-lp-consent]'); if (h && window.LPConsent) window.LPConsent.mount(h); };
     document.head.appendChild(s);
   }

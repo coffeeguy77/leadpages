@@ -191,7 +191,8 @@
         var t = ({ email: 1, tel: 1, date: 1, textarea: 1 })[f.type] ? f.type : 'text';
         var ac = ({ fullName: 'name', email: 'email', phone: 'tel', address: 'street-address', dob: 'bday' })[f.k] || 'on';
         var input = t === 'textarea' ? '<textarea data-k="' + esc(f.k) + '" autocomplete="' + ac + '"' + (f.ph ? ' placeholder="' + esc(f.ph) + '"' : '') + '></textarea>'
-          : '<input type="' + t + '" data-k="' + esc(f.k) + '" autocomplete="' + ac + '"' + (f.ph ? ' placeholder="' + esc(f.ph) + '"' : '') + '>';
+          : '<input type="' + t + '" data-k="' + esc(f.k) + '" autocomplete="' + ac + '"' + (f.ph ? ' placeholder="' + esc(f.ph) + '"' : '') +
+            (f.mask === 'mm/yyyy' ? ' data-mask="mm/yyyy" inputmode="numeric" maxlength="7"' + (f.ph ? '' : ' placeholder="MM/YYYY"') : '') + '>';
         return '<label class="lpc-f' + (t === 'textarea' || f.full ? ' full' : '') + '"' + show + '><span>' + esc(f.label || f.k) + (f.req ? ' <em>*</em>' : '') + '</span>' + input + '</label>';
       }).join('') + '</div>' +
       '<div class="lpc-nav"><button type="button" class="lpc-btn ghost" data-go="0">Back</button><button type="button" class="lpc-btn" data-go="2">Next: sign</button></div></div>' +
@@ -255,7 +256,15 @@
       st.innerHTML = IC.save + (ok ? (manual ? 'Saved on this device — you can close this page and come back to finish later (' + esc(timeOf(S.at)) + ').' : 'Saved on this device · ' + esc(timeOf(S.at))) : 'This browser won’t let us save progress — please finish the form in one go.');
     }
     function later() { clearTimeout(saveTimer); saveTimer = setTimeout(function () { saveNow(false); }, 700); }
-    root.addEventListener('input', function (e) { if (e.target && e.target.matches('[data-hp]')) return; if (e.target && e.target.matches('[data-signed]')) { S.signedName = e.target.value; decl(); } later(); });
+    /* MM/YYYY boxes: digits only, the slash is added after the month (and kept while typing). */
+    function maskMonthYear(inp, e) {
+      var del = e && /^delete/.test(e.inputType || '');
+      var d = String(inp.value || '').replace(/\D/g, '').slice(0, 6);
+      if (d.length === 1 && Number(d) > 1) d = '0' + d;           // "4" → "04"
+      var v = d.length > 2 ? d.slice(0, 2) + '/' + d.slice(2) : (d.length === 2 && !del ? d + '/' : d);
+      if (inp.value !== v) inp.value = v;
+    }
+    root.addEventListener('input', function (e) { if (e.target && e.target.matches('[data-mask="mm/yyyy"]')) maskMonthYear(e.target, e); if (e.target && e.target.matches('[data-hp]')) return; if (e.target && e.target.matches('[data-signed]')) { S.signedName = e.target.value; decl(); } later(); });
     root.addEventListener('change', function (e) { if (e.target && (e.target.type === 'radio' || e.target.matches('[data-kc]'))) { collect(); applyShow(); } later(); });
     $('[data-save]').addEventListener('click', function () { saveNow(true); });
     var clearArm = false;
@@ -310,7 +319,8 @@
             return;
           }
           var inp = host.querySelector('[data-k="' + f.k + '"]'); if (!inp) return;
-          var v = inp.value.trim(), b = (f.req && !v) || (v && f.type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v));
+          var v = inp.value.trim(), b = (f.req && !v) || (v && f.type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) ||
+            (v && f.mask === 'mm/yyyy' && !/^(0[1-9]|1[0-2])\/\d{4}$/.test(v));
           inp.classList.toggle('bad', !!b); if (b) bad.push(inp);
         });
       }

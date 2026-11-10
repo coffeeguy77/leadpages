@@ -203,6 +203,20 @@ test('consent PDF: landscape one-page summary (opt-in), documents after it', asy
   assert.doesNotMatch(port.toString('latin1'), /\/MediaBox \[0 0 841\.89 595\.28\]/);   // default stays portrait
 });
 
+test('consent form: MM/YYYY boxes keep their slash and are checked', () => {
+  const F3 = Object.assign({}, FORM, { fields: FORM.fields.concat([{ k: 'exp', label: 'Expiry', mask: 'mm/yyyy' }]) });
+  const base = good();
+  const ans = (a) => Object.assign({}, base, { answers: Object.assign({}, base.answers, a) });
+  assert.equal(CF.validate(F3, ans({ exp: '04/2029' })).ok, true);
+  assert.equal(CF.validate(F3, ans({ exp: '' })).ok, true);                       // optional
+  assert.deepEqual(CF.validate(F3, ans({ exp: '13/2029' })).errors, ['exp']);
+  assert.deepEqual(CF.validate(F3, ans({ exp: '042029' })).errors, ['exp']);
+  const ui = read('assets/lp-consent.js');
+  assert.match(ui, /data-mask="mm\/yyyy" inputmode="numeric" maxlength="7"/);
+  assert.match(ui, /function maskMonthYear\(/);
+  assert.match(read('assets/lp-layouts.js'), /lp-consent\.js\?v=5/);
+});
+
 test('consent API: recipient comes from saved config only, nothing is stored', () => {
   const api = read('api/consent-form.js');
   assert.match(api, /Recipient comes only from the saved site config, never from the request\./);
