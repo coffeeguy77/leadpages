@@ -68,7 +68,18 @@
     '.lpc-done h3{margin:0 0 8px;font-size:24px;color:var(--c-ink)}.lpc-done p{margin:0 auto 18px;max-width:520px;font-size:15px;line-height:1.55}',
     '@keyframes lpcPop{0%{transform:scale(.5);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}',
     '.lpc-hp{position:absolute!important;left:-9999px!important;width:1px;height:1px;overflow:hidden}',
-    '@media(max-width:640px){.lpc-grid{grid-template-columns:1fr}.lpc-steps li span{display:none}.lpc-nav .lpc-btn{flex:1;justify-content:center}.lpc-doc-text{max-height:260px}}'
+    '.lpc-sub{grid-column:1/-1;margin:10px 0 -4px;padding-top:14px;border-top:1px solid var(--c-line);font-size:16px;font-weight:700;color:var(--c-ink)}',
+    '.lpc-sub:first-child{margin-top:0;padding-top:0;border-top:0}',
+    '.lpc-f[hidden],.lpc-sub[hidden]{display:none}',
+    '.lpc-opts{display:flex;flex-wrap:wrap;gap:8px}',
+    '.lpc-opt{position:relative;display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border:1px solid color-mix(in srgb,var(--hivis,#0b5da8) 27%,#fff);border-radius:9px;background:#fff;font-weight:500;font-size:15px;cursor:pointer;color:var(--c-ink)}',
+    '.lpc-opt input{width:18px;height:18px;margin:0;accent-color:var(--c-blue);flex:0 0 auto}',
+    '.lpc-opt:has(input:checked){border-color:var(--c-blue);background:var(--c-soft);font-weight:600}',
+    '.lpc-opts.bad .lpc-opt{border-color:#d04141}',
+    '.lpc-f.lpc-ack{flex-direction:row;padding:14px 16px;border-radius:12px;background:var(--c-soft);border:1px solid var(--c-line);font-weight:600;line-height:1.5}',
+    '.lpc-f.lpc-ack.bad{border-color:#d04141;background:#fff6f6}',
+    '.lpc-f.lpc-ack input{width:20px;height:20px;margin:2px 0 0;accent-color:var(--c-blue);flex:0 0 auto}',
+    '@media(max-width:640px){.lpc-grid{grid-template-columns:1fr}.lpc-opt{flex:1 1 calc(50% - 8px)}.lpc-steps li span{display:none}.lpc-nav .lpc-btn{flex:1;justify-content:center}.lpc-doc-text{max-height:260px}}'
   ].join('\n');
 
   var IC = {
@@ -139,6 +150,17 @@
     var saved = store.get(KEY);
     if (saved && saved.v === 1) { Object.keys(S).forEach(function (k) { if (saved[k] != null) S[k] = saved[k]; }); }
     var restored = !!(saved && saved.v === 1);
+    /* Follow-up questions: a field with showIf { k, v } is only asked when that answer matches. */
+    function showList(f) { var si = f && f.showIf; if (!si || !si.k) return null; return (Array.isArray(si.v) ? si.v : [si.v]).map(function (x) { return String(x == null ? '' : x); }); }
+    function showAttr(f) { var l = showList(f); return l ? ' data-show-k="' + esc(f.showIf.k) + '" data-show-v="' + esc(JSON.stringify(l)) + '" hidden' : ''; }
+    function isShown(f) { var l = showList(f); if (!l) return true; return l.indexOf(String(S.answers[f.showIf.k] == null ? '' : S.answers[f.showIf.k])) >= 0; }
+    function applyShow() {
+      Array.prototype.forEach.call(host.querySelectorAll('[data-show-k]'), function (el) {
+        var l = []; try { l = JSON.parse(el.getAttribute('data-show-v') || '[]'); } catch (e) { l = []; }
+        var v = S.answers[el.getAttribute('data-show-k')];
+        el.hidden = l.indexOf(String(v == null ? '' : v)) < 0;
+      });
+    }
 
     var steps = ['Read', 'Your details', 'Sign & send'];
     host.innerHTML = '<div class="lpc" role="form" aria-label="' + esc(F.title || 'Form') + '">' +
@@ -156,11 +178,21 @@
       '<div class="lpc-nav"><span></span><button type="button" class="lpc-btn" data-go="1">Next: your details</button></div></div>' +
       // Step 2: details
       '<div class="lpc-pane" data-pane="1" hidden><div class="lpc-grid">' + fields.map(function (f) {
+        var show = showAttr(f);
+        if (f.type === 'heading') return '<h3 class="lpc-sub"' + show + '>' + esc(f.label || '') + '</h3>';
+        if (f.type === 'radio') {
+          var opts = Array.isArray(f.opts) ? f.opts : [];
+          return '<div class="lpc-f full" role="radiogroup" aria-label="' + esc(f.label || f.k) + '"' + show + '><span>' + esc(f.label || f.k) + (f.req ? ' <em>*</em>' : '') + '</span>' +
+            '<div class="lpc-opts" data-kr="' + esc(f.k) + '">' + opts.map(function (o) {
+              return '<label class="lpc-opt"><input type="radio" name="lpc-' + esc(f.k) + '" value="' + esc(o) + '"> ' + esc(o) + '</label>';
+            }).join('') + '</div></div>';
+        }
+        if (f.type === 'check') return '<label class="lpc-f full lpc-ack"' + show + '><input type="checkbox" data-kc="' + esc(f.k) + '"><span>' + inline(f.label || '') + (f.req ? ' <em>*</em>' : '') + '</span></label>';
         var t = ({ email: 1, tel: 1, date: 1, textarea: 1 })[f.type] ? f.type : 'text';
         var ac = ({ fullName: 'name', email: 'email', phone: 'tel', address: 'street-address', dob: 'bday' })[f.k] || 'on';
         var input = t === 'textarea' ? '<textarea data-k="' + esc(f.k) + '" autocomplete="' + ac + '"' + (f.ph ? ' placeholder="' + esc(f.ph) + '"' : '') + '></textarea>'
           : '<input type="' + t + '" data-k="' + esc(f.k) + '" autocomplete="' + ac + '"' + (f.ph ? ' placeholder="' + esc(f.ph) + '"' : '') + '>';
-        return '<label class="lpc-f' + (t === 'textarea' || f.full ? ' full' : '') + '"><span>' + esc(f.label || f.k) + (f.req ? ' <em>*</em>' : '') + '</span>' + input + '</label>';
+        return '<label class="lpc-f' + (t === 'textarea' || f.full ? ' full' : '') + '"' + show + '><span>' + esc(f.label || f.k) + (f.req ? ' <em>*</em>' : '') + '</span>' + input + '</label>';
       }).join('') + '</div>' +
       '<div class="lpc-nav"><button type="button" class="lpc-btn ghost" data-go="0">Back</button><button type="button" class="lpc-btn" data-go="2">Next: sign</button></div></div>' +
       // Step 3: sign
@@ -188,6 +220,9 @@
     $$('[data-read]').forEach(function (cb) { cb.checked = S.read[cb.getAttribute('data-read')] === true; });
     $$('[data-ini]').forEach(function (inp) { inp.value = S.initials[inp.getAttribute('data-ini')] || ''; });
     $$('[data-k]').forEach(function (inp) { inp.value = S.answers[inp.getAttribute('data-k')] || ''; });
+    $$('[data-kr]').forEach(function (g) { var v = S.answers[g.getAttribute('data-kr')]; Array.prototype.forEach.call(g.querySelectorAll('input'), function (r) { r.checked = (v != null && r.value === String(v)); }); });
+    $$('[data-kc]').forEach(function (cb) { cb.checked = S.answers[cb.getAttribute('data-kc')] === true; });
+    applyShow();
     $('[data-signed]').value = S.signedName || '';
     $('[data-agree]').checked = S.agree === true;
     var today = new Date();
@@ -205,6 +240,8 @@
       $$('[data-read]').forEach(function (cb) { S.read[cb.getAttribute('data-read')] = cb.checked; });
       $$('[data-ini]').forEach(function (inp) { S.initials[inp.getAttribute('data-ini')] = inp.value.trim().toUpperCase(); });
       $$('[data-k]').forEach(function (inp) { S.answers[inp.getAttribute('data-k')] = inp.value; });
+      $$('[data-kr]').forEach(function (g) { var c = g.querySelector('input:checked'); S.answers[g.getAttribute('data-kr')] = c ? c.value : ''; });
+      $$('[data-kc]').forEach(function (cb) { S.answers[cb.getAttribute('data-kc')] = cb.checked; });
       S.signedName = $('[data-signed]').value;
       S.agree = $('[data-agree]').checked;
     }
@@ -219,7 +256,7 @@
     }
     function later() { clearTimeout(saveTimer); saveTimer = setTimeout(function () { saveNow(false); }, 700); }
     root.addEventListener('input', function (e) { if (e.target && e.target.matches('[data-hp]')) return; if (e.target && e.target.matches('[data-signed]')) { S.signedName = e.target.value; decl(); } later(); });
-    root.addEventListener('change', function () { later(); });
+    root.addEventListener('change', function (e) { if (e.target && (e.target.type === 'radio' || e.target.matches('[data-kc]'))) { collect(); applyShow(); } later(); });
     $('[data-save]').addEventListener('click', function () { saveNow(true); });
     var clearArm = false;
     $('[data-clear]').addEventListener('click', function (e) {
@@ -261,6 +298,17 @@
       }
       if (n === 1) {
         fields.forEach(function (f) {
+          if (!isShown(f)) return;
+          if (f.type === 'radio') {
+            var g = host.querySelector('[data-kr="' + f.k + '"]'); if (!g) return;
+            var rb = f.req && !g.querySelector('input:checked'); g.classList.toggle('bad', !!rb); if (rb) bad.push(g.querySelector('input') || g);
+            return;
+          }
+          if (f.type === 'check') {
+            var cb = host.querySelector('[data-kc="' + f.k + '"]'); if (!cb) return;
+            var cbb = f.req && !cb.checked; cb.closest('.lpc-ack').classList.toggle('bad', !!cbb); if (cbb) bad.push(cb);
+            return;
+          }
           var inp = host.querySelector('[data-k="' + f.k + '"]'); if (!inp) return;
           var v = inp.value.trim(), b = (f.req && !v) || (v && f.type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v));
           inp.classList.toggle('bad', !!b); if (b) bad.push(inp);

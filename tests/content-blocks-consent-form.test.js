@@ -144,6 +144,39 @@ test('consent form: builds a PDF', async () => {
   assert.equal(CF.isoDay(new Date('2026-11-04T14:00:00Z')), '2026-11-05');   // Australian date, not UTC
 });
 
+test('consent form: choices, tick-boxes, headings and follow-up questions', async () => {
+  const F2 = Object.assign({}, FORM, { fields: FORM.fields.concat([
+    { k: 'h1', label: 'Referral', type: 'heading' },
+    { k: 'src', label: 'How were you referred?', type: 'radio', opts: ['Doctor', 'Website', 'Other'], req: true },
+    { k: 'drName', label: 'Doctor', req: true, showIf: { k: 'src', v: 'Doctor' } },
+    { k: 'other', label: 'Please specify', showIf: { k: 'src', v: ['Other'] } },
+    { k: 'ack', label: 'I note the cancellation policy.', type: 'check', req: true }
+  ]) });
+  const base = good();
+  const ans = (a) => Object.assign({}, base, { answers: Object.assign({}, base.answers, a) });
+  // Follow-up only required when its answer is picked; hidden answers are dropped.
+  let r = CF.validate(F2, ans({ src: 'Website', drName: 'stale', other: 'stale', ack: true }));
+  assert.equal(r.ok, true);
+  assert.equal(r.data.values.drName, '');
+  assert.equal(r.data.values.other, '');
+  assert.deepEqual(r.data.fields.map((f) => f.k), ['fullName', 'email', 'dob', 'h1', 'src', 'ack']);
+  assert.deepEqual(CF.validate(F2, ans({ src: 'Doctor', ack: true })).errors, ['drName']);
+  assert.equal(CF.validate(F2, ans({ src: 'Doctor', drName: 'Dr Who', ack: true })).ok, true);
+  // Choice must be one of the options; required tick-box must be ticked.
+  assert.deepEqual(CF.validate(F2, ans({ src: 'Hacker', ack: true })).errors, ['src']);
+  assert.deepEqual(CF.validate(F2, ans({ src: 'Website' })).errors, ['ack']);
+  assert.deepEqual(CF.validate(F2, ans({ src: 'Website', ack: 'yes' })).errors, []);
+  // Headings never need an answer; the PDF still builds.
+  r = CF.validate(F2, Object.assign(ans({ src: 'Other', other: 'Friend of a friend', ack: true }), { signature: realPng() }));
+  assert.deepEqual(r.errors, ['signature']);   // the 1×1 test PNG is below the size check; answers are fine
+  assert.equal(r.data.values.other, 'Friend of a friend');
+  const pdf = await CF.buildPdf({ business: 'Acme Psychology', form: F2, data: r.data, when: new Date('2026-11-05T01:00:00Z') });
+  assert.equal(pdf.slice(0, 5).toString(), '%PDF-');
+  // The page form renders the new kinds of question.
+  const ui = read('assets/lp-consent.js');
+  assert.match(ui, /data-kr=/); assert.match(ui, /data-kc=/); assert.match(ui, /lpc-sub/); assert.match(ui, /function applyShow\(\)/);
+});
+
 test('consent API: recipient comes from saved config only, nothing is stored', () => {
   const api = read('api/consent-form.js');
   assert.match(api, /Recipient comes only from the saved site config, never from the request\./);
