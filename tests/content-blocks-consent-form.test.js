@@ -192,6 +192,17 @@ test('consent PDF: practice logo at the top, only from our own hosts, PNG/JPEG o
   assert.match(read('api/consent-form.js'), /fetchLogo\(CF\.logoUrlOf\(form, cfg\)\)/);
 });
 
+test('consent PDF: landscape one-page summary (opt-in), documents after it', async () => {
+  const v = CF.validate(FORM, Object.assign(good(), { signature: realPng() }));
+  const land = await CF.buildPdf({ business: 'Acme', form: Object.assign({}, FORM, { pdfLayout: 'landscape' }), data: v.data, when: new Date('2026-11-05T01:00:00Z') });
+  const txt = land.toString('latin1');
+  assert.equal((txt.match(/\/Type \/Page\b/g) || []).length, 3);            // 1 summary + 2 documents
+  assert.match(txt, /\/MediaBox \[0 0 841\.89 595\.28\]/);                // landscape summary
+  assert.match(txt, /\/MediaBox \[0 0 595\.28 841\.89\]/);                // portrait documents
+  const port = await CF.buildPdf({ business: 'Acme', form: FORM, data: v.data, when: new Date('2026-11-05T01:00:00Z') });
+  assert.doesNotMatch(port.toString('latin1'), /\/MediaBox \[0 0 841\.89 595\.28\]/);   // default stays portrait
+});
+
 test('consent API: recipient comes from saved config only, nothing is stored', () => {
   const api = read('api/consent-form.js');
   assert.match(api, /Recipient comes only from the saved site config, never from the request\./);
