@@ -107,3 +107,13 @@ test('partner dashboard: LeadPages-made (locked) designs have no Delete for part
   assert.match(manage, /return \(role === 'super' \|\| role === 'broker'\) \? 'classic' : 'standard';/);
   assert.match(html, /\?preview=1" target="_blank" rel="noopener" style="padding:6px 11px;font-size:13px">Preview</);
 });
+
+test('editor: partners with New websites switched on create from their designs, not the admin form', () => {
+  const manage = require('fs').readFileSync(path.join(__dirname, '../manage.html'), 'utf8');
+  assert.match(manage, /function _lplCanCreateSite\(\)\{ return currentRole==='super' \|\| \(currentRole==='broker' && !!\(window\.__lpPartnerRow&&window\.__lpPartnerRow\.can_create_sites\)\); \}/);
+  assert.match(manage, /if\(currentRole==='broker'\)\{\n      if\(_lplCanCreateSite\(\)\) return openPartnerNewSite\(\);/);
+  assert.match(manage, /async function openPartnerNewSite\(\)/);
+  assert.match(manage, /fetch\('\/api\/partner\/new-site'/);
+  // the admin form stays admin-only
+  assert.match(manage, /if\(currentRole!=='super'\)\{ toast\('Only platform admins can create new sites here\.'\); return; \}/);
+});

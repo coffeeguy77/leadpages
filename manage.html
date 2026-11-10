@@ -4301,8 +4301,8 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
         else {
           // Partners are linked on partners.user_id; everyone else with sites is a site owner (client).
           try{
-            const { data:prow } = await sb.from('partners').select('id').eq('user_id',__uid).maybeSingle();
-            if(prow && prow.id) role='broker';
+            const { data:prow } = await sb.from('partners').select('id,can_create_sites').eq('user_id',__uid).maybeSingle();
+            if(prow && prow.id){ role='broker'; window.__lpPartnerRow=prow; }
             else role='client';
           }catch(_pe){ role='client'; }
         }
@@ -4495,7 +4495,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     }
   }
   function _lplCard(s){ return '<div class="lpl-card2"><div class="lpl-body"><div class="lpl-title"><span class="lpl-name">'+esc(s.site_label||s.business_name||s.slug)+'</span>'+_lplStatus(s)+_lplDomainIcon(s)+_lplLibBtn(s)+'<button type="button" class="lpl-fav2'+(s.is_favorite?' on':'')+'" title="Favourite" data-fav="'+s.id+'">'+(s.is_favorite?'\u2605':'\u2606')+'</button></div><div class="lpl-subline"><span class="lpl-slug2">'+esc(s.slug||'')+'</span>'+(_lplMetaInline(s)?'<span class="lpl-dot">\u00b7</span><span class="lpl-meta-inline">'+_lplMetaInline(s)+'</span>':'')+'</div></div><div class="lpl-manage"><button type="button" class="lpl-btn-manage" data-edit="'+s.id+'">Manage</button></div></div>'; }
-  function _lplCanCreateSite(){ return currentRole==='super'; }
+  function _lplCanCreateSite(){ return currentRole==='super' || (currentRole==='broker' && !!(window.__lpPartnerRow&&window.__lpPartnerRow.can_create_sites)); }
   function _lplSyncHelp(){
     var help=document.getElementById('lpl-help'); if(!help) return;
     if(_lplCanCreateSite()){
@@ -4508,6 +4508,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   }
   function _lplNewCard(){
     if(!_lplCanCreateSite()) return '';
+    if(currentRole!=='super') return '<div class="lpl-create-row"><div class="lpl-newcard" id="lpl-newcard">+ New Site</div></div>';
     return '<div class="lpl-create-row lpl-create-row-3">'
       +'<div class="lpl-newcard" id="lpl-newcard">+ New Site</div>'
       +'<div class="lpl-newcard lpl-composer-card" id="lpl-layout-composer" title="Design the layout first, then fill every app">'
@@ -8525,7 +8526,106 @@ function heroCtaCard(c){
     }catch(e){ try{console.warn('[layout-composer handoff]', e&&e.message);}catch(_x){} }
   }
 
+  /* ---- Partners: New site from one of their saved designs (Nov 2026) ----
+   * Same as the partner console's New website: a name only the partner sees (sites.site_label),
+   * a design (their saved themes + LeadPages-shared ones), optional AI trade wording. */
+  async function openPartnerNewSite(){
+    if($('pns-ov')) return;
+    var ov=document.createElement('div'); ov.className='cs-ov'; ov.id='pns-ov';
+    ov.innerHTML='<div class="cs-modal" style="background:var(--panel,#fff);color:var(--ink,inherit);border:1px solid var(--line);">'
+      +'<h2 style="margin:0 0 4px;">New website</h2>'
+      +'<p class="lede" style="margin:0 0 14px;">Start from one of your designs. It opens here as a draft.</p>'
+      +'<div class="f"><label for="pns-name">Your name for this website <span class="hint">(only you see it)</span></label><input id="pns-name" class="tin" type="text" placeholder="e.g. Blocked drains page"></div>'
+      +'<label style="display:block;font-weight:700;font-size:13px;margin:6px 0 8px;">Design</label>'
+      +'<div id="pns-designs" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;"><p class="hint" style="margin:0;">Loading your designs…</p></div>'
+      +'<label style="display:flex;gap:10px;align-items:flex-start;margin:16px 0 0;font-weight:600;cursor:pointer;"><input type="checkbox" id="pns-seed" style="width:auto;margin-top:3px;"><span>Fill with AI trade content<span class="hint" style="display:block;font-weight:500;margin-top:2px;">Writes the headline, services, intro and quote-form wording for a trade and area. Layout, colours, logo and photos stay as the design.</span></span></label>'
+      +'<div id="pns-ai" style="display:none;margin-top:12px;">'
+        +'<div class="f"><label for="pns-loc">Target area</label><input id="pns-loc" class="tin" type="text" placeholder="e.g. Canberra, Belconnen"></div>'
+        +'<label style="display:block;font-weight:700;font-size:13px;margin:4px 0 6px;">Trade</label>'
+        +'<input id="pns-trade-search" class="tin" type="text" autocomplete="off" placeholder="Search trades… (try blocked drains, air conditioning)">'
+        +'<input type="hidden" id="pns-pack" value="plumber"><div id="pns-picked" class="cs-picked"></div>'
+        +'<div class="tp2-wrap"><div id="pns-cats" class="tp2-cats"></div><div id="pns-packlist" class="tp2-list"></div></div>'
+      +'</div>'
+      +'<p id="pns-err" style="display:none;margin:12px 0 0;color:var(--danger,#c0392b);font-weight:600;"></p>'
+      +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;"><button type="button" class="btn" id="pns-create">Create website</button><button type="button" class="btn ghost" id="pns-cancel">Cancel</button></div>'
+      +'</div>';
+    document.body.appendChild(ov);
+    var pick='', pickerOn=false;
+    function close(){ var o=$('pns-ov'); if(o) o.remove(); }
+    function fail(m){ var e=$('pns-err'); e.textContent=m; e.style.display=''; }
+    $('pns-cancel').onclick=close;
+    ov.addEventListener('click',function(e){ if(e.target===ov) close(); });
+    // Designs: own + LeadPages-shared (RLS returns exactly what this partner may use)
+    var pid=window.__lpPartnerRow&&window.__lpPartnerRow.id, themes=[];
+    try{
+      var tr=await sb.from('partner_themes').select('id,name,thumb_url,source_site_id,partner_id,shared_with_partners').order('created_at',{ascending:false});
+      themes=(tr.data||[]).filter(function(t){ return t.partner_id===pid || t.shared_with_partners; });
+    }catch(_t){}
+    var bySite={}; (allSites||[]).forEach(function(x){ bySite[x.id]=x.slug; });
+    var box=$('pns-designs'); if(!box) return;
+    if(!themes.length){ box.innerHTML='<p class="hint" style="margin:0;">No designs yet — ask LeadPages to set one up for you.</p>'; return; }
+    function draw(){
+      box.innerHTML=themes.map(function(t){
+        var on=t.id===pick, slug=t.source_site_id&&bySite[t.source_site_id];
+        return '<div style="border:1.5px solid '+(on?'var(--accent)':'var(--line)')+';border-radius:12px;overflow:hidden;background:var(--panel,#fff);'+(on?'box-shadow:0 0 0 3px var(--accent-soft);':'')+'">'
+          +'<button type="button" data-pns="'+esc(t.id)+'" aria-pressed="'+(on?'true':'false')+'" style="all:unset;display:block;width:100%;cursor:pointer;">'
+            +'<span style="display:block;aspect-ratio:16/10;background:var(--bg,#f4f4f4);border-bottom:1px solid var(--line);">'+(t.thumb_url?'<img src="'+esc(t.thumb_url)+'" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:top;display:block;">':'')+'</span>'
+            +'<span style="display:block;padding:10px 12px 4px;font-weight:700;font-size:13.5px;color:var(--ink,inherit);">'+esc(t.name)+'</span>'
+          +'</button>'
+          +(slug?'<a href="/'+encodeURIComponent(slug)+'?preview=1" target="_blank" rel="noopener" style="display:inline-block;padding:2px 12px 10px;font-weight:700;font-size:13px;color:var(--accent);">Preview ↗</a>':'<span style="display:block;height:10px;"></span>')
+          +'</div>';
+      }).join('');
+    }
+    pick=themes[0].id; draw();
+    box.addEventListener('click',function(e){ var b=e.target.closest('[data-pns]'); if(!b) return; pick=b.getAttribute('data-pns'); draw(); });
+    $('pns-seed').addEventListener('change',function(){
+      $('pns-ai').style.display=this.checked?'':'none';
+      if(this.checked&&!pickerOn&&window.LPTradePicker){ pickerOn=true; window.LPTradePicker.init2({search:'pns-trade-search',hidden:'pns-pack',picked:'pns-picked',cats:'pns-cats',list:'pns-packlist',defaultSlug:'plumber'}); }
+    });
+    $('pns-create').onclick=async function(){
+      var btn=this, name=($('pns-name').value||'').trim(), seed=$('pns-seed').checked, loc=($('pns-loc').value||'').trim();
+      $('pns-err').style.display='none';
+      if(!name) return fail('Give the website a name.');
+      if(!pick) return fail('Choose a design.');
+      if(seed&&!loc) return fail('Add the target area for the AI content (e.g. Canberra).');
+      btn.disabled=true; var was=btn.textContent; btn.textContent='Creating…';
+      try{
+        var tok=((await sb.auth.getSession()).data.session||{}).access_token||'';
+        var H={'content-type':'application/json','Authorization':'Bearer '+tok};
+        var body={ label:name, themeId:pick };
+        if(seed){
+          var P=window.LPTradePicker, slug=$('pns-pack').value||'plumber';
+          var lab=P?P.tradeLabel(slug):slug, ind=P?P.tradeType(slug):lab, cat=P?P.tradeCat(slug):'';
+          btn.textContent='Finding '+lab+' content…';
+          var gj=null, confirmNew=false;
+          for(var at=0; at<3; at++){
+            var ar=await fetch('/api/partner/acquire-trade-pack',{method:'POST',headers:H,body:JSON.stringify({packSlug:slug,tradeLabel:lab,category:cat||'General',targetLocation:loc,confirmNewGeneration:confirmNew})});
+            gj=await ar.json().catch(function(){ return null; });
+            if(gj&&gj.needsConfirmation){ if(!window.confirm(gj.message||'Write fresh content for this area?')) throw new Error('Cancelled — nothing was created.'); confirmNew=true; btn.textContent='Writing content with AI…'; continue; }
+            break;
+          }
+          if(!gj||!gj.ok||!gj.pack) throw new Error((gj&&gj.error)||'Could not load the trade content.');
+          body.seedContent=true; body.starterPack=gj.pack; body.packSlug=slug; body.packVariant=gj.variant||1; body.industry=ind; body.targetLocation=loc;
+          btn.textContent='Creating…';
+        }
+        var r=await fetch('/api/partner/new-site',{method:'POST',headers:H,body:JSON.stringify(body)});
+        var j=await r.json().catch(function(){ return {}; });
+        if(!r.ok||!j.ok) throw new Error(j.error||('Could not create the website ('+r.status+')'));
+        close();
+        await loadSitesFromDB();
+        var ns=(allSites||[]).find(function(x){ return x.id===j.site.id||x.slug===j.site.slug; });
+        if(ns){ hideLanding(); loadSite(ns); } else { location.href='/manage?site='+encodeURIComponent(j.site.slug); }
+        toast('Website created — it’s a draft until you publish it.');
+      }catch(e){ fail(e.message||String(e)); btn.disabled=false; btn.textContent=was; }
+    };
+    setTimeout(function(){ try{ $('pns-name').focus(); }catch(_f){} },50);
+  }
+
   function openCreateSite(){
+    if(currentRole==='broker'){
+      if(_lplCanCreateSite()) return openPartnerNewSite();
+      toast('New websites aren\u2019t switched on for your account \u2014 please contact LeadPages.'); return;
+    }
     if(currentRole!=='super'){ toast('Only platform admins can create new sites here.'); return; }
     if($('cs-ov'))return;
     var ov=document.createElement('div'); ov.className='cs-ov'; ov.id='cs-ov';
@@ -14349,7 +14449,7 @@ function heroCtaCard(c){
       fv.innerHTML='<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"var(--accent)\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polygon points=\"12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2\"/></svg>'; fv.addEventListener('click',function(){ if(currentSiteId) lplToggleFav(currentSiteId); });
       bar.appendChild(fv);
     }
-    if(currentRole==='super' && !$('btn-newsite')){
+    if(_lplCanCreateSite() && !$('btn-newsite')){
       const nb=document.createElement('button'); nb.className='btn ghost'; nb.id='btn-newsite';
       nb.textContent='+ New Site'; nb.addEventListener('click',openCreateSite);
       bar.appendChild(nb);
