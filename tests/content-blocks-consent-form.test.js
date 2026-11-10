@@ -214,7 +214,7 @@ test('consent form: MM/YYYY boxes keep their slash and are checked', () => {
   const ui = read('assets/lp-consent.js');
   assert.match(ui, /data-mask="mm\/yyyy" inputmode="numeric" maxlength="7"/);
   assert.match(ui, /function maskMonthYear\(/);
-  assert.match(read('assets/lp-layouts.js'), /lp-consent\.js\?v=5/);
+  assert.match(read('assets/lp-layouts.js'), /lp-consent\.js\?v=6/);
 });
 
 test('consent API: recipient comes from saved config only, nothing is stored', () => {
