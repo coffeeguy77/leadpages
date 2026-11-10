@@ -217,6 +217,19 @@ test('consent form: MM/YYYY boxes keep their slash and are checked', () => {
   assert.match(read('assets/lp-layouts.js'), /lp-consent\.js\?v=6/);
 });
 
+test('blocks: popup — hidden dialog opened by a #popup-id link', () => {
+  const R = blocksRenderer();
+  const out = R.render(':::cols\n:::col\nSee [work history](#popup-work-history).\n:::\n:::\n:::popup id=work-history title="Work History"\nIntro **text**.\n\n- One\n- Two\n:::');
+  assert.match(out, /<a href="#popup-work-history">work history<\/a>/);
+  assert.match(out, /<dialog class="lpb-pop" id="lpb-pop-work-history" aria-labelledby="lpb-pop-work-history-t">/);
+  assert.match(out, /<h2 class="lpb-pop-t" id="lpb-pop-work-history-t">Work History<\/h2>/);
+  assert.match(out, /data-lpb-pop-close aria-label="Close"/);
+  assert.match(out, /<strong>text<\/strong>/);
+  assert.doesNotMatch(R.render(':::popup title="No id"\nx\n:::'), /dialog/);   // needs an id
+  assert.match(js, /function lpbPopups\(\)/);
+  assert.match(css, /\.lpb-pop::backdrop/);
+});
+
 test('consent API: recipient comes from saved config only, nothing is stored', () => {
   const api = read('api/consent-form.js');
   assert.match(api, /Recipient comes only from the saved site config, never from the request\./);

@@ -748,6 +748,7 @@
     if (blocksOn) {
       node.insertAdjacentHTML('afterbegin', '<div class="wrap tbk-wrap" data-lpl="tbk">' + lpbRender(TB.blocks || '') + '</div>');
       lpbEnquiry(node);
+      lpbPopups();
       return;
     }
     var bleed = TB.layout === 'bleed';
@@ -2543,6 +2544,14 @@
         var src = bgUrl(a.src);
         return src ? '<figure class="lpb-img' + (a.phone === 'hide' ? ' lpb-img-nophone' : '') + (a.frame === 'none' ? ' lpb-img-plain' : '') + '"' + (txt(a.ratio) ? ' style="aspect-ratio:' + esc(a.ratio.replace(':', '/')) + '"' : '') + '><img src="' + esc(src) + '" alt="' + esc(a.alt || '') + '" loading="lazy"></figure>' : '';
       case 'consent': return '<div class="lpb-consent" data-lp-consent></div>';
+      case 'popup':
+        // :::popup id=x title="..." — hidden until a link to #popup-x is clicked (lpbPopups).
+        var pid = txt(a.id).replace(/[^\w-]/g, '');
+        if (!pid) return '';
+        return '<dialog class="lpb-pop" id="lpb-pop-' + pid + '" aria-labelledby="lpb-pop-' + pid + '-t"><div class="lpb-pop-head">' +
+          '<h2 class="lpb-pop-t" id="lpb-pop-' + pid + '-t">' + lpbInline(a.title || a._title || '') + '</h2>' +
+          '<button type="button" class="lpb-pop-x" data-lpb-pop-close aria-label="Close">' + (icon('x') || '&times;') + '</button></div>' +
+          '<div class="lpb-pop-body">' + lpbKids(n) + '</div></dialog>';
       case 'enquiry':
         // Contact form for the site's normal lead inbox (/api/leads: same spam checks, CRM and email).
         return '<form class="lpb-enq" data-lpb-enq novalidate>' + (a._title || a.title ? '<h2 class="lpb-enq-t">' + lpbInline(a.title || a._title) + '</h2>' : '') +
@@ -2619,6 +2628,7 @@
     lpbConsent(C, p);
     lpbEnquiry(art);
     lpbTabs(art);
+    lpbPopups();
   }
   /** Tabs block: click to switch; a #id link (or the page URL's #id) opens that tab. */
   function lpbShowTab(box, id, scroll) {
@@ -2647,6 +2657,35 @@
         if (hit) { e.preventDefault(); try { history.replaceState(null, '', '#' + id); } catch (_h) {} } }
     });
     window.addEventListener('hashchange', function () { lpbHashTab(true); });
+  }
+
+  /** Pop-ups: a link to #popup-<id> opens the :::popup block with that id. Close: ×, backdrop, Esc. */
+  function lpbPopups() {
+    if (lpbPopups.__bound) return; lpbPopups.__bound = true;
+    var de = document.documentElement;
+    function close(d) { try { d.close(); } catch (_c) { d.removeAttribute('open'); } }
+    document.addEventListener('click', function (e) {
+      var a = e.target.closest && e.target.closest('a[href^="#popup-"]');
+      if (a) {
+        var d = document.getElementById('lpb-pop-' + a.getAttribute('href').slice(7).replace(/[^\w-]/g, ''));
+        if (!d) return;
+        e.preventDefault();
+        if (typeof d.showModal === 'function') { try { d.showModal(); } catch (_m) { d.setAttribute('open', ''); } } else d.setAttribute('open', '');
+        de.classList.add('lpb-pop-open');
+        var x = d.querySelector('[data-lpb-pop-close]'); if (x) try { x.focus({ preventScroll: true }); } catch (_f) {}
+        return;
+      }
+      var c = e.target.closest && e.target.closest('[data-lpb-pop-close]');
+      if (c) { close(c.closest('dialog')); return; }
+      if (e.target && e.target.classList && e.target.classList.contains('lpb-pop')) {
+        // A click on the backdrop (outside the box) closes it.
+        var r = e.target.getBoundingClientRect();
+        if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) close(e.target);
+      }
+    });
+    document.addEventListener('close', function (e) {
+      if (e.target && e.target.classList && e.target.classList.contains('lpb-pop') && !document.querySelector('dialog.lpb-pop[open]')) de.classList.remove('lpb-pop-open');
+    }, true);
   }
 
   /* ---------- Dark section colours, footer text columns, plain photo cards, serif quotes ---------- */

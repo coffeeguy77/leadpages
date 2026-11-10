@@ -2057,3 +2057,20 @@ html.lpl-nav-bar header.site .head-nav .hn-link.lpl-nav-on::after,html.lpl-nav-b
 /* Photo cards: a zoomed service photo stays inside its frame; "contain" photos sit on a soft tint */
 section[data-sec="services"] .svp-media{overflow:hidden}
 section[data-sec="services"] .svp-media img[style*="contain"]{background:color-mix(in srgb,var(--ink,#1a2230) 4%,transparent)}
+
+/* Pop-up block (:::popup id=x title="..."), opened by a link to #popup-x */
+.lpb-pop{border:0;padding:0;margin:auto;width:min(760px,calc(100vw - 32px));max-width:none;max-height:calc(100dvh - 48px);border-radius:18px;background:#fff;color:var(--ink,#0a2248);box-shadow:0 30px 80px rgba(10,34,72,.35);overflow:hidden;--lpb-ink:var(--ink,#0a2248);--lpb-blue:var(--hivis,#0b5da8);--lpb-soft:color-mix(in srgb,var(--lpb-blue) 5%,#fff);--lpb-line:color-mix(in srgb,var(--lpb-blue) 16%,#fff);--lpb-muted:#4a5668}
+.lpb-pop[open]{display:flex;flex-direction:column;animation:lpbPopIn .22s ease-out}
+.lpb-pop::backdrop{background:rgba(6,20,45,.55);backdrop-filter:blur(3px)}
+@keyframes lpbPopIn{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
+.lpb-pop-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:22px 26px 16px;border-bottom:1px solid var(--lpb-line);background:linear-gradient(135deg,color-mix(in srgb,var(--lpb-blue) 3%,#fff),color-mix(in srgb,var(--lpb-blue) 9%,#fff))}
+.lpb-pop .lpb-pop-t{margin:0;font-size:clamp(20px,2.3vw,26px);line-height:1.25;color:var(--lpb-ink)}
+.lpb-pop-x{flex:0 0 auto;width:40px;height:40px;border-radius:50%;border:1px solid var(--lpb-line);background:#fff;color:var(--lpb-ink);display:grid;place-items:center;cursor:pointer;font-size:22px;line-height:1;padding:0}
+.lpb-pop-x:hover{background:var(--lpb-soft)}
+.lpb-pop-x svg{width:20px;height:20px}
+.lpb-pop-body{padding:22px 26px 26px;overflow:auto;font-size:15.5px;line-height:1.65;color:var(--lpb-ink);display:flex;flex-direction:column;gap:18px}
+.lpb-pop-body p{margin:0}
+.lpb-pop-body ul{margin:0;padding-left:20px}.lpb-pop-body li{margin:0 0 6px}
+.lpb-pop-body h4{margin:4px 0 -6px}
+html.lpb-pop-open{overflow:hidden}
+@media(max-width:640px){.lpb-pop{width:calc(100vw - 20px);max-height:calc(100dvh - 24px);border-radius:14px}.lpb-pop-head{padding:16px 16px 12px}.lpb-pop-body{padding:16px 16px 20px;font-size:15px}}
