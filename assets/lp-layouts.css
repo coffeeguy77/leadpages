@@ -2073,4 +2073,7 @@ section[data-sec="services"] .svp-media img[style*="contain"]{background:color-m
 .lpb-pop-body ul{margin:0;padding-left:20px}.lpb-pop-body li{margin:0 0 6px}
 .lpb-pop-body h4{margin:4px 0 -6px}
 html.lpb-pop-open{overflow:hidden}
-@media(max-width:640px){.lpb-pop{width:calc(100vw - 20px);max-height:calc(100dvh - 24px);border-radius:14px}.lpb-pop-head{padding:16px 16px 12px}.lpb-pop-body{padding:16px 16px 20px;font-size:15px}}
+/* The page may be zoomed (Text size): size the pop-up in screen pixels so it always fits. */
+html[data-lp-zoom] .lpb-pop{--lpb-z:calc(var(--lp-zoom,1) * var(--lp-visitor-zoom,1));width:min(760px,calc((100vw - 32px) / var(--lpb-z)));max-height:calc((100dvh - 48px) / var(--lpb-z))}
+@media(max-width:760px){html[data-lp-zoom] .lpb-pop{--lpb-z:calc(var(--lp-zoom-m,1) * var(--lp-visitor-zoom,1))}}
+@media(max-width:640px){.lpb-pop{width:calc(100vw - 20px);max-height:calc(100dvh - 24px);border-radius:14px}html[data-lp-zoom] .lpb-pop{width:calc((100vw - 20px) / var(--lpb-z));max-height:calc((100dvh - 24px) / var(--lpb-z))}.lpb-pop-head{padding:16px 16px 12px}.lpb-pop-body{padding:16px 16px 20px;font-size:15px}}
