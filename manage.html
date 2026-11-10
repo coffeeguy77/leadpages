@@ -5327,6 +5327,22 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
    * Colour shown in list-editor swatches when the field is blank —
    * mirrors CSS defaults (hivis CTA, white hero text, steel ink, etc.).
    */
+  /* Tick-boxes show what the site actually draws when nothing has been saved yet (same defaults as the renderer):
+     button "fill" is on unless switched off; a secondary button with neither set is drawn as an outline. */
+  function _leChkValue(k, it){
+    it=it||{}; var v=it[k];
+    if(v===true||v===false) return v;
+    var m=/^(primary|secondary)Cta(Fill|Outline)$/.exec(String(k||''));
+    if(!m) return false;
+    var bare=(m[1]==='secondary' && it.secondaryCtaFill==null && it.secondaryCtaOutline==null);
+    if(m[2]==='Fill') return !bare;
+    return bare;
+  }
+  /* Picking a button colour switches that button's fill on, so the colour shows straight away. */
+  function _leAutoFill(row, k){
+    var m=/^(primary|secondary)CtaBg$/.exec(String(k||'')); if(!m||!row) return;
+    var fb=row.querySelector('.le-chk[data-k="'+m[1]+'CtaFill"]'); if(fb && !fb.checked) fb.checked=true;
+  }
   function listColorDefault(key, c){
     var t=siteThemeColors(c);
     var map={
@@ -8044,7 +8060,7 @@ function heroCtaCard(c){
           +'</span>';
         return '<div class="le-row" draggable="true" data-idx="'+i+'" style="border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px;background:#fff;"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;flex:1;min-width:0;">'+sortBtns+'<label style="display:flex;gap:7px;align-items:center;font-weight:600;font-size:13px;flex:none;"><input type="checkbox" class="le-on"> Shown</label>'+rowHead+'</div><button type="button" class="btn ghost le-del" style="padding:4px 9px;font-size:13px;flex:none;">Remove</button></div><div class="le-fields">'+inner+'</div></div>';
       }).join('')+'<button type="button" class="btn ghost le-add" style="margin-top:2px;">+ '+sc.addLabel+'</button>';
-      host.querySelectorAll('.le-row').forEach(function(row,i){ var it=items[i]||{}; row.querySelector('.le-on').checked=(it.on!==false); row.querySelectorAll('[data-k]').forEach(function(el){ if(el.classList.contains('le-chk')){ el.checked=it[el.getAttribute('data-k')]===true; return; } var v=it[el.getAttribute('data-k')]; el.value=(v!=null?v:''); }); row.querySelectorAll('.le-radio').forEach(function(rg){ var rk=rg.getAttribute('data-radiok'); var rv=it[rk]; var rds=rg.querySelectorAll('input[type=radio]'); var mt=false; rds.forEach(function(rd){ if(String(rd.value)===String(rv)){ rd.checked=true; mt=true; } }); if(!mt&&rds[0]) rds[0].checked=true; }); row.querySelectorAll('.le-color').forEach(function(ci){ var _k=ci.getAttribute('data-colorfor'); var _tv=it[_k]; ci.value=listColorSwatchValue(_tv,_k,c); }); row.querySelectorAll('.le-range').forEach(function(rg){ var _rk=rg.getAttribute('data-k'); var _rv=it[_rk]; rg.value=(_rv!=null&&_rv!=='')?_rv:(rg.getAttribute('data-def')||'100'); var _lb=row.querySelector('.le-rangeval[data-rk="'+_rk+'"]'); if(_lb) _lb.textContent=rg.value+(rg.getAttribute('data-suf')||''); }); refreshIconBtns(row); });
+      host.querySelectorAll('.le-row').forEach(function(row,i){ var it=items[i]||{}; row.querySelector('.le-on').checked=(it.on!==false); row.querySelectorAll('[data-k]').forEach(function(el){ if(el.classList.contains('le-chk')){ el.checked=_leChkValue(el.getAttribute('data-k'),it); return; } var v=it[el.getAttribute('data-k')]; el.value=(v!=null?v:''); }); row.querySelectorAll('.le-radio').forEach(function(rg){ var rk=rg.getAttribute('data-radiok'); var rv=it[rk]; var rds=rg.querySelectorAll('input[type=radio]'); var mt=false; rds.forEach(function(rd){ if(String(rd.value)===String(rv)){ rd.checked=true; mt=true; } }); if(!mt&&rds[0]) rds[0].checked=true; }); row.querySelectorAll('.le-color').forEach(function(ci){ var _k=ci.getAttribute('data-colorfor'); var _tv=it[_k]; ci.value=listColorSwatchValue(_tv,_k,c); }); row.querySelectorAll('.le-range').forEach(function(rg){ var _rk=rg.getAttribute('data-k'); var _rv=it[_rk]; rg.value=(_rv!=null&&_rv!=='')?_rv:(rg.getAttribute('data-def')||'100'); var _lb=row.querySelector('.le-rangeval[data-rk="'+_rk+'"]'); if(_lb) _lb.textContent=rg.value+(rg.getAttribute('data-suf')||''); }); refreshIconBtns(row); });
       if(sk==='trustBar') wireTrustBarLinks(host,c);
     }
     function refreshRowHeaders(){ if(!sc.rowHeader) return; host.querySelectorAll('.le-row').forEach(function(row,i){ var wrap=row.querySelector('.le-row-head'); if(wrap) wrap.innerHTML=sc.rowHeader(items[i]||{},i); }); }
@@ -8055,6 +8071,7 @@ function heroCtaCard(c){
         var _k=e.target.getAttribute('data-colorfor');
         var _tx=e.target.closest('.le-row').querySelector('input[type=text][data-k="'+_k+'"]');
         if(_tx) _tx.value=e.target.value;
+        _leAutoFill(e.target.closest('.le-row'),_k);
         collect(false); return;
       }
       if(e.target.classList.contains('le-range')){
@@ -8067,6 +8084,7 @@ function heroCtaCard(c){
         var _tk=e.target.getAttribute('data-k');
         var _ci=e.target.closest('.le-row').querySelector('.le-color[data-colorfor="'+_tk+'"]');
         if(_ci) _ci.value=listColorSwatchValue(e.target.value,_tk,c);
+        if(String(e.target.value||'').trim()) _leAutoFill(e.target.closest('.le-row'),_tk);
         collect(false); return;
       }
       if(e.target.matches('textarea,select')) collect(false);
@@ -8126,7 +8144,7 @@ function heroCtaCard(c){
       }
       if(e.target.classList.contains('cw-pdf-copy')){ var _cb=e.target,_cu=((_cb.closest('.cw-row').querySelector('input[type=text][data-k]')||{}).value||'').trim(); if(!/^https?:\/\//i.test(_cu)){ toast('Paste a link to a PDF first'); return; } if(/^https:\/\/res\.cloudinary\.com\//i.test(_cu)){ toast('This PDF is already in storage'); return; } cwBusy(_cb,true); lePdfSave(_cb,_cu).then(function(){ cwBusy(_cb,false); }); return; }
       if(e.target.classList.contains('cw-pdf-view')){ var _pu=(e.target.closest('.cw-row').querySelector('input[type=text][data-k]')||{}).value||''; if(/^https?:\/\//i.test(_pu)) window.open(_pu,'_blank','noopener'); else toast('Add or upload a PDF first'); return; }
-      if(e.target.classList.contains('cw-up')){ var _b=e.target,_rw=_b.closest('.cw-row'),_tx=_rw.querySelector('input[type=text][data-k]'),_k=_tx.getAttribute('data-k'),_le=_b.closest('.le-row'),_pd=_le.querySelector('[data-k="'+_k+'_pid"]'),_pv=_pd?_pd.value:''; cwPick(function(file){ cwBusy(_b,true); cwUpload(file,[sc.secId,_k]).then(function(r){ _tx.value=r.url; if(_pd)_pd.value=r.publicId; collect(false); if(_pv&&_pv!==r.publicId) cwDelete(_pv); }).catch(function(err){ toast('Upload failed: '+((err&&err.message)||err)); }).then(function(){ cwBusy(_b,false); }); }); } else if(e.target.classList.contains('cw-clr')){ var _b2=e.target,_rw2=_b2.closest('.cw-row'),_tx2=_rw2.querySelector('input[type=text][data-k]'),_k2=_tx2.getAttribute('data-k'),_le2=_b2.closest('.le-row'),_pd2=_le2.querySelector('[data-k="'+_k2+'_pid"]'); if(_pd2&&_pd2.value){ cwDelete(_pd2.value); _pd2.value=''; } _tx2.value=''; collect(false); } else if(e.target.classList.contains('le-eyedrop')){ var _k=e.target.getAttribute('data-colorfor'); var _row=e.target.closest('.le-row'); var _tx=_row.querySelector('input[type=text][data-k="'+_k+'"]'); var _ci=_row.querySelector('.le-color[data-colorfor="'+_k+'"]'); if(window.EyeDropper){ try{ new window.EyeDropper().open().then(function(r){ if(r&&r.sRGBHex){ if(_tx)_tx.value=r.sRGBHex; if(_ci)_ci.value=r.sRGBHex; collect(false); } }).catch(function(){}); }catch(_e){ if(_ci)_ci.click(); } } else if(_ci){ _ci.click(); } } else if(e.target.classList.contains('le-del')){ var __r=e.target.closest('.le-row'); if(__r) __r.querySelectorAll('[data-k$="_pid"]').forEach(function(p){ if(p.value) cwDelete(p.value); }); var i=+__r.getAttribute('data-idx'); items.splice(i,1); setList(c,sk,items); render(); } else if(e.target.classList.contains('le-add')){ items=items.concat([Object.assign({on:true},sc.defaultItem)]); setList(c,sk,items); render(); }
+      if(e.target.classList.contains('cw-up')){ var _b=e.target,_rw=_b.closest('.cw-row'),_tx=_rw.querySelector('input[type=text][data-k]'),_k=_tx.getAttribute('data-k'),_le=_b.closest('.le-row'),_pd=_le.querySelector('[data-k="'+_k+'_pid"]'),_pv=_pd?_pd.value:''; cwPick(function(file){ cwBusy(_b,true); cwUpload(file,[sc.secId,_k]).then(function(r){ _tx.value=r.url; if(_pd)_pd.value=r.publicId; collect(false); if(_pv&&_pv!==r.publicId) cwDelete(_pv); }).catch(function(err){ toast('Upload failed: '+((err&&err.message)||err)); }).then(function(){ cwBusy(_b,false); }); }); } else if(e.target.classList.contains('cw-clr')){ var _b2=e.target,_rw2=_b2.closest('.cw-row'),_tx2=_rw2.querySelector('input[type=text][data-k]'),_k2=_tx2.getAttribute('data-k'),_le2=_b2.closest('.le-row'),_pd2=_le2.querySelector('[data-k="'+_k2+'_pid"]'); if(_pd2&&_pd2.value){ cwDelete(_pd2.value); _pd2.value=''; } _tx2.value=''; collect(false); } else if(e.target.classList.contains('le-eyedrop')){ var _k=e.target.getAttribute('data-colorfor'); var _row=e.target.closest('.le-row'); var _tx=_row.querySelector('input[type=text][data-k="'+_k+'"]'); var _ci=_row.querySelector('.le-color[data-colorfor="'+_k+'"]'); if(window.EyeDropper){ try{ new window.EyeDropper().open().then(function(r){ if(r&&r.sRGBHex){ if(_tx)_tx.value=r.sRGBHex; if(_ci)_ci.value=r.sRGBHex; _leAutoFill(_row,_k); collect(false); } }).catch(function(){}); }catch(_e){ if(_ci)_ci.click(); } } else if(_ci){ _ci.click(); } } else if(e.target.classList.contains('le-del')){ var __r=e.target.closest('.le-row'); if(__r) __r.querySelectorAll('[data-k$="_pid"]').forEach(function(p){ if(p.value) cwDelete(p.value); }); var i=+__r.getAttribute('data-idx'); items.splice(i,1); setList(c,sk,items); render(); } else if(e.target.classList.contains('le-add')){ items=items.concat([Object.assign({on:true},sc.defaultItem)]); setList(c,sk,items); render(); }
     });
   }
   function wireSuburbs(c){
