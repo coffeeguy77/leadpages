@@ -23,6 +23,15 @@ Minimum topic docs for common work:
 - Standards: `docs/12-CODING-STANDARDS.md` (includes theme-default colour picker rule for new apps)
 - Theme / Branding colours: `docs/features/Theme Engine.md`
 - **AI / Brain:** `docs/AI/00-STATUS.md` then `docs/features/LeadPages Brain.md`
+- **Help Centre (customer guides):** `docs/features/Help Centre.md` — required when adding marketplace apps
+
+### Help Centre rules (do not skip)
+
+- Customer Help Centre: `assets/help/catalogue.json` + `assets/lp-help-centre.js` (`window.LPHelp.open(sectionKey)`).
+- Every new marketplace `section_key` must get a catalogue topic (`kind: app`, zone, steps, related includes `support-ticket`).
+- Wire **Need help?** via `secCard` (automatic) or `LPHelp.needHelpButton(sectionKey)`.
+- Paid human help: `POST /api/help/ticket` + Support chat — do not invent a parallel ticket UI.
+- Full rules: `docs/features/Help Centre.md`.
 
 Use `docs/INDEX.md` § **Which document to read by task** to pick the right topic docs before step 7.
 
