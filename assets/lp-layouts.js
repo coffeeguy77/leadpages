@@ -2372,6 +2372,78 @@
     a._title = txt(rest);
     return a;
   }
+  /* ---------- Visual page editing (editor preview only; visitors never turn this on) ----------
+   * While the editor sets window.__lpbEdit, every piece of page text is wrapped in
+   * <span class="lpb-ed" data-lpb-at data-lpb-len> naming the exact characters of the page
+   * code it came from, so the editor can let people type over it and write the change back
+   * to that spot without touching the layout code around it. A string is matched to its
+   * n-th whole-field occurrence (a field = what sits between line start, "|", a list/heading
+   * marker or an attribute quote and line end, "|" or a quote), in the order it is drawn. */
+  var LPB_MAP = null;
+  function lpbMapFind(s) {
+    var M = LPB_MAP; s = String(s == null ? '' : s);
+    if (!M || !txt(s)) return -1;
+    var src = M.src, k = M.seen[s] || 0, n = 0, pos, from = 0;
+    while ((pos = src.indexOf(s, from)) >= 0) {
+      from = pos + 1;
+      var ls = src.lastIndexOf('\n', pos - 1) + 1, le = src.indexOf('\n', pos + s.length); if (le < 0) le = src.length;
+      if (src.indexOf('\n', pos) >= 0 && src.indexOf('\n', pos) < pos + s.length) continue;
+      var pre = src.slice(ls, pos), post = src.slice(pos + s.length, le);
+      var preT = pre.replace(/\s+$/, ''), postT = post.replace(/^\s+/, '');
+      var attr = /=["']$/.test(pre);
+      var okPre = attr || preT === '' || /(^#{1,4}|^[-*]|^\d+[.)]|\||^\?{1,3}|^:::\s*[a-z][\w-]*)$/i.test(preT) || /^[ \t]{2,}[-*]$/.test(pre.replace(/\s$/, ''));
+      var okPost = postT === '' || (postT.charAt(0) === '|' && !attr) || (attr && /^["']/.test(post));
+      if (!okPre || !okPost) continue;
+      if (n === k) { M.seen[s] = k + 1; return pos; }
+      n++;
+    }
+    return -1;
+  }
+  function lpbMapWrap(s, html) {
+    var at = lpbMapFind(s);
+    if (at < 0) return html;
+    return '<span class="lpb-ed" data-lpb-at="' + at + '" data-lpb-len="' + String(s).length + '">' + html + '</span>';
+  }
+  /** The plain-text ("rich") page format, drawn like the template draws it, with every line mapped. */
+  function lpRichMapped(src) {
+    var lines = String(src || '').replace(/\r/g, '').split('\n'), out = '', i = 0, para = [];
+    function flushP() { if (para.length) { out += '<p>' + para.join(' ') + '</p>'; para = []; } }
+    function cells(r) { return r.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map(function (c) { return txt(c); }); }
+    while (i < lines.length) {
+      var l = lines[i], m;
+      if (!txt(l)) { flushP(); i++; continue; }
+      if ((m = /^(#{1,3}) (.*)$/.exec(l))) { flushP(); var lv = m[1].length === 3 ? 3 : 2; out += '<h' + lv + '>' + lpbInline(m[2]) + '</h' + lv + '>'; i++; continue; }
+      if (/\|/.test(l) && i + 1 < lines.length && /^[ \t]*\|?[ \t]*:?-{3,}/.test(lines[i + 1])) {
+        flushP(); var head = cells(l), rows = []; i += 2;
+        while (i < lines.length && /\|/.test(lines[i]) && txt(lines[i])) { rows.push(cells(lines[i])); i++; }
+        out += '<div class="lp-table"><table><thead><tr>' + head.map(function (c) { return '<th>' + lpbInline(c) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+          rows.map(function (r) { return '<tr>' + r.map(function (c) { return '<td>' + lpbInline(c) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></div>';
+        continue;
+      }
+      if (/^\?\?\?\s+/.test(l)) {
+        flushP(); var q = l.replace(/^\?\?\?\s+/, ''), ans = []; i++;
+        while (i < lines.length && !/^\?\?\?\s+/.test(lines[i]) && !/^#{1,3} /.test(lines[i])) { if (txt(lines[i])) ans.push('<p>' + lpbInline(txt(lines[i])) + '</p>'); i++; }
+        out += '<details class="lp-faq" open><summary>' + lpbInline(txt(q)) + '</summary><div class="lp-faq-a">' + ans.join('') + '</div></details>';
+        continue;
+      }
+      if (/^[ \t]{0,1}[-*] /.test(l) || /^[ \t]{2,}[-*] /.test(l)) {
+        flushP(); var ul = '';
+        while (i < lines.length && /^[ \t]*[-*] /.test(lines[i])) {
+          var sub = /^[ \t]{2,}/.test(lines[i]);
+          ul += '<li' + (sub ? ' class="lp-sub"' : '') + '>' + lpbInline(lines[i].replace(/^[ \t]*[-*] /, '')) + '</li>'; i++;
+        }
+        out += '<ul>' + ul + '</ul>'; continue;
+      }
+      if ((m = /^(\d{1,3})\. (.*)$/.exec(l))) {
+        flushP(); var ol = '';
+        while (i < lines.length && (m = /^(\d{1,3})\. (.*)$/.exec(lines[i]))) { ol += '<li class="lp-oli" value="' + m[1] + '">' + lpbInline(m[2]) + '</li>'; i++; }
+        out += '<ol>' + ol + '</ol>'; continue;
+      }
+      para.push(lpbInline(txt(l))); i++;
+    }
+    flushP();
+    return out;
+  }
   var LPB_SOLO = { image: 1, consent: 1 };   // blocks with no content: no closing ":::" needed
   function lpbParse(src) {
     var root = { type: 'root', kids: [] }, stack = [root], buf = [];
@@ -2394,10 +2466,10 @@
     out = out.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, function (_, t, u) {
       var h = hrefOf(u.replace(/&amp;/g, '&'), '#');
       var ext = /^https?:/i.test(h) && h.indexOf(location.host) < 0;
-      return '<a href="' + esc(h) + '"' + (ext ? ' target="_blank" rel="noopener"' : '') + '>' + t + '</a>';
+      return '<a href="' + esc(h) + '"' + (ext ? ' target="_blank" rel="noopener"' : '') + (LPB_MAP ? ' data-lpb-href="' + u + '"' : '') + '>' + t + '</a>';
     });
     out = out.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/(^|[^*\w])\*([^*\n]+)\*(?!\*)/g, '$1<em>$2</em>');
-    return out;
+    return LPB_MAP ? lpbMapWrap(s, out) : out;
   }
   /** Block markdown: headings, lists ("- " ticks when ticks=true), numbered lists, tables, paragraphs. */
   function lpbMd(t, ticks) {
@@ -2463,7 +2535,7 @@
         return '<div class="lpb-panel lpb-t-' + tone + (a.layout === 'side' ? ' lpb-panel-side' : '') + (a.iconStyle === 'circle' ? ' lpb-ic-circle' : '') + '">' +
           (ic ? '<span class="lpb-panel-ic">' + ic + '</span>' : '') + '<div class="lpb-panel-body">' +
           (a._title || a.title || txt(a.price) ? '<div class="lpb-panel-head">' + (a.title || a._title ? '<h3 class="lpb-panel-t">' + lpbInline(a.title || a._title) + '</h3>' : '') +
-            (txt(a.price) ? '<span class="lpb-price"><b>' + esc(a.price) + '</b>' + (txt(a.priceNote) ? '<small>' + esc(a.priceNote) + '</small>' : '') + '</span>' : '') + '</div>' : '') +
+            (txt(a.price) ? '<span class="lpb-price"><b>' + (LPB_MAP ? lpbMapWrap(a.price, esc(a.price)) : esc(a.price)) + '</b>' + (txt(a.priceNote) ? '<small>' + (LPB_MAP ? lpbMapWrap(a.priceNote, esc(a.priceNote)) : esc(a.priceNote)) + '</small>' : '') + '</span>' : '') + '</div>' : '') +
           md + '</div></div>';
       case 'cards':
         var rows = lpbRows(n), cols = Math.max(1, Math.min(6, parseInt(a.cols, 10) || rows.length || 3));
@@ -2620,10 +2692,26 @@
     var art = document.querySelector('#top > section.lp-page');
     if (!art) return;
     art.classList.remove('lp-blocks-wait');
-    if (!p || p.blocks !== true) { art.classList.remove('lp-has-blocks'); return; }
+    var edit = window.__lpbEdit === true;
+    if (!p || p.blocks !== true) {
+      art.classList.remove('lp-has-blocks');
+      // Visual editing of a plain-text page: drawn like the template draws it, every line mapped.
+      if (edit && p && p.rich === true) {
+        var rb = art.querySelector('.lp-body');
+        if (rb) {
+          LPB_MAP = { src: String(p.body || '').replace(/\r/g, ''), seen: {} };
+          var rh; try { rh = lpRichMapped(p.body || ''); } finally { LPB_MAP = null; }
+          if (rb.__lpbSrc !== rh) { rb.innerHTML = rh; rb.__lpbSrc = rh; }
+          try { document.dispatchEvent(new CustomEvent('lpb:edit-render')); } catch (_e) {}
+        }
+      }
+      return;
+    }
     var body = art.querySelector('.lp-body'); if (!body) return;
-    var html = lpbRender(p.body || '');
+    if (edit) LPB_MAP = { src: String(p.body || '').replace(/\r/g, ''), seen: {} };
+    var html; try { html = lpbRender(p.body || ''); } finally { LPB_MAP = null; }
     if (body.__lpbSrc !== html) { body.innerHTML = html; body.__lpbSrc = html; }
+    if (edit) { try { document.dispatchEvent(new CustomEvent('lpb:edit-render')); } catch (_e2) {} }
     art.classList.add('lp-has-blocks');
     lpbConsent(C, p);
     lpbEnquiry(art);

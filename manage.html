@@ -716,6 +716,21 @@ body.lp-standard-mode .lp-preset-strip { display:none!important; }
 #lp-mode-toggle.standard-mode::before { content:"Standard "; }
 .lp-standard-banner { display:none; background:#FEF3C7; color:#92400E; font-size:12px; font-weight:700; padding:4px 14px; border-radius:999px; }
 body.lp-standard-mode .lp-standard-banner { display:inline-block; }
+/* Page content: Visual / Code switch (assets/lp-visual-editor.js) */
+.lpv-bar{display:flex;flex-direction:column;gap:10px;margin:0 0 12px}
+.lpv-bar[hidden]{display:none}
+.lpv-seg{display:inline-flex;align-self:flex-start;padding:3px;border:1px solid var(--line);border-radius:10px;background:var(--panel-soft,var(--panel))}
+.lpv-seg button{all:unset;box-sizing:border-box;cursor:pointer;min-height:36px;padding:0 18px;border-radius:7px;font:600 14px/36px var(--font-ui,inherit);color:var(--ink-soft)}
+.lpv-seg button[hidden]{display:none}
+.lpv-seg button.on{background:var(--accent);color:var(--accent-text,#fff)}
+.lpv-seg button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lpv-seg button[disabled]{opacity:.45;cursor:default}
+.lpv-hint{margin:0}
+.lpv-add[hidden],.lpv-add-menu[hidden],.lpv-super[hidden]{display:none}
+.lpv-add-menu{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.lpv-super{border:1px dashed var(--line-strong,var(--line));border-radius:10px;padding:10px 12px;background:var(--panel)}
+.lpv-super label{display:block;font-weight:600;margin:0 0 6px;color:var(--ink)}
+.lpv-super select{width:100%;max-width:420px}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>window.__LP={url:'https://fgzkuwhulgnewcazirvy.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZnemt1d2h1bGduZXdjYXppcnZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIyMDU5MDMsImV4cCI6MjEwNzc4MTkwM30._4cATBGiAbB9L4RMUBsvaXgaep74fmN8HKAWgWv0Cpg'};</script>
@@ -832,6 +847,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 <script src="/assets/lp-logo.js"></script>
 <script src="/assets/lp-fonts.js?v=6"></script>
 <script src="/assets/lp-admin-shell.js"></script>
+<script src="/assets/lp-visual-editor.js?v=1"></script>
 <script src="/assets/lp-ui-shell.js?v=2"></script>
 <script src="/assets/lp-messages-embed.js?v=support-new-1"></script>
 <script src="/assets/lp-mobile-menu-builder.js?v=seo-nav-1"></script>
@@ -1167,7 +1183,22 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       </div>
 
       <div class="apgroup-h">Page content</div>
-      <div class="f"><textarea id="lp-body" class="tin mono" rows="12" placeholder="Write your page content here. Simple Markdown supported: ## Subheading, **bold**, - bullet."></textarea></div>
+      <div class="lpv-bar" id="lpv-bar" hidden>
+        <div class="lpv-seg" role="group" aria-label="How to edit the page content">
+          <button type="button" id="lpv-visual" class="on" aria-pressed="true">Visual</button>
+          <button type="button" id="lpv-code" aria-pressed="false">Code</button>
+        </div>
+        <p class="hint lpv-hint" id="lpv-hint"></p>
+        <div class="lpv-add" id="lpv-add" hidden>
+          <button type="button" class="btn ghost sm" id="lpv-add-btn" aria-expanded="false">＋ Add a section at the end</button>
+          <div class="lpv-add-menu" id="lpv-add-menu" hidden></div>
+        </div>
+        <div class="lpv-super" id="lpv-super" hidden>
+          <label for="lpv-level">Page editor for this site's users <span class="seo-tip">Super admin only. Simple: change text and Bold/Italic/Link on the page. Advanced: also move, copy, delete and add items and sections, plus the Code view. Super admins always get Advanced.</span></label>
+          <select id="lpv-level" class="apsel"><option value="advanced">Advanced — text, items, sections and code</option><option value="simple">Simple — text and formatting only</option></select>
+        </div>
+      </div>
+      <div class="f" id="lp-body-wrap"><textarea id="lp-body" class="tin mono" rows="12" placeholder="Write your page content here. Simple Markdown supported: ## Subheading, **bold**, - bullet."></textarea></div>
 
       <div class="lp-approve" id="lp-approve" hidden>
         <div class="lp-ap-h">AI draft ready — review before it fills SEO fields, hero slider, quote form, and Marketplace FAQ (Unique)</div>
@@ -2499,7 +2530,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   function previewLoad(){
     var fr=lpFrame(); if(!fr) return;
     lpPrevReady=false; lpPrevSlug=previewTarget();
-    fr.onload=function(){ lpPrevReady=true; try{ lpPreviewShowPage(); }catch(_sp){} previewLayout(); _lpInPrevLoad=true; try{ previewApply(curAppr()); }finally{ _lpInPrevLoad=false; } lpPreviewApplyChromeHide(); setTimeout(lpPreviewFitFrameHeight, 0); setTimeout(lpPreviewFitFrameHeight, 350); };
+    fr.onload=function(){ lpPrevReady=true; try{ lpPreviewShowPage(); }catch(_sp){} try{ if(window.LPVisual&&lpCur) LPVisual.frameReady(); }catch(_lpv){} previewLayout(); _lpInPrevLoad=true; try{ previewApply(curAppr()); }finally{ _lpInPrevLoad=false; } lpPreviewApplyChromeHide(); setTimeout(lpPreviewFitFrameHeight, 0); setTimeout(lpPreviewFitFrameHeight, 350); };
     fr.src='/'+lpPrevSlug+'?preview='+Date.now()+previewPageQuery();
   }
   function previewDock(){
@@ -3822,7 +3853,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       renderSeoPages();
       toast('Draft saved \u2014 click Publish Live Site to make it live');
     });
-    $('lp-close').addEventListener('click',function(){ $('lp-editor').hidden=true; lpCur=null; lpPageEditKey=null; renderSeoPages(); });
+    $('lp-close').addEventListener('click',function(){ try{ if(window.LPVisual) LPVisual.pageClosed(); }catch(_lpv){} $('lp-editor').hidden=true; lpCur=null; lpPageEditKey=null; renderSeoPages(); });
     $('lp-del').addEventListener('click',async function(){
       if(!lpCur) return;
       if(!confirm('Delete this landing page? It will disappear from Campaign Builder after save.')) return;
@@ -3832,6 +3863,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       data.pages=data.pages.filter(function(x){ return x.id!==lpCur.id; });
       if(slug) lpSyncNavMenu({show:false, slug:slug});
       persist();
+      try{ if(window.LPVisual) LPVisual.pageClosed(); }catch(_lpv){}
       $('lp-editor').hidden=true;
       lpCur=null;
       renderSeoPages();
@@ -4160,7 +4192,22 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     lpNavStateSave({view:'landing', lpPageId:id});
     lpxHead(); lpxUpdateCard(lpCur); lpxMarkActive();
     try{$('lp-editor').scrollIntoView({behavior:'smooth',block:'start'});}catch(e){}
+    try{ if(window.LPVisual) LPVisual.pageOpened(); }catch(_lpv){}
   }
+  /* Visual page editor (assets/lp-visual-editor.js) talks to the editor through this. */
+  function lpEditorLevel(){ if(currentRole==='super') return 'advanced'; return (data&&data.pageEditor==='simple')?'simple':'advanced'; }
+  window.LPVisualHost={
+    page:function(){ return lpCur; },
+    frame:function(){ return lpFrame(); },
+    level:lpEditorLevel,
+    isSuper:function(){ return currentRole==='super'; },
+    siteLevel:function(){ return (data&&data.pageEditor==='simple')?'simple':'advanced'; },
+    setSiteLevel:function(v){ if(!data) return; if(v==='simple') data.pageEditor='simple'; else delete data.pageEditor; persist(); lpAutosave(); toast(v==='simple'?'This site\u2019s users now get the Simple page editor.':'This site\u2019s users now get the Advanced page editor.'); },
+    setBody:function(v,o){ if(!lpCur) return; lpCur.body=v; var ta=$('lp-body'); if(ta) ta.value=v; lpEnsurePageLayoutOrder(lpCur); persist(); lpAutosave(); if(o&&o.history) lpPush(v); if(o&&o.redraw) lpPagePreviewReload(); },
+    redraw:function(){ lpPagePreviewReload(); },
+    openPreview:function(){ if(!document.body.classList.contains('lp-prev-open')) previewOpen(); else lpPagePreviewReload(); },
+    toast:function(m,k){ toast(m,k); }
+  };
   function mdToHtml(t){
     var s=esc(t);
     s=s.replace(/^### (.*)$/gm,'<h3>$1</h3>').replace(/^## (.*)$/gm,'<h2>$1</h2>').replace(/^# (.*)$/gm,'<h2>$1</h2>')
