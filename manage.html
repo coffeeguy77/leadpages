@@ -44,7 +44,7 @@
 <link rel="stylesheet" href="/assets/lp-themes.css?v=editor-chips-3">
 <link rel="stylesheet" href="/assets/lp-ui.css?v=2">
 <link rel="stylesheet" href="/assets/lp-messages-embed.css">
-<link rel="stylesheet" href="/assets/lp-help-centre.css?v=1">
+<link rel="stylesheet" href="/assets/lp-help-centre.css?v=2">
 <link rel="stylesheet" href="/assets/lp-admin-responsive.css?v=hero-editor-mobile-1">
 <link rel="stylesheet" href="/assets/lp-quote-builder.css?v=oq-portal-style-1">
 <style>
@@ -835,7 +835,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 <script src="/assets/lp-admin-shell.js"></script>
 <script src="/assets/lp-ui-shell.js?v=2"></script>
 <script src="/assets/lp-messages-embed.js?v=support-new-1"></script>
-<script src="/assets/lp-help-centre.js?v=1"></script>
+<script src="/assets/lp-help-centre.js?v=2"></script>
 <script src="/assets/lp-mobile-menu-builder.js?v=seo-nav-1"></script>
 <script src="/assets/lp-trade-picker.js"></script>
 <script src="/assets/ai-website-team.js?v=forge-landing-1"></script>
@@ -14617,7 +14617,7 @@ function heroCtaCard(c){
     mv('lpc-scope', tools);
     if(!$('lpc-backups')){ var bk=document.createElement('button'); bk.className='btn ghost lp-drawer-phone-hide'; bk.id='lpc-backups'; bk.type='button'; bk.textContent='Backups'; bk.addEventListener('click',function(){ if(typeof lpBkOpen==='function') lpBkOpen(); }); tools.appendChild(bk); }
     mv('lpc-backups', tools);
-    if(!$('lpc-help')){ var hb=document.createElement('button'); hb.className='btn'; hb.id='lpc-help'; hb.type='button'; hb.textContent='Help'; hb.title='Help Centre — guides for every app'; hb.addEventListener('click',function(){ if(window.LPHelp) LPHelp.open('home'); else location.href='/help'; }); tools.appendChild(hb); }
+    if(!$('lpc-help')){ var hb=document.createElement('button'); hb.className='btn'; hb.id='lpc-help'; hb.type='button'; hb.textContent='Help'; hb.title='Help Centre — press / to search'; hb.addEventListener('click',function(){ if(window.LPHelp) LPHelp.open('home'); else location.href='/help'; }); tools.appendChild(hb); }
     mv('lpc-help', tools);
     if(!$('lpc-image-library')){ var il=document.createElement('button'); il.className='btn ghost'; il.id='lpc-image-library'; il.type='button'; il.textContent='Image library'; il.title='Every image uploaded for this site'; il.addEventListener('click',function(){ if(typeof cwLibOpen==='function') cwLibOpen(); }); tools.appendChild(il); }
     mv('lpc-image-library', tools);

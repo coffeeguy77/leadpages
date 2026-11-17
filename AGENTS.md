@@ -27,8 +27,8 @@ Minimum topic docs for common work:
 
 ### Help Centre rules (do not skip)
 
-- Customer Help Centre: `assets/help/catalogue.json` + `assets/lp-help-centre.js` (`window.LPHelp.open(sectionKey)`).
-- Every new marketplace `section_key` must get a catalogue topic (`kind: app`, zone, steps, related includes `support-ticket`).
+- Customer Help Centre: `assets/help/catalogue.json` + `assets/lp-help-centre.js` (`window.LPHelp.open(sectionKey)`, `LPHelp.showMe(sectionKey)`).
+- Every new marketplace `section_key` must get a catalogue topic (`kind: app`, zone, steps, related includes `support-ticket`). Customer jobs use `kind: journey` with a `trail`. Broken-state guides use `kind: fix` with `choices`.
 - Wire **Need help?** via `secCard` (automatic) or `LPHelp.needHelpButton(sectionKey)`.
 - Paid human help: `POST /api/help/ticket` + Support chat — do not invent a parallel ticket UI.
 - Full rules: `docs/features/Help Centre.md`.

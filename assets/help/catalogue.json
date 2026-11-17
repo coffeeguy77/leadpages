@@ -1,8 +1,8 @@
 {
-  "version": 1,
-  "updatedAt": "2026-11-17",
+  "version": 2,
+  "updatedAt": "2026-11-18",
   "title": "LeadPages Help Centre",
-  "intro": "Customer guides for the Manage backend, every marketplace app, and when to request paid human help.",
+  "intro": "Find the job, follow the steps, and jump straight to the control. Every app is covered — and a human can take it from here if you want it done for you.",
   "aliases": {
     "hero-slider": "heroSlider",
     "hero-before-after": "heroBeforeAfter",
@@ -38,6 +38,318 @@
     "top-bar": "emerg"
   },
   "topics": [
+    {
+      "id": "journey-publish",
+      "kind": "journey",
+      "category": "Do this next",
+      "title": "Make an edit go live",
+      "summary": "What you type in Manage is a draft. Visitors only see it after Publish.",
+      "answer": "Edit the page, check Live Preview, then press Publish.",
+      "minutes": 4,
+      "audience": "customer",
+      "keywords": ["publish", "live", "draft", "go live", "not updating", "visitors"],
+      "steps": [
+        "Change the text or photo in **Page editor**.",
+        "Open **Live Preview** and check phone width.",
+        "Press **Publish**. Until you do, the public site stays on the last published version."
+      ],
+      "trail": [
+        {"label": "Open Page editor", "topic": "page-editor", "view": "details"},
+        {"label": "Open Live Preview", "selector": "#lpc-preview"},
+        {"label": "Press Publish", "selector": "#btn-publish", "topic": "publish"}
+      ],
+      "related": ["publish", "page-editor", "fix-not-live"]
+    },
+    {
+      "id": "journey-new-section",
+      "kind": "journey",
+      "category": "Do this next",
+      "title": "Add a section to the page",
+      "summary": "Marketplace turns an app on. Page editor is where you write it.",
+      "answer": "Turn the app on, fill in the card, preview, publish.",
+      "minutes": 6,
+      "audience": "customer",
+      "keywords": ["add section", "new app", "enable", "missing section"],
+      "steps": [
+        "Open **App Marketplace** and tap the app tile so it is on.",
+        "Open **Page editor** and use the section chip, or press **Need help?** on the card.",
+        "Fill headings, images, and the **Show on page** switch.",
+        "Preview, then **Publish**."
+      ],
+      "trail": [
+        {"label": "Open Marketplace", "topic": "marketplace", "view": "apps"},
+        {"label": "Open Page editor", "topic": "page-editor", "view": "details"}
+      ],
+      "related": ["marketplace", "page-editor", "fix-missing-section"]
+    },
+    {
+      "id": "journey-photos",
+      "kind": "journey",
+      "category": "Do this next",
+      "title": "Change the photos",
+      "summary": "Upload once, reuse from the library, then publish.",
+      "answer": "Use the image control on the section, or open Image library.",
+      "minutes": 5,
+      "audience": "customer",
+      "keywords": ["photo", "image", "upload", "logo", "gallery"],
+      "steps": [
+        "Open the section in **Page editor**.",
+        "Use the image field to upload or pick from the library.",
+        "Open **Image library** if you need a photo you uploaded earlier.",
+        "**Publish** so the live site swaps the picture."
+      ],
+      "trail": [
+        {"label": "Open Page editor", "view": "details", "topic": "page-editor"},
+        {"label": "Open Image library", "selector": "#lpc-image-library", "topic": "images"}
+      ],
+      "related": ["images", "hero", "fix-images"]
+    },
+    {
+      "id": "journey-colours",
+      "kind": "journey",
+      "category": "Do this next",
+      "title": "Change colours and type",
+      "summary": "Appearance sets the whole site. A section can override it.",
+      "answer": "Site-wide colours live in Appearance. One section can look different with Custom section style.",
+      "minutes": 8,
+      "audience": "customer",
+      "keywords": ["colour", "color", "font", "theme", "brand"],
+      "steps": [
+        "Open **Appearance** and set brand colours.",
+        "For one block only, open that app in Page editor and expand **Custom section style**.",
+        "Preview on a phone.",
+        "**Publish**."
+      ],
+      "trail": [
+        {"label": "Open Appearance", "view": "appearance", "topic": "appearance"}
+      ],
+      "related": ["appearance", "page-editor"]
+    },
+    {
+      "id": "journey-menu",
+      "kind": "journey",
+      "category": "Do this next",
+      "title": "Change the menu",
+      "summary": "Navigation Menu controls labels, order, and submenus.",
+      "answer": "Edit Navigation Menu in Page editor, including what shows on phones.",
+      "minutes": 6,
+      "audience": "customer",
+      "keywords": ["menu", "nav", "header", "submenu", "phone menu"],
+      "steps": [
+        "Open **Page editor → Navigation Menu**.",
+        "Rename links, reorder them, or nest a submenu.",
+        "Check the phone preview — the menu becomes a drawer.",
+        "**Publish**."
+      ],
+      "trail": [
+        {"label": "Open Navigation Menu", "view": "details", "section": "navMenu", "topic": "navMenu"}
+      ],
+      "related": ["navMenu", "page-editor", "fix-mobile"]
+    },
+    {
+      "id": "journey-quote",
+      "kind": "journey",
+      "category": "Do this next",
+      "title": "Let customers price a job",
+      "summary": "Quote Builder is the full pricer. The quote section is the short form on the page.",
+      "answer": "Use Quote Builder for packages and options. Use the quote app if you only need a contact form.",
+      "minutes": 12,
+      "audience": "customer",
+      "keywords": ["quote", "estimate", "price", "calculator"],
+      "steps": [
+        "Open **Quote Builder** for packages, options, and the live quote page.",
+        "Or enable **Online Quote** / **Quote form** in Marketplace for a section on the homepage.",
+        "Send yourself a test.",
+        "**Publish** the site so the public form matches."
+      ],
+      "trail": [
+        {"label": "Open Quote Builder", "view": "onlinequotes", "topic": "quote-builder"},
+        {"label": "Open the quote section", "view": "details", "section": "quote", "topic": "quote"}
+      ],
+      "related": ["quote-builder", "quote", "onlineQuote", "estimateBuilder"]
+    },
+    {
+      "id": "journey-bookings",
+      "kind": "journey",
+      "category": "Do this next",
+      "title": "Take a booking",
+      "summary": "Bookings is the diary. The page section is how visitors reach it.",
+      "answer": "Set up services in Bookings, then turn on the Bookings page section.",
+      "minutes": 12,
+      "audience": "customer",
+      "keywords": ["booking", "appointment", "calendar", "class"],
+      "steps": [
+        "Open **Bookings** and add what people can book.",
+        "Turn on the **Bookings** section in Marketplace if you want it on the page.",
+        "Open the public book link and book a test slot.",
+        "**Publish** if you changed the page section."
+      ],
+      "trail": [
+        {"label": "Open Bookings", "view": "bookings", "topic": "bookings"},
+        {"label": "Open the page section", "view": "details", "section": "bookingStorefront", "topic": "bookingStorefront"}
+      ],
+      "related": ["bookings", "bookingStorefront"]
+    },
+    {
+      "id": "journey-orders",
+      "kind": "journey",
+      "category": "Do this next",
+      "title": "Take an order",
+      "summary": "Orders is the shop desk. The storefront section is the public shelf.",
+      "answer": "Add products in Orders, then show the order section on the page.",
+      "minutes": 12,
+      "audience": "customer",
+      "keywords": ["order", "shop", "product", "cart", "checkout"],
+      "steps": [
+        "Open **Orders** and add a product with a price.",
+        "Turn on **Orders** in Marketplace so the page can show it.",
+        "Place a test order.",
+        "**Publish** after page changes."
+      ],
+      "trail": [
+        {"label": "Open Orders", "view": "orders", "topic": "orders"},
+        {"label": "Open the storefront section", "view": "details", "section": "orderStorefront", "topic": "orderStorefront"}
+      ],
+      "related": ["orders", "orderStorefront"]
+    },
+    {
+      "id": "fix-not-live",
+      "kind": "fix",
+      "category": "Something's wrong",
+      "title": "The live site didn't change",
+      "summary": "The usual cause: the edit is saved as a draft and has not been published.",
+      "answer": "Press Publish. Manage keeps a draft so a half-finished edit never hits the public site by accident.",
+      "minutes": 2,
+      "audience": "customer",
+      "keywords": ["not live", "not updating", "old", "cache", "draft", "publish"],
+      "steps": [
+        "Look at **Live Preview**. If the new content is there, the draft is fine.",
+        "Press **Publish** and wait until it confirms.",
+        "Open the public site in a private window.",
+        "If Preview is also old, you may be on a different site in the switcher."
+      ],
+      "choices": [
+        {"when": "Preview shows the new text, the public site does not", "do": "Publish. Preview reads the draft. The public site reads the last publish.", "topic": "publish"},
+        {"when": "I restored a backup and nothing moved", "do": "A restore loads that moment into the draft. Publish if you want visitors to see it.", "topic": "backups"},
+        {"when": "Another tab or a teammate edited too", "do": "Publish offers to keep both sets of changes. Read the prompt before confirming.", "topic": "publish"}
+      ],
+      "trail": [
+        {"label": "Show me Publish", "selector": "#btn-publish", "topic": "publish"}
+      ],
+      "related": ["publish", "backups", "fix-wrong-site"]
+    },
+    {
+      "id": "fix-missing-section",
+      "kind": "fix",
+      "category": "Something's wrong",
+      "title": "A section is missing",
+      "summary": "It is off in Marketplace, hidden on this device, or not published.",
+      "answer": "Turn the app on, check Show on page and device switches, then publish.",
+      "minutes": 3,
+      "audience": "customer",
+      "keywords": ["missing", "hidden", "not showing", "gone", "section"],
+      "steps": [
+        "App Marketplace: the tile should be on.",
+        "Page editor: **Show on page** is ticked.",
+        "Devices: **Show on phones** / **tablets** match how you are looking.",
+        "Publish."
+      ],
+      "choices": [
+        {"when": "I cannot find the editor card", "do": "The app is off. Turn the tile on in Marketplace, then come back to Page editor.", "topic": "marketplace"},
+        {"when": "I see it on desktop and not on my phone", "do": "The device row on the card can hide a section on phones or tablets.", "topic": "page-editor"},
+        {"when": "It is a paid app", "do": "Some apps stay off until the subscription is active.", "topic": "fix-paid-app"}
+      ],
+      "related": ["marketplace", "page-editor", "billing"]
+    },
+    {
+      "id": "fix-images",
+      "kind": "fix",
+      "category": "Something's wrong",
+      "title": "A photo disappeared or looks wrong",
+      "summary": "The picture file is kept. The page just needs the link again.",
+      "answer": "Re-pick the photo from Image library. Restoring a backup does not delete the file.",
+      "minutes": 4,
+      "audience": "customer",
+      "keywords": ["image", "photo", "broken", "missing image", "cloudinary"],
+      "steps": [
+        "Open **Image library** and confirm the photo is still there.",
+        "On the section, choose that photo again.",
+        "If the crop looks tight, re-upload a wider original.",
+        "Publish."
+      ],
+      "choices": [
+        {"when": "The library still has the photo", "do": "Select it on the section. The page stores a link, not a separate copy.", "topic": "images"},
+        {"when": "It broke after a restore", "do": "Restore puts old links back. Re-pick anything that pointed at a photo you replaced later.", "topic": "backups"}
+      ],
+      "trail": [
+        {"label": "Open Image library", "selector": "#lpc-image-library", "topic": "images"}
+      ],
+      "related": ["images", "backups"]
+    },
+    {
+      "id": "fix-mobile",
+      "kind": "fix",
+      "category": "Something's wrong",
+      "title": "It looks wrong on a phone",
+      "summary": "Check device visibility, the phone preview, and menu drawer.",
+      "answer": "Use Live Preview at phone width. A section can be hidden on phones on purpose.",
+      "minutes": 4,
+      "audience": "customer",
+      "keywords": ["mobile", "phone", "responsive", "hamburger", "tablet"],
+      "steps": [
+        "Open **Live Preview** and narrow it to a phone.",
+        "On the section card, confirm **Show on phones** is on.",
+        "For the menu, edit **Navigation Menu** and check the drawer.",
+        "Publish after you are happy."
+      ],
+      "choices": [
+        {"when": "A whole block is gone on the phone only", "do": "Untick was used on Show on phones. Turn it back on.", "topic": "page-editor"},
+        {"when": "The menu is the problem", "do": "Phone menus open as a drawer. Edit labels in Navigation Menu.", "topic": "navMenu"}
+      ],
+      "related": ["page-editor", "navMenu", "journey-menu"]
+    },
+    {
+      "id": "fix-paid-app",
+      "kind": "fix",
+      "category": "Something's wrong",
+      "title": "A paid app will not turn on",
+      "summary": "Orders, Bookings, and Quote Builder need an active add-on.",
+      "answer": "Open Billing, confirm the add-on, then enable the app again.",
+      "minutes": 5,
+      "audience": "customer",
+      "keywords": ["paid", "subscribe", "billing", "locked", "premium"],
+      "steps": [
+        "Open **Billing** from site tools.",
+        "Confirm the add-on is active.",
+        "Return to Marketplace and turn the app on.",
+        "If you want us to set it up, request paid help."
+      ],
+      "trail": [
+        {"label": "Open Billing", "selector": "#btn-billing", "topic": "billing"}
+      ],
+      "related": ["billing", "orders", "bookings", "quote-builder", "support-ticket"]
+    },
+    {
+      "id": "fix-wrong-site",
+      "kind": "fix",
+      "category": "Something's wrong",
+      "title": "I edited the wrong site",
+      "summary": "The site switcher decides which business you are changing.",
+      "answer": "Check the site name in the header before you publish.",
+      "minutes": 2,
+      "audience": "customer",
+      "keywords": ["wrong site", "switcher", "another business"],
+      "steps": [
+        "Read the site name next to the tools.",
+        "Switch to the right business.",
+        "If you already published the wrong one, edit it back or restore a backup on that site.",
+        "Then publish the correct site."
+      ],
+      "choices": [
+        {"when": "I published to the wrong business", "do": "Open that site, restore the backup from before the publish, and publish again.", "topic": "backups"}
+      ],
+      "related": ["backups", "dashboard", "publish"]
+    },
     {
       "id": "getting-started",
       "kind": "guide",
@@ -2521,7 +2833,9 @@
     "contentFile": "assets/help/catalogue.json",
     "overlay": "assets/lp-help-centre.js",
     "openApi": "window.LPHelp.open(sectionKeyOrTopicId)",
+    "showApi": "window.LPHelp.showMe(sectionKeyOrTopicId) — scrolls Manage to the control",
     "ticketApi": "POST /api/help/ticket",
-    "rule": "When adding a marketplace app, add a topic with id=sectionKey, kind=app, zone, steps, features, related including support-ticket."
+    "kinds": "guide | app | journey (trail[]) | fix (choices[])",
+    "rule": "When adding a marketplace app, add a topic with id=sectionKey, kind=app, zone, steps, features, related including support-ticket. Journeys use kind=journey and trail targets (view, section, selector). Fixes use kind=fix and choices."
   }
 }

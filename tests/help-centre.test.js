@@ -24,8 +24,11 @@ describe('Help Centre catalogue', () => {
     ['getting-started', 'page-editor', 'marketplace', 'publish', 'backups', 'support-ticket', 'hero', 'heroSlider', 'orders', 'bookings'].forEach((id) => {
       assert.ok(ids.has(id), 'missing topic ' + id);
     });
-    assert.ok(catalogue.topics.length >= 60, 'expected rich catalogue');
+    assert.ok(catalogue.topics.length >= 70, 'expected rich catalogue');
     assert.equal(catalogue.topics.filter((t) => t.kind === 'app').length >= 50, true);
+    assert.ok(catalogue.topics.some((t) => t.id === 'journey-publish' && Array.isArray(t.trail)));
+    assert.ok(catalogue.topics.some((t) => t.id === 'fix-not-live' && Array.isArray(t.choices)));
+    assert.equal(catalogue.version, 2);
   });
 
   it('documents agent maintenance rule', () => {
@@ -39,9 +42,12 @@ describe('Help Centre runtime', () => {
   it('exposes LPHelp.open and ticket UI', () => {
     assert.match(js, /window\.LPHelp/);
     assert.match(js, /function open\(/);
+    assert.match(js, /function showMe\(/);
     assert.match(js, /\/api\/help\/ticket/);
-    assert.match(js, /page-zones/);
+    assert.match(js, /lph-mock/);
+    assert.match(js, /lph-suggest/);
     assert.match(css, /#lph-root/);
+    assert.match(css, /#lph-spot/);
     assert.match(css, /\.lph-need-help/);
   });
 

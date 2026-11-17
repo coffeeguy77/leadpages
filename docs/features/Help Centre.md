@@ -33,6 +33,7 @@ When you **add or significantly change a marketplace app** (new `section_key`):
    - `category`: `"Apps · {Zone}"` where Zone is Navigation | Hero | Upper | Mid | Lower | Footer
    - `title`, `summary`, `body`, `steps[]`, `features[]` (customer language)
    - `related`: include `marketplace`, `page-editor`, `support-ticket`
+   - Optional: `answer` (one sentence shown first), `minutes`, `choices[]` for fixes, `trail[]` for walkthroughs
    - `diagram`: `"page-zones"` (or `"nav-map"` for guides)
 2. Add any slug aliases under `aliases` (e.g. `hero-slider` → `heroSlider`).
 3. Ensure Page editor uses `secCard(...)` (auto Need help) or call `LPHelp.needHelpButton(sectionKey)`.
@@ -48,10 +49,33 @@ Do **not** leave new apps without a Help Centre entry.
 ```javascript
 LPHelp.open('heroSlider');     // section key or topic id
 LPHelp.open('getting-started');
-LPHelp.open('support-ticket'); // paid human help
+LPHelp.open('journey-publish'); // walkthrough
+LPHelp.open('fix-not-live');    // troubleshooting
+LPHelp.open('support-ticket');  // paid human help
+LPHelp.showMe('heroSlider');    // close the guide and spotlight the control in Manage
 LPHelp.close();
 LPHelp.needHelpButton('quote', 'Need help?');
 ```
+
+Keyboard: `/` opens search when the user is not typing in a field. `Ctrl` or `Cmd` + `K` opens search from anywhere. `Esc` clears search, then closes. Arrow keys move the search results.
+
+`/manage?help=heroSlider&show=1` opens the guide and immediately spotlights that control.
+
+---
+
+## Experience layer
+
+Home is task-first:
+
+- **I want to…** walkthroughs (`kind: "journey"`) with a `trail` of Show me steps (`view`, `section`, `selector`).
+- **Something’s wrong** fixes (`kind: "fix"`) with `choices[]` (`when`, `do`, `topic`).
+- A clickable page map grouped by zone. Each band lists the apps that live there.
+- A first-session checklist and recent guides, stored in the browser.
+- Every article leads with a one-line answer, a time estimate, **Show me in Manage**, and **Copy link**.
+- App articles include “If it isn’t working” links. Step ticks are remembered per guide.
+- **Show me** uses `lpOpenEditorSection`, `showView`, or a header button (`#btn-publish`, `#lpc-backups`, `#lpc-image-library`), then draws a spotlight and a “Back to guide” bar.
+
+Search ranks title, then keywords, then summary. It filters the topic list and shows a result menu.
 
 Deep links:
 
@@ -103,3 +127,7 @@ Core guides (non-app): `getting-started`, `page-editor`, `marketplace`, `publish
 - **Request paid help** with signed-in user returns `{ok:true}` and opens Support.
 - `/help` and `/help?help=backups` load the same catalogue.
 - Escape / Close dismisses overlay.
+- `/` focuses search. A query such as “publish” lists the walkthrough above the long app list.
+- **Show me in Manage** on Publish highlights `#btn-publish` and offers Back to guide.
+- Home → tap **Hero** on the page map lists hero apps.
+- `/help?help=fix-not-live` opens the “live site didn’t change” choices.
