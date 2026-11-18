@@ -848,6 +848,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 <script src="/assets/lp-fonts.js?v=6"></script>
 <script src="/assets/lp-admin-shell.js"></script>
 <script src="/assets/lp-visual-editor.js?v=1"></script>
+<script src="/assets/lp-email-dns.js?v=1"></script>
 <script src="/assets/lp-ui-shell.js?v=2"></script>
 <script src="/assets/lp-messages-embed.js?v=support-new-1"></script>
 <script src="/assets/lp-mobile-menu-builder.js?v=seo-nav-1"></script>
@@ -9388,6 +9389,7 @@ function heroCtaCard(c){
       +assignPartnerCard
       +ownershipCard
       +seoGaRow
+      +(currentSiteId?'<div class="card" style="margin-bottom:20px;" id="lpe-card"><h2 style="margin:0 0 4px;">Email (MX, SPF, DKIM)</h2><div id="lpe-mount"></div></div>':'')
       +(currentRole==='super'?'<div class="card" style="margin-bottom:20px;"><h2 style="margin:0 0 4px;">Mobile command menu</h2><p class="lede" style="margin:0 0 12px;">Design the phone mega menu for the command centre — section order, layouts, separators, button styles, and which roles see each item (super admin, partner, client).</p><button type="button" class="btn" id="open-mobile-menu">Edit mobile menu</button></div>':'')
       +(currentRole==='super'?'<div class="card" style="margin-bottom:20px;"><h2 style="margin:0 0 4px;">Partner showcase</h2><p class="lede" style="margin:0 0 12px;">LeadPages sites partners can show on their partner pages. Add feature pictures, turn on auto-scroll, pick your best and set the order.</p><button type="button" class="btn" id="open-showcase-mgr">Manage partner showcase</button></div>':'')
       +(currentRole==='super'?'<div class="card" style="margin-bottom:20px;"><h2 style="margin:0 0 4px;">Hosting plans &amp; billing</h2><p class="lede" style="margin:0 0 12px;">Build the subscription plans customers can be placed on \u2014 free, paid, or volume-priced. The suspended page is what the public sees when a site is paused for non-payment.</p><button type="button" class="btn" id="open-plans">Manage hosting plans</button> <button type="button" class="btn ghost" id="open-susp">Edit suspended page</button></div>':'')
@@ -9396,6 +9398,7 @@ function heroCtaCard(c){
       +danger
       +'</div>';
     document.body.appendChild(p);
+    try{ var _lpeEl=document.getElementById('lpe-mount'); if(_lpeEl&&window.LPEmailDns) window.LPEmailDns.mount(_lpeEl,{ siteId:currentSiteId, token:cwToken }); }catch(_lpe){ try{console.error('[email dns]',_lpe&&_lpe.message);}catch(_x){} }
     // close behaviours
     document.getElementById('set-close').addEventListener('click',closeSettingsPage);
     p.addEventListener('click',function(e){ if(e.target===p) closeSettingsPage(); });

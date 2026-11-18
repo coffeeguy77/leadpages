@@ -55,6 +55,13 @@ async function createDnsRecord(domain, record) {
   });
 }
 
+/** DELETE /v2/domains/{domain}/records/{recordId} */
+async function deleteDnsRecord(domain, recordId) {
+  return vercelFetch('/v2/domains/' + encodeURIComponent(domain) + '/records/' + encodeURIComponent(recordId), {
+    method: 'DELETE',
+  });
+}
+
 async function getDomainInfo(domain) {
   try {
     return await vercelFetch('/v9/domains/' + encodeURIComponent(domain));
@@ -235,6 +242,7 @@ module.exports = {
   authToken,
   listDnsRecords,
   createDnsRecord,
+  deleteDnsRecord,
   getDomainInfo,
   normalizeTxtValue,
   tokenFromValue,
