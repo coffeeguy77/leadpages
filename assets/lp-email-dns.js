@@ -135,6 +135,7 @@
       if (!d.domain) return '<div class="lpe-note">Add a custom domain to this site first (Client site details → Custom domain).</div>';
       if (!st.canManage) {
         if (st.reason === 'not_in_vercel') return '<div class="lpe-note warn"><b>' + esc(d.domain) + '</b> isn’t in LeadPages DNS yet, so email records can’t be set here.' + (d.isSuper ? ' Add the domain in Vercel → Domains first.' : ' Contact LeadPages support to move the domain’s DNS to us.') + '</div>';
+        if (st.reason === 'zone_off') return '<div class="lpe-note err">The nameservers point at LeadPages, but Vercel DNS couldn\u2019t be switched on for <b>' + esc(d.domain) + '</b>: ' + esc(st.error || '') + '</div>';
         if (st.reason === 'vercel_not_configured') return '<div class="lpe-note err">DNS management isn’t configured on the server (Vercel token missing).</div>';
         return '<div class="lpe-note err">Can’t manage DNS for this domain right now.</div>';
       }

@@ -82,7 +82,15 @@ async function domainState(domain) {
   const nameservers = d.nameservers || [];
   const intended = d.intendedNameservers || [];
   const onVercel = nameservers.length > 0 && nameservers.every(isVercelNs);
-  return { canManage: true, onVercelNs: onVercel, nameservers, intendedNameservers: intended };
+  // Nameservers are on Vercel but Vercel DNS isn't switched on (domain was added as a
+  // project domain only): records are refused with invalid_zone until it is.
+  let zoneEnabled = false;
+  if (onVercel && d.zone === false) {
+    try { await vercel.enableDnsZone(domain); zoneEnabled = true; } catch (e) {
+      return { canManage: false, reason: 'zone_off', error: e.message, onVercelNs: true, nameservers, intendedNameservers: intended };
+    }
+  }
+  return { canManage: true, onVercelNs: onVercel, nameservers, intendedNameservers: intended, zoneEnabled };
 }
 
 async function lastChange(siteId) {

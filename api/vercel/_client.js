@@ -55,6 +55,18 @@ async function createDnsRecord(domain, record) {
   });
 }
 
+/**
+ * PATCH /v3/domains/{domain} { op:'update', zone:true }
+ * Turns on Vercel DNS for a domain whose nameservers already point at Vercel
+ * (a domain added only as a project domain has zone:false and refuses records).
+ */
+async function enableDnsZone(domain) {
+  return vercelFetch('/v3/domains/' + encodeURIComponent(domain), {
+    method: 'PATCH',
+    body: { op: 'update', zone: true },
+  });
+}
+
 /** DELETE /v2/domains/{domain}/records/{recordId} */
 async function deleteDnsRecord(domain, recordId) {
   return vercelFetch('/v2/domains/' + encodeURIComponent(domain) + '/records/' + encodeURIComponent(recordId), {
@@ -243,6 +255,7 @@ module.exports = {
   listDnsRecords,
   createDnsRecord,
   deleteDnsRecord,
+  enableDnsZone,
   getDomainInfo,
   normalizeTxtValue,
   tokenFromValue,
