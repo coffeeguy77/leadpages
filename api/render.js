@@ -1763,6 +1763,23 @@ module.exports = async (req, res) => {
         : html.replace('</head>', _gmeta + '\n</head>');
     }
 
+    // Social share image (og:image) — only when the site sets one, so other sites are unchanged.
+    // Without it, iMessage/Facebook pick an image off the page and crop it themselves.
+    const _ogImg = String(cfg.ogImage || '').trim();
+    if (/^https:\/\/[^\s"'<>]+$/i.test(_ogImg)) {
+      const _ogTags = '<meta property="og:image" content="' + esc(_ogImg) + '">'
+        + (cfg.ogImageWidth && cfg.ogImageHeight
+          ? '\n<meta property="og:image:width" content="' + esc(String(cfg.ogImageWidth)) + '">'
+            + '\n<meta property="og:image:height" content="' + esc(String(cfg.ogImageHeight)) + '">'
+          : '')
+        + (cfg.ogImageAlt ? '\n<meta property="og:image:alt" content="' + esc(cfg.ogImageAlt) + '">' : '')
+        + '\n<meta name="twitter:card" content="summary_large_image">'
+        + '\n<meta name="twitter:image" content="' + esc(_ogImg) + '">';
+      html = html.replace(/<meta[^>]*property="og:image(:[a-z]+)?"[^>]*>\s*/gi, '')
+        .replace(/<meta[^>]*name="twitter:(card|image)"[^>]*>\s*/gi, '')
+        .replace('</head>', _ogTags + '\n</head>');
+    }
+
     // Self-signup buy bar: only on an unsold, priced demo that belongs to a partner.
     if (site.is_mockup && (site.servicing_partner_id || site.referring_partner_id)) {
       try {
