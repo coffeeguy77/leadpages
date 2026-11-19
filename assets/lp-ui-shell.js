@@ -80,7 +80,7 @@
     return out;
   }
   /* The editor moves these buttons between rows (desktop card, phone drawer), so they are read by id. */
-  var PRIMARY_IDS = ['btn-publish', 'btn-viewlive', 'lpc-preview'];
+  var PRIMARY_IDS = ['btn-publish', 'btn-viewlive', 'btn-editlive', 'lpc-preview'];
   var TOOL_IDS = ['btn-settings', 'btn-account', 'btn-appearance-aa', 'btn-billing', 'btn-domains', 'btn-domain-finder', 'lpc-scope',
     'lpc-backups', 'lpc-image-library', 'btn-fav', 'btn-newsite', 'lpc-order-desk', 'lpc-bookings-desk', 'lpc-ops-command', 'lpc-partner-admin',
     'lpc-marketplace-admin', 'lpc-partner-console'];

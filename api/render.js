@@ -75,7 +75,7 @@ function injectFrontEditor(html, site, page) {
   const tags = '<script>window.__LPE=' + JSON.stringify(boot).replace(/</g, '\\u003c') + ';</script>\n'
     + '<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer></script>\n'
     + '<script src="/assets/lp-visual-editor.js?v=4" defer></script>\n'
-    + '<script src="/assets/lp-frontend-edit.js?v=1" defer></script>\n';
+    + '<script src="/assets/lp-frontend-edit.js?v=2" defer></script>\n';
   return html.includes('</head>') ? html.replace('</head>', tags + '</head>') : tags + html;
 }
 

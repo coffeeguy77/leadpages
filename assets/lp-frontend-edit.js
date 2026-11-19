@@ -102,6 +102,18 @@
     })();
   }
 
+  /** Links to the site's own pages keep edit mode on, so you can browse to the page to edit. */
+  function carryEdit() {
+    document.addEventListener('click', function (e) {
+      var a = e.target && e.target.closest && e.target.closest('a[href]'); if (!a || a.closest('#lpe-bar')) return;
+      if (a.closest('.lp-body') && window.__lpbEdit) return;              // page text: the editor handles it
+      var u; try { u = new URL(a.getAttribute('href'), location.href); } catch (_u) { return; }
+      if (u.origin !== location.origin || u.pathname.indexOf('/' + B.site) !== 0) return;
+      if (u.pathname === location.pathname && u.hash) return;              // a jump within this page
+      if (!u.searchParams.has('edit')) { u.searchParams.set('edit', '1'); a.setAttribute('href', u.pathname + u.search + u.hash); }
+    }, true);
+  }
+
   /* ------------------------------------------------------------------ start */
   async function start() {
     mountBar();
@@ -110,6 +122,12 @@
       el('lpe-title').textContent = 'Sign in to edit this page';
       status('Sign in to LeadPages in this browser, then open this page again.', 'warn');
       el('lpe-signin').hidden = false; el('lpe-pub').hidden = true; return;
+    }
+    carryEdit();
+    if (!B.page) {
+      el('lpe-title').textContent = 'Edit Live Site';
+      status('Choose a page from the site\u2019s menu to edit it. (The homepage is edited in LeadPages.)', '');
+      return;
     }
     var j = await call('GET', null, '?site=' + encodeURIComponent(B.site) + '&page=' + encodeURIComponent(B.page || ''));
     if (!j.ok) {

@@ -32,6 +32,7 @@
   var ACTION_CATALOG = {
     'btn-publish': { label: 'Publish Live Site', group: 'Publish' },
     'btn-viewlive': { label: 'View Live Site', group: 'Publish' },
+    'btn-editlive': { label: 'Edit Live Site', group: 'Publish' },
     'btn-account': { label: 'Account', group: 'Account' },
     'btn-settings': { label: 'Settings', group: 'Site Tools' },
     'btn-appearance-aa': { label: 'Appearance', group: 'Site Tools' },
@@ -221,6 +222,11 @@
         if (!sec.items || !sec.items.length) {
           sec.items = deepClone(defSec.items || [{ id: 'btn-publish' }, { id: 'btn-viewlive' }]);
         }
+        // Menus saved before on-site editing existed: add "Edit Live Site" after View Live Site.
+        if (!sec.items.some(function (it) { return it && it.id === 'btn-editlive'; })) {
+          var vi = -1; sec.items.forEach(function (it, i) { if (it && it.id === 'btn-viewlive') vi = i; });
+          sec.items.splice(vi >= 0 ? vi + 1 : sec.items.length, 0, { id: 'btn-editlive' });
+        }
       }
       if (defSec.id === 'tools' && !sec.slot) sec.slot = 'lpc-tools';
       if (defSec.id === 'account' && !sec.slot) sec.slot = 'lpc-drawer-footer';
@@ -270,7 +276,7 @@
   var FALLBACK_DEFAULT = {
     version: 1,
     sections: [
-      { id: 'publish', title: 'Publish', layout: 'stack', buttonStyle: 'publish-duo', separator: 'none', roles: ['super', 'partner', 'client'], slot: 'lpc-drawer-top', items: [{ id: 'btn-publish' }, { id: 'btn-viewlive' }, { id: 'lpc-preview' }] },
+      { id: 'publish', title: 'Publish', layout: 'stack', buttonStyle: 'publish-duo', separator: 'none', roles: ['super', 'partner', 'client'], slot: 'lpc-drawer-top', items: [{ id: 'btn-publish' }, { id: 'btn-viewlive' }, { id: 'btn-editlive' }, { id: 'lpc-preview' }] },
       { id: 'site', title: 'Site', layout: 'stack', buttonStyle: 'default', separator: 'line', roles: ['super', 'partner'], condition: 'site-switcher', slot: 'lpc-context' },
       { id: 'builder', title: 'Builder Menu', layout: 'tabs', buttonStyle: 'nav', separator: 'line', roles: ['super', 'partner', 'client'], slot: 'adminnav', items: deepClone(DEFAULT_BUILDER_ITEMS) },
       { id: 'tools', title: 'Site Tools', layout: 'stack', buttonStyle: 'outline', separator: 'line', roles: ['super', 'partner', 'client'], slot: 'lpc-tools', items: [

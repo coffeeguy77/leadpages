@@ -39,3 +39,20 @@ test('manage.html offers "Edit on the live page" for published landing pages', (
   assert.match(h, /id="lpv-onsite"/);
   assert.match(h, /onsiteUrl:function\(\)\{ if\(!lpCur\|\|!lpCur\.slug\|\|lpCur\.status!=='published'/);
 });
+
+test('"Edit Live Site" is in the phone menu (incl. menus saved before it existed) and the desktop shell', () => {
+  const mb = R('assets/lp-mobile-menu-builder.js');
+  assert.match(mb, /'btn-editlive': \{ label: 'Edit Live Site', group: 'Publish' \}/);
+  assert.match(mb, /sec\.items\.splice\(vi >= 0 \? vi \+ 1 : sec\.items\.length, 0, \{ id: 'btn-editlive' \}\)/);
+  assert.match(R('assets/lp-ui-shell.js'), /'btn-viewlive', 'btn-editlive', 'lpc-preview'/);
+  const h = R('manage.html');
+  assert.match(h, /eb\.id='btn-editlive'/);
+  assert.match(h, /mv\('btn-editlive', prim\);/);
+  assert.match(R('assets/lp-frontend-edit.js'), /function carryEdit\(\)/);
+});
+
+test('draft banner names the site and drafts identical to the live site are tidied away', () => {
+  const h = R('manage.html');
+  assert.match(h, /if\(window\.LPConfigMerge\.same\(dc0l, site\.config\)\)\{/);
+  assert.match(h, /'<span><b>'\+esc\(_dn\)\+'<\/b> has unpublished changes saved as a draft/);
+});

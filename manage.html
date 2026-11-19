@@ -856,9 +856,9 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 <script src="/assets/lp-admin-shell.js"></script>
 <script src="/assets/lp-visual-editor.js?v=4"></script>
 <script src="/assets/lp-email-dns.js?v=2"></script>
-<script src="/assets/lp-ui-shell.js?v=2"></script>
+<script src="/assets/lp-ui-shell.js?v=3"></script>
 <script src="/assets/lp-messages-embed.js?v=support-new-1"></script>
-<script src="/assets/lp-mobile-menu-builder.js?v=seo-nav-1"></script>
+<script src="/assets/lp-mobile-menu-builder.js?v=editlive-1"></script>
 <script src="/assets/lp-trade-picker.js"></script>
 <script src="/assets/ai-website-team.js?v=forge-landing-1"></script>
 <script src="/icons.js"></script>
@@ -1850,6 +1850,21 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     var drafts=list.filter(function(b){ return b&&b.label===LP_DRAFT_LABEL; });
     if(!drafts.length) return;
     var d=drafts[0];
+    // A draft that already matches the live site holds nothing to publish (e.g. the same edit
+    // was made on the live page, or the site was fixed directly): tidy it away, no banner.
+    try{
+      var jd0=await lpBkFetch('?id='+encodeURIComponent(d.id));
+      var dc0=jd0&&jd0.backup&&jd0.backup.config;
+      if(dc0&&site.config&&window.LPConfigMerge){
+        var dc0l=Object.assign({}, dc0); delete dc0l.__lpDraftBase;
+        if(window.LPConfigMerge.same(dc0l, site.config)){
+          if(site.id!==currentSiteId) return;
+          drafts.forEach(function(x){ lpBkFetch('?id='+encodeURIComponent(x.id),{method:'DELETE'}).catch(function(){}); });
+          return;
+        }
+      }
+    }catch(_dm){}
+    if(site.id!==currentSiteId) return;
     var liveAt=new Date(site.updated_at||0).getTime(), dAt=new Date(d.created_at||0).getTime();
     // Older drafts (already published since) are stale: tidy them away.
     drafts.slice(1).forEach(function(x){ lpBkFetch('?id='+encodeURIComponent(x.id),{method:'DELETE'}).catch(function(){}); });
@@ -1874,7 +1889,8 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   function lpDraftBanner(site, d){
     var old=document.getElementById('lp-draft-banner'); if(old) old.remove();
     var b=document.createElement('div'); b.id='lp-draft-banner'; b.setAttribute('role','alert');
-    b.innerHTML='<span>You have unpublished changes saved as a draft <b>'+esc(new Date(d.created_at).toLocaleString([], {day:'numeric',month:'short',hour:'numeric',minute:'2-digit'}))+'</b>.</span>'
+    var _dn=(site.business_name||site.slug||'This site');
+    b.innerHTML='<span><b>'+esc(_dn)+'</b> has unpublished changes saved as a draft <b>'+esc(new Date(d.created_at).toLocaleString([], {day:'numeric',month:'short',hour:'numeric',minute:'2-digit'}))+'</b>.</span>'
       +'<button type="button" class="btn" data-act="resume">Continue draft</button><button type="button" class="btn ghost" data-act="discard">Discard draft</button>';
     document.body.appendChild(b);
     // Reloaded to publish on the latest LeadPages version: bring the edits straight back.
@@ -10788,6 +10804,7 @@ function heroCtaCard(c){
   function lpRefreshViewLiveLabel(){
     var vb=$('btn-viewlive'); if(!vb) return;
     vb.textContent=lpSiteIsLive()?'View Live Site':'Preview site';
+    var eb=$('btn-editlive'); if(eb) eb.hidden=!(lpSiteIsLive()&&currentSiteTemplate==='trade'&&!currentIsPartnerHome);
   }
   function lpSitemapUrl(){
     var dom=lpHostOnly(currentCustomDomain||'');
@@ -14516,6 +14533,18 @@ function heroCtaCard(c){
       vb.addEventListener('click',function(){ lpOpenSitePreview(); });
       bar.insertBefore(vb, dl);
     }
+    if(!$('btn-editlive')){
+      // On-site editing (assets/lp-frontend-edit.js): opens the live site with the edit bar;
+      // pick a page from the site's menu to edit it.
+      const eb=document.createElement('button'); eb.className='btn ghost'; eb.id='btn-editlive'; eb.type='button';
+      eb.textContent='Edit Live Site'; eb.hidden=true;
+      eb.addEventListener('click',function(){
+        if(!currentSiteSlug) return;
+        var pg=(typeof activeView==='string'&&activeView==='landing'&&lpCur&&lpCur.slug&&lpCur.status==='published')?('/'+encodeURIComponent(lpCur.slug)):'';
+        window.open(location.origin+'/'+encodeURIComponent(currentSiteSlug)+pg+'?edit','_blank','noopener');
+      });
+      bar.insertBefore(eb, dl);
+    }
     lpRefreshViewLiveLabel();
     if(!$('btn-account')){
       const abn=document.createElement('button'); abn.className='btn ghost'; abn.id='btn-account';
@@ -14666,6 +14695,7 @@ function heroCtaCard(c){
     var mv=function(id,row){ var el=$(id); if(el&&row&&el.parentNode!==row) row.appendChild(el); };
     mv('btn-publish', prim);
     mv('btn-viewlive', prim);
+    mv('btn-editlive', prim);
     mv('site-label', ctx);
     if(!$('lpc-preview')){ var pv=document.createElement('button'); pv.className='btn ghost'; pv.id='lpc-preview'; pv.type='button'; pv.textContent='Live Preview'; pv.addEventListener('click',function(){ var w=window.innerWidth,h=window.innerHeight; if(typeof lpSetPreviewLayout==='function') lpSetPreviewLayout((w>=1200||(w>=768&&w<1200&&w>h))?'side':'split'); else previewOpen(); }); prim.appendChild(pv); }
     mv('lpc-preview', prim);
