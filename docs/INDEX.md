@@ -200,7 +200,8 @@ Short summary of every engineering document in `docs/`.
 | **Bookings / scheduling** | [features/Bookings](features/Bookings.md) | [02-DATABASE](02-DATABASE.md) | `lib/bookings/*`, `api/bookings/*`, `bookings.html`, `book.html`, `booking-portal.html`, `db/bookings_*.sql` |
 | **Domains / DNS** | [06-DOMAINS](06-DOMAINS.md) | [01-ARCHITECTURE](01-ARCHITECTURE.md) §12 | `dreamscape.js`, `api/domains/*` |
 | **AI Domain Finder** | [features/AI Domain Finder](features/AI%20Domain%20Finder.md) | [AI/00-STATUS](AI/00-STATUS.md) | `lib/domain-finder/`, `api/domain-finder/*` |
-| **Marketplace apps** | [01-ARCHITECTURE](01-ARCHITECTURE.md) | [10-EDITOR](10-EDITOR.md) § Marketplace | `api/api-apps.js`, `api-site-apps.js` |
+| **Marketplace apps** | [features/Marketplace](features/Marketplace.md) | [features/Help Centre](features/Help%20Centre.md), [10-EDITOR](10-EDITOR.md) | `api/api-apps.js`, `api-site-apps.js`, `assets/help/catalogue.json` |
+| **Customer Help Centre** | [features/Help Centre](features/Help%20Centre.md) | [10-EDITOR](10-EDITOR.md), [features/Marketplace](features/Marketplace.md) | `assets/lp-help-centre.js`, `assets/help/catalogue.json`, `api/help/ticket.js`, `help.html`, `manage.html` |
 | **Public marketplace V2** | [features/Marketplace-Public-V2](features/Marketplace-Public-V2.md) | [features/Marketplace](features/Marketplace.md) | `marketplace.html`, `marketplace-feature.html`, `assets/js/marketplace/*`, `playground/trustbar-*.json` |
 | **Images / Cloudinary** | [01-ARCHITECTURE](01-ARCHITECTURE.md) §14 | [10-EDITOR](10-EDITOR.md) | `api/cloudinary/*` |
 | **Instagram feed** | [01-ARCHITECTURE](01-ARCHITECTURE.md) | [02-DATABASE](02-DATABASE.md) `ig_connections` | `api/instagram/*`, `lib/ig/*` |

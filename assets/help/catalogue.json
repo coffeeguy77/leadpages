@@ -1,0 +1,2841 @@
+{
+  "version": 2,
+  "updatedAt": "2026-11-18",
+  "title": "LeadPages Help Centre",
+  "intro": "Find the job, follow the steps, and jump straight to the control. Every app is covered — and a human can take it from here if you want it done for you.",
+  "aliases": {
+    "hero-slider": "heroSlider",
+    "hero-before-after": "heroBeforeAfter",
+    "split-hero": "splitHero",
+    "trust-bar": "trustBar",
+    "service-process": "serviceProcess",
+    "before-after": "beforeAfter",
+    "featured-projects": "featuredProjects",
+    "premium-gallery": "premiumGallery",
+    "online-quote": "onlineQuote",
+    "estimate-builder": "estimateBuilder",
+    "nav-menu": "navMenu",
+    "search-canvas": "searchCanvas",
+    "seo-text": "seoText",
+    "about-us": "aboutUs",
+    "map-hours": "mapHours",
+    "cta-banner": "ctaBanner",
+    "story-timeline": "storyTimeline",
+    "story-rows": "storyRows",
+    "product-explorer": "productExplorer",
+    "scrolling-sponsor-banner": "scrollingSponsorBanner",
+    "custom-html": "customHtml",
+    "getting_started": "getting-started",
+    "page_editor": "page-editor",
+    "quote_builder": "quote-builder",
+    "support": "support-ticket",
+    "ticket": "support-ticket",
+    "need-help": "support-ticket",
+    "order-storefront": "orderStorefront",
+    "booking-storefront": "bookingStorefront",
+    "orders-storefront": "orderStorefront",
+    "emergency-bar": "emerg",
+    "top-bar": "emerg"
+  },
+  "topics": [
+    {
+      "id": "journey-publish",
+      "kind": "journey",
+      "category": "Do this next",
+      "title": "Make an edit go live",
+      "summary": "What you type in Manage is a draft. Visitors only see it after Publish.",
+      "answer": "Edit the page, check Live Preview, then press Publish.",
+      "minutes": 4,
+      "audience": "customer",
+      "keywords": ["publish", "live", "draft", "go live", "not updating", "visitors"],
+      "steps": [
+        "Change the text or photo in **Page editor**.",
+        "Open **Live Preview** and check phone width.",
+        "Press **Publish**. Until you do, the public site stays on the last published version."
+      ],
+      "trail": [
+        {"label": "Open Page editor", "topic": "page-editor", "view": "details"},
+        {"label": "Open Live Preview", "selector": "#lpc-preview"},
+        {"label": "Press Publish", "selector": "#btn-publish", "topic": "publish"}
+      ],
+      "related": ["publish", "page-editor", "fix-not-live"]
+    },
+    {
+      "id": "journey-new-section",
+      "kind": "journey",
+      "category": "Do this next",
+      "title": "Add a section to the page",
+      "summary": "Marketplace turns an app on. Page editor is where you write it.",
+      "answer": "Turn the app on, fill in the card, preview, publish.",
+      "minutes": 6,
+      "audience": "customer",
+      "keywords": ["add section", "new app", "enable", "missing section"],
+      "steps": [
+        "Open **App Marketplace** and tap the app tile so it is on.",
+        "Open **Page editor** and use the section chip, or press **Need help?** on the card.",
+        "Fill headings, images, and the **Show on page** switch.",
+        "Preview, then **Publish**."
+      ],
+      "trail": [
+        {"label": "Open Marketplace", "topic": "marketplace", "view": "apps"},
+        {"label": "Open Page editor", "topic": "page-editor", "view": "details"}
+      ],
+      "related": ["marketplace", "page-editor", "fix-missing-section"]
+    },
+    {
+      "id": "journey-photos",
+      "kind": "journey",
+      "category": "Do this next",
+      "title": "Change the photos",
+      "summary": "Upload once, reuse from the library, then publish.",
+      "answer": "Use the image control on the section, or open Image library.",
+      "minutes": 5,
+      "audience": "customer",
+      "keywords": ["photo", "image", "upload", "logo", "gallery"],
+      "steps": [
+        "Open the section in **Page editor**.",
+        "Use the image field to upload or pick from the library.",
+        "Open **Image library** if you need a photo you uploaded earlier.",
+        "**Publish** so the live site swaps the picture."
+      ],
+      "trail": [
+        {"label": "Open Page editor", "view": "details", "topic": "page-editor"},
+        {"label": "Open Image library", "selector": "#lpc-image-library", "topic": "images"}
+      ],
+      "related": ["images", "hero", "fix-images"]
+    },
+    {
+      "id": "journey-colours",
+      "kind": "journey",
+      "category": "Do this next",
+      "title": "Change colours and type",
+      "summary": "Appearance sets the whole site. A section can override it.",
+      "answer": "Site-wide colours live in Appearance. One section can look different with Custom section style.",
+      "minutes": 8,
+      "audience": "customer",
+      "keywords": ["colour", "color", "font", "theme", "brand"],
+      "steps": [
+        "Open **Appearance** and set brand colours.",
+        "For one block only, open that app in Page editor and expand **Custom section style**.",
+        "Preview on a phone.",
+        "**Publish**."
+      ],
+      "trail": [
+        {"label": "Open Appearance", "view": "appearance", "topic": "appearance"}
+      ],
+      "related": ["appearance", "page-editor"]
+    },
+    {
+      "id": "journey-menu",
+      "kind": "journey",
+      "category": "Do this next",
+      "title": "Change the menu",
+      "summary": "Navigation Menu controls labels, order, and submenus.",
+      "answer": "Edit Navigation Menu in Page editor, including what shows on phones.",
+      "minutes": 6,
+      "audience": "customer",
+      "keywords": ["menu", "nav", "header", "submenu", "phone menu"],
+      "steps": [
+        "Open **Page editor → Navigation Menu**.",
+        "Rename links, reorder them, or nest a submenu.",
+        "Check the phone preview — the menu becomes a drawer.",
+        "**Publish**."
+      ],
+      "trail": [
+        {"label": "Open Navigation Menu", "view": "details", "section": "navMenu", "topic": "navMenu"}
+      ],
+      "related": ["navMenu", "page-editor", "fix-mobile"]
+    },
+    {
+      "id": "journey-quote",
+      "kind": "journey",
+      "category": "Do this next",
+      "title": "Let customers price a job",
+      "summary": "Quote Builder is the full pricer. The quote section is the short form on the page.",
+      "answer": "Use Quote Builder for packages and options. Use the quote app if you only need a contact form.",
+      "minutes": 12,
+      "audience": "customer",
+      "keywords": ["quote", "estimate", "price", "calculator"],
+      "steps": [
+        "Open **Quote Builder** for packages, options, and the live quote page.",
+        "Or enable **Online Quote** / **Quote form** in Marketplace for a section on the homepage.",
+        "Send yourself a test.",
+        "**Publish** the site so the public form matches."
+      ],
+      "trail": [
+        {"label": "Open Quote Builder", "view": "onlinequotes", "topic": "quote-builder"},
+        {"label": "Open the quote section", "view": "details", "section": "quote", "topic": "quote"}
+      ],
+      "related": ["quote-builder", "quote", "onlineQuote", "estimateBuilder"]
+    },
+    {
+      "id": "journey-bookings",
+      "kind": "journey",
+      "category": "Do this next",
+      "title": "Take a booking",
+      "summary": "Bookings is the diary. The page section is how visitors reach it.",
+      "answer": "Set up services in Bookings, then turn on the Bookings page section.",
+      "minutes": 12,
+      "audience": "customer",
+      "keywords": ["booking", "appointment", "calendar", "class"],
+      "steps": [
+        "Open **Bookings** and add what people can book.",
+        "Turn on the **Bookings** section in Marketplace if you want it on the page.",
+        "Open the public book link and book a test slot.",
+        "**Publish** if you changed the page section."
+      ],
+      "trail": [
+        {"label": "Open Bookings", "view": "bookings", "topic": "bookings"},
+        {"label": "Open the page section", "view": "details", "section": "bookingStorefront", "topic": "bookingStorefront"}
+      ],
+      "related": ["bookings", "bookingStorefront"]
+    },
+    {
+      "id": "journey-orders",
+      "kind": "journey",
+      "category": "Do this next",
+      "title": "Take an order",
+      "summary": "Orders is the shop desk. The storefront section is the public shelf.",
+      "answer": "Add products in Orders, then show the order section on the page.",
+      "minutes": 12,
+      "audience": "customer",
+      "keywords": ["order", "shop", "product", "cart", "checkout"],
+      "steps": [
+        "Open **Orders** and add a product with a price.",
+        "Turn on **Orders** in Marketplace so the page can show it.",
+        "Place a test order.",
+        "**Publish** after page changes."
+      ],
+      "trail": [
+        {"label": "Open Orders", "view": "orders", "topic": "orders"},
+        {"label": "Open the storefront section", "view": "details", "section": "orderStorefront", "topic": "orderStorefront"}
+      ],
+      "related": ["orders", "orderStorefront"]
+    },
+    {
+      "id": "fix-not-live",
+      "kind": "fix",
+      "category": "Something's wrong",
+      "title": "The live site didn't change",
+      "summary": "The usual cause: the edit is saved as a draft and has not been published.",
+      "answer": "Press Publish. Manage keeps a draft so a half-finished edit never hits the public site by accident.",
+      "minutes": 2,
+      "audience": "customer",
+      "keywords": ["not live", "not updating", "old", "cache", "draft", "publish"],
+      "steps": [
+        "Look at **Live Preview**. If the new content is there, the draft is fine.",
+        "Press **Publish** and wait until it confirms.",
+        "Open the public site in a private window.",
+        "If Preview is also old, you may be on a different site in the switcher."
+      ],
+      "choices": [
+        {"when": "Preview shows the new text, the public site does not", "do": "Publish. Preview reads the draft. The public site reads the last publish.", "topic": "publish"},
+        {"when": "I restored a backup and nothing moved", "do": "A restore loads that moment into the draft. Publish if you want visitors to see it.", "topic": "backups"},
+        {"when": "Another tab or a teammate edited too", "do": "Publish offers to keep both sets of changes. Read the prompt before confirming.", "topic": "publish"}
+      ],
+      "trail": [
+        {"label": "Show me Publish", "selector": "#btn-publish", "topic": "publish"}
+      ],
+      "related": ["publish", "backups", "fix-wrong-site"]
+    },
+    {
+      "id": "fix-missing-section",
+      "kind": "fix",
+      "category": "Something's wrong",
+      "title": "A section is missing",
+      "summary": "It is off in Marketplace, hidden on this device, or not published.",
+      "answer": "Turn the app on, check Show on page and device switches, then publish.",
+      "minutes": 3,
+      "audience": "customer",
+      "keywords": ["missing", "hidden", "not showing", "gone", "section"],
+      "steps": [
+        "App Marketplace: the tile should be on.",
+        "Page editor: **Show on page** is ticked.",
+        "Devices: **Show on phones** / **tablets** match how you are looking.",
+        "Publish."
+      ],
+      "choices": [
+        {"when": "I cannot find the editor card", "do": "The app is off. Turn the tile on in Marketplace, then come back to Page editor.", "topic": "marketplace"},
+        {"when": "I see it on desktop and not on my phone", "do": "The device row on the card can hide a section on phones or tablets.", "topic": "page-editor"},
+        {"when": "It is a paid app", "do": "Some apps stay off until the subscription is active.", "topic": "fix-paid-app"}
+      ],
+      "related": ["marketplace", "page-editor", "billing"]
+    },
+    {
+      "id": "fix-images",
+      "kind": "fix",
+      "category": "Something's wrong",
+      "title": "A photo disappeared or looks wrong",
+      "summary": "The picture file is kept. The page just needs the link again.",
+      "answer": "Re-pick the photo from Image library. Restoring a backup does not delete the file.",
+      "minutes": 4,
+      "audience": "customer",
+      "keywords": ["image", "photo", "broken", "missing image", "cloudinary"],
+      "steps": [
+        "Open **Image library** and confirm the photo is still there.",
+        "On the section, choose that photo again.",
+        "If the crop looks tight, re-upload a wider original.",
+        "Publish."
+      ],
+      "choices": [
+        {"when": "The library still has the photo", "do": "Select it on the section. The page stores a link, not a separate copy.", "topic": "images"},
+        {"when": "It broke after a restore", "do": "Restore puts old links back. Re-pick anything that pointed at a photo you replaced later.", "topic": "backups"}
+      ],
+      "trail": [
+        {"label": "Open Image library", "selector": "#lpc-image-library", "topic": "images"}
+      ],
+      "related": ["images", "backups"]
+    },
+    {
+      "id": "fix-mobile",
+      "kind": "fix",
+      "category": "Something's wrong",
+      "title": "It looks wrong on a phone",
+      "summary": "Check device visibility, the phone preview, and menu drawer.",
+      "answer": "Use Live Preview at phone width. A section can be hidden on phones on purpose.",
+      "minutes": 4,
+      "audience": "customer",
+      "keywords": ["mobile", "phone", "responsive", "hamburger", "tablet"],
+      "steps": [
+        "Open **Live Preview** and narrow it to a phone.",
+        "On the section card, confirm **Show on phones** is on.",
+        "For the menu, edit **Navigation Menu** and check the drawer.",
+        "Publish after you are happy."
+      ],
+      "choices": [
+        {"when": "A whole block is gone on the phone only", "do": "Untick was used on Show on phones. Turn it back on.", "topic": "page-editor"},
+        {"when": "The menu is the problem", "do": "Phone menus open as a drawer. Edit labels in Navigation Menu.", "topic": "navMenu"}
+      ],
+      "related": ["page-editor", "navMenu", "journey-menu"]
+    },
+    {
+      "id": "fix-paid-app",
+      "kind": "fix",
+      "category": "Something's wrong",
+      "title": "A paid app will not turn on",
+      "summary": "Orders, Bookings, and Quote Builder need an active add-on.",
+      "answer": "Open Billing, confirm the add-on, then enable the app again.",
+      "minutes": 5,
+      "audience": "customer",
+      "keywords": ["paid", "subscribe", "billing", "locked", "premium"],
+      "steps": [
+        "Open **Billing** from site tools.",
+        "Confirm the add-on is active.",
+        "Return to Marketplace and turn the app on.",
+        "If you want us to set it up, request paid help."
+      ],
+      "trail": [
+        {"label": "Open Billing", "selector": "#btn-billing", "topic": "billing"}
+      ],
+      "related": ["billing", "orders", "bookings", "quote-builder", "support-ticket"]
+    },
+    {
+      "id": "fix-wrong-site",
+      "kind": "fix",
+      "category": "Something's wrong",
+      "title": "I edited the wrong site",
+      "summary": "The site switcher decides which business you are changing.",
+      "answer": "Check the site name in the header before you publish.",
+      "minutes": 2,
+      "audience": "customer",
+      "keywords": ["wrong site", "switcher", "another business"],
+      "steps": [
+        "Read the site name next to the tools.",
+        "Switch to the right business.",
+        "If you already published the wrong one, edit it back or restore a backup on that site.",
+        "Then publish the correct site."
+      ],
+      "choices": [
+        {"when": "I published to the wrong business", "do": "Open that site, restore the backup from before the publish, and publish again.", "topic": "backups"}
+      ],
+      "related": ["backups", "dashboard", "publish"]
+    },
+    {
+      "id": "getting-started",
+      "kind": "guide",
+      "category": "Getting started",
+      "title": "Finding your way around",
+      "summary": "The Command Centre tabs, Live Preview, and how edits become live.",
+      "audience": "customer",
+      "keywords": [
+        "start",
+        "tour",
+        "tabs",
+        "command centre",
+        "publish"
+      ],
+      "steps": [
+        "Sign in and pick your site from the site switcher.",
+        "Use the top tabs: **Dashboard**, **Page editor**, **App Marketplace**, **Appearance**, **Support**, and others your plan includes.",
+        "Edit content in Page editor. Changes save into your site draft config.",
+        "Open **Live Preview** to see the real layout before visitors do.",
+        "Press **Publish** when you are ready for the live website to update."
+      ],
+      "diagram": "nav-map",
+      "related": [
+        "page-editor",
+        "marketplace",
+        "publish",
+        "backups"
+      ]
+    },
+    {
+      "id": "page-editor",
+      "kind": "guide",
+      "category": "Editing",
+      "title": "Page editor",
+      "summary": "Edit section copy, images, lists, and turn apps on or off.",
+      "audience": "customer",
+      "keywords": [
+        "page",
+        "sections",
+        "chips",
+        "lock"
+      ],
+      "steps": [
+        "Open **Page editor**.",
+        "Use section chips to jump to an app. **LOCK** mode opens editors without toggling apps off.",
+        "Change text fields, upload images, and reorder list items.",
+        "Preview on phone width, then **Publish**."
+      ],
+      "tips": [
+        "Missing an app? Enable it in **App Marketplace**, then return to Page editor.",
+        "Image URLs live in your config — the files themselves are stored in Cloudinary."
+      ],
+      "related": [
+        "marketplace",
+        "images",
+        "publish"
+      ]
+    },
+    {
+      "id": "marketplace",
+      "kind": "guide",
+      "category": "Apps",
+      "title": "App Marketplace",
+      "summary": "Turn page sections on or off by zone: Navigation, Hero, Upper, Mid, Lower, Footer.",
+      "audience": "customer",
+      "keywords": [
+        "apps",
+        "marketplace",
+        "enable",
+        "zone"
+      ],
+      "diagram": "page-zones",
+      "steps": [
+        "Open **App Marketplace**.",
+        "Find the zone (Hero, Upper, Mid, Lower).",
+        "Tap a tile to enable or disable that app.",
+        "Edit the content in **Page editor**.",
+        "Paid apps may ask you to subscribe before they go live."
+      ],
+      "related": [
+        "page-editor",
+        "getting-started"
+      ]
+    },
+    {
+      "id": "publish",
+      "kind": "guide",
+      "category": "Publishing",
+      "title": "Publish & Live Preview",
+      "summary": "Draft edits vs what the public sees — and how to go live safely.",
+      "audience": "customer",
+      "keywords": [
+        "publish",
+        "preview",
+        "live"
+      ],
+      "steps": [
+        "Edit freely — autosave keeps your draft.",
+        "Open **Live Preview** (side-by-side on wide screens).",
+        "Press **Publish**. A backup is saved automatically first.",
+        "Use **View live site** to confirm on the real URL."
+      ],
+      "related": [
+        "backups",
+        "getting-started"
+      ]
+    },
+    {
+      "id": "backups",
+      "kind": "guide",
+      "category": "Safety",
+      "title": "Backups & restore",
+      "summary": "Restore points for design and copy. Images are URLs — not file archives.",
+      "audience": "customer",
+      "keywords": [
+        "backup",
+        "restore",
+        "undo"
+      ],
+      "steps": [
+        "Open **Backups** from Site tools or the Dashboard card.",
+        "Save a named backup before big changes.",
+        "Restore replaces the current design with that snapshot (a “Before restore” safety copy is saved first).",
+        "Download JSON if you want an offline copy."
+      ],
+      "tips": [
+        "Restoring does not recreate deleted Cloudinary image files — only the URLs in config.",
+        "Use the newest “Before restore” backup if a restore went wrong."
+      ],
+      "related": [
+        "images",
+        "publish"
+      ]
+    },
+    {
+      "id": "images",
+      "kind": "guide",
+      "category": "Media",
+      "title": "Images & Image library",
+      "summary": "Upload, replace, and reuse photos. Clearing an image can remove the Cloudinary file.",
+      "audience": "customer",
+      "keywords": [
+        "image",
+        "upload",
+        "cloudinary",
+        "hero photo"
+      ],
+      "steps": [
+        "In any image field, press **Upload** or pick from the **Image library**.",
+        "Prefer landscape ~1920×1080 for heroes; keep file size reasonable.",
+        "Replace an image to update that slot; Clear removes it from the section.",
+        "Publish after image changes."
+      ],
+      "related": [
+        "backups",
+        "hero",
+        "heroSlider"
+      ]
+    },
+    {
+      "id": "appearance",
+      "kind": "guide",
+      "category": "Branding",
+      "title": "Appearance, logo & themes",
+      "summary": "Colours, fonts, logo, and visitor accessibility preferences.",
+      "audience": "customer",
+      "keywords": [
+        "colour",
+        "logo",
+        "theme",
+        "brand"
+      ],
+      "steps": [
+        "Open **Appearance** for colours and Button look.",
+        "Use **Logo** to upload your mark and set heights for desktop/mobile.",
+        "Try **Themes** packs, then tweak.",
+        "Publish to push branding live."
+      ],
+      "related": [
+        "getting-started"
+      ]
+    },
+    {
+      "id": "dashboard",
+      "kind": "guide",
+      "category": "Getting started",
+      "title": "Dashboard",
+      "summary": "Leads, stats, backups, and a quick pulse on how the site is performing.",
+      "audience": "customer",
+      "keywords": [
+        "dashboard",
+        "leads",
+        "stats"
+      ],
+      "steps": [
+        "Open **Dashboard**.",
+        "Check recent leads and visitor stats.",
+        "Jump to Backups or Scope from the cards when available."
+      ],
+      "related": [
+        "getting-started",
+        "backups"
+      ]
+    },
+    {
+      "id": "landing-pages",
+      "kind": "guide",
+      "category": "SEO",
+      "title": "Landing pages",
+      "summary": "Extra SEO pages with their own title, body, and menu placement.",
+      "audience": "customer",
+      "keywords": [
+        "landing",
+        "seo page",
+        "menu"
+      ],
+      "steps": [
+        "Open **Landing pages**.",
+        "Create a page with title, slug, and content.",
+        "Tick **Show in site menu** if it should appear in Navigation.",
+        "Publish the site and regenerate sitemap from Settings if needed."
+      ],
+      "related": [
+        "navMenu",
+        "seo"
+      ]
+    },
+    {
+      "id": "billing",
+      "kind": "guide",
+      "category": "Account",
+      "title": "Billing & hosting lock",
+      "summary": "Hosting payments, suspended sites, and how to unlock the editor.",
+      "audience": "customer",
+      "keywords": [
+        "billing",
+        "payment",
+        "locked",
+        "suspended"
+      ],
+      "steps": [
+        "Open **Billing** from Site tools.",
+        "Update your card via the Stripe portal if payment failed.",
+        "Suspended sites show a public suspended page until payment is restored.",
+        "Images and content stay until someone deletes the site — unpaid sites are for manual review."
+      ],
+      "related": [
+        "support-ticket"
+      ]
+    },
+    {
+      "id": "seo",
+      "kind": "guide",
+      "category": "Growth",
+      "title": "SEO Command Centre",
+      "summary": "Local SEO workflows, competition, and suburb pages (plan permitting).",
+      "audience": "customer",
+      "keywords": [
+        "seo",
+        "suburb",
+        "google"
+      ],
+      "steps": [
+        "Open **SEO Command**.",
+        "Follow the tabs for local pages, competition, and readiness checks.",
+        "Premium SEO Suite unlocks deeper competitor tools when subscribed."
+      ],
+      "related": [
+        "landing-pages",
+        "searchCanvas",
+        "advertising"
+      ]
+    },
+    {
+      "id": "advertising",
+      "kind": "guide",
+      "category": "Growth",
+      "title": "Advertising (Google Ads)",
+      "summary": "Connect Google Ads and review campaign performance inside Manage.",
+      "audience": "customer",
+      "keywords": [
+        "ads",
+        "google",
+        "campaigns"
+      ],
+      "steps": [
+        "Open **Advertising**.",
+        "Connect your Google Ads account when prompted.",
+        "Sync metrics and review campaigns scoped to this site."
+      ],
+      "related": [
+        "seo",
+        "dashboard"
+      ]
+    },
+    {
+      "id": "orders",
+      "kind": "guide",
+      "category": "Premium apps",
+      "title": "Orders",
+      "summary": "Staff order desk, products, capacity, and customer storefront (entitlement required).",
+      "audience": "customer",
+      "keywords": [
+        "orders",
+        "products",
+        "cart",
+        "butcher"
+      ],
+      "steps": [
+        "Open **Orders** from the tab or Site tools.",
+        "Set up products and categories first.",
+        "Use the staff desk for new orders; customers use the storefront when enabled.",
+        "Publish any storefront embed section on the public site if used."
+      ],
+      "related": [
+        "support-ticket"
+      ]
+    },
+    {
+      "id": "bookings",
+      "kind": "guide",
+      "category": "Premium apps",
+      "title": "Bookings",
+      "summary": "Appointments, classes, and visits scheduling for entitlement sites.",
+      "audience": "customer",
+      "keywords": [
+        "bookings",
+        "appointments",
+        "calendar"
+      ],
+      "steps": [
+        "Open **Bookings**.",
+        "Configure services / resources and availability.",
+        "Share the booking flow with customers via your site embed or link.",
+        "Manage upcoming visits from the Bookings desk."
+      ],
+      "related": [
+        "support-ticket"
+      ]
+    },
+    {
+      "id": "quote-builder",
+      "kind": "guide",
+      "category": "Premium apps",
+      "title": "Quote Builder",
+      "summary": "Online quote / estimate tools for structured pricing on the site.",
+      "audience": "customer",
+      "keywords": [
+        "quote",
+        "estimate",
+        "pricing"
+      ],
+      "steps": [
+        "Open **Quote Builder**.",
+        "Configure packages, options, and display.",
+        "Enable the matching site section (Online Quote / Estimate Builder) in Marketplace.",
+        "Test a quote submission, then Publish."
+      ],
+      "related": [
+        "quote",
+        "onlineQuote",
+        "estimateBuilder"
+      ]
+    },
+    {
+      "id": "newsletter",
+      "kind": "guide",
+      "category": "Marketing",
+      "title": "Newsletter",
+      "summary": "Email campaigns to your list from the Newsletter tab.",
+      "audience": "customer",
+      "keywords": [
+        "newsletter",
+        "email",
+        "mailer"
+      ],
+      "steps": [
+        "Open **Newsletter**.",
+        "Create or edit a campaign.",
+        "Respect opt-outs — they are enforced platform-wide.",
+        "Send when content and audience are ready."
+      ],
+      "related": [
+        "support-ticket"
+      ]
+    },
+    {
+      "id": "support-ticket",
+      "kind": "guide",
+      "category": "Support",
+      "title": "Need a human? Paid help",
+      "summary": "When guides are not enough — request hands-on help from LeadPages / your partner.",
+      "audience": "customer",
+      "keywords": [
+        "help",
+        "ticket",
+        "support",
+        "human",
+        "pay"
+      ],
+      "cta": "ticket",
+      "steps": [
+        "Search this Help Centre for the app or task first.",
+        "If you are stuck, press **Request paid help**.",
+        "Describe what you need, which site, and any deadline.",
+        "We (or your assigned partner) reply in **Support** messages and quote the work if needed."
+      ],
+      "related": [
+        "getting-started"
+      ]
+    },
+    {
+      "id": "hero",
+      "kind": "app",
+      "category": "Apps · Hero",
+      "title": "Hero Banner",
+      "summary": "First impression above the fold",
+      "body": "Every trade site lives or dies on the first screen. LeadPages heroes pair a bold headline with highlighted urgency text, supporting sub-copy and icon badges — built for local service searches on mobile.",
+      "audience": "customer",
+      "sectionKey": "hero",
+      "zone": "Hero",
+      "keywords": [
+        "hero banner",
+        "hero",
+        "hero",
+        "app"
+      ],
+      "features": [
+        "**Highlight text support** — Colour a key phrase like \"We'll clear it today\" so it pops against the headline.",
+        "**Trust badge row** — Up to four icon badges (licensed, insured, same-day) sit directly under the copy.",
+        "**Mobile-first typography** — Headlines scale cleanly on phones where most emergency trade searches happen."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Hero Banner**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "First impression above the fold"
+    },
+    {
+      "id": "heroSlider",
+      "kind": "app",
+      "category": "Apps · Hero",
+      "title": "Hero Image Slider",
+      "summary": "Rotating image hero with overlay copy and CTAs",
+      "body": "Show multiple jobs or offers in rotation without rebuilding the page. Each slide carries its own headline, highlight, sub-text and dual CTAs with fade or slide transitions.",
+      "audience": "customer",
+      "sectionKey": "heroSlider",
+      "zone": "Hero",
+      "keywords": [
+        "hero image slider",
+        "heroslider",
+        "hero",
+        "app"
+      ],
+      "features": [
+        "**Multiple slides** — Add, reorder and edit slides — each with its own image, copy and button actions.",
+        "**Overlay controls** — Adjust overlay strength, text alignment and min height for desktop vs mobile.",
+        "**Autoplay & transitions** — Fade or slide transitions with configurable autoplay timing."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Hero Image Slider**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "Rotating image hero with overlay copy and CTAs"
+    },
+    {
+      "id": "heroBeforeAfter",
+      "kind": "app",
+      "category": "Apps · Hero",
+      "title": "Hero Before/After",
+      "summary": "Interactive drag-to-reveal hero transformation",
+      "body": "The highest-impact proof for renovation, rendering, cleaning and landscaping trades. A draggable wipe sits in the hero zone so proof lands before the scroll.",
+      "audience": "customer",
+      "sectionKey": "heroBeforeAfter",
+      "zone": "Hero",
+      "keywords": [
+        "hero before/after",
+        "herobeforeafter",
+        "hero",
+        "app"
+      ],
+      "features": [
+        "**Drag-to-reveal wipe** — Visitors interact with a before/after slider — higher engagement than static images.",
+        "**Labels & caption** — Custom before/after labels plus a title and caption under the wipe.",
+        "**Hero placement** — Sits in the primary viewport — not buried halfway down the page."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Hero Before/After**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "Interactive drag-to-reveal hero transformation"
+    },
+    {
+      "id": "splitHero",
+      "kind": "app",
+      "category": "Apps · Hero",
+      "title": "Split Hero",
+      "summary": "Two-column hero with live activity feed",
+      "body": "Built for the Social Proof Feed layout. The left column sells; the right column shows real-time-style job activity so visitors feel the business is busy and trusted.",
+      "audience": "customer",
+      "sectionKey": "splitHero",
+      "zone": "Hero",
+      "keywords": [
+        "split hero",
+        "splithero",
+        "hero",
+        "app"
+      ],
+      "features": [
+        "**Dual-column layout** — Headline, highlight text and dual CTAs on the left; activity feed on the right.",
+        "**Live activity lines** — Configurable feed items with job text and time labels.",
+        "**Brand colours** — Pipe and hi-vis tokens flow from the site theme automatically."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Split Hero**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "Two-column hero with live activity feed"
+    },
+    {
+      "id": "services",
+      "kind": "app",
+      "category": "Apps · Mid",
+      "title": "Services Grid",
+      "summary": "Icon cards for every service you offer",
+      "body": "The workhorse section for every trade site. Icon cards with title and short body copy — visitors scan services in seconds and jump to quote or call.",
+      "audience": "customer",
+      "sectionKey": "services",
+      "zone": "Mid",
+      "keywords": [
+        "services grid",
+        "services",
+        "mid",
+        "app"
+      ],
+      "features": [
+        "**Icon per service** — Choose from the shared icon library — no image hunting required.",
+        "**Toggle individual cards** — Turn services on/off without deleting content — handy for seasonal offers.",
+        "**Grid layout** — Responsive card grid that stacks cleanly on mobile."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Services Grid**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "Icon cards for every service you offer"
+    },
+    {
+      "id": "why",
+      "kind": "app",
+      "category": "Apps · Mid",
+      "title": "Why Choose Us",
+      "summary": "Numbered reasons or icon points that build trust",
+      "body": "Four proof points with icons or numbers — upfront pricing, on-time arrival, reviews count, years in business. Reduces bounce from comparison shoppers.",
+      "audience": "customer",
+      "sectionKey": "why",
+      "zone": "Mid",
+      "keywords": [
+        "why choose us",
+        "why",
+        "mid",
+        "app"
+      ],
+      "features": [
+        "**Icon or number mode** — Use icons for visual trades or numbered steps for process-focused messaging.",
+        "**Four-up grid** — Clean responsive grid — two columns on tablet, one on phone.",
+        "**Token support** — {{businessName}} token in the eyebrow auto-fills from site settings."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Why Choose Us**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "Numbered reasons or icon points that build trust"
+    },
+    {
+      "id": "area",
+      "kind": "app",
+      "category": "Apps · Lower",
+      "title": "Service Area Copy",
+      "summary": "Paragraph plus suburb list for local SEO",
+      "body": "Combines a short area paragraph with a suburb list — critical for local SEO and paid search quality scores. Visitors self-qualify before they call.",
+      "audience": "customer",
+      "sectionKey": "area",
+      "zone": "Lower",
+      "keywords": [
+        "service area copy",
+        "area",
+        "lower",
+        "app"
+      ],
+      "features": [
+        "**Suburb list** — Editable list of suburbs — one per line in the Command Centre.",
+        "**Intro paragraph** — Set the geographic story — ACT-wide, metro, or hyper-local.",
+        "**Eyebrow + heading** — Standard section head pattern matches the rest of the trade template."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Service Area Copy**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "Paragraph plus suburb list for local SEO"
+    },
+    {
+      "id": "reviews",
+      "kind": "app",
+      "category": "Apps · Lower",
+      "title": "Reviews Wall",
+      "summary": "Full review cards with source attribution",
+      "body": "Three or more review cards with name, quote and source (Google, Facebook, hipages). Complements Review Highlights for partners who want depth over snippets.",
+      "audience": "customer",
+      "sectionKey": "reviews",
+      "zone": "Lower",
+      "keywords": [
+        "reviews wall",
+        "reviews",
+        "lower",
+        "app"
+      ],
+      "features": [
+        "**Source badges** — Show Google, Facebook or hipages attribution per review.",
+        "**Unlimited list** — Add as many reviews as needed — list editor in Command Centre.",
+        "**Long-form quotes** — Textarea per review for full testimonial copy."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Reviews Wall**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "Full review cards with source attribution"
+    },
+    {
+      "id": "faq",
+      "kind": "app",
+      "category": "Apps · Mid",
+      "title": "FAQ Accordion",
+      "summary": "Collapsible questions that cut support calls",
+      "body": "Accordion FAQ reduces phone time spent on pricing, licensing, areas and hours. Each item is a question plus answer — expandable on click.",
+      "audience": "customer",
+      "sectionKey": "faq",
+      "zone": "Mid",
+      "keywords": [
+        "faq accordion",
+        "faq",
+        "mid",
+        "app"
+      ],
+      "features": [
+        "**Accordion UI** — Native details/summary accordion — accessible and mobile-friendly.",
+        "**Unlimited Q&As** — Add, reorder and toggle FAQ items from the list editor.",
+        "**Section headings** — Eyebrow and heading match the site design system."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **FAQ Accordion**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "Collapsible questions that cut support calls"
+    },
+    {
+      "id": "quote",
+      "kind": "app",
+      "category": "Apps · Mid",
+      "title": "Quote Form",
+      "summary": "Lead capture form with configurable fields",
+      "body": "Configurable quote form with field labels, job-type options and success message. Submissions flow to the partner CRM and site owner inbox.",
+      "audience": "customer",
+      "sectionKey": "quote",
+      "zone": "Mid",
+      "keywords": [
+        "quote form",
+        "quote",
+        "mid",
+        "app"
+      ],
+      "features": [
+        "**Field labels** — Rename every label — Name, Phone, Suburb, Job type — per client.",
+        "**Job type options** — Dropdown options editable as a list — blocked drain, hot water, etc.",
+        "**Success state** — Custom success title and message after submit."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Quote Form**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "Lead capture form with configurable fields"
+    },
+    {
+      "id": "beforeAfter",
+      "kind": "app",
+      "category": "Apps · Lower",
+      "title": "Before & After Gallery",
+      "summary": "Side-by-side or stacked transformation gallery",
+      "body": "Photo Proof layout centrepiece. Multiple before/after pairs with title, caption and optional image URLs — ideal when you have great job photos.",
+      "audience": "customer",
+      "sectionKey": "beforeAfter",
+      "zone": "Lower",
+      "keywords": [
+        "before & after gallery",
+        "beforeafter",
+        "lower",
+        "app"
+      ],
+      "features": [
+        "**Multiple pairs** — Add unlimited before/after sets via the list editor.",
+        "**Captions per pair** — Title and caption explain the job scope and suburb.",
+        "**Image URLs** — Optional before and after images — Cloudinary or external URLs."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Before & After Gallery**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "Side-by-side or stacked transformation gallery"
+    },
+    {
+      "id": "responseCards",
+      "kind": "app",
+      "category": "Apps · Upper",
+      "title": "Response Cards",
+      "summary": "Urgency cards for emergency trades",
+      "body": "Emergency Response layout feature. Cards like \"60-min response\", \"Answer every call\" and \"Quote before we start\" — reduces anxiety on urgent searches.",
+      "audience": "customer",
+      "sectionKey": "responseCards",
+      "zone": "Upper",
+      "keywords": [
+        "response cards",
+        "responsecards",
+        "upper",
+        "app"
+      ],
+      "features": [
+        "**Icon cards** — Each card has icon, title and supporting line.",
+        "**Six default cards** — Seed six; enable three for a tight row.",
+        "**Emergency layout** — Featured in the Emergency Response page preset below the hero."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Response Cards**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "Urgency cards for emergency trades"
+    },
+    {
+      "id": "projectStats",
+      "kind": "app",
+      "category": "Apps · Upper",
+      "title": "Project Stats",
+      "summary": "Big-number credibility bar",
+      "body": "Authority Builder layout centrepiece. Large stat values with labels — jobs completed, years operating, review count, emergency availability.",
+      "audience": "customer",
+      "sectionKey": "projectStats",
+      "zone": "Upper",
+      "keywords": [
+        "project stats",
+        "projectstats",
+        "upper",
+        "app"
+      ],
+      "features": [
+        "**Six stat slots** — Enable the stats that matter; hide the rest.",
+        "**Big typography** — Numbers render large for instant credibility scanning.",
+        "**Authority layout** — Pushed high on Authority Builder preset pages."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Project Stats**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "Big-number credibility bar"
+    },
+    {
+      "id": "serviceAreas",
+      "kind": "app",
+      "category": "Apps · Lower",
+      "title": "Service Areas Grid",
+      "summary": "Suburb grid for geographic dominance",
+      "body": "Service Area Dominator layout feature. Six or more suburb names in a grid — tells Google and visitors exactly where you operate.",
+      "audience": "customer",
+      "sectionKey": "serviceAreas",
+      "zone": "Lower",
+      "keywords": [
+        "service areas grid",
+        "serviceareas",
+        "lower",
+        "app"
+      ],
+      "features": [
+        "**Grid layout** — Suburbs render in a responsive tag grid.",
+        "**List editor** — Add suburbs one by one — no comma-separated paste errors.",
+        "**SEO layout** — Featured early on Service Area Dominator preset."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Service Areas Grid**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "Suburb grid for geographic dominance"
+    },
+    {
+      "id": "reviewHighlights",
+      "kind": "app",
+      "category": "Apps · Upper",
+      "title": "Review Highlights",
+      "summary": "Star-rated snippets directly under the hero",
+      "body": "Short quote snippets with star rating and name — three cards designed for the zone directly under the hero on Reviews First pages.",
+      "audience": "customer",
+      "sectionKey": "reviewHighlights",
+      "zone": "Upper",
+      "keywords": [
+        "review highlights",
+        "reviewhighlights",
+        "upper",
+        "app"
+      ],
+      "features": [
+        "**Star display** — Five-star strings per highlight card.",
+        "**Short quotes** — Punchy one-liners — not full review walls.",
+        "**Reviews First layout** — Sits immediately below hero on the Reviews First preset."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Review Highlights**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "Star-rated snippets directly under the hero"
+    },
+    {
+      "id": "featuredProjects",
+      "kind": "app",
+      "category": "Apps · Lower",
+      "title": "Project Portfolio",
+      "summary": "Large image cards for premium project showcase",
+      "body": "Premium Showcase layout feature. Large project cards with title, type tag, location, description and optional gallery — built for builders, landscapers and renovators.",
+      "audience": "customer",
+      "sectionKey": "featuredProjects",
+      "zone": "Lower",
+      "keywords": [
+        "project portfolio",
+        "featuredprojects",
+        "lower",
+        "app"
+      ],
+      "features": [
+        "**Project cards** — Title, tag, location, description and image per project.",
+        "**Image gallery** — Multiple images per project with lightbox.",
+        "**Head badges** — Optional badge row for credentials above the grid."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Project Portfolio**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "Large image cards for premium project showcase"
+    },
+    {
+      "id": "specialOffer",
+      "kind": "app",
+      "category": "Apps · Upper",
+      "title": "Special Offer Banner",
+      "summary": "Limited-time offer strip for ad landing pages",
+      "body": "Offer Funnel layout centrepiece. Eyebrow, heading, intro, bullet points and CTA — designed to pair with paid ads promoting a specific deal.",
+      "audience": "customer",
+      "sectionKey": "specialOffer",
+      "zone": "Upper",
+      "keywords": [
+        "special offer banner",
+        "specialoffer",
+        "upper",
+        "app"
+      ],
+      "features": [
+        "**Bullet points** — List what is included in the offer.",
+        "**CTA button** — Drives straight into the quote form below.",
+        "**Offer Funnel layout** — Sits between hero and quote on ad landing pages."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Special Offer Banner**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "Limited-time offer strip for ad landing pages"
+    },
+    {
+      "id": "trustBar",
+      "kind": "app",
+      "category": "Apps · Upper",
+      "title": "Trust Bar",
+      "summary": "Give visitors a reason to trust you immediately",
+      "body": "Show services, guarantees or visual options in a clear strip under the hero. Text-and-icon or image-tile layouts, industry presets, and the same editor used inside LeadPages.",
+      "audience": "customer",
+      "sectionKey": "trustBar",
+      "zone": "Upper",
+      "keywords": [
+        "trust bar",
+        "trustbar",
+        "upper",
+        "app"
+      ],
+      "features": [
+        "**Text and icons** — Compact badge strip for services, promises and credentials.",
+        "**Image tiles** — Full-width visual tiles when visitors need to recognise options quickly.",
+        "**Industry presets** — Start from trades, cafés, clinics and more — then make it yours."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Trust Bar**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "Scrolling badge strip under the hero"
+    },
+    {
+      "id": "serviceProcess",
+      "kind": "app",
+      "category": "Apps · Mid",
+      "title": "How It Works",
+      "summary": "Step-by-step process timeline",
+      "body": "Five-step timeline — call, inspect, quote, complete, guarantee. Reduces anxiety for first-time customers who have not hired a tradie before.",
+      "audience": "customer",
+      "sectionKey": "serviceProcess",
+      "zone": "Mid",
+      "keywords": [
+        "how it works",
+        "serviceprocess",
+        "mid",
+        "app"
+      ],
+      "features": [
+        "**Five steps** — Title and body per step — reorderable list.",
+        "**Process clarity** — Especially valuable for renovation and quote-heavy trades.",
+        "**Mid-page placement** — Typically sits after services on classic layouts."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **How It Works**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "Step-by-step process / booking journey"
+    },
+    {
+      "id": "certifications",
+      "kind": "app",
+      "category": "Apps · Lower",
+      "title": "Certifications",
+      "summary": "License and accreditation cards",
+      "body": "Three accreditation cards with name, body, number and expiry — Master Plumbers, public liability, trade licence. Critical for regulated trades.",
+      "audience": "customer",
+      "sectionKey": "certifications",
+      "zone": "Lower",
+      "keywords": [
+        "certifications",
+        "certifications",
+        "lower",
+        "app"
+      ],
+      "features": [
+        "**Three card slots** — Name, description, licence number and expiry per card.",
+        "**Optional images** — Upload badge images or use text-only cards.",
+        "**Regulated trades** — Plumbing, gas, electrical and asbestos partners need this visible."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Certifications**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "License and accreditation cards"
+    },
+    {
+      "id": "finance",
+      "kind": "app",
+      "category": "Apps · Mid",
+      "title": "Finance Options",
+      "summary": "Weekly payment callout for larger jobs",
+      "body": "Finance section with eyebrow, heading, weekly amount, period and disclaimer — pairs with third-party finance providers for kitchens, solar and renovations.",
+      "audience": "customer",
+      "sectionKey": "finance",
+      "zone": "Mid",
+      "keywords": [
+        "finance options",
+        "finance",
+        "mid",
+        "app"
+      ],
+      "features": [
+        "**Weekly amount display** — Show \"from $38/week\" style pricing.",
+        "**Disclaimer field** — Compliance text for finance terms.",
+        "**CTA to quote** — \"Ask about finance\" drives qualified enquiries."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Finance Options**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "Weekly payment callout for larger jobs"
+    },
+    {
+      "id": "estimateBuilder",
+      "kind": "app",
+      "category": "Apps · Mid",
+      "title": "Estimate Builder",
+      "summary": "Interactive ballpark pricing wizard",
+      "body": "Multi-step estimate wizard with configurable options and min/max ranges per answer — blocked drains, hot water, urgency surcharges. Sets price expectations early.",
+      "audience": "customer",
+      "sectionKey": "estimateBuilder",
+      "zone": "Mid",
+      "keywords": [
+        "estimate builder",
+        "estimatebuilder",
+        "mid",
+        "app"
+      ],
+      "features": [
+        "**Configurable steps** — Group options by step — \"What do you need?\", \"How urgent?\"",
+        "**Min/max ranges** — Each answer adds to a running estimate range.",
+        "**Disclaimer** — \"Guide only\" text protects against fixed-price expectations."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Estimate Builder**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "Interactive ballpark pricing wizard"
+    },
+    {
+      "id": "emergencyAvailability",
+      "kind": "app",
+      "category": "Apps · Upper",
+      "title": "Emergency Availability",
+      "summary": "After-hours status and schedule display",
+      "body": "Displays weekday and weekend hours, after-hours messaging and emergency CTA — critical for plumbers, locksmiths and electricians running 24/7 ads.",
+      "audience": "customer",
+      "sectionKey": "emergencyAvailability",
+      "zone": "Upper",
+      "keywords": [
+        "emergency availability",
+        "emergencyavailability",
+        "upper",
+        "app"
+      ],
+      "features": [
+        "**Schedule mode** — Set open/close times per weekday and weekend.",
+        "**Available now label** — \"Available now\" or custom status when within hours.",
+        "**After-hours copy** — Separate message for outside business hours."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Emergency Availability**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "After-hours status and schedule display"
+    },
+    {
+      "id": "serviceAreaMap",
+      "kind": "app",
+      "category": "Apps · Lower",
+      "title": "Service Area Map",
+      "summary": "Map section with coverage intro",
+      "body": "Eyebrow, heading and intro for a map-style coverage block — pair with suburb lists and area copy for geographic dominance.",
+      "audience": "customer",
+      "sectionKey": "serviceAreaMap",
+      "zone": "Lower",
+      "keywords": [
+        "service area map",
+        "serviceareamap",
+        "lower",
+        "app"
+      ],
+      "features": [
+        "**Coverage intro** — Explain ACT-wide or metro coverage in plain language.",
+        "**Map-ready layout** — Section styled for map embed or static coverage graphic.",
+        "**Local trust** — Visitors confirm you service their area before enquiring."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Service Area Map**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "Map section with coverage intro"
+    },
+    {
+      "id": "navMenu",
+      "kind": "app",
+      "category": "Apps · Navigation",
+      "title": "Navigation Menu",
+      "summary": "Custom nav links — pills or underline style",
+      "body": "Configurable nav with pill or underline style, left or centre alignment and custom link items — useful for multi-page sites and anchor links.",
+      "audience": "customer",
+      "sectionKey": "navMenu",
+      "zone": "Navigation",
+      "keywords": [
+        "navigation menu",
+        "navmenu",
+        "navigation",
+        "app"
+      ],
+      "features": [
+        "**Style options** — Pills or underline; left or centre alignment.",
+        "**Custom links** — Add label + URL pairs — internal anchors or external pages.",
+        "**Off by default** — Enable only when the client needs extra navigation."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Navigation Menu**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "Custom nav links — pills or underline style"
+    },
+    {
+      "id": "textBox",
+      "kind": "app",
+      "category": "Apps · Mid",
+      "title": "Text Box",
+      "summary": "Flexible text block with optional side image",
+      "body": "Full-width or image-side text block with eyebrow, heading, intro and rich paragraph. Place after hero for \"our story\" or methodology content.",
+      "audience": "customer",
+      "sectionKey": "textBox",
+      "zone": "Mid",
+      "keywords": [
+        "text box",
+        "textbox",
+        "mid",
+        "app"
+      ],
+      "features": [
+        "**Image optional** — Right or left image — or text-only full width.",
+        "**Alignment control** — Left or centre text alignment.",
+        "**Token support** — {{businessName}} in heading auto-fills."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Text Box**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "Flexible text block with optional side image"
+    },
+    {
+      "id": "projectFeed",
+      "kind": "app",
+      "category": "Apps · Lower",
+      "title": "Project Feed",
+      "summary": "Card feed of latest completed jobs",
+      "body": "Manual or Instagram-sourced project cards with title, location, service, date and image — core of the Social Proof Feed layout.",
+      "audience": "customer",
+      "sectionKey": "projectFeed",
+      "zone": "Lower",
+      "keywords": [
+        "project feed",
+        "projectfeed",
+        "lower",
+        "app"
+      ],
+      "features": [
+        "**Manual entries** — Add jobs with title, location, service tag and date.",
+        "**Sort & count** — Newest first; control how many posts show.",
+        "**Lightbox detail** — Click through to full job detail panel."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Project Feed**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "Card feed of latest completed jobs"
+    },
+    {
+      "id": "jobsFeed",
+      "kind": "app",
+      "category": "Apps · Lower",
+      "title": "Jobs Feed",
+      "summary": "Compact \"fresh off the tools\" job list",
+      "body": "Compact job entries with title, location, time and quick result line — designed for high-velocity social proof layouts.",
+      "audience": "customer",
+      "sectionKey": "jobsFeed",
+      "zone": "Lower",
+      "keywords": [
+        "jobs feed",
+        "jobsfeed",
+        "lower",
+        "app"
+      ],
+      "features": [
+        "**Quick result line** — One-line outcome per job — \"Cleared in 45 min\".",
+        "**Image optional** — Thumbnail per job when photos are available.",
+        "**Time labels** — \"Just now\", \"This morning\" style labels."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Jobs Feed**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "Compact \"fresh off the tools\" job list"
+    },
+    {
+      "id": "beforeAfterFeed",
+      "kind": "app",
+      "category": "Apps · Mid",
+      "title": "Before/After Feed",
+      "summary": "Scrolling feed of transformation pairs",
+      "body": "Feed-style before/after cards with title, location, time, caption and image pair — more entries than the static gallery, optimised for proof layouts.",
+      "audience": "customer",
+      "sectionKey": "beforeAfterFeed",
+      "zone": "Mid",
+      "keywords": [
+        "before/after feed",
+        "beforeafterfeed",
+        "mid",
+        "app"
+      ],
+      "features": [
+        "**Feed format** — Compact cards designed for vertical scrolling feeds.",
+        "**Before & after images** — Optional image URLs per side.",
+        "**Caption support** — Explain scope in one line per transformation."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Before/After Feed**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "Scrolling feed of transformation pairs"
+    },
+    {
+      "id": "videoReels",
+      "kind": "app",
+      "category": "Apps · Lower",
+      "title": "Video Reels",
+      "summary": "Short-form video cards from the job site",
+      "body": "Video cards with title, duration tag, thumbnail and external video URL — opens in new tab. Perfect for Instagram Reels and YouTube Shorts.",
+      "audience": "customer",
+      "sectionKey": "videoReels",
+      "zone": "Lower",
+      "keywords": [
+        "video reels",
+        "videoreels",
+        "lower",
+        "app"
+      ],
+      "features": [
+        "**Thumbnail per reel** — Upload or link a poster image.",
+        "**External video link** — YouTube, Instagram or Vimeo URLs.",
+        "**Tag/duration** — \"0:42\" or \"New\" labels per card."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Video Reels**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "Short-form video cards from the job site"
+    },
+    {
+      "id": "activityTimeline",
+      "kind": "app",
+      "category": "Apps · Lower",
+      "title": "Activity Timeline",
+      "summary": "Chronological \"what we are working on\" feed",
+      "body": "Vertical timeline with events — job started, quote sent, review received. Shows the business is active today, not a static brochure.",
+      "audience": "customer",
+      "sectionKey": "activityTimeline",
+      "zone": "Lower",
+      "keywords": [
+        "activity timeline",
+        "activitytimeline",
+        "lower",
+        "app"
+      ],
+      "features": [
+        "**Event list** — Title, detail and time per timeline event.",
+        "**Live feel** — \"Working on blocked drain in Belconnen\" style entries.",
+        "**Social Proof layout** — Pairs with Activity Counter and Proof Stream."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Activity Timeline**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "Chronological \"what we are working on\" feed"
+    },
+    {
+      "id": "customerReactions",
+      "kind": "app",
+      "category": "Apps · Lower",
+      "title": "Customer Reactions",
+      "summary": "Short reaction quotes in a feed format",
+      "body": "Short reaction cards — \"Called at 7am, fixed by 9\" — designed for feed layouts where full review walls feel too heavy.",
+      "audience": "customer",
+      "sectionKey": "customerReactions",
+      "zone": "Lower",
+      "keywords": [
+        "customer reactions",
+        "customerreactions",
+        "lower",
+        "app"
+      ],
+      "features": [
+        "**Compact quotes** — One or two lines per reaction.",
+        "**Name attribution** — Customer first name or initial.",
+        "**Feed optimised** — Card size tuned for proof stream stacks."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Customer Reactions**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "Short reaction quotes in a feed format"
+    },
+    {
+      "id": "proofStream",
+      "kind": "app",
+      "category": "Apps · Lower",
+      "title": "Proof Stream",
+      "summary": "Mixed proof cards — jobs, reviews, video, before/after",
+      "body": "Single feed mixing job cards, photos, reviews, videos and before/afters — each with CTA. The centrepiece of the Social Proof Feed layout.",
+      "audience": "customer",
+      "sectionKey": "proofStream",
+      "zone": "Lower",
+      "keywords": [
+        "proof stream",
+        "proofstream",
+        "lower",
+        "app"
+      ],
+      "features": [
+        "**Six card types** — Job, photo, review, video, before/after — per card.",
+        "**Per-card CTA** — Quote or call button on each proof item.",
+        "**Mixed media** — One feed instead of five separate sections."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Proof Stream**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "Mixed proof cards — jobs, reviews, video, before/after"
+    },
+    {
+      "id": "activityCounter",
+      "kind": "app",
+      "category": "Apps · Lower",
+      "title": "Activity Counter",
+      "summary": "Live-style numeric counters",
+      "body": "Three large counters with value and label — jobs this month, active teams, years serving. Pairs with Split Hero and Activity Timeline.",
+      "audience": "customer",
+      "sectionKey": "activityCounter",
+      "zone": "Lower",
+      "keywords": [
+        "activity counter",
+        "activitycounter",
+        "lower",
+        "app"
+      ],
+      "features": [
+        "**Three counters** — Number plus label per stat.",
+        "**Big numbers** — Large typography for scan-value.",
+        "**Social Proof layout** — Sits below Split Hero on proof-heavy pages."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Activity Counter**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "Live-style numeric counters"
+    },
+    {
+      "id": "crew",
+      "kind": "app",
+      "category": "Apps · Mid",
+      "title": "Meet the Team",
+      "summary": "Team member cards with photo and role",
+      "body": "Team member cards with name, role, specialty and photo — builds trust for residential clients who want to know who is coming to their door.",
+      "audience": "customer",
+      "sectionKey": "crew",
+      "zone": "Mid",
+      "keywords": [
+        "meet the team",
+        "crew",
+        "mid",
+        "app"
+      ],
+      "features": [
+        "**Three member slots** — Add owner, senior tradie, apprentice — or whole crew.",
+        "**Photo per member** — Square headshots — optional but recommended.",
+        "**Role & specialty** — \"Master plumber · Bathroom renovations\" style detail."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Meet the Team**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "Team member cards with photo and role"
+    },
+    {
+      "id": "instaGallery",
+      "kind": "app",
+      "category": "Apps · Lower",
+      "title": "Instagram Gallery",
+      "summary": "Grid of Instagram posts on your site",
+      "body": "Pulls from connected Instagram or manual grid — eyebrow, heading, post count and column layout. Keeps the site fresh with social content.",
+      "audience": "customer",
+      "sectionKey": "instaGallery",
+      "zone": "Lower",
+      "keywords": [
+        "instagram gallery",
+        "instagallery",
+        "lower",
+        "app"
+      ],
+      "features": [
+        "**Column control** — 4-column desktop grid — responsive on mobile.",
+        "**Post count** — Show 4, 8 or 12 recent posts.",
+        "**Instagram OAuth** — Connect once in Command Centre — auto-sync path."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Instagram Gallery**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "Grid of Instagram posts on your site"
+    },
+    {
+      "id": "igProjectFeed",
+      "kind": "app",
+      "category": "Apps · Lower",
+      "title": "Instagram Project Feed",
+      "summary": "Instagram grid styled as project cards",
+      "body": "Like Project Feed but sourced from Instagram — title from caption, tag label, call and quote buttons with custom colours.",
+      "audience": "customer",
+      "sectionKey": "igProjectFeed",
+      "zone": "Lower",
+      "keywords": [
+        "instagram project feed",
+        "igprojectfeed",
+        "lower",
+        "app"
+      ],
+      "features": [
+        "**Card styling** — Text colour, button colours and tag label configurable.",
+        "**CTA buttons** — Call now and Get a quote on each card.",
+        "**Title source** — Pull from caption or hide title."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Instagram Project Feed**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "Instagram grid styled as project cards"
+    },
+    {
+      "id": "premiumGallery",
+      "kind": "app",
+      "category": "Apps · Lower",
+      "title": "Premium Gallery",
+      "summary": "Design-led image galleries for large photo collections",
+      "body": "A flexible photography-first gallery for builders, landscapers, renovators, architects, photographers and venues. Supports simple grids, tag filters, category browsing and album navigation without replacing Project Portfolio.",
+      "audience": "customer",
+      "sectionKey": "premiumGallery",
+      "zone": "Lower",
+      "keywords": [
+        "premium gallery",
+        "premiumgallery",
+        "lower",
+        "app"
+      ],
+      "features": [
+        "**Structure modes** — Simple, filtered, categories, or categories → albums → images.",
+        "**Premium layouts** — Smart mosaic, masonry, justified rows, filmstrip, slideshow and more.",
+        "**Lightbox zoom** — Click to enlarge with captions, thumbnails and keyboard navigation.",
+        "**Theme colours** — Inherits website colours with labelled swatch overrides."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Premium Gallery**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "Design-led image galleries for large photo collections"
+    },
+    {
+      "id": "seoCommand",
+      "kind": "app",
+      "category": "Apps · Mid",
+      "title": "SEO Command Centre",
+      "summary": "Local SEO workflows inside Manage",
+      "body": "SEO Command Centre answers how visible a trade site is, what search is creating, what is broken, and what to do next. Partners sell SEO setup without leaving LeadPages.",
+      "audience": "customer",
+      "sectionKey": "seoCommand",
+      "zone": "Mid",
+      "keywords": [
+        "seo command centre",
+        "seocommand",
+        "mid",
+        "app"
+      ],
+      "features": [
+        "**Home dashboard** — Visibility scores, organic clicks, lead value and technical health in plain language.",
+        "**Next Best Actions** — Prioritised queue — optimise pages, fix titles, create location pages, or hand off to Brain drafts.",
+        "**Competition & Local** — Keyword gaps, NAP checks, Maps opportunities and Authority tools (DataForSEO-backed).",
+        "**Human-in-the-loop** — No silent AI publish — preview, confirm, then apply."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **SEO Command Centre**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ]
+    },
+    {
+      "id": "advertising",
+      "kind": "app",
+      "category": "Apps · Mid",
+      "title": "Advertising",
+      "summary": "Google Ads performance in Manage",
+      "body": "Advertising lives on the app domain with secure OAuth. Partners connect an Ads account, monitor campaigns and keep conversion tracking healthy without leaving LeadPages.",
+      "audience": "customer",
+      "sectionKey": "advertising",
+      "zone": "Mid",
+      "keywords": [
+        "advertising",
+        "advertising",
+        "mid",
+        "app"
+      ],
+      "features": [
+        "**Google Ads OAuth** — Connect on app.leadpages.com.au with encrypted refresh tokens and MCC support.",
+        "**Campaign oversight** — Overview, campaigns and builder tabs for day-to-day paid media checks.",
+        "**Tracking readiness** — Align Ads with LeadPages conversion and event tracking.",
+        "**Partner-safe secrets** — Developer token and encryption keys stay server-side — never in the browser."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Advertising**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ]
+    },
+    {
+      "id": "seoText",
+      "kind": "app",
+      "category": "Apps · Lower",
+      "title": "SEO Text",
+      "summary": "On-page article copy with H1/H2 structure",
+      "body": "Give every trade homepage a proper SEO article: one H1, clear section headings, paragraphs that keep line breaks, and colours that match the brand container.",
+      "audience": "customer",
+      "sectionKey": "seoText",
+      "zone": "Lower",
+      "keywords": [
+        "seo text",
+        "seotext",
+        "lower",
+        "app"
+      ],
+      "features": [
+        "**Proper heading structure** — H1 + optional H2 field; short title lines in the body become equal bold headings.",
+        "**Bold toolbar** — Select text and Bold (Ctrl/⌘B) or mark a Heading line in the editor.",
+        "**Colour controls** — Eyebrow, H1, H2, heading and paragraph colours for dark or light containers.",
+        "**Image placement** — Beside or wrap layouts with left/right image side."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **SEO Text**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "SEO-focused H1, H2, supporting copy, optional image and FAQ blocks"
+    },
+    {
+      "id": "featureStrip",
+      "kind": "app",
+      "category": "Apps · Upper",
+      "title": "Feature Strip",
+      "summary": "Icon highlights under the hero",
+      "body": "Feature Strip turns three to six selling points into a scannable row — ideal under heroes and trust bars.",
+      "audience": "customer",
+      "sectionKey": "featureStrip",
+      "zone": "Upper",
+      "keywords": [
+        "feature strip",
+        "featurestrip",
+        "upper",
+        "app"
+      ],
+      "features": [
+        "**Icon + copy cards** — Each item has icon, title and supporting text.",
+        "**Header optional** — Eyebrow, heading and intro above the grid.",
+        "**Theme-aware colours** — Section colours fall back to Branding theme tokens."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Feature Strip**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "featureStrip"
+    },
+    {
+      "id": "onlineQuote",
+      "kind": "app",
+      "category": "Apps · Mid",
+      "title": "Online Quote",
+      "summary": "Verified quote flow on the site",
+      "body": "Online Quote captures structured job details and verifies the lead before showing a price path.",
+      "audience": "customer",
+      "sectionKey": "onlineQuote",
+      "zone": "Mid",
+      "keywords": [
+        "online quote",
+        "onlinequote",
+        "mid",
+        "app"
+      ],
+      "features": [
+        "**Verified lead path** — Email verification before revealing quote totals.",
+        "**Brand colours** — Eyebrow, heading and intro colours with theme defaults.",
+        "**Position flexible** — Place near the classic quote form or higher on the page."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Online Quote**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "onlineQuote"
+    },
+    {
+      "id": "promotions",
+      "kind": "app",
+      "category": "Apps · Upper",
+      "title": "Promotions & Offers",
+      "summary": "Seasonal offers, front and centre",
+      "body": "Create urgency and offers with the same Promotions Engine used in the App Command Centre.",
+      "audience": "customer",
+      "sectionKey": "promotions",
+      "zone": "Upper",
+      "keywords": [
+        "promotions & offers",
+        "promotions",
+        "upper",
+        "app"
+      ],
+      "features": [
+        "**Ten offer types** — Weekly, deadline, spots, seasonal, suburb, finance, first-time, priority, social proof and mystery.",
+        "**Placements** — Below hero, inline, floating bar, sticky strip or popup.",
+        "**Banner or card** — Match the offer style to the campaign."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Promotions & Offers**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ]
+    },
+    {
+      "id": "customHtml",
+      "kind": "app",
+      "category": "Apps · Mid",
+      "title": "Custom HTML",
+      "summary": "Embed HTML, CSS and JS — not an iframe",
+      "body": "Use Custom HTML for calculators, tools and one-off widgets that need to live inside your site layout.",
+      "audience": "customer",
+      "sectionKey": "customHtml",
+      "zone": "Mid",
+      "keywords": [
+        "custom html",
+        "customhtml",
+        "mid",
+        "app"
+      ],
+      "features": [
+        "**Inline embed** — Renders in the page flow — not locked inside an iframe.",
+        "**Attach CSS & JS** — Add stylesheet and script URLs that load with the block.",
+        "**Page positioning** — Reorder like any other app on the homepage or a landing page."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Custom HTML**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ]
+    },
+    {
+      "id": "searchCanvas",
+      "kind": "app",
+      "category": "Apps · Mid",
+      "title": "SearchCanvas",
+      "summary": "Visual SEO Content",
+      "body": "SearchCanvas takes AI or manual SEO copy and lays it onto a designed visual canvas — eyebrow, heading, intro, service tabs, stroke icons and images — instead of one long text block.",
+      "audience": "customer",
+      "sectionKey": "searchCanvas",
+      "zone": "Mid",
+      "keywords": [
+        "searchcanvas",
+        "searchcanvas",
+        "mid",
+        "app"
+      ],
+      "features": [
+        "**Visual SEO tabs** — Structured service topics with headings, intros, bullets and links.",
+        "**Theme-aware design** — Master accent colour and theme defaults — no hardcoded greens or greys.",
+        "**Mobile accordion** — Desktop tabs become an accessible accordion on small screens.",
+        "**AI Homepage SEO** — SEO Command Centre can write structured JSON straight into SearchCanvas."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **SearchCanvas**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ],
+      "purpose": "Visual tabbed SEO content section with icons, images and structured service topics"
+    },
+    {
+      "id": "scrollingSponsorBanner",
+      "kind": "app",
+      "category": "Apps · Upper",
+      "title": "Scrolling Sponsor Banner",
+      "summary": "Sponsors and partners, always in motion",
+      "body": "Keep partner logos moving without hacking a custom carousel into every client site.",
+      "audience": "customer",
+      "sectionKey": "scrollingSponsorBanner",
+      "zone": "Upper",
+      "keywords": [
+        "scrolling sponsor banner",
+        "scrollingsponsorbanner",
+        "upper",
+        "app"
+      ],
+      "features": [
+        "**Seamless loop** — Measured travel distance keeps speed consistent as tiles change.",
+        "**Heading + tiles** — Optional eyebrow, title and intro above logo or promo tiles.",
+        "**Accessibility** — Pause control, reduced-motion grid and clone-safe keyboard focus."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Scrolling Sponsor Banner**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ]
+    },
+    {
+      "id": "aboutUs",
+      "kind": "app",
+      "category": "Apps · Mid",
+      "title": "About Us",
+      "summary": "Three-column founder story with optional CTA band",
+      "body": "Tell the business story the way a premium brochure would: eyebrow, serif heading, intro, longer body, outline button, founder photo and quote. Optionally add a navy call-to-action band underneath.",
+      "audience": "customer",
+      "sectionKey": "aboutUs",
+      "zone": "Mid",
+      "keywords": [
+        "about us",
+        "aboutus",
+        "mid",
+        "app"
+      ],
+      "features": [
+        "**Story layout** — First option is the three-column story layout from the design mockup.",
+        "**Optional blue band** — Navy CTA strip with heading, button and tagline — turn on when you need it.",
+        "**Theme accent** — Eyebrow, rule and buttons follow brand hi-vis, or pick a custom accent."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **About Us**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ]
+    },
+    {
+      "id": "mapHours",
+      "kind": "app",
+      "category": "Apps · Lower",
+      "title": "Map & Hours",
+      "summary": "Find us: address, live map and opening hours",
+      "body": "The “Find us” section every local business needs. Type the address in the editor, press Find on map to pin it, add opening hours row by row and switch the phone number on or off.",
+      "audience": "customer",
+      "sectionKey": "mapHours",
+      "zone": "Lower",
+      "keywords": [
+        "map & hours",
+        "maphours",
+        "lower",
+        "app"
+      ],
+      "features": [
+        "**Address lookup** — Find the address and pin the map in one click.",
+        "**Opening hours** — One row per day or group of days — edit, hide or reorder.",
+        "**Get directions** — Button opens Google Maps directions to the business."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Map & Hours**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ]
+    },
+    {
+      "id": "ctaBanner",
+      "kind": "app",
+      "category": "Apps · Lower",
+      "title": "CTA Banner",
+      "summary": "A bold call to action with one or two buttons",
+      "body": "Drop a strong call to action anywhere on the page. Each button can open the live booking calendar, call the business, jump to the quote form, scroll to any app or open a link — brand, dark, light or photo styles.",
+      "audience": "customer",
+      "sectionKey": "ctaBanner",
+      "zone": "Lower",
+      "keywords": [
+        "cta banner",
+        "ctabanner",
+        "lower",
+        "app"
+      ],
+      "features": [
+        "**Two buttons** — Main and second button, each with its own action.",
+        "**Booking calendar** — Opens the live hire calendar when Bookings is set up.",
+        "**Four styles** — Brand colour, dark, light card or a photo background."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **CTA Banner**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ]
+    },
+    {
+      "id": "storyTimeline",
+      "kind": "app",
+      "category": "Apps · Mid",
+      "title": "Timeline",
+      "summary": "Your story in milestones: year, title and a short line",
+      "body": "Tell the story behind the business — or how a job, product or partnership comes together — as a row of milestones: year, title and a short line. Line, alternating, side rail or photo-card layouts with ring, dot, icon or year markers.",
+      "audience": "customer",
+      "sectionKey": "storyTimeline",
+      "zone": "Mid",
+      "keywords": [
+        "timeline",
+        "storytimeline",
+        "mid",
+        "app"
+      ],
+      "features": [
+        "**Four layouts** — Line, alternating with photos, side rail or photo cards.",
+        "**Markers your way** — Ring, dot, an icon per milestone or the year in a circle.",
+        "**Phone friendly** — Every layout turns into a neat side rail on phones."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Timeline**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ]
+    },
+    {
+      "id": "productExplorer",
+      "kind": "app",
+      "category": "Apps · Mid",
+      "title": "Product Explorer",
+      "summary": "Let visitors filter your models and compare floor plans",
+      "body": "Show a range of models the way buyers want to choose them. Visitors pick a category, filter by type and click a model to see its floor plan, elevations and photos beside the key details, then enquire about that exact model in one click.",
+      "audience": "customer",
+      "sectionKey": "productExplorer",
+      "zone": "Mid",
+      "keywords": [
+        "product explorer",
+        "productexplorer",
+        "mid",
+        "app"
+      ],
+      "features": [
+        "**Floor plans first** — A large viewer for each model's floor plan, elevations and photos, with zoom and full screen.",
+        "**Model-specific enquiries** — Enquire selects the model in your quote form, and Back keeps the selection.",
+        "**Phone friendly** — Compact filters and a sideways-scrolling model strip above the plan."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Product Explorer**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ]
+    },
+    {
+      "id": "storyRows",
+      "kind": "app",
+      "category": "Apps · Mid",
+      "title": "Story Rows",
+      "summary": "Alternating photo or drawing and text rows that tell your story",
+      "body": "Tell a story in rows: each one has a heading, text, an optional button and a photo or line drawing on the left or right, on its own background. Photos can fill to the page edge or fade softly into the row colour.",
+      "audience": "customer",
+      "sectionKey": "storyRows",
+      "zone": "Mid",
+      "keywords": [
+        "story rows",
+        "storyrows",
+        "mid",
+        "app"
+      ],
+      "features": [
+        "**Photo or drawing** — Photos fill their half to the page edge; drawings show whole with space around them.",
+        "**Each row its own look** — Image left or right, page, soft, tint or dark background, and photos that fade into the row.",
+        "**Phone friendly** — On phones the image sits neatly above the text."
+      ],
+      "steps": [
+        "Open **Page editor** (or App Marketplace) and find **Story Rows**.",
+        "Turn the app **on** if it is off — locked mode lets you edit without accidentally disabling apps.",
+        "Edit the heading, copy, images and lists for that section.",
+        "Use **Live Preview** to check phone and desktop.",
+        "When happy, press **Publish** so visitors see the update."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "marketplace",
+        "page-editor",
+        "images",
+        "support-ticket"
+      ]
+    },
+    {
+      "id": "orderStorefront",
+      "kind": "app",
+      "category": "Apps · Mid",
+      "title": "Order Storefront",
+      "summary": "On-page shop section powered by the Orders engine.",
+      "body": "Shows products from your Orders catalogue on the public site. Configure products in the Orders tab first.",
+      "audience": "customer",
+      "sectionKey": "orderStorefront",
+      "zone": "Mid",
+      "keywords": [
+        "orders",
+        "shop",
+        "storefront",
+        "cart"
+      ],
+      "steps": [
+        "Open **Orders** and add products/categories.",
+        "Enable **Order Storefront** in App Marketplace.",
+        "Style colours and shop layout in Page editor.",
+        "Publish and test a sample order."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "orders",
+        "marketplace",
+        "support-ticket"
+      ]
+    },
+    {
+      "id": "bookingStorefront",
+      "kind": "app",
+      "category": "Apps · Mid",
+      "title": "Bookings (on-site)",
+      "summary": "Booking / hire callout section linked to the Bookings desk.",
+      "body": "Lets visitors start a booking from the website. Manage availability in the Bookings tab.",
+      "audience": "customer",
+      "sectionKey": "bookingStorefront",
+      "zone": "Mid",
+      "keywords": [
+        "bookings",
+        "appointments",
+        "hire"
+      ],
+      "steps": [
+        "Set up services in **Bookings**.",
+        "Enable the Bookings section in Marketplace.",
+        "Edit on-page copy in Page editor.",
+        "Publish and try a test booking."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "bookings",
+        "marketplace",
+        "support-ticket"
+      ]
+    },
+    {
+      "id": "emerg",
+      "kind": "app",
+      "category": "Apps · Hero",
+      "title": "Emergency / urgency top bar",
+      "summary": "Slim urgency bar for phone-first emergency trades.",
+      "body": "Shows a persistent call-focused strip for after-hours or emergency messaging.",
+      "audience": "customer",
+      "sectionKey": "emerg",
+      "zone": "Hero",
+      "keywords": [
+        "emergency",
+        "phone",
+        "urgency",
+        "top bar"
+      ],
+      "steps": [
+        "Open Page editor → Emergency / top bar.",
+        "Set phone and urgency copy.",
+        "Preview on mobile.",
+        "Publish."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "emergencyAvailability",
+        "marketplace"
+      ]
+    },
+    {
+      "id": "promotions-hero",
+      "kind": "app",
+      "category": "Apps · Hero",
+      "title": "Promotions (hero placement)",
+      "summary": "Promotions Engine placed in the hero zone.",
+      "body": "Same Promotions app, positioned for maximum urgency above the fold.",
+      "audience": "customer",
+      "sectionKey": "promotions-hero",
+      "zone": "Hero",
+      "keywords": [
+        "promotions",
+        "offer",
+        "hero"
+      ],
+      "steps": [
+        "Enable Promotions in Marketplace.",
+        "Choose hero placement and offer type.",
+        "Set dates, CTA, and colours.",
+        "Publish."
+      ],
+      "diagram": "page-zones",
+      "related": [
+        "promotions",
+        "specialOffer"
+      ]
+    }
+  ],
+  "agentNotes": {
+    "contentFile": "assets/help/catalogue.json",
+    "overlay": "assets/lp-help-centre.js",
+    "openApi": "window.LPHelp.open(sectionKeyOrTopicId)",
+    "showApi": "window.LPHelp.showMe(sectionKeyOrTopicId) — scrolls Manage to the control",
+    "ticketApi": "POST /api/help/ticket",
+    "kinds": "guide | app | journey (trail[]) | fix (choices[])",
+    "rule": "When adding a marketplace app, add a topic with id=sectionKey, kind=app, zone, steps, features, related including support-ticket. Journeys use kind=journey and trail targets (view, section, selector). Fixes use kind=fix and choices."
+  }
+}

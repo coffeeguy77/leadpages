@@ -44,6 +44,7 @@
 <link rel="stylesheet" href="/assets/lp-themes.css?v=editor-chips-3">
 <link rel="stylesheet" href="/assets/lp-ui.css?v=2">
 <link rel="stylesheet" href="/assets/lp-messages-embed.css">
+<link rel="stylesheet" href="/assets/lp-help-centre.css?v=2">
 <link rel="stylesheet" href="/assets/lp-admin-responsive.css?v=hero-editor-mobile-1">
 <link rel="stylesheet" href="/assets/lp-quote-builder.css?v=oq-portal-style-1">
 <style>
@@ -856,6 +857,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 <script src="/assets/lp-email-dns.js?v=2"></script>
 <script src="/assets/lp-ui-shell.js?v=2"></script>
 <script src="/assets/lp-messages-embed.js?v=support-new-1"></script>
+<script src="/assets/lp-help-centre.js?v=2"></script>
 <script src="/assets/lp-mobile-menu-builder.js?v=seo-nav-1"></script>
 <script src="/assets/lp-trade-picker.js"></script>
 <script src="/assets/ai-website-team.js?v=forge-landing-1"></script>
@@ -6110,7 +6112,7 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
   }
   function secCard(c,id,title,toggle,fields){
     var s=(c.sections&&c.sections[id])||{}, def=DEFAULT_TRADE_SECTIONS[id]||{};
-    var h='<div class="card" style="margin-bottom:22px;"><div class="card-head" style="display:flex;justify-content:space-between;align-items:center;gap:12px;"><h2 style="margin:0;">'+title+'</h2>';
+    var h='<div class="card" style="margin-bottom:22px;"><div class="card-head" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;"><h2 style="margin:0;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">'+title+' <button type="button" class="lph-need-help" data-help="'+esc(id)+'" onclick="if(window.LPHelp){LPHelp.open(this.getAttribute(\'data-help\'));} return false;"><span class="lph-q">?</span> Need help?</button></h2>';
     if(toggle){ var _offDef=(OFF_BY_DEFAULT_SECTIONS.indexOf(id)>=0); var _on=_offDef?(s.on===true):(s.on!==false); h+='<label style="display:flex;gap:8px;align-items:center;font-weight:600;font-size:14px;white-space:nowrap;"><input type="checkbox" id="sec-on-'+id+'"'+(_on?' checked':'')+'> Show on page</label>'; }
     h+='</div>';
     h+=deviceVisRowHtml(c,id);
@@ -14675,6 +14677,8 @@ function heroCtaCard(c){
     mv('lpc-scope', tools);
     if(!$('lpc-backups')){ var bk=document.createElement('button'); bk.className='btn ghost lp-drawer-phone-hide'; bk.id='lpc-backups'; bk.type='button'; bk.textContent='Backups'; bk.addEventListener('click',function(){ if(typeof lpBkOpen==='function') lpBkOpen(); }); tools.appendChild(bk); }
     mv('lpc-backups', tools);
+    if(!$('lpc-help')){ var hb=document.createElement('button'); hb.className='btn'; hb.id='lpc-help'; hb.type='button'; hb.textContent='Help'; hb.title='Help Centre — press / to search'; hb.addEventListener('click',function(){ if(window.LPHelp) LPHelp.open('home'); else location.href='/help'; }); tools.appendChild(hb); }
+    mv('lpc-help', tools);
     if(!$('lpc-image-library')){ var il=document.createElement('button'); il.className='btn ghost'; il.id='lpc-image-library'; il.type='button'; il.textContent='Image library'; il.title='Every image uploaded for this site'; il.addEventListener('click',function(){ if(typeof cwLibOpen==='function') cwLibOpen(); }); tools.appendChild(il); }
     mv('lpc-image-library', tools);
     mv('btn-fav', tools);
@@ -16401,10 +16405,10 @@ function heroCtaCard(c){
     var box=$('av-apps'); if(!box) return;
     var c=data||{};
     var siteId=c.id||c.siteId||(c.config&&c.config.siteId)||'';
-    box.innerHTML='<div class="card"><h2>App Marketplace</h2>'
+    box.innerHTML='<div class="card"><h2 style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">App Marketplace <button type="button" class="lph-need-help" onclick="if(window.LPHelp)LPHelp.open(\'marketplace\');return false;"><span class="lph-q">?</span> Need help?</button></h2>'
       +'<p class="lede">Enable, position and configure the sections available for this site. '
       +'Default apps are always on. Free apps are included with the platform. '
-      +'Paid apps require an active subscription for the client.</p>'
+      +'Paid apps require an active subscription for the client. Tap <strong>?</strong> on any tile for that app\u2019s guide.</p>'
       +'<div id="amp-status" style="color:var(--ink-soft);font-size:13px;margin:12px 0">Loading apps…</div>'
       +'<div id="amp-body"></div>'
       +'</div>'
@@ -16500,6 +16504,7 @@ function heroCtaCard(c){
       return '<button type="button" class="amp-tile'+(isDefault?' amp-tile-default':'')+'"'
         +' data-appid="'+app.id+'" data-seckey="'+app.section_key+'"'
         +' data-on="'+(isOn?'1':'0')+'">'
+        +'<span type="button" class="amp-tile-help" data-help="'+esc(app.section_key)+'" title="Help for '+esc(app.name)+'" role="button">?</span>'
         +'<span class="amp-tile-icon">'
         +'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">'+iconSvg+'</svg>'
         +'</span>'
@@ -16551,9 +16556,15 @@ function heroCtaCard(c){
     var a11yFb=$('amp-a11y-fallback-toggle'); if(a11yFb&&!a11yApp){ a11yFb.addEventListener('click',function(){ var next=!_aaLpAccessibilityOn(); _aaToggleLpAccessibility(next); _loadAppsView(c, siteId); }); }
     var a11yCfg=$('amp-a11y-config'); if(a11yCfg){ a11yCfg.addEventListener('click',function(){ openAppearanceAccessibilityPage('published'); }); }
 
-    // Wire tile clicks
+    // Wire tile clicks (+ help ? does not toggle)
     body.querySelectorAll('.amp-tile').forEach(function(tile){
-      tile.addEventListener('click',function(){
+      tile.addEventListener('click',function(ev){
+        var help=ev.target&&ev.target.closest&&ev.target.closest('.amp-tile-help');
+        if(help){
+          ev.preventDefault(); ev.stopPropagation();
+          if(window.LPHelp) LPHelp.open(help.getAttribute('data-help')||tile.getAttribute('data-seckey'));
+          return;
+        }
         var key=tile.getAttribute('data-seckey');
         var appid=tile.getAttribute('data-appid');
         var on=tile.getAttribute('data-on')==='1';
