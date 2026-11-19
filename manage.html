@@ -718,6 +718,11 @@ body.lp-standard-mode .lp-preset-strip { display:none!important; }
 body.lp-standard-mode .lp-standard-banner { display:inline-block; }
 /* Page content: Visual / Code switch (assets/lp-visual-editor.js) */
 .lpv-bar{display:flex;flex-direction:column;gap:10px;margin:0 0 12px}
+.lpv-surface-wrap{position:relative;margin:0 0 12px;border:1px solid var(--line-strong,var(--line));border-radius:12px;overflow:hidden;background:var(--panel)}
+.lpv-surface-wrap[hidden]{display:none}
+.lpv-surface-wrap iframe{display:block;width:100%;min-height:260px;border:0;background:#fff}
+.lpv-surface-load{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:8px;background:var(--panel);color:var(--ink-soft);font-size:14px}
+.lpv-surface-load[hidden]{display:none}
 .lpv-bar[hidden]{display:none}
 .lpv-seg{display:inline-flex;align-self:flex-start;padding:3px;border:1px solid var(--line);border-radius:10px;background:var(--panel-soft,var(--panel))}
 .lpv-seg button{all:unset;box-sizing:border-box;cursor:pointer;min-height:36px;padding:0 18px;border-radius:7px;font:600 14px/36px var(--font-ui,inherit);color:var(--ink-soft)}
@@ -847,7 +852,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 <script src="/assets/lp-logo.js"></script>
 <script src="/assets/lp-fonts.js?v=6"></script>
 <script src="/assets/lp-admin-shell.js"></script>
-<script src="/assets/lp-visual-editor.js?v=1"></script>
+<script src="/assets/lp-visual-editor.js?v=2"></script>
 <script src="/assets/lp-email-dns.js?v=2"></script>
 <script src="/assets/lp-ui-shell.js?v=2"></script>
 <script src="/assets/lp-messages-embed.js?v=support-new-1"></script>
@@ -1199,6 +1204,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
           <select id="lpv-level" class="apsel"><option value="advanced">Advanced — text, items, sections and code</option><option value="simple">Simple — text and formatting only</option></select>
         </div>
       </div>
+      <div class="lpv-surface-wrap" id="lpv-surface-wrap" hidden><iframe id="lpv-surface" title="Page content — click any text to change it" scrolling="no"></iframe><div class="lpv-surface-load" id="lpv-surface-load">Loading the page…</div></div>
       <div class="f" id="lp-body-wrap"><textarea id="lp-body" class="tin mono" rows="12" placeholder="Write your page content here. Simple Markdown supported: ## Subheading, **bold**, - bullet."></textarea></div>
 
       <div class="lp-approve" id="lp-approve" hidden>
@@ -4206,6 +4212,10 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     setSiteLevel:function(v){ if(!data) return; if(v==='simple') data.pageEditor='simple'; else delete data.pageEditor; persist(); lpAutosave(); toast(v==='simple'?'This site\u2019s users now get the Simple page editor.':'This site\u2019s users now get the Advanced page editor.'); },
     setBody:function(v,o){ if(!lpCur) return; lpCur.body=v; var ta=$('lp-body'); if(ta) ta.value=v; lpEnsurePageLayoutOrder(lpCur); persist(); lpAutosave(); if(o&&o.history) lpPush(v); if(o&&o.redraw) lpPagePreviewReload(); },
     redraw:function(){ lpPagePreviewReload(); },
+    // In-panel visual editor (assets/lp-visual-editor.js): the page preview, page body only.
+    surfaceUrl:function(){ return '/'+previewTarget()+'?preview='+Date.now()+previewPageQuery()+'&lpvsurface=1'; },
+    surfaceKey:function(){ return previewTarget()+'|'+((lpCur&&lpCur.slug)||''); },
+    applyTo:function(w){ try{ if(currentSiteTemplate==='trade'&&w&&w.__applyTradeConfig) w.__applyTradeConfig(data); }catch(_a){} },
     openPreview:function(){ if(!document.body.classList.contains('lp-prev-open')) previewOpen(); else lpPagePreviewReload(); },
     toast:function(m,k){ toast(m,k); }
   };

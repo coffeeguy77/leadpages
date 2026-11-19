@@ -2644,6 +2644,9 @@
     if (!Array.isArray(C.pages)) return null;
     var seg = String(location.pathname || '').replace(/\/+$/, '').split('/').pop();
     for (var i = 0; i < C.pages.length; i++) { var p = C.pages[i]; if (p && p.slug === seg) return p; }
+    // The editor's preview opens a page as /<site>?page=<slug> (manage.html previewPageQuery).
+    var q = ''; try { q = new URLSearchParams(location.search).get('page') || ''; } catch (_q) {}
+    if (q) for (var j = 0; j < C.pages.length; j++) { var pq = C.pages[j]; if (pq && pq.slug === q) return pq; }
     return null;
   }
   /** Loads the consent form script once a consent block is on the page. */

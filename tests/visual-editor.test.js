@@ -100,3 +100,19 @@ test('manage.html wires the editor and the super-admin level switch', () => {
   assert.match(html, /LPVisual\.pageOpened\(\)/);
   assert.match(html, /LPVisual\.frameReady\(\)/);
 });
+
+test('in-panel surface: the Page content box shows the page itself (not just the side preview)', () => {
+  const html = fs.readFileSync(path.join(ROOT, 'manage.html'), 'utf8');
+  assert.match(html, /id="lpv-surface-wrap" hidden><iframe id="lpv-surface"/);
+  assert.match(html, /surfaceUrl:function\(\)\{ return '\/'\+previewTarget\(\)\+'\?preview='\+Date\.now\(\)\+previewPageQuery\(\)/);
+  assert.match(html, /applyTo:function\(w\)\{[^}]*__applyTradeConfig\(data\)/);
+  assert.match(html, /lp-visual-editor\.js\?v=2/);
+  assert.match(SRC, /var sw = \$\('lpv-surface-wrap'\); if \(sw\) sw\.hidden = !vis;/);
+  assert.match(SRC, /main#top>\*:not\(section\.lp-page\)\{display:none!important\}/);
+  assert.match(SRC, /sib\.style\.setProperty\('display', 'none', 'important'\)/);
+});
+
+test('lp-layouts finds the page from ?page= (how the editor preview opens a page)', () => {
+  const lay = fs.readFileSync(path.join(ROOT, 'assets/lp-layouts.js'), 'utf8');
+  assert.match(lay, /new URLSearchParams\(location\.search\)\.get\('page'\)/);
+});

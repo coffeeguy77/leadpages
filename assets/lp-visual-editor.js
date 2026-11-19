@@ -274,10 +274,11 @@
     if (code) { code.hidden = lv === 'simple'; code.classList.toggle('on', !vis); code.setAttribute('aria-pressed', String(!vis)); }
     if (visual) { visual.classList.toggle('on', vis); visual.setAttribute('aria-pressed', String(vis)); visual.disabled = !mode; }
     var wrap = $('lp-body-wrap'); if (wrap) wrap.hidden = vis;
+    var sw = $('lpv-surface-wrap'); if (sw) sw.hidden = !vis;
     var hint = $('lpv-hint');
     if (hint) hint.textContent = !mode ? 'This page is plain text — edit it in the box below.' :
-      vis ? (lv === 'simple' ? 'Click any text in the preview to change it. Select words for Bold, Italic or Link.' :
-        'Click any text in the preview to change it. The toolbar also moves, copies, deletes and adds items and sections.') :
+      vis ? (lv === 'simple' ? 'Click any text below to change it. Select words for Bold, Italic or Link.' :
+        'Click any text below to change it. The toolbar also moves, copies, deletes and adds items and sections.') :
         'Editing the page code. Switch to Visual to edit on the page.';
     var add = $('lpv-add'); if (add) add.hidden = !(vis && lv === 'advanced');
     ['lp-rich', 'lp-blocks'].forEach(function (id) { var r = rowOf(id); if (r) r.hidden = lv === 'simple'; });
@@ -288,22 +289,102 @@
   function setView(v) {
     try { localStorage.setItem(VIEW_KEY, v); } catch (e) {}
     syncUi(); applyFrame(true);
-    if (v === 'visual' && active()) { var h = H(); if (h && h.openPreview) h.openPreview(); }
+    if (v === 'visual' && active()) showSurface();
+  }
+
+  /* ------------------------------------------------------------------ in-panel surface
+   * The page drawn with the site's own styles, right in the Page content box: an iframe of
+   * the page preview with everything but the page body hidden. Falls back to the side
+   * preview when the host page has no #lpv-surface (older manage.html). */
+  var SURF = { ready: false, key: '', ro: null };
+  function surf() { var h = H(); return (h && h.surfaceUrl && $('lpv-surface')) || null; }
+  function F() { var s = surf(); if (s) return s; var h = H(); return h && h.frame && h.frame(); }
+  function showSurface() {
+    var s = surf(), h = H();
+    if (!s) { if (h && h.openPreview) h.openPreview(); return; }
+    var key = h.surfaceKey ? h.surfaceKey() : '';
+    if (!SURF.ready || SURF.key !== key || !s.getAttribute('src')) loadSurface(); else applySurface();
+  }
+  function loadSurface() {
+    var s = surf(), h = H(); if (!s) return;
+    SURF.ready = false; SURF.key = h.surfaceKey ? h.surfaceKey() : '';
+    var ld = $('lpv-surface-load'); if (ld) ld.hidden = false;
+    s.onload = function () {
+      var w = s.contentWindow; if (!w) return;
+      SURF.ready = true;
+      try { w.__lpbEdit = active(); bind(w); } catch (e) {}
+      var d = w.document;
+      try {
+        var st = d.createElement('style'); st.id = 'lpv-surf-css';
+        st.textContent = 'html,body{min-height:0!important;height:auto!important;overflow:hidden!important}' +
+          '.lpv-hide{display:none!important}' +
+          'body>*:not(main):not(#lpv-tb){display:none!important}' +
+          'main#top>*:not(section.lp-page){display:none!important}' +
+          '#top>section.lp-page{margin:0!important;min-height:0!important;padding-top:20px!important;padding-bottom:28px!important}';
+        d.head.appendChild(st);
+      } catch (e) {}
+      try {
+        if (w.ResizeObserver) { SURF.ro = new w.ResizeObserver(function () { fit(); }); SURF.ro.observe(d.body); }
+        new w.MutationObserver(function () { isolate(); }).observe(d.body, { childList: true });
+      } catch (e) {}
+      applySurface();
+      if (ld) ld.hidden = true;
+      setTimeout(fit, 300); setTimeout(fit, 1200);
+    };
+    s.src = h.surfaceUrl();
+  }
+  /** Re-draw the surface from the current draft (after a structural change, or on reopen). */
+  function applySurface() {
+    var s = surf(), h = H(); if (!s || !SURF.ready) return;
+    var w = s.contentWindow; if (!w) return;
+    try { w.__lpbEdit = active(); if (h.applyTo) h.applyTo(w); } catch (e) {}
+    isolate(); fit();
+  }
+  /** Hide everything except the page body (header, hero, footer, widgets). */
+  function isolate() {
+    var s = surf(); if (!s || !SURF.ready) return;
+    var d; try { d = s.contentWindow.document; } catch (e) { return; }
+    var body = d && d.querySelector('#top > section.lp-page .lp-body'); if (!body) return;
+    for (var n = body; n && n !== d.body && n.parentNode; n = n.parentNode) {
+      Array.prototype.forEach.call(n.parentNode.children, function (sib) {
+        if (sib === n || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/.test(sib.tagName) || sib.id === 'lpv-tb') return;
+        sib.classList.add('lpv-hide');
+        // Some sections force display:block !important inline; only an inline rule beats that.
+        if (sib.style && sib.style.getPropertyValue('display') !== 'none') sib.style.setProperty('display', 'none', 'important');
+      });
+    }
+  }
+  function fit() {
+    var s = surf(); if (!s || !SURF.ready) return;
+    isolate();
+    var d; try { d = s.contentWindow.document; } catch (e) { return; }
+    // Measure the page section itself: the document can't report less than the frame's height.
+    var art = d.querySelector('#top > section.lp-page'), tb = d.getElementById('lpv-tb');
+    var hgt = art ? Math.ceil(art.getBoundingClientRect().bottom + (d.defaultView.scrollY || 0)) : 0;
+    if (tb && !tb.hidden) hgt = Math.max(hgt, Math.ceil(tb.getBoundingClientRect().bottom + 8));
+    if (hgt > 40 && Math.abs(hgt - (parseInt(s.style.height, 10) || 0)) > 4) s.style.height = hgt + 'px';
+  }
+  /** Redraw after an edit: the surface now, the side preview a moment later. */
+  var _prevT = null;
+  function redrawAll(now) {
+    var h = H();
+    if (surf()) { applySurface(); if (_prevT) clearTimeout(_prevT); _prevT = setTimeout(function () { if (h && h.redraw) h.redraw(); }, now ? 0 : 900); }
+    else if (h && h.redraw) h.redraw();
   }
 
   /** Turn the preview's edit marks on or off to match. */
   function applyFrame(redraw) {
-    var h = H(), fr = h && h.frame && h.frame(), w = fr && fr.contentWindow;
+    var h = H(), fr = F(), w = fr && fr.contentWindow;
     if (!w) return;
     var want = active();
     try {
       bind(w);
-      if (w.__lpbEdit !== want) { w.__lpbEdit = want; if (redraw !== false && h.redraw) h.redraw(); }
+      if (w.__lpbEdit !== want) { w.__lpbEdit = want; if (redraw !== false) redrawAll(true); }
       decorate();
     } catch (e) {}
   }
 
-  function frameDoc() { var h = H(), fr = h && h.frame && h.frame(); try { return fr && fr.contentWindow && fr.contentWindow.document; } catch (e) { return null; } }
+  function frameDoc() { var fr = F(); try { return fr && fr.contentWindow && fr.contentWindow.document; } catch (e) { return null; } }
 
   var CSS = '.lp-body .lpb-ed[contenteditable="true"]{cursor:text;border-radius:3px;outline:1px dashed transparent;outline-offset:2px;transition:outline-color .15s,background-color .15s}' +
     '.lp-body .lpb-ed[contenteditable="true"]:hover{outline-color:rgba(21,101,216,.55)}' +
@@ -384,7 +465,7 @@
 
   function bind(w) {
     var d = w.document; if (!d || d.__lpvBound) return; d.__lpvBound = true;
-    d.addEventListener('lpb:edit-render', function () { S.focusEl = null; decorate(); });
+    d.addEventListener('lpb:edit-render', function () { S.focusEl = null; decorate(); if (surf()) setTimeout(fit, 0); });
     // Clicking page text edits it: no link opens, no section settings pop up.
     w.addEventListener('click', function (e) {
       if (!active()) return;
@@ -420,7 +501,7 @@
         var ae = d.activeElement;
         if (ae && ae.closest && (ae.closest('#lpv-tb') || ae.closest('.lpb-ed[contenteditable="true"]'))) return;
         hideToolbar();
-        if (S.dirty) { S.dirty = false; var h = H(); if (h && h.redraw) h.redraw(); }
+        if (S.dirty) { S.dirty = false; redrawAll(); }
       }, 120);
     });
     w.addEventListener('scroll', function () { if (S.focusEl && d.getElementById('lpv-tb') && !d.getElementById('lpv-tb').hidden) place(S.focusEl); }, { passive: true });
@@ -468,7 +549,7 @@
     var h = H(), p = h && h.page(); if (!p) return;
     var body = String(p.body || '').replace(/\r/g, '');
     var at = +el.getAttribute('data-lpb-at'), len = +el.getAttribute('data-lpb-len');
-    if (body.substr(at, len) !== el.__raw) { if (h.toast) h.toast('That text changed somewhere else — the preview has been refreshed.', 'warn'); S.dirty = false; if (h.redraw) h.redraw(); return; }
+    if (body.substr(at, len) !== el.__raw) { if (h.toast) h.toast('That text changed somewhere else — the preview has been refreshed.', 'warn'); S.dirty = false; redrawAll(true); return; }
     var q = body.charAt(at - 1);
     var md = toMd(el, q === '"' || q === "'");
     if (md === el.__raw) return;
@@ -480,6 +561,7 @@
     });
     S.dirty = true;
     h.setBody(nb, { history: true });
+    if (surf()) { if (_prevT) clearTimeout(_prevT); _prevT = setTimeout(function () { if (h.redraw) h.redraw(); }, 1200); fit(); }
   }
   function refocus() { var el = S.focusEl; if (!el) return; try { el.focus(); var d = frameDoc(), sel = d.getSelection(); if (S.range) { sel.removeAllRanges(); sel.addRange(S.range); } } catch (e) {} }
   function selectionIn(el) { var d = frameDoc(), sel = d && d.getSelection(); if (!sel || !sel.rangeCount) return null; var r = sel.getRangeAt(0); return el.contains(r.commonAncestorContainer) ? r : null; }
@@ -487,7 +569,8 @@
   function structural(nb, msg) {
     var h = H(); if (!nb) return;
     S.dirty = false; hideToolbar();
-    h.setBody(nb, { history: true, redraw: true });
+    h.setBody(nb, { history: true, redraw: !surf() });
+    if (surf()) redrawAll();
     if (msg && h.toast) h.toast(msg);
   }
   var pendingConfirm = null;
@@ -543,16 +626,16 @@
     if (menu) menu.addEventListener('click', function (e) {
       var b = e.target.closest && e.target.closest('[data-a="add-tpl"]'); if (!b) return;
       var h = H(), p = h.page(), t = tpl(b.getAttribute('data-t'), pageMode(p)); if (!t) return;
-      structural(insertSection(String(p.body || '').replace(/\r/g, ''), -1, t.text), 'Section added at the end of the page — click its text in the preview to change it.');
+      structural(insertSection(String(p.body || '').replace(/\r/g, ''), -1, t.text), 'Section added at the end of the page — click its text to change it.');
       menu.hidden = true; if (tog) tog.setAttribute('aria-expanded', 'false');
     });
   }
 
   window.LPVisual = {
-    pageOpened: function () { wirePanel(); syncUi(); var h = H(); if (active() && h && h.openPreview) h.openPreview(); else applyFrame(true); },
-    pageClosed: function () { hideToolbar(); var h = H(), fr = h && h.frame && h.frame(); try { if (fr && fr.contentWindow && fr.contentWindow.__lpbEdit) { fr.contentWindow.__lpbEdit = false; } } catch (e) {} },
-    frameReady: function () { var h = H(), fr = h && h.frame && h.frame(); try { if (fr && fr.contentWindow) { fr.contentWindow.__lpbEdit = active(); bind(fr.contentWindow); } } catch (e) {} },
-    sync: function () { syncUi(); applyFrame(true); },
+    pageOpened: function () { wirePanel(); syncUi(); if (active()) showSurface(); else applyFrame(true); },
+    pageClosed: function () { hideToolbar(); SURF.key = ''; var fr = F(); try { if (fr && fr.contentWindow && fr.contentWindow.__lpbEdit) { fr.contentWindow.__lpbEdit = false; } } catch (e) {} },
+    frameReady: function () { if (surf()) return; var fr = F(); try { if (fr && fr.contentWindow) { fr.contentWindow.__lpbEdit = active(); bind(fr.contentWindow); } } catch (e) {} },
+    sync: function () { syncUi(); applyFrame(true); if (active() && surf()) applySurface(); },
     struct: { lines: lines, itemAt: itemAt, sections: sections, itemOp: itemOp, itemInfo: itemInfo, sectionOp: sectionOp, sectionInfo: sectionInfo, insertSection: insertSection, toMd: toMd, linkAddr: linkAddr, TEMPLATES_BLOCKS: TEMPLATES_BLOCKS, TEMPLATES_RICH: TEMPLATES_RICH }
   };
 })();
