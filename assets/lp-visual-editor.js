@@ -459,6 +459,18 @@
       el.setAttribute('contenteditable', 'true');
       el.setAttribute('spellcheck', 'true');
     });
+    if (on && S.focusAt) {
+      var fa = S.focusAt; S.focusAt = null;
+      var t = d.querySelector('.lp-body .lpb-ed[data-lpb-at="' + fa.at + '"]');
+      if (t) setTimeout(function () {
+        try {
+          t.focus(); var sel = d.getSelection(), r = d.createRange(); r.selectNodeContents(t);
+          if (!fa.select) r.collapse(true);
+          sel.removeAllRanges(); sel.addRange(r);
+          if (t.scrollIntoView) t.scrollIntoView({ block: 'nearest' });
+        } catch (_f) {}
+      }, 0);
+    }
     if (on) { ensureUi(d); var tb = d.getElementById('lpv-tb'); tb.classList.toggle('simple', level() === 'simple'); Array.prototype.forEach.call(tb.querySelectorAll('.adv'), function (x) { x.hidden = level() === 'simple'; }); fillAddMenu(tb.querySelector('[data-k="menu"]'), pageMode(p), true); }
     else { var t = d.getElementById('lpv-tb'); if (t) t.hidden = true; }
   }
@@ -479,9 +491,15 @@
     d.addEventListener('input', function (e) { var el = e.target && e.target.closest && e.target.closest('.lpb-ed[contenteditable="true"]'); if (el) write(el); });
     d.addEventListener('keydown', function (e) {
       var el = e.target && e.target.closest && e.target.closest('.lpb-ed[contenteditable="true"]'); if (!el) return;
-      if (e.key === 'Enter') { e.preventDefault(); el.blur(); }
+      if (e.key === 'Enter') { e.preventDefault(); onEnter(el); }
       else if (e.key === 'Escape') { e.preventDefault(); el.blur(); }
       else if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) { e.preventDefault(); act('link'); }
+    });
+    // Phone keyboards may send Return as an input event rather than a key press.
+    d.addEventListener('beforeinput', function (e) {
+      if (e.inputType !== 'insertParagraph' && e.inputType !== 'insertLineBreak') return;
+      var el = e.target && e.target.closest && e.target.closest('.lpb-ed[contenteditable="true"]'); if (!el) return;
+      e.preventDefault(); onEnter(el);
     });
     d.addEventListener('paste', function (e) {
       var el = e.target && e.target.closest && e.target.closest('.lpb-ed[contenteditable="true"]'); if (!el) return;
@@ -562,6 +580,60 @@
     S.dirty = true;
     h.setBody(nb, { history: true });
     if (surf()) { if (_prevT) clearTimeout(_prevT); _prevT = setTimeout(function () { if (h.redraw) h.redraw(); }, 1200); fit(); }
+  }
+  /** Enter: a new paragraph in text, a new item in a list; elsewhere a one-off tip (never leaves). */
+  function onEnter(el) {
+    if (enterSplit(el)) return;
+    var h = H();
+    if (!S.enterTip && h && h.toast) { S.enterTip = true; h.toast('Return can\u2019t add a new line in a title, card or table cell. Use \u29C9 Copy or \uFF0B Add on the toolbar for another one.', 'warn'); }
+  }
+  /** How Enter can split this piece of text: { kind:'p'|'li'|'ol', sep } or null. */
+  function splitPlan(body, at, len, el) {
+    var L = lines(body), i = lineAt(L, at), l = L[i];
+    var lead = l.t.slice(0, at - l.s), tail = l.t.slice(at + len - l.s);
+    if (tail.trim()) return null;                         // the text isn't the end of its line
+    var m = RE_LI.exec(lead);
+    if (m && m[0] === lead && el.closest('li')) return { kind: 'li', sep: '\n' + lead, line: i };
+    m = RE_OL.exec(lead);
+    if (m && m[0] === lead && el.closest('li')) return { kind: 'ol', sep: '\n' + lead, line: i };
+    var par = el.parentElement;
+    if (!lead.trim() && par && par.tagName === 'P' && par.textContent.trim() === el.textContent.trim() &&
+        !l.open && !l.close && !RE_H.test(l.t) && !RE_Q.test(l.t) && !RE_Q3.test(l.t) && !RE_ROW.test(l.t) && !RE_LI.test(l.t) && !RE_OL.test(l.t)) {
+      return { kind: 'p', sep: '\n\n', line: i };
+    }
+    return null;
+  }
+  function enterSplit(el) {
+    var h = H(), d = frameDoc(); if (!h || !d) return false;
+    var sel = d.getSelection(); if (!sel || !sel.rangeCount) return false;
+    var r = sel.getRangeAt(0); if (!el.contains(r.startContainer)) return false;
+    write(el);                                            // the code matches what's on screen first
+    var p = h.page(), body = String(p.body || '').replace(/\r/g, '');
+    var at = +el.getAttribute('data-lpb-at'), len = +el.getAttribute('data-lpb-len');
+    if (body.substr(at, len) !== el.__raw) return false;
+    var plan = splitPlan(body, at, len, el); if (!plan) return false;
+    if (!r.collapsed) r.deleteContents();
+    var rb = d.createRange(); rb.selectNodeContents(el); rb.setEnd(r.startContainer, r.startOffset);
+    var ra = d.createRange(); ra.selectNodeContents(el); ra.setStart(r.startContainer, r.startOffset);
+    var db = d.createElement('span'); db.appendChild(rb.cloneContents());
+    var da = d.createElement('span'); da.appendChild(ra.cloneContents());
+    var q = body.charAt(at - 1), inAttr = q === '"' || q === "'";
+    var mb = toMd(db, inAttr).replace(/\s+$/, ''), ma = toMd(da, inAttr).replace(/^\s+/, '');
+    var word = plan.kind === 'p' ? 'New paragraph' : 'New item';
+    var newEmpty = !ma.trim(), atStart = !mb.trim() && !newEmpty;
+    if (newEmpty) ma = word;
+    if (!mb.trim()) mb = word;                            // Return at the very start: a new one above
+    var nb = body.slice(0, at) + mb + plan.sep + ma + body.slice(at + len);
+    if (plan.kind === 'ol') nb = renumber(nb.split('\n')).join('\n');
+    // Where the second half starts once redrawn (renumbering can change a number's width).
+    var L2 = lines(nb), li2 = plan.line + (plan.kind === 'p' ? 2 : 1), t2 = L2[li2];
+    var target = plan.kind === 'p' ? t2.s : t2.s + ((plan.kind === 'li' ? RE_LI : RE_OL).exec(t2.t) || [''])[0].length;
+    if (atStart) target = at;                             // keep the cursor on the placeholder above
+    S.focusAt = { at: target, select: newEmpty || atStart };
+    S.dirty = false; hideToolbar();
+    h.setBody(nb, { history: true, redraw: !surf() });
+    if (surf()) redrawAll();
+    return true;
   }
   function refocus() { var el = S.focusEl; if (!el) return; try { el.focus(); var d = frameDoc(), sel = d.getSelection(); if (S.range) { sel.removeAllRanges(); sel.addRange(S.range); } } catch (e) {} }
   function selectionIn(el) { var d = frameDoc(), sel = d && d.getSelection(); if (!sel || !sel.rangeCount) return null; var r = sel.getRangeAt(0); return el.contains(r.commonAncestorContainer) ? r : null; }

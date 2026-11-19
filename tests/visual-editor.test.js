@@ -106,7 +106,7 @@ test('in-panel surface: the Page content box shows the page itself (not just the
   assert.match(html, /id="lpv-surface-wrap" hidden><iframe id="lpv-surface"/);
   assert.match(html, /surfaceUrl:function\(\)\{ return '\/'\+previewTarget\(\)\+'\?preview='\+Date\.now\(\)\+previewPageQuery\(\)/);
   assert.match(html, /applyTo:function\(w\)\{[^}]*__applyTradeConfig\(data\)/);
-  assert.match(html, /lp-visual-editor\.js\?v=2/);
+  assert.match(html, /lp-visual-editor\.js\?v=3/);
   assert.match(SRC, /var sw = \$\('lpv-surface-wrap'\); if \(sw\) sw\.hidden = !vis;/);
   assert.match(SRC, /main#top>\*:not\(section\.lp-page\)\{display:none!important\}/);
   assert.match(SRC, /sib\.style\.setProperty\('display', 'none', 'important'\)/);
@@ -115,4 +115,11 @@ test('in-panel surface: the Page content box shows the page itself (not just the
 test('lp-layouts finds the page from ?page= (how the editor preview opens a page)', () => {
   const lay = fs.readFileSync(path.join(ROOT, 'assets/lp-layouts.js'), 'utf8');
   assert.match(lay, /new URLSearchParams\(location\.search\)\.get\('page'\)/);
+});
+
+test('Enter splits a paragraph or adds a list item instead of leaving the text', () => {
+  assert.match(SRC, /if \(e\.key === 'Enter'\) \{ e\.preventDefault\(\); onEnter\(el\); \}/);
+  assert.match(SRC, /e\.inputType !== 'insertParagraph' && e\.inputType !== 'insertLineBreak'/);
+  assert.match(SRC, /return \{ kind: 'p', sep: '\\n\\n', line: i \};/);
+  assert.match(SRC, /return \{ kind: 'li', sep: '\\n' \+ lead, line: i \};/);
 });
