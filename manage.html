@@ -718,6 +718,8 @@ body.lp-standard-mode .lp-preset-strip { display:none!important; }
 body.lp-standard-mode .lp-standard-banner { display:inline-block; }
 /* Page content: Visual / Code switch (assets/lp-visual-editor.js) */
 .lpv-bar{display:flex;flex-direction:column;gap:10px;margin:0 0 12px}
+.lpv-onsite{align-self:flex-start;text-decoration:none}
+.lpv-onsite[hidden]{display:none}
 .lpv-surface-wrap{position:relative;margin:0 0 12px;border:1px solid var(--line-strong,var(--line));border-radius:12px;overflow:hidden;background:var(--panel)}
 .lpv-surface-wrap[hidden]{display:none}
 .lpv-surface-wrap iframe{display:block;width:100%;min-height:260px;border:0;background:#fff}
@@ -852,7 +854,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 <script src="/assets/lp-logo.js"></script>
 <script src="/assets/lp-fonts.js?v=6"></script>
 <script src="/assets/lp-admin-shell.js"></script>
-<script src="/assets/lp-visual-editor.js?v=3"></script>
+<script src="/assets/lp-visual-editor.js?v=4"></script>
 <script src="/assets/lp-email-dns.js?v=2"></script>
 <script src="/assets/lp-ui-shell.js?v=2"></script>
 <script src="/assets/lp-messages-embed.js?v=support-new-1"></script>
@@ -1194,6 +1196,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
           <button type="button" id="lpv-visual" class="on" aria-pressed="true">Visual</button>
           <button type="button" id="lpv-code" aria-pressed="false">Code</button>
         </div>
+        <a class="btn ghost sm lpv-onsite" id="lpv-onsite" href="#" target="_blank" rel="noopener" hidden>Edit on the live page ↗</a>
         <p class="hint lpv-hint" id="lpv-hint"></p>
         <div class="lpv-add" id="lpv-add" hidden>
           <button type="button" class="btn ghost sm" id="lpv-add-btn" aria-expanded="false">＋ Add a section at the end</button>
@@ -4214,6 +4217,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     redraw:function(){ lpPagePreviewReload(); },
     // In-panel visual editor (assets/lp-visual-editor.js): the page preview, page body only.
     surfaceUrl:function(){ return '/'+previewTarget()+'?preview='+Date.now()+previewPageQuery()+'&lpvsurface=1'; },
+    onsiteUrl:function(){ if(!lpCur||!lpCur.slug||lpCur.status!=='published'||currentSiteTemplate!=='trade'||!currentSiteSlug) return ''; return location.origin+'/'+encodeURIComponent(currentSiteSlug)+'/'+encodeURIComponent(lpCur.slug)+'?edit'; },
     surfaceKey:function(){ return previewTarget()+'|'+((lpCur&&lpCur.slug)||''); },
     applyTo:function(w){ try{ if(currentSiteTemplate==='trade'&&w&&w.__applyTradeConfig) w.__applyTradeConfig(data); }catch(_a){} },
     openPreview:function(){ if(!document.body.classList.contains('lp-prev-open')) previewOpen(); else lpPagePreviewReload(); },

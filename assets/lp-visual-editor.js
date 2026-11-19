@@ -258,6 +258,7 @@
   function pageMode(p) { return p && p.blocks === true ? 'blocks' : (p && p.rich === true ? 'rich' : ''); }
   function wantView() {
     if (level() === 'simple') return 'visual';
+    var hh = H(); if (hh && hh.forceVisual) return 'visual';     // on-site editing (lp-frontend-edit.js)
     try { var v = localStorage.getItem(VIEW_KEY); if (v === 'code' || v === 'visual') return v; } catch (e) {}
     return 'visual';
   }
@@ -275,6 +276,7 @@
     if (visual) { visual.classList.toggle('on', vis); visual.setAttribute('aria-pressed', String(vis)); visual.disabled = !mode; }
     var wrap = $('lp-body-wrap'); if (wrap) wrap.hidden = vis;
     var sw = $('lpv-surface-wrap'); if (sw) sw.hidden = !vis;
+    var os = $('lpv-onsite'); if (os) { var ou = (h.onsiteUrl && h.onsiteUrl()) || ''; os.hidden = !ou; if (ou) os.href = ou; }
     var hint = $('lpv-hint');
     if (hint) hint.textContent = !mode ? 'This page is plain text — edit it in the box below.' :
       vis ? (lv === 'simple' ? 'Click any text below to change it. Select words for Bold, Italic or Link.' :

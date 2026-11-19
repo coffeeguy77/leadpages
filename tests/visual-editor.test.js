@@ -106,7 +106,7 @@ test('in-panel surface: the Page content box shows the page itself (not just the
   assert.match(html, /id="lpv-surface-wrap" hidden><iframe id="lpv-surface"/);
   assert.match(html, /surfaceUrl:function\(\)\{ return '\/'\+previewTarget\(\)\+'\?preview='\+Date\.now\(\)\+previewPageQuery\(\)/);
   assert.match(html, /applyTo:function\(w\)\{[^}]*__applyTradeConfig\(data\)/);
-  assert.match(html, /lp-visual-editor\.js\?v=3/);
+  assert.match(html, /lp-visual-editor\.js\?v=4/);
   assert.match(SRC, /var sw = \$\('lpv-surface-wrap'\); if \(sw\) sw\.hidden = !vis;/);
   assert.match(SRC, /main#top>\*:not\(section\.lp-page\)\{display:none!important\}/);
   assert.match(SRC, /sib\.style\.setProperty\('display', 'none', 'important'\)/);

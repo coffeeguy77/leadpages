@@ -68,6 +68,17 @@ function injectLiteral(haystack, token, value) {
   return String(haystack || '').replaceAll(token, () => lit);
 }
 
+/** On-site editor (?edit) scripts: assets/lp-frontend-edit.js + the visual editor engine. */
+function injectFrontEditor(html, site, page) {
+  // Only the site and page go to the browser; the public sign-in values live in the script itself.
+  const boot = { site: site.slug, page: page || '' };
+  const tags = '<script>window.__LPE=' + JSON.stringify(boot).replace(/</g, '\\u003c') + ';</script>\n'
+    + '<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer></script>\n'
+    + '<script src="/assets/lp-visual-editor.js?v=4" defer></script>\n'
+    + '<script src="/assets/lp-frontend-edit.js?v=1" defer></script>\n';
+  return html.includes('</head>') ? html.replace('</head>', tags + '</head>') : tags + html;
+}
+
 // Send rendered HTML. Live sites are CDN-cached with tags so Publish can
 // invalidate instantly; drafts are never cached or indexed.
 function sendHtml(res, html, isLive, cacheMeta) {
@@ -1830,6 +1841,19 @@ module.exports = async (req, res) => {
         const { applyColorOverridesToHtml } = require('../lib/color-overrides');
         html = applyColorOverridesToHtml(html, cfg.colorOverrides);
       } catch (_co2) { /* never break live render */ }
+    }
+
+    // On-site editing (?edit): the site owner edits a landing page on the real page.
+    // Sign-in lives on leadpages.com.au, so a custom domain hands over to it. Never cached.
+    if (template === 'trade' && req.query && Object.prototype.hasOwnProperty.call(req.query, 'edit')) {
+      if (isCustom) {
+        res.statusCode = 302;
+        res.setHeader('cache-control', 'no-store');
+        res.setHeader('Location', 'https://www.leadpages.com.au/' + encodeURIComponent(site.slug) + (page ? '/' + encodeURIComponent(page) : '') + '?edit=1');
+        return res.end();
+      }
+      html = injectFrontEditor(html, site, page);
+      return sendHtml(res, embedGuard(req, html), false, { slug: site.slug, siteId: site.id });
     }
 
     return sendHtml(res, embedGuard(req, html), isLive, { slug: site.slug, siteId: site.id });
