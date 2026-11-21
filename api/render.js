@@ -1823,7 +1823,9 @@ module.exports = async (req, res) => {
       try {
         const { prepareTradeLiveHtml } = require('../lib/trade-render-guard');
         // Landing page with apps: pre-paint order follows the page's own Position list.
-        const _po = pageSectionOrder(_pageRow);
+        // A text-only landing page (no apps) gets an empty list, so the homepage's sections
+        // are hidden in its first-byte HTML too (not only later by the page script).
+        const _po = pageSectionOrder(_pageRow) || (_pageRow ? [] : null);
         html = prepareTradeLiveHtml(html, _po ? Object.assign({}, cfg, { pageSectionOrder: _po }) : cfg);
       } catch (_guardErr) { /* never break live render */ }
       html = injectOnlineQuote(html, site.slug, cfg);
