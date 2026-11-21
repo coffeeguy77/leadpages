@@ -2633,8 +2633,9 @@ function heroCtaCard(c){
     var uj=await ur.json().catch(function(){return {};}); if(!ur.ok||!uj.secure_url) throw new Error((uj.error&&uj.error.message)||('Cloudinary rejected the upload ('+ur.status+')'));
     return { url:uj.secure_url, publicId:uj.public_id };
   }
-  async function cwDelete(publicId){ if(!publicId) return; try{ var t=await cwToken(); await fetch('/api/cloudinary/delete',{method:'POST',headers:{'content-type':'application/json',Authorization:'Bearer '+t},body:JSON.stringify({publicId:publicId})}); }catch(e){} }
-  async function cwDeletePrefix(prefix){ if(!prefix) return; try{ var t=await cwToken(); await fetch('/api/cloudinary/delete',{method:'POST',headers:{'content-type':'application/json',Authorization:'Bearer '+t},body:JSON.stringify({prefix:prefix})}); }catch(e){} }
+  // Nov 21 2026: images are never deleted from Cloudinary automatically (see manage.html).
+  async function cwDelete(publicId){ return; }
+  async function cwDeletePrefix(prefix){ return; }
   function cwImgHTML(idOrData, ph, hint){ var _h=(hint?(esc(hint)+' \u00b7 '):'')+'JPG, PNG, WebP or SVG \u00b7 up to 8 MB \u00b7 large images optimised on upload'; return '<div class="cw-row" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;"><input type="text" '+idOrData+' placeholder="'+(ph||'https://\u2026 or upload')+'" style="flex:1;min-width:150px;"><button type="button" class="btn ghost cw-up" tabindex="-1">Upload</button><button type="button" class="btn ghost cw-clr" tabindex="-1" title="Clear image">\u2715</button></div><div class="hint" style="margin:4px 0 0;font-size:11.5px;">'+_h+'</div>'; }
   function cwBusy(btn,on){ if(!btn)return; if(on){ btn.dataset.t=btn.textContent; btn.textContent='\u2026'; btn.disabled=true; } else { btn.textContent=btn.dataset.t||'Upload'; btn.disabled=false; } }
   function cwPick(cb){ var inp=document.createElement('input'); inp.type='file'; inp.accept='image/*'; inp.style.display='none'; document.body.appendChild(inp); inp.addEventListener('change',function(){ var f=inp.files&&inp.files[0]; if(inp.parentNode) inp.parentNode.removeChild(inp); if(f) cb(f); }); inp.click(); }

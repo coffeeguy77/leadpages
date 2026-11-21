@@ -41,6 +41,7 @@ function run(body) {
 
 let cloudCalls = [];
 test.beforeEach(() => {
+  process.env.CLOUDINARY_AUTO_DELETE = '1'; // the guarded (old) behaviour; see the "off" tests below
   cloudCalls = [];
   global.fetch = async (url, opts) => {
     if (String(url).includes('/auth/v1/user')) return { ok: true, json: async () => ({ id: 'u1' }) };
@@ -102,4 +103,31 @@ test('if the database cannot be read, nothing is deleted', async () => {
   const r = await run({ publicId: HERO });
   assert.equal(r.code, 409);
   assert.equal(cloudCalls.filter((c) => c.method === 'DELETE').length, 0);
+});
+
+// Nov 21 2026: automatic deletes are off by default — nothing reaches Cloudinary.
+test('by default a single-file delete is kept and never reaches Cloudinary', async () => {
+  delete process.env.CLOUDINARY_AUTO_DELETE;
+  del._setAdmin(fakeAdmin({ sites: [] }));
+  const r = await run({ publicId: HERO });
+  assert.equal(r.code, 200);
+  assert.equal(r.body.kept, true);
+  assert.equal(cloudCalls.length, 0);
+});
+
+test('by default deleting a site folder is kept and never reaches Cloudinary', async () => {
+  delete process.env.CLOUDINARY_AUTO_DELETE;
+  del._setAdmin(fakeAdmin({ sites: [] }));
+  const r = await run({ prefix: 'leadpages/9e4e8cba-f57d-4aa3-99f6-fc22cd9551f8/' });
+  assert.equal(r.code, 200);
+  assert.equal(r.body.kept, true);
+  assert.equal(cloudCalls.length, 0);
+});
+
+test('the editor no longer asks the server to delete images', () => {
+  const fs = require('fs'), path = require('path');
+  for (const f of ['manage.html', 'api/manage.html']) {
+    const html = fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
+    assert.doesNotMatch(html, /fetch\('\/api\/cloudinary\/delete'/, f);
+  }
 });

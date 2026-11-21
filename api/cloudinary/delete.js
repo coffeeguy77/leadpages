@@ -7,6 +7,12 @@
 // Copied sites (demos, duplicates, partner showcases) share the original's files, so a delete
 // that only the editing site had stopped using was wiping images off other live sites.
 // See lib/cloudinary/references.js.
+//
+// Nov 21 2026: automatic deletes are OFF. Replacing or clearing an image, or deleting a
+// site, never removes the file from Cloudinary any more — a leftover file costs next to
+// nothing, a missing one breaks a live site. This endpoint now answers "kept" without
+// touching Cloudinary. Deliberate deletes stay in the Image library (api/cloudinary/library.js,
+// which refuses anything still in use). CLOUDINARY_AUTO_DELETE=1 turns the old behaviour back on.
 
 const { createClient } = require('@supabase/supabase-js');
 const { findReferences, siteIdsForPrefix } = require('../../lib/cloudinary/references');
@@ -62,6 +68,10 @@ module.exports = async (req, res) => {
   { const _c = resolveCreds(); if (!_c.key || !_c.secret) return res.status(500).json({ error: 'Cloudinary credentials are not configured.' }); }
 
   const body = req.body || {};
+  if (String(process.env.CLOUDINARY_AUTO_DELETE || '') !== '1') {
+    if (!body.prefix && !body.publicId) return res.status(400).json({ error: 'provide publicId or prefix' });
+    return res.status(200).json({ ok: true, kept: true, reason: 'auto_delete_off' });
+  }
   const base = 'https://api.cloudinary.com/v1_1/' + cloud() + '/resources/image/upload';
 
   try {
