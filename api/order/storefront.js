@@ -262,6 +262,7 @@ module.exports = async function (req, res) {
       system: {
         id: system.id,
         cooking_rate_cents: require('../../lib/order/product-options').cookingRateCents(system),
+        cooking_min_cents: require('../../lib/order/cooking').cookingSettings(system).min_cents,
         kg_prices_only: require('../../lib/order/price-display').kgPricesOnly(system),
         enabled: system.enabled,
         industry_preset: system.industry_preset,

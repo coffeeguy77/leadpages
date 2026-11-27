@@ -140,7 +140,27 @@ module.exports = async function (req, res) {
       }
       const { data, error } = await q;
       if (error) throw error;
-      return json(res, 200, { orders: data || [] });
+      let list = data || [];
+      // Cooked / glazed only (Kitchen): orders with a line the kitchen cooks, or a note asking for it.
+      if (req.query && req.query.cooked === '1' && list.length) {
+        const C = require('../../lib/order/cooking');
+        const settings = C.cookingSettings(system);
+        const ids = list.map(function (o) { return o.id; });
+        const keep = {};
+        for (let i = 0; i < ids.length; i += 200) {
+          const { data: its, error: iErr } = await admin.from('order_items')
+            .select('order_id,product_name,notes,options_snapshot,product_snapshot,kitchen').in('order_id', ids.slice(i, i + 200));
+          if (iErr) throw iErr;
+          const byId = {};
+          list.forEach(function (o) { byId[o.id] = o; });
+          (its || []).forEach(function (it) {
+            const info = C.itemCookInfo(it, byId[it.order_id], settings);
+            if (info.cook || info.check) keep[it.order_id] = true;
+          });
+        }
+        list = list.filter(function (o) { return keep[o.id]; });
+      }
+      return json(res, 200, { orders: list });
     }
 
     if (req.method === 'POST') {

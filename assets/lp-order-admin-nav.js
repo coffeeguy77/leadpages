@@ -34,6 +34,7 @@
       type: 'group',
       children: [
         { id: 'pickup-day', label: 'Pickup Day View', route: 'pickup-day' },
+        { id: 'kitchen', label: 'Kitchen (Cooked)', route: 'kitchen' },
         { id: 'supply', label: 'Production Summary', route: 'supply' },
         { id: 'allocation', label: 'Product Allocation', route: 'allocation' },
         { id: 'stock', label: 'Stock', route: 'stock' },
@@ -77,6 +78,7 @@
     new: { view: 'new', label: 'New Order', group: 'orders' },
     changes: { view: 'changes', label: 'Change Requests', group: 'orders' },
     'pickup-day': { view: 'pickup-day', label: 'Pickup Day View', group: 'operations' },
+    kitchen: { view: 'kitchen', label: 'Kitchen (Cooked)', group: 'operations' },
     calendar: { view: 'calendar', label: 'Pickup Calendar', group: 'operations' },
     supply: { view: 'supply', label: 'Production Summary', group: 'operations' },
     allocation: { view: 'allocation', label: 'Product Allocation', group: 'operations' },

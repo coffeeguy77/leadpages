@@ -1520,11 +1520,20 @@
     var r = p && p.est_range;
     if (!r) return '';
     var cookKg = 0;
+    var cookMin = 0;
     (p.questions || []).forEach(function (q) {
-      (q.options || []).forEach(function (o) { if (o && o.cooking && o.per_kg_cents > cookKg) cookKg = Number(o.per_kg_cents) || 0; });
+      (q.options || []).forEach(function (o) {
+        if (o && o.cooking && o.per_kg_cents > cookKg) cookKg = Number(o.per_kg_cents) || 0;
+        if (o && o.cooking && Number(o.cook_min_cents) > cookMin) cookMin = Number(o.cook_min_cents);
+      });
     });
     var txt = 'Est. ' + money(r.low_cents) + '–' + money(r.high_cents) + ' each (final when weighed)';
-    if (cookKg) txt += ' · cooked +' + money(Math.round(r.low_kg * cookKg)) + '–' + money(Math.round(r.high_kg * cookKg));
+    if (cookKg) {
+      // Cooking: the greater of kg × rate and the shop's minimum.
+      var cLow = Math.max(Math.round(r.low_kg * cookKg), cookMin);
+      var cHigh = Math.max(Math.round(r.high_kg * cookKg), cookMin);
+      txt += ' · cooked +' + (cLow === cHigh ? money(cLow) : money(cLow) + '–' + money(cHigh));
+    }
     return '<p class="lp-oe-range">' + esc(txt) + '</p>';
   };
 
@@ -1638,7 +1647,7 @@
   OrderStorefront.prototype.choiceLabel = function (o) {
     if (typeof o === 'string') return o;
     var label = o.label || o.value || '';
-    if (o.cooking) return label + (o.per_kg_cents ? ' (+' + money(o.per_kg_cents) + '/kg)' : '');
+    if (o.cooking) return label + (o.per_kg_cents ? ' (+' + money(o.per_kg_cents) + '/kg' + (Number(o.cook_min_cents) > 0 ? ', min ' + money(o.cook_min_cents) : '') + ')' : '');
     var price = Number(o.price_cents) || 0;
     if (price > 0) return label + ' (+' + money(price) + ')';
     if (price === 0 && (o.price_cents === 0 || o.price_cents === '0')) return label;

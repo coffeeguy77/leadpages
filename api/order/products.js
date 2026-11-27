@@ -125,6 +125,7 @@ module.exports = async function (req, res) {
         payload.questions = require('../../lib/order/product-options').withCookingRate(questions || [], system);
       }
       payload.cooking_rate_cents = require('../../lib/order/product-options').cookingRateCents(system);
+      payload.cooking_min_cents = require('../../lib/order/cooking').cookingSettings(system).min_cents;
       return json(res, 200, payload);
     }
 

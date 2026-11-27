@@ -34,7 +34,8 @@
 <link rel="stylesheet" href="/assets/lp-super-admin.css">
 <script src="/assets/lp-workspace-appearance.js"></script>
 <script src="/assets/lp-hub-embed.js"></script>
-<script src="/assets/lp-order-admin-nav.js"></script>
+<script src="/assets/lp-order-admin-nav.js?v=kitchen-1"></script>
+<script src="/assets/lp-order-kitchen.js?v=1" defer></script>
 <link rel="stylesheet" href="/assets/lp-order-admin-nav.css">
 <link rel="stylesheet" href="/assets/lp-order-product-editor.css">
 <link rel="stylesheet" href="/assets/lp-order-new-order.css">
@@ -144,6 +145,53 @@ body.nav-drawer-open{overflow:hidden}
 .content-inner{width:100%;max-width:1440px;margin:0 auto}
 .view{display:none}
 .view.on{display:block}
+/* Kitchen (cooked orders) */
+.kt-showdone{display:inline-flex;align-items:center;gap:6px;font-size:var(--fs-sm);color:var(--ink-soft)}
+.kt-showdone input{width:auto;margin:0}
+.kt-uncharged{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.kt-ub-btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.kt-panel{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:12px 14px;margin:0 0 14px}
+.kt-h4{margin:0 0 8px;font-size:var(--fs-md)}
+.kt-pv{margin:0;padding-left:18px;max-height:260px;overflow:auto;font-size:var(--fs-sm);color:var(--ink-soft)}
+.kt-check-row{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:flex-start;padding:8px 0;border-top:1px solid var(--line)}
+.kt-check-row:first-of-type{border-top:0}
+.kt-check-main{flex:1 1 260px;min-width:0}
+.kt-check-btns{display:flex;gap:6px;flex-wrap:wrap}
+.kt-muted{color:var(--ink-faint)}
+.kt-note{font-style:italic;color:var(--ink-soft);font-size:var(--fs-sm);margin-top:2px;overflow-wrap:anywhere}
+.kt-day{margin:0 0 14px}
+.kt-day.kt-past{opacity:.75}
+.kt-day-head{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:flex-start;margin:0 0 10px}
+.kt-day-title{margin:0;font-family:var(--font-display);font-size:var(--fs-xl)}
+.kt-day-meta{margin:2px 0 0;color:var(--ink-soft);font-size:var(--fs-sm)}
+.kt-day-btns{display:flex;gap:6px;flex-wrap:wrap}
+.kt-tag{display:inline-block;font:700 10px/1.4 var(--font-ui);letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:999px;border:1px solid var(--line-strong);color:var(--ink-soft);vertical-align:3px}
+.kt-tag.kt-today{border-color:var(--accent);color:var(--accent)}
+.kt-kinds{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin:0 0 12px}
+.kt-kind{border:1px solid var(--line);border-radius:12px;padding:8px 10px;background:color-mix(in srgb,var(--accent) 5%,var(--surface))}
+.kt-kind-top{font-size:var(--fs-md)}
+.kt-kind-n{font-family:var(--font-display);font-size:var(--fs-kpi);font-weight:700}
+.kt-kind-name{font-weight:700}
+.kt-vars{margin:4px 0 0;padding-left:16px;font-size:var(--fs-sm);color:var(--ink-soft)}
+.kt-items{display:flex;flex-direction:column;gap:0}
+.kt-item{display:grid;grid-template-columns:48px 92px minmax(0,1fr) auto;gap:10px;align-items:start;padding:10px 0;border-top:1px solid var(--line)}
+.kt-item.done .kt-prod,.kt-item.done .kt-sub{opacity:.55;text-decoration:line-through}
+.kt-item.imp{box-shadow:inset 3px 0 0 #c47a00;padding-left:6px}
+.kt-tick{width:44px;height:44px;border-radius:10px;border:2px solid var(--line-strong);background:var(--surface);color:var(--ink);font:800 22px/1 var(--font-ui);cursor:pointer}
+.kt-tick[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.kt-when{display:flex;flex-direction:column;font-size:var(--fs-md)}
+.kt-oven{font-size:var(--fs-xs);color:var(--ink-soft)}
+.kt-prod{font-weight:700;overflow-wrap:anywhere}
+.kt-cook{display:inline-block;font:700 10px/1.4 var(--font-ui);letter-spacing:.05em;text-transform:uppercase;padding:1px 7px;border-radius:999px;background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--ink);vertical-align:2px}
+.kt-sub{font-size:var(--fs-sm);color:var(--ink-soft);overflow-wrap:anywhere}
+.kt-warn{color:var(--danger,#b91c1c);font-weight:700}
+.kt-acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+@media (max-width:720px){
+  .kt-item{grid-template-columns:48px minmax(0,1fr)}
+  .kt-when{grid-column:2;flex-direction:row;gap:8px;align-items:baseline}
+  .kt-what{grid-column:1 / -1}
+  .kt-acts{grid-column:1 / -1;justify-content:flex-start}
+}
 .kpis{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px}
 .kpi{
   flex:1 1 118px;min-width:110px;max-width:200px;padding:12px 14px;border-radius:14px;
@@ -901,6 +949,10 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
               <option value="cancelled">Voided / cancelled</option>
               <option value="voided">Voided only</option>
               <option value="draft">Draft</option>
+            </select>
+            <select id="orders-cooked" aria-label="Cooked filter">
+              <option value="">All orders</option>
+              <option value="1">Cooked &amp; glazed only</option>
             </select>
             <button class="btn solid" type="button" id="orders-search">Search</button>
             <button class="btn ghost hide" type="button" id="orders-remind-all">Send deposit reminders</button>
@@ -1688,6 +1740,30 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
         </div>
       </section>
 
+      <section class="view" id="view-kitchen" data-view="kitchen">
+        <div class="card">
+          <div class="toolbar" style="flex-wrap:wrap;gap:10px">
+            <h3 style="margin:0;flex:1">Kitchen — cooked orders</h3>
+            <select id="kt-range" aria-label="Which days">
+              <option value="upcoming">Upcoming</option>
+              <option value="date">One day…</option>
+              <option value="past">Past 60 days</option>
+            </select>
+            <input id="kt-date" type="date" class="hide" aria-label="Day">
+            <label class="kt-showdone"><input id="kt-show-done" type="checkbox" checked> Show done</label>
+            <button class="btn ghost" type="button" data-kt="print-all">Print kitchen list</button>
+            <button class="btn ghost" type="button" data-kt="stickers-all">Print stickers</button>
+            <button class="btn ghost" type="button" data-kt="refresh">Refresh</button>
+          </div>
+          <p class="sub">Everything ordered cooked or glazed, by pickup day: what to cook, how many and what sizes, when it’s due. Tap the box when an item is cooked.</p>
+          <div class="notice kt-uncharged hide" id="kt-uncharged"></div>
+          <div class="kt-panel hide" id="kt-charge-preview"></div>
+          <div class="kpis" id="kt-kpis"></div>
+          <div class="kt-panel hide" id="kt-check"></div>
+          <div id="kt-days"></div>
+        </div>
+      </section>
+
       <section class="view" id="view-pickup-day" data-view="pickup-day">
         <div class="card">
           <div class="toolbar" style="flex-wrap:wrap;gap:10px">
@@ -2155,6 +2231,18 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
               <div class="field"><label for="set-cook-rate">Cooking rate ($ per kg, inc. GST)</label>
                 <input id="set-cook-rate" type="number" min="0" step="0.01" inputmode="decimal" placeholder="9.50" style="max-width:180px">
                 <span class="field-hint">Leave blank to turn off. Changes apply to new orders and edits; existing order lines keep the rate they were ordered at.</span>
+              </div>
+              <div class="field"><label class="chk" style="display:flex;gap:8px;align-items:center"><input id="set-cook-min-on" type="checkbox" style="width:auto;margin:0"> Minimum cooking fee per item</label>
+                <input id="set-cook-min" type="number" min="0" step="0.01" inputmode="decimal" placeholder="20.00" style="max-width:180px">
+                <span class="field-hint">Cooking is charged at whichever is greater: kg × the rate, or this minimum. E.g. a 1.5 kg roll at $9.50/kg is $14.25, so the $20 minimum applies.</span>
+              </div>
+              <div class="field"><label for="set-cook-words">Words that mean “cooked”</label>
+                <input id="set-cook-words" type="text" placeholder="cooked, cook, glazed, glaze">
+                <span class="field-hint">Separate with commas. Any option with one of these words is cooking: it goes on the Kitchen list and is charged as cooking. Notes that mention them show in “Check these”. Leave empty to charge only options ticked “Charge cooking rate” (the Kitchen still lists cooked, cook, glazed and glaze).</span>
+              </div>
+              <div class="field"><label for="set-cook-mins">Cooking minutes per kg (optional)</label>
+                <textarea id="set-cook-mins" rows="3" placeholder="turkey = 40&#10;pork = 50&#10;ham = 15"></textarea>
+                <span class="field-hint">One per line: a word in the product name = minutes per kg. The Kitchen shows an “in the oven by” time (cook time + 30 min before pickup). Leave empty to skip.</span>
               </div>
               <h4 class="section-title">Weighed item prices</h4>
               <p class="notice">How items sold by the kg are priced before they're weighed — in the shop, on the customer's order page, on prints and on staff screens.</p>
@@ -3045,6 +3133,20 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     return q;
   }
 
+  // Kitchen view (assets/lp-order-kitchen.js) uses these.
+  window.LpKitchenHost = {
+    api: function (path, opts) { return api(path, opts); },
+    esc: function (v) { return esc(v); },
+    toast: function (m, k) { return toast(m, k); },
+    siteQuery: function (extra) { return siteQuery(extra); },
+    siteId: function () { return state.siteId; },
+    businessName: function () {
+      var row = (state.sites || []).filter(function (x) { return x && x.id === state.siteId; })[0];
+      return row ? (row.business_name || '') : '';
+    },
+    openOrder: function (id) { return openOrderDetail(id); }
+  };
+
   function requireSite(){
     if (!state.siteId) {
       toast('Select a site first', 'err');
@@ -3734,6 +3836,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       if (xf.pickup_date) extra += (extra ? '&' : '') + 'pickup_date=' + encodeURIComponent(xf.pickup_date);
       if (xf.editing_state) extra += (extra ? '&' : '') + 'editing_state=' + encodeURIComponent(xf.editing_state);
       if (xf.price_tbc) extra += (extra ? '&' : '') + 'price_tbc=' + encodeURIComponent(xf.price_tbc);
+      if ($('orders-cooked') && $('orders-cooked').value === '1') extra += (extra ? '&' : '') + 'cooked=1&limit=300';
       var remindBtn = $('orders-remind-all');
       if (remindBtn) {
         var showRemind = st === 'awaiting_deposit';
@@ -9645,6 +9748,10 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       }
       var cook = (s.settings && s.settings.cooking) || {};
       if ($('set-cook-rate')) $('set-cook-rate').value = cook.rate_cents_per_kg != null ? centsToDollarsInput(cook.rate_cents_per_kg) : '';
+      if ($('set-cook-min-on')) $('set-cook-min-on').checked = cook.min_on === true;
+      if ($('set-cook-min')) $('set-cook-min').value = cook.min_cents != null ? centsToDollarsInput(cook.min_cents) : '';
+      if ($('set-cook-words')) $('set-cook-words').value = Array.isArray(cook.words) && cook.words.length ? cook.words.join(', ') : '';
+      if ($('set-cook-mins')) $('set-cook-mins').value = cook.minutes_per_kg ? Object.keys(cook.minutes_per_kg).map(function (k) { return k + ' = ' + cook.minutes_per_kg[k]; }).join('\n') : '';
       var priceDisp = (s.settings && s.settings.price_display) || {};
       if ($('set-kg-only')) $('set-kg-only').value = priceDisp.kg_only === true ? '1' : '0';
       if ($('set-special-was')) $('set-special-was').value = priceDisp.special_show_was === false ? '0' : '1';
@@ -9832,7 +9939,18 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
             payments: payments,
             storefront: storefront,
             cooking: Object.assign({}, existing.cooking || {}, {
-              rate_cents_per_kg: $('set-cook-rate') && $('set-cook-rate').value !== '' ? dollarsToCents($('set-cook-rate').value) : null
+              rate_cents_per_kg: $('set-cook-rate') && $('set-cook-rate').value !== '' ? dollarsToCents($('set-cook-rate').value) : null,
+              min_on: $('set-cook-min-on') ? $('set-cook-min-on').checked : !!(existing.cooking && existing.cooking.min_on),
+              min_cents: $('set-cook-min') && $('set-cook-min').value !== '' ? dollarsToCents($('set-cook-min').value) : null,
+              words: $('set-cook-words') ? $('set-cook-words').value.split(',').map(function (w) { return w.trim().toLowerCase(); }).filter(Boolean).slice(0, 30) : (existing.cooking && existing.cooking.words) || undefined,
+              minutes_per_kg: $('set-cook-mins') ? (function () {
+                var o = {};
+                $('set-cook-mins').value.split(/\n+/).forEach(function (ln) {
+                  var m = /^\s*([^=:]+?)\s*[=:]\s*(\d+(?:\.\d+)?)\s*$/.exec(ln);
+                  if (m) o[m[1].toLowerCase()] = Number(m[2]);
+                });
+                return o;
+              })() : (existing.cooking && existing.cooking.minutes_per_kg) || undefined
             }),
             price_display: Object.assign({}, existing.price_display || {}, {
               kg_only: $('set-kg-only') ? $('set-kg-only').value === '1' : !!(existing.price_display && existing.price_display.kg_only),
@@ -11246,6 +11364,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       else if (v === 'products') await loadProductsView();
       else if (v === 'calendar') await loadCalendar();
       else if (v === 'pickup-day') await loadPickupDay();
+      else if (v === 'kitchen') { if (window.LpKitchen) await window.LpKitchen.open(); }
       else if (v === 'allocation') await loadAllocation();
       else if (v === 'stock') await loadStock();
       else if (v === 'wiki') await loadWiki();
