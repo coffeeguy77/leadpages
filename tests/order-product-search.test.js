@@ -116,7 +116,7 @@ test('orders.html product search sheet UX hooks', function () {
   assert.match(html, /data-ps-sort="name"/);
   assert.match(html, /wireProductSearchSheet/);
   assert.match(html, /Show all orders containing/);
-  assert.match(html, /Print results/);
+  assert.match(html, /Print A4 list/);
 });
 
 test('groupProductSheetRowsByDate splits range days', function () {

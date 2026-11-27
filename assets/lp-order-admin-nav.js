@@ -64,6 +64,7 @@
         { id: 'settings-rules', label: 'Order Rules', route: 'settings-general' },
         { id: 'settings-tax-payments', label: 'Tax & Payments', route: 'settings-payments' },
         { id: 'settings-store', label: 'Store Configuration', route: 'settings-store' },
+        { id: 'settings-labels', label: 'Labels & Printers', route: 'settings-labels' },
         { id: 'messaging', label: 'Messaging', route: 'messaging' },
         { id: 'abandoned', label: 'Abandoned Carts', route: 'abandoned', badge: 'abandoned_carts' },
         { id: 'import', label: 'Import', route: 'import' },
@@ -96,6 +97,7 @@
     'settings-general': { view: 'settings', label: 'Order Rules', group: 'settings', settingsSection: 'rules' },
     'settings-payments': { view: 'settings', label: 'Tax & Payments', group: 'settings', settingsSection: 'tax-payments' },
     'settings-store': { view: 'settings', label: 'Store Configuration', group: 'settings', settingsSection: 'store' },
+    'settings-labels': { view: 'settings', label: 'Labels & Printers', group: 'settings', settingsSection: 'labels' },
     'settings-gst': { view: 'settings', label: 'Tax & Payments', group: 'settings', settingsSection: 'tax-payments' }
   };
 

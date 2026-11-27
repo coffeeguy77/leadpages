@@ -255,11 +255,42 @@
     return out;
   }
 
+  /** Sticker data for assets/lp-labels.js (size + printer from Settings → Labels & Printers → Kitchen). */
+  function labelStickers(r) {
+    var biz = H().businessName ? H().businessName() : '';
+    var opts = r.options.filter(function (o) { return r.cook_labels.indexOf(o) < 0; });
+    var out = [];
+    var q = Math.max(1, Math.min(20, Math.round(r.quantity) || 1));
+    for (var i = 0; i < q; i++) {
+      out.push({
+        brand: biz,
+        title: r.cook_labels[0] || 'Cooked',
+        product: r.product_name,
+        lines: [
+          [r.weight_basis === 'weighed' ? kg(r.weight_kg) : weightText(r), opts.join(', ')].filter(Boolean).join(' · '),
+          'Pickup ' + dayLabel(r.pickup_date) + (r.pickup_time ? ' ' + t12(r.pickup_time) : '') + (q > 1 ? ' · ' + (i + 1) + ' of ' + q : '')
+        ],
+        who: r.customer_name || '',
+        ref: r.order_number || '',
+        foot: 'Keep refrigerated'
+      });
+    }
+    return out;
+  }
+
   function printStickers(date, itemId) {
     var rows = [];
     if (itemId) { var one = findItem(itemId); if (one) rows.push(one); }
     else daysFor(date).forEach(function (d) { d.items.forEach(function (r) { rows.push(r); }); });
     if (!rows.length) { if (H().toast) H().toast('Nothing to print', 'err'); return; }
+    if (window.LpLabels && window.LpOrderToolsHost) {
+      var st = [];
+      rows.forEach(function (r) { st = st.concat(labelStickers(r)); });
+      window.LpLabels.print(window.LpOrderToolsHost.settingsNow(), 'kitchen', st, { title: 'Cooked stickers' }).then(function (res) {
+        if (window.LpOrderTools) window.LpOrderTools.reportPrint(res, st.length);
+      });
+      return;
+    }
     openPrint('Cooked stickers', '<div class="sheet">' + rows.map(sticker).join('') + '</div>');
   }
 

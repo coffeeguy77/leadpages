@@ -34,8 +34,10 @@
 <link rel="stylesheet" href="/assets/lp-super-admin.css">
 <script src="/assets/lp-workspace-appearance.js"></script>
 <script src="/assets/lp-hub-embed.js"></script>
-<script src="/assets/lp-order-admin-nav.js?v=kitchen-1"></script>
-<script src="/assets/lp-order-kitchen.js?v=1" defer></script>
+<script src="/assets/lp-order-admin-nav.js?v=labels-1"></script>
+<script src="/assets/lp-labels.js?v=1" defer></script>
+<script src="/assets/lp-order-kitchen.js?v=2" defer></script>
+<script src="/assets/lp-order-tools.js?v=1" defer></script>
 <link rel="stylesheet" href="/assets/lp-order-admin-nav.css">
 <link rel="stylesheet" href="/assets/lp-order-product-editor.css">
 <link rel="stylesheet" href="/assets/lp-order-new-order.css">
@@ -145,6 +147,35 @@ body.nav-drawer-open{overflow:hidden}
 .content-inner{width:100%;max-width:1440px;margin:0 auto}
 .view{display:none}
 .view.on{display:block}
+/* Saved searches */
+.ss-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px}
+.ss-card{border:1px solid var(--line);border-radius:12px;background:var(--surface);display:flex;flex-direction:column;overflow:hidden}
+.ss-card.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.ss-run{all:unset;cursor:pointer;display:flex;flex-direction:column;gap:2px;padding:10px 12px;color:var(--ink)}
+.ss-run:hover,.ss-run:focus-visible{background:color-mix(in srgb,var(--accent) 8%,var(--surface))}
+.ss-run:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.ss-name{font-weight:700;font-size:var(--fs-md)}
+.ss-desc{font-size:var(--fs-sm);color:var(--ink-soft);overflow-wrap:anywhere}
+.ss-btns{display:flex;flex-wrap:wrap;gap:4px;padding:0 10px 10px}
+.ss-btns .btn{padding:4px 9px;font-size:var(--fs-sm)}
+.ss-current{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 10px;margin:0 0 10px;border:1px solid var(--accent);border-radius:10px;background:color-mix(in srgb,var(--accent) 7%,var(--surface));font-size:var(--fs-sm)}
+.ss-current span{flex:1 1 220px}
+/* Labels & printers */
+.lb-status{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:10px;margin:0 0 12px;font-size:var(--fs-sm);color:var(--ink-soft)}
+.lb-areas{display:flex;flex-direction:column;gap:10px;margin:0 0 14px}
+.lb-area{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--surface)}
+.lb-area-head{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;margin:0 0 8px}
+.lb-area-head .kt-muted{font-size:var(--fs-sm)}
+.lb-area-row{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.lb-area-row label{display:flex;flex-direction:column;gap:4px;font-size:var(--fs-xs);font-weight:600;color:var(--ink-soft);flex:1 1 220px;min-width:0}
+.lb-area-row select,.lb-area-row input{width:100%}
+.lb-eff{font-size:var(--fs-xs);margin-top:6px}
+.lb-custom-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center;padding:6px 0;border-top:1px solid var(--line);font-size:var(--fs-sm)}
+.lb-add{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 14px}
+.lb-add input{flex:1 1 140px;min-width:0}
+.lb-device{display:flex;gap:8px;align-items:center;font-size:var(--fs-sm);margin:0 0 12px}
+.lb-device input{width:auto;margin:0}
+.lb-save{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 /* Kitchen (cooked orders) */
 .kt-showdone{display:inline-flex;align-items:center;gap:6px;font-size:var(--fs-sm);color:var(--ink-soft)}
 .kt-showdone input{width:auto;margin:0}
@@ -224,7 +255,8 @@ input,select,textarea{
   font-family:var(--font-ui);
   font-size:var(--fs-base);
 }
-.toolbar input,.toolbar select,.field input,.field select,.field textarea{
+.toolbar input,.toolbar select,.field input,.field select,.field textarea,
+.lb-area-row input,.lb-area-row select,.lb-add input{
   padding:8px 10px;border-radius:9px;border:1px solid var(--line-strong);
   background:var(--input-bg,transparent);color:var(--ink);
   font:400 var(--fs-base)/1.35 var(--font-ui);max-width:100%;
@@ -1509,18 +1541,27 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
           </div>
           <p class="empty hide" id="supply-empty">No supply lines for this date.</p>
         </div>
-        <div class="card" style="margin-top:16px">
+        <div class="card" style="margin-top:16px" id="ss-card">
+          <div class="toolbar" style="flex-wrap:wrap;gap:8px;align-items:center">
+            <h3 style="margin:0;flex:1">Saved searches <span class="kt-muted" id="ss-count"></span></h3>
+            <input id="ss-q" type="search" placeholder="Search your saved searches…" style="min-width:220px" autocomplete="off">
+          </div>
+          <p class="sub">One tap runs a saved search (e.g. <em>Turkeys</em>, <em>Hams</em>, <em>Ham cooked</em>). Change its dates below to narrow the results, then update it or leave it.</p>
+          <div id="ss-list" class="ss-list"></div>
+        </div>
+        <div class="card" style="margin-top:16px" id="ps-card">
           <h3>Product search sheet</h3>
-          <p class="sub">Type <em>Ham</em> or <em>Turkey</em> to list matching lines from <strong>today onwards</strong>. Narrow with one day or a date range if needed. Use <em>Then refine</em> (e.g. <em>whole</em>) to filter that list further. Click any column heading to sort A→Z / Z→A.</p>
+          <p class="sub">Type <em>Ham</em> or <em>Turkey</em> to list matching lines from <strong>today onwards</strong>. Several products: separate with commas (<em>turkey, ham</em> = either). <em>Must also include</em> narrows the list (e.g. <em>cooked</em>, or <em>cooked, whole</em> = both). Click any column heading to sort A→Z / Z→A.</p>
+          <div class="ss-current hide" id="ss-current"></div>
           <div class="toolbar" style="flex-wrap:wrap;gap:8px;align-items:flex-end">
             <div class="ps-combo prod-combo" id="ps-combo">
               <label class="sub" for="ps-q" style="display:block;margin:0 0 4px">Product</label>
-              <input id="ps-q" type="search" placeholder="Type Ham, Turkey…" autocomplete="off" aria-autocomplete="list" aria-controls="ps-suggest">
+              <input id="ps-q" type="search" placeholder="Ham, Turkey… (commas = either)" autocomplete="off" aria-autocomplete="list" aria-controls="ps-suggest">
               <ul id="ps-suggest" class="prod-combo-list hide" role="listbox"></ul>
             </div>
             <div>
-              <label class="sub" for="ps-refine" style="display:block;margin:0 0 4px">Then refine</label>
-              <input id="ps-refine" type="search" placeholder="e.g. whole" style="min-width:120px" autocomplete="off">
+              <label class="sub" for="ps-refine" style="display:block;margin:0 0 4px">Must also include</label>
+              <input id="ps-refine" type="search" placeholder="e.g. cooked, whole" style="min-width:140px" autocomplete="off">
             </div>
             <div class="ps-mode-wrap">
               <label class="sub" style="display:block;margin:0 0 4px">Match</label>
@@ -1535,10 +1576,15 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
               <label class="sub" for="ps-date-mode" style="display:block;margin:0 0 4px">Dates</label>
               <select id="ps-date-mode" aria-label="Date mode">
                 <option value="from_today" selected>From today onwards</option>
+                <option value="next_days">Next … days</option>
                 <option value="single">One day</option>
                 <option value="range">Date range</option>
               </select>
             </div>
+            <label class="sub hide" id="ps-days-wrap" style="margin:0;display:flex;flex-direction:column;gap:4px">
+              <span>Days</span>
+              <input id="ps-days" type="number" min="1" max="365" value="7" style="max-width:90px" inputmode="numeric">
+            </label>
             <label class="sub hide" id="ps-from-wrap" style="margin:0;display:flex;flex-direction:column;gap:4px">
               <span id="ps-from-label">Date</span>
               <input id="ps-from" type="date">
@@ -1548,7 +1594,9 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
               <input id="ps-to" type="date" title="End of range">
             </label>
             <button class="btn ghost" type="button" id="ps-refresh">Refresh</button>
-            <button class="btn solid" type="button" id="ps-print">Print results</button>
+            <button class="btn solid" type="button" id="ps-print">Print A4 list</button>
+            <button class="btn ghost" type="button" data-ss="search-stickers" title="One sticker for every item in the results">Print stickers</button>
+            <button class="btn ghost" type="button" data-ss="save">Save search</button>
           </div>
           <p class="sub hide" id="ps-status" style="margin:8px 0 0"></p>
           <div id="ps-results" class="hide">
@@ -2267,6 +2315,8 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
             <button class="btn solid" type="submit" id="settings-save">Save settings</button>
             <p class="notice" id="settings-msg"></p>
           </form>
+
+        <div class="hide lb-panel" id="settings-panel-labels"></div>
 
         <div class="hide" id="settings-pickup-card">
           <h4 class="section-title" style="margin-top:4px">Master lock date</h4>
@@ -3398,6 +3448,10 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     store: {
       title: 'Store Configuration',
       sub: 'Colours and layout for the customer order shop.'
+    },
+    labels: {
+      title: 'Labels & Printers',
+      sub: 'Label sizes for each area (item stickers, order labels, kitchen, saved searches) and which printer they go to.'
     }
   };
 
@@ -3414,15 +3468,17 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       schedule: ['settings-pickup-card'],
       rules: ['settings-panel-general'],
       'tax-payments': ['settings-panel-payments', 'settings-panel-gst'],
-      store: ['settings-panel-store']
+      store: ['settings-panel-store'],
+      labels: ['settings-panel-labels']
     };
     var show = panelMap[section] || panelMap['menu-layouts'];
-    ['settings-panel-cart', 'settings-panel-store', 'settings-panel-payments', 'settings-panel-general', 'settings-panel-gst', 'settings-pickup-card'].forEach(function(id){
+    ['settings-panel-cart', 'settings-panel-store', 'settings-panel-payments', 'settings-panel-general', 'settings-panel-gst', 'settings-pickup-card', 'settings-panel-labels'].forEach(function(id){
       var el = $(id);
       if (el) el.classList.toggle('hide', show.indexOf(id) < 0);
     });
     var saveBtn = $('settings-save');
-    if (saveBtn) saveBtn.classList.toggle('hide', section === 'schedule');
+    if (saveBtn) saveBtn.classList.toggle('hide', section === 'schedule' || section === 'labels');
+    if (section === 'labels' && window.LpOrderTools) window.LpOrderTools.openLabels();
     var themeBtn = $('settings-save-theme');
     if (themeBtn) themeBtn.classList.toggle('hide', section !== 'store');
     state.settingsTab = section === 'tax-payments' ? 'payments' : section === 'rules' ? 'general' : section === 'store' ? 'cart' : section === 'menu-layouts' ? 'cart' : 'general';
@@ -10319,6 +10375,16 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
 
   function openPrint(extra, autoprint){
     if (!requireSite()) return;
+    // Order labels / item stickers go to the label size + printer chosen in Settings → Labels & Printers.
+    try {
+      var lp = new URLSearchParams(extra || '');
+      var lfmt = lp.get('format');
+      var ldate = lp.get('pickup_date');
+      if (ldate && (lfmt === 'label' || lfmt === 'item_labels') && labelSizePrint(ldate, lfmt)) {
+        recordPrintSnapshot(ldate, lfmt);
+        return;
+      }
+    } catch (_e) {}
     window.open(printUrl(extra, autoprint), '_blank', 'noopener');
     try {
       var params = new URLSearchParams(extra || '');
@@ -10326,6 +10392,52 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       var date = params.get('pickup_date');
       if (date && fmt) recordPrintSnapshot(date, fmt);
     } catch (_e) {}
+  }
+
+  /**
+   * Print a day's order labels / item stickers on the configured label size (returns false to use the A4 print).
+   * The window opens now (inside the click) and is filled once the lines are loaded.
+   */
+  function labelSizePrint(date, format){
+    var L = window.LpLabels;
+    var settings = (state.orderSystemMeta && state.orderSystemMeta.settings) || {};
+    var area = format === 'item_labels' ? 'item_stickers' : 'order_labels';
+    if (!L || !L.configured(settings, area) || L.sizeFor(settings, area).sheet) return false;
+    var win = null;
+    try { win = window.open('', '_blank'); if (win) win.document.write('<p style="font:14px Arial;padding:16px">Preparing labels…</p>'); } catch (_e) {}
+    (async function(){
+      try {
+        var data = await api('/api/order/product-search?' + siteQuery('product_q=' + encodeURIComponent('*') + '&pickup_from=' + encodeURIComponent(date) + '&pickup_to=' + encodeURIComponent(date) + '&sort=order'));
+        var rows = data.rows || [];
+        var stickers;
+        if (area === 'item_stickers') {
+          stickers = window.LpOrderTools ? window.LpOrderTools.searchStickers(rows) : [];
+        } else {
+          var byOrder = {};
+          var order = [];
+          rows.forEach(function(r){
+            if (!byOrder[r.order_id]) { byOrder[r.order_id] = { r: r, n: 0 }; order.push(r.order_id); }
+            byOrder[r.order_id].n += Math.max(1, Math.round(Number(r.quantity) || 1));
+          });
+          var biz = window.LpOrderToolsHost.businessName();
+          stickers = order.map(function(id){
+            var o = byOrder[id];
+            return {
+              brand: biz, title: o.r.customer_name || '', product: o.n + ' item' + (o.n === 1 ? '' : 's'),
+              lines: [formatPickupDateLong(o.r.pickup_date) + (o.r.pickup_time ? ' · ' + o.r.pickup_time : ''), o.r.customer_phone || ''].filter(Boolean),
+              who: '', ref: o.r.order_number || '', foot: ''
+            };
+          });
+        }
+        var res = await L.print(settings, area, stickers, { title: (area === 'item_stickers' ? 'Item stickers ' : 'Order labels ') + date, win: win });
+        if (window.LpOrderTools) window.LpOrderTools.reportPrint(res, stickers.length);
+        if (res && res.error === 'nothing') toast('No orders for that date', 'warn');
+      } catch (e) {
+        try { if (win) win.close(); } catch (_e) {}
+        toast((e && e.message) || 'Couldn’t print labels', 'err');
+      }
+    })();
+    return true;
   }
 
   var PRINT_SNAPSHOT_FORMATS = ['day_run', 'prep', 'procurement', 'pick_list', 'allocation', 'label', 'item_labels', 'exceptions'];
@@ -11379,6 +11491,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
         }
       }
       else if (v === 'supply') {
+        if (window.LpOrderTools) window.LpOrderTools.openSaved();
         if (!$('supply-date').value) {
           var d = new Date();
           $('supply-date').value = d.toISOString().slice(0, 10);
@@ -11862,6 +11975,12 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     if (mode === 'from_today' || mode === 'all') {
       return { from: psTodayYmd(), to: null, mode: 'from_today', openEnded: true };
     }
+    if (mode === 'next_days') {
+      var nd = Math.max(1, Math.min(365, Math.round(Number(($('ps-days') && $('ps-days').value) || 7) || 7)));
+      var t0 = psTodayYmd();
+      var dd = new Date(t0 + 'T00:00:00Z'); dd.setUTCDate(dd.getUTCDate() + nd - 1);
+      return { from: t0, to: dd.toISOString().slice(0, 10), mode: 'next_days', openEnded: false };
+    }
     var from = ($('ps-from') && $('ps-from').value) || '';
     var to = '';
     if (mode === 'range') {
@@ -11886,6 +12005,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
     var label = $('ps-from-label');
     var needDates = mode === 'single' || mode === 'range';
     if (fromWrap) fromWrap.classList.toggle('hide', !needDates);
+    if ($('ps-days-wrap')) $('ps-days-wrap').classList.toggle('hide', mode !== 'next_days');
     if (toWrap) toWrap.classList.toggle('hide', mode !== 'range');
     if (label) label.textContent = mode === 'range' ? 'From' : 'Date';
     if (needDates && $('ps-from') && !$('ps-from').value) {
@@ -12274,7 +12394,7 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
       });
     }
 
-    ['ps-from', 'ps-to'].forEach(function(id){
+    ['ps-from', 'ps-to', 'ps-days'].forEach(function(id){
       if ($(id)) $(id).addEventListener('change', function(){ schedulePsLiveSearch(); });
     });
     if ($('ps-date-mode')) {
@@ -12288,6 +12408,58 @@ body.embed .no-stepper input[type="number"]{width:3.6rem;min-width:3.6rem}
   }
 
   wireProductSearchSheet();
+
+  // Saved searches + Labels & printers (assets/lp-order-tools.js, assets/lp-labels.js) use these.
+  window.LpOrderToolsHost = {
+    api: function (p, o) { return api(p, o); },
+    siteQuery: function (x) { return siteQuery(x); },
+    siteId: function () { return state.siteId; },
+    toast: function (m, k) { return toast(m, k); },
+    esc: function (v) { return esc(v); },
+    businessName: function () {
+      var row = (state.sites || []).filter(function (x) { return x && x.id === state.siteId; })[0];
+      return row ? (row.business_name || '') : '';
+    },
+    settingsNow: function () { return (state.orderSystemMeta && state.orderSystemMeta.settings) || {}; },
+    getSettings: async function () {
+      var cur = await api('/api/order/system?' + siteQuery());
+      if (cur && cur.system) state.orderSystemMeta = Object.assign({}, state.orderSystemMeta || {}, cur.system);
+      return (cur.system && cur.system.settings) || {};
+    },
+    saveSettings: async function (patch) {
+      await api('/api/order/system', { method: 'POST', body: { site_id: state.siteId, settings: patch } });
+      if (state.orderSystemMeta) state.orderSystemMeta.settings = Object.assign({}, state.orderSystemMeta.settings || {}, patch);
+    },
+    ps: {
+      get: function () {
+        return {
+          product_q: String(($('ps-q') && $('ps-q').value) || '').trim(),
+          refine: String(($('ps-refine') && $('ps-refine').value) || '').trim(),
+          mode: ($('ps-mode') && $('ps-mode').value) === 'exact' ? 'exact' : 'partial',
+          date_mode: ($('ps-date-mode') && $('ps-date-mode').value) || 'from_today',
+          from: ($('ps-from') && $('ps-from').value) || '',
+          to: ($('ps-to') && $('ps-to').value) || '',
+          days: Number(($('ps-days') && $('ps-days').value) || 0) || 0
+        };
+      },
+      set: function (sv) {
+        if ($('ps-q')) $('ps-q').value = sv.product_q || '';
+        if ($('ps-refine')) $('ps-refine').value = sv.refine || '';
+        if (sv.mode === 'exact') setPsMode('exact', sv.product_q || '', { lock: true });
+        else setPsMode('partial', null, { unlock: true });
+        if ($('ps-date-mode')) $('ps-date-mode').value = sv.date_mode || 'from_today';
+        if ($('ps-days')) $('ps-days').value = sv.days || 7;
+        if ($('ps-from')) $('ps-from').value = sv.from || '';
+        if ($('ps-to')) $('ps-to').value = sv.to || '';
+        syncPsDateModeUi();
+        if ($('ps-from') && sv.from) $('ps-from').value = sv.from;
+        if ($('ps-to') && sv.to && sv.date_mode === 'range') $('ps-to').value = sv.to;
+      },
+      run: function () { return previewProductSheet({ live: false }); },
+      print: function () { return printProductSheet(false); },
+      rows: function () { return psState.rows || []; }
+    }
+  };
   if ($('supply-print-run')) $('supply-print-run').addEventListener('click', function(){ supplyPrint('day_run'); });
   if ($('supply-print-pick')) $('supply-print-pick').addEventListener('click', function(){ supplyPrint('pick_list'); });
   if ($('supply-print-prep')) $('supply-print-prep').addEventListener('click', function(){ supplyPrint('prep'); });
