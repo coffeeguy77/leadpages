@@ -225,6 +225,20 @@ module.exports = async function (req, res) {
 
       if (action === 'set_status') {
         if (!body.order_id || !body.status) return json(res, 400, { error: 'order_id_and_status_required' });
+        // Collected / completed is the final bill: every weighed item needs its weight first, so nothing is missed.
+        if (body.status === 'collected' || body.status === 'completed') {
+          const { data: its, error: iErr } = await admin.from('order_items').select('*').eq('order_id', body.order_id).eq('site_id', siteId);
+          if (iErr) throw iErr;
+          const missing = require('../../lib/order/cooking').linesMissingWeight(its || []);
+          if (missing.length) {
+            return json(res, 409, {
+              error: 'Weigh ' + (missing.length === 1 ? 'this item' : 'these ' + missing.length + ' items') + ' first, so the final bill is right: ' +
+                missing.map(function (m) { return m.product_name; }).join(', '),
+              code: 'weights_missing',
+              lines: missing.map(function (m) { return { id: m.id, product_name: m.product_name }; })
+            });
+          }
+        }
         const patch = { status: body.status, updated_at: new Date().toISOString() };
         if (body.status === 'ready') patch.ready_at = patch.updated_at;
         if (body.status === 'collected') patch.collected_at = patch.updated_at;

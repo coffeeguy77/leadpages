@@ -254,6 +254,11 @@ html[data-lp-ui="v2"] {
   box-shadow: var(--ui-shadow-sm) !important;
   color: var(--ui-text);
 }
+/* A cell inside a card (KPI tiles, inner panels) sits on the raised surface with the stronger border. */
+[data-lp-ui="v2"] :is(.card, .lpl-card, .panel, .bk-card) :is(.card, .lpl-card, .panel, .bk-card, .tile, .kpi):not(.lpui-bare) {
+  background-color: var(--ui-raised);
+  border-color: var(--ui-border-2) !important;
+}
 [data-lp-ui="v2"] .card > h2:first-child,
 [data-lp-ui="v2"] .card .card-head h2 { font-size: 16px !important; font-weight: 620 !important; }
 [data-lp-ui="v2"] .modal { background: color-mix(in srgb, #000 38%, transparent) !important; backdrop-filter: blur(3px); }

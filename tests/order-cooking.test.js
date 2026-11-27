@@ -128,3 +128,27 @@ test('without a saved word list only flagged options are charged (other shops un
   assert.strictEqual(ex.per_kg_cents, 0);
   assert.strictEqual(ex.extra_cents, 975);
 });
+
+test('weighing charges cooking on lines ordered before the cooking rules', () => {
+  const item = {
+    id: 'w', quantity: 1, pricing_method: 'per_weight', price_status: 'tbc', unit_price_cents: 2999,
+    product_name: 'HAM - Half 4-4.5', line_known_cents: 975,
+    options_snapshot: { selected: [{ key: 'glazing', question: 'Glazing', label: 'Glazed', value: 'Glazed', price_cents: 975 }] }
+  };
+  const flagged = C.withCookingFlags(item, SYS);
+  const fin = P.finaliseWeightLine(flagged, 4.2, 2999);
+  // 4.2 kg × $29.99 = $125.96; cooking 4.2 × $9.50 = $39.90 (over the $20 minimum); no flat glaze price.
+  assert.strictEqual(fin.line_final_cents, Math.round(4.2 * 2999) + Math.round(4.2 * 950));
+});
+
+test('collected / completed needs every weighed line weighed; fixed-price lines don\'t', () => {
+  const lines = [
+    { product_name: 'HAM - Half', pricing_method: 'per_weight', price_status: 'tbc' },
+    { product_name: 'Pie', pricing_method: 'fixed', price_status: 'fixed' },
+    { product_name: 'TURKEY', pricing_method: 'per_weight', price_status: 'finalised' },
+    { product_name: 'PORK', pricing_method: 'price_tbc', price_status: 'estimated' }
+  ];
+  assert.deepStrictEqual(C.linesMissingWeight(lines).map((l) => l.product_name), ['HAM - Half', 'PORK']);
+  const src = require('fs').readFileSync(require('path').join(__dirname, '..', 'api/order/orders.js'), 'utf8');
+  assert.match(src, /body\.status === 'collected' \|\| body\.status === 'completed'/);
+});

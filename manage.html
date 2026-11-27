@@ -41,8 +41,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/lp-themes.css?v=editor-chips-3">
-<link rel="stylesheet" href="/assets/lp-ui.css?v=2">
+<link rel="stylesheet" href="/assets/lp-themes.css?v=contrast-1">
+<link rel="stylesheet" href="/assets/lp-ui.css?v=3">
 <link rel="stylesheet" href="/assets/lp-messages-embed.css">
 <link rel="stylesheet" href="/assets/lp-admin-responsive.css?v=hero-editor-mobile-1">
 <link rel="stylesheet" href="/assets/lp-quote-builder.css?v=oq-portal-style-1">
@@ -1884,11 +1884,12 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       if(site.id!==currentSiteId) return;
       if(!keep){ lpBkFetch('?id='+encodeURIComponent(d.id),{method:'DELETE'}).catch(function(){}); return; }
     }
+    if(site.id!==currentSiteId) return;
     lpDraftBanner(site, d);
   }
   function lpDraftBanner(site, d){
     var old=document.getElementById('lp-draft-banner'); if(old) old.remove();
-    var b=document.createElement('div'); b.id='lp-draft-banner'; b.setAttribute('role','alert');
+    var b=document.createElement('div'); b.id='lp-draft-banner'; b.setAttribute('role','alert'); b.setAttribute('data-site', String(site.id));
     var _dn=(site.business_name||site.slug||'This site');
     b.innerHTML='<span><b>'+esc(_dn)+'</b> has unpublished changes saved as a draft <b>'+esc(new Date(d.created_at).toLocaleString([], {day:'numeric',month:'short',hour:'numeric',minute:'2-digit'}))+'</b>.</span>'
       +'<button type="button" class="btn" data-act="resume">Continue draft</button><button type="button" class="btn ghost" data-act="discard">Discard draft</button>';
@@ -1904,6 +1905,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
         if(lpDraft.dirty||lpDraftHasUnsaved()) lpDraftSave({auto:true});
         return;
       }
+      if(site.id!==currentSiteId){ b.remove(); toast('That draft belongs to another site — open it to continue.','warn'); return; }
       e.target.disabled=true;
       try{
         var j=await lpBkFetch('?id='+encodeURIComponent(d.id));
@@ -5602,6 +5604,8 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
     try{ if(lpDraft.t){ clearTimeout(lpDraft.t); lpDraft.t=null; } if(currentSiteId!==site.id){ lpDraft.id=null; lpDraft.savedAt=null; } lpDraft.dirty=false; lpDraft.base=null; }catch(_dr){}
     if(manageMsgEmbed&&manageMsgEmbed.destroy){ try{ manageMsgEmbed.destroy(); }catch(_e){} manageMsgEmbed=null; }
     updateSupportNavBadge(0);
+    // A draft pop-up belongs to the site it was shown for: clear it when another site opens.
+    try{ var _odb=document.getElementById('lp-draft-banner'); if(_odb && _odb.getAttribute('data-site')!==String(site.id)) _odb.remove(); }catch(_e){}
     currentSiteId=site.id; currentSiteSlug=site.slug; currentSiteTemplate=site.template||'broker-app'; currentIsPartnerHome=!!site.is_partner_home;
     _premiumEntitledNav=null; _premiumAppsCache=null;
     if(typeof ordEmbedWarmedSiteId!=='undefined'&&ordEmbedWarmedSiteId&&ordEmbedWarmedSiteId!==site.id) ordEmbedWarmedSiteId=null;

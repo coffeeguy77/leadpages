@@ -234,28 +234,29 @@
 }
 
 .oanav-badge.tone-neutral {
-  background: color-mix(in srgb, var(--ink) 10%, transparent);
-  color: var(--ink-soft);
+  background: color-mix(in srgb, var(--ink) 18%, transparent);
+  color: var(--ink);
 }
 
+/* Solid fills with white text: readable on light and dark themes alike. */
 .oanav-badge.tone-blue {
-  background: color-mix(in srgb, #2563eb 18%, transparent);
-  color: #1d4ed8;
+  background: #2563eb;
+  color: #fff;
 }
 
 .oanav-badge.tone-amber {
-  background: color-mix(in srgb, #d97706 20%, transparent);
-  color: #b45309;
+  background: #b45309;
+  color: #fff;
 }
 
 .oanav-badge.tone-red {
-  background: color-mix(in srgb, #dc2626 18%, transparent);
-  color: #b91c1c;
+  background: #dc2626;
+  color: #fff;
 }
 
 .oanav-badge.tone-green {
-  background: color-mix(in srgb, #16a34a 18%, transparent);
-  color: #15803d;
+  background: #15803d;
+  color: #fff;
 }
 
 .oanav-sub-item .oanav-badge {
